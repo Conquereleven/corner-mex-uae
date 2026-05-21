@@ -11,11 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as SellersRouteImport } from './routes/sellers'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as B2bRouteImport } from './routes/b2b'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
+import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -25,6 +28,11 @@ const SignupRoute = SignupRouteImport.update({
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SellersRoute = SellersRouteImport.update({
+  id: '/sellers',
+  path: '/sellers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -52,6 +60,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SellersSlugRoute = SellersSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => SellersRoute,
+} as any)
+const ProductSlugRoute = ProductSlugRouteImport.update({
+  id: '/product/$slug',
+  path: '/product/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,8 +77,11 @@ export interface FileRoutesByFullPath {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/login': typeof LoginRoute
+  '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/product/$slug': typeof ProductSlugRoute
+  '/sellers/$slug': typeof SellersSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,8 +89,11 @@ export interface FileRoutesByTo {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/login': typeof LoginRoute
+  '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/product/$slug': typeof ProductSlugRoute
+  '/sellers/$slug': typeof SellersSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,14 +102,37 @@ export interface FileRoutesById {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/login': typeof LoginRoute
+  '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/product/$slug': typeof ProductSlugRoute
+  '/sellers/$slug': typeof SellersSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/b2b' | '/cart' | '/login' | '/shop' | '/signup'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/b2b'
+    | '/cart'
+    | '/login'
+    | '/sellers'
+    | '/shop'
+    | '/signup'
+    | '/product/$slug'
+    | '/sellers/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/b2b' | '/cart' | '/login' | '/shop' | '/signup'
+  to:
+    | '/'
+    | '/about'
+    | '/b2b'
+    | '/cart'
+    | '/login'
+    | '/sellers'
+    | '/shop'
+    | '/signup'
+    | '/product/$slug'
+    | '/sellers/$slug'
   id:
     | '__root__'
     | '/'
@@ -93,8 +140,11 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/login'
+    | '/sellers'
     | '/shop'
     | '/signup'
+    | '/product/$slug'
+    | '/sellers/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -103,8 +153,10 @@ export interface RootRouteChildren {
   B2bRoute: typeof B2bRoute
   CartRoute: typeof CartRoute
   LoginRoute: typeof LoginRoute
+  SellersRoute: typeof SellersRouteWithChildren
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
+  ProductSlugRoute: typeof ProductSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -121,6 +173,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sellers': {
+      id: '/sellers'
+      path: '/sellers'
+      fullPath: '/sellers'
+      preLoaderRoute: typeof SellersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -158,8 +217,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sellers/$slug': {
+      id: '/sellers/$slug'
+      path: '/$slug'
+      fullPath: '/sellers/$slug'
+      preLoaderRoute: typeof SellersSlugRouteImport
+      parentRoute: typeof SellersRoute
+    }
+    '/product/$slug': {
+      id: '/product/$slug'
+      path: '/product/$slug'
+      fullPath: '/product/$slug'
+      preLoaderRoute: typeof ProductSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface SellersRouteChildren {
+  SellersSlugRoute: typeof SellersSlugRoute
+}
+
+const SellersRouteChildren: SellersRouteChildren = {
+  SellersSlugRoute: SellersSlugRoute,
+}
+
+const SellersRouteWithChildren =
+  SellersRoute._addFileChildren(SellersRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -167,8 +251,10 @@ const rootRouteChildren: RootRouteChildren = {
   B2bRoute: B2bRoute,
   CartRoute: CartRoute,
   LoginRoute: LoginRoute,
+  SellersRoute: SellersRouteWithChildren,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
+  ProductSlugRoute: ProductSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
