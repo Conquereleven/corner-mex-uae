@@ -1,6 +1,5 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 
 const en = {
   nav: { shop: "Shop", sellers: "Sellers", b2b: "For Business", about: "About", account: "Account", cart: "Cart", login: "Sign in", signup: "Get started" },
@@ -69,17 +68,14 @@ const ar = {
 };
 
 if (!i18n.isInitialized) {
-  i18n
-    .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-      resources: { en: { t: en }, es: { t: es }, ar: { t: ar } },
-      fallbackLng: "en",
-      defaultNS: "t",
-      ns: ["t"],
-      interpolation: { escapeValue: false },
-      detection: { order: ["localStorage", "navigator"], caches: ["localStorage"] },
-    });
+  i18n.use(initReactI18next).init({
+    resources: { en: { t: en }, es: { t: es }, ar: { t: ar } },
+    lng: "en", // deterministic for SSR; client switches in LanguageProvider
+    fallbackLng: "en",
+    defaultNS: "t",
+    ns: ["t"],
+    interpolation: { escapeValue: false },
+  });
 }
 
 export const LANGS = [
