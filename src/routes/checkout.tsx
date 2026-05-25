@@ -106,7 +106,7 @@ function Checkout() {
           shipping_address: {
             recipient_name: form.recipient_name,
             phone: form.phone,
-            emirate: form.emirate,
+            emirate: form.emirate as "AD" | "DU" | "SH" | "AJ" | "UQ" | "RK" | "FU",
             area: form.area,
             street: form.street || null,
             building: form.building || null,
