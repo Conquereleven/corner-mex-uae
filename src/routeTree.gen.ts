@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SellersRouteImport } from './routes/sellers'
+import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
@@ -34,6 +35,11 @@ const ShopRoute = ShopRouteImport.update({
 const SellersRoute = SellersRouteImport.update({
   id: '/sellers',
   path: '/sellers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrderConfirmedRoute = OrderConfirmedRouteImport.update({
+  id: '/order-confirmed',
+  path: '/order-confirmed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/login'
+    | '/order-confirmed'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/login'
+    | '/order-confirmed'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/login'
+    | '/order-confirmed'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   LoginRoute: typeof LoginRoute
+  OrderConfirmedRoute: typeof OrderConfirmedRoute
   SellersRoute: typeof SellersRouteWithChildren
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/sellers'
       fullPath: '/sellers'
       preLoaderRoute: typeof SellersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/order-confirmed': {
+      id: '/order-confirmed'
+      path: '/order-confirmed'
+      fullPath: '/order-confirmed'
+      preLoaderRoute: typeof OrderConfirmedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -272,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   LoginRoute: LoginRoute,
+  OrderConfirmedRoute: OrderConfirmedRoute,
   SellersRoute: SellersRouteWithChildren,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
@@ -280,3 +301,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
