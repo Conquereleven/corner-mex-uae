@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SellersRouteImport } from './routes/sellers'
+import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as B2bRouteImport } from './routes/b2b'
 import { Route as AboutRouteImport } from './routes/about'
@@ -35,9 +37,19 @@ const SellersRoute = SellersRouteImport.update({
   path: '/sellers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrderConfirmedRoute = OrderConfirmedRouteImport.update({
+  id: '/order-confirmed',
+  path: '/order-confirmed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -76,7 +88,9 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -88,7 +102,9 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -101,7 +117,9 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
   '/login': typeof LoginRoute
+  '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -115,7 +133,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/b2b'
     | '/cart'
+    | '/checkout'
     | '/login'
+    | '/order-confirmed'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -127,7 +147,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/b2b'
     | '/cart'
+    | '/checkout'
     | '/login'
+    | '/order-confirmed'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -139,7 +161,9 @@ export interface FileRouteTypes {
     | '/about'
     | '/b2b'
     | '/cart'
+    | '/checkout'
     | '/login'
+    | '/order-confirmed'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -152,7 +176,9 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   B2bRoute: typeof B2bRoute
   CartRoute: typeof CartRoute
+  CheckoutRoute: typeof CheckoutRoute
   LoginRoute: typeof LoginRoute
+  OrderConfirmedRoute: typeof OrderConfirmedRoute
   SellersRoute: typeof SellersRouteWithChildren
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
@@ -182,11 +208,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/order-confirmed': {
+      id: '/order-confirmed'
+      path: '/order-confirmed'
+      fullPath: '/order-confirmed'
+      preLoaderRoute: typeof OrderConfirmedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -250,7 +290,9 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   B2bRoute: B2bRoute,
   CartRoute: CartRoute,
+  CheckoutRoute: CheckoutRoute,
   LoginRoute: LoginRoute,
+  OrderConfirmedRoute: OrderConfirmedRoute,
   SellersRoute: SellersRouteWithChildren,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,

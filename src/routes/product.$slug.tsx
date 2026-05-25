@@ -6,6 +6,8 @@ import { Flame, MapPin, ShieldCheck } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { getProduct } from "@/lib/catalog.functions";
+import { useCart } from "@/lib/cart";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$slug")({
   head: () => ({ meta: [{ title: "Product — Corner Mex" }] }),
@@ -18,6 +20,7 @@ function ProductPage() {
   const lang = i18n.language as "en" | "es" | "ar";
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
+  const add = useCart((s) => s.add);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug, lang],
@@ -30,9 +33,31 @@ function ProductPage() {
   if (!product) {
     throw notFound();
   }
+  const p = product;
 
-  const variant = product.variants.find((v) => v.id === variantId) ?? product.variants[0];
+  const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
   const hasDiscount = variant?.compare_at_price_aed && variant.compare_at_price_aed > variant.price_aed;
+
+  function addToCart() {
+    if (!variant || !p.seller) return;
+    add(
+      {
+        productId: p.id,
+        variantId: variant.id,
+        slug: p.slug,
+        name: p.name,
+        variantLabel: variant.label,
+        image: p.image,
+        unitPrice: variant.price_aed,
+        sellerId: p.seller.id,
+        sellerSlug: p.seller.slug,
+        sellerName: p.seller.name,
+        stock: variant.stock,
+      },
+      qty,
+    );
+    toast.success(`${p.name} added to cart`);
+  }
 
   return (
     <SiteLayout>
@@ -107,7 +132,7 @@ function ProductPage() {
                 <span className="min-w-6 text-center text-sm font-medium">{qty}</span>
                 <button onClick={() => setQty((q) => Math.min((variant?.stock ?? 99), q + 1))} className="text-muted-foreground hover:text-foreground">+</button>
               </div>
-              <Button size="lg" className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90">
+              <Button onClick={addToCart} size="lg" className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90">
                 Add to cart · AED {((variant?.price_aed ?? 0) * qty).toFixed(0)}
               </Button>
             </div>
