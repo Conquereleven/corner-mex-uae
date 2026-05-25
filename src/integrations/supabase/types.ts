@@ -705,7 +705,16 @@ export type Database = {
         | "delivered"
         | "cancelled"
         | "refunded"
-      payment_method: "stripe" | "cod" | "bank_transfer" | "quote"
+      payment_method:
+        | "stripe"
+        | "cod"
+        | "bank_transfer"
+        | "quote"
+        | "card"
+        | "apple_pay"
+        | "google_pay"
+        | "tabby"
+        | "tamara"
       payment_status: "pending" | "authorized" | "paid" | "failed" | "refunded"
       product_status: "draft" | "pending" | "active" | "archived"
       quote_status: "open" | "responded" | "accepted" | "rejected" | "expired"
@@ -857,7 +866,17 @@ export const Constants = {
         "cancelled",
         "refunded",
       ],
-      payment_method: ["stripe", "cod", "bank_transfer", "quote"],
+      payment_method: [
+        "stripe",
+        "cod",
+        "bank_transfer",
+        "quote",
+        "card",
+        "apple_pay",
+        "google_pay",
+        "tabby",
+        "tamara",
+      ],
       payment_status: ["pending", "authorized", "paid", "failed", "refunded"],
       product_status: ["draft", "pending", "active", "archived"],
       quote_status: ["open", "responded", "accepted", "rejected", "expired"],
