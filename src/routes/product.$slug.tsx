@@ -20,6 +20,7 @@ function ProductPage() {
   const lang = i18n.language as "en" | "es" | "ar";
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
+  const add = useCart((s) => s.add);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug, lang],
@@ -32,30 +33,30 @@ function ProductPage() {
   if (!product) {
     throw notFound();
   }
+  const p = product;
 
-  const variant = product.variants.find((v) => v.id === variantId) ?? product.variants[0];
+  const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
   const hasDiscount = variant?.compare_at_price_aed && variant.compare_at_price_aed > variant.price_aed;
-  const add = useCart((s) => s.add);
 
   function addToCart() {
-    if (!variant || !product.seller) return;
+    if (!variant || !p.seller) return;
     add(
       {
-        productId: product.id,
+        productId: p.id,
         variantId: variant.id,
-        slug: product.slug,
-        name: product.name,
+        slug: p.slug,
+        name: p.name,
         variantLabel: variant.label,
-        image: product.image,
+        image: p.image,
         unitPrice: variant.price_aed,
-        sellerId: product.seller.id,
-        sellerSlug: product.seller.slug,
-        sellerName: product.seller.name,
+        sellerId: p.seller.id,
+        sellerSlug: p.seller.slug,
+        sellerName: p.seller.name,
         stock: variant.stock,
       },
       qty,
     );
-    toast.success(`${product.name} added to cart`);
+    toast.success(`${p.name} added to cart`);
   }
 
   return (
