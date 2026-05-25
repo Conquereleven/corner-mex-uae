@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LANGS } from "@/lib/i18n";
+import { useCart } from "@/lib/cart";
 
 export function Header() {
   const { t, i18n } = useTranslation();
   const change = (code: string) => i18n.changeLanguage(code);
+  const cartCount = useCart((s) => s.items.reduce((a, i) => a + i.qty, 0));
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -51,8 +53,13 @@ export function Header() {
             </Button>
           </Link>
           <Link to="/cart">
-            <Button variant="ghost" size="icon" aria-label="Cart">
+            <Button variant="ghost" size="icon" aria-label="Cart" className="relative">
               <ShoppingBag className="h-4 w-4" />
+              {cartCount > 0 && (
+                <span className="absolute -end-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
+                  {cartCount}
+                </span>
+              )}
             </Button>
           </Link>
           <Link to="/signup" className="ms-2 hidden sm:block">
