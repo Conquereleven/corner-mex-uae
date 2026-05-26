@@ -22,7 +22,13 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenticated/seller.index'
+import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
+import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authenticated/seller.orders'
+import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
+import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -88,11 +94,46 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSellerRoute = AuthenticatedSellerRouteImport.update({
+  id: '/seller',
+  path: '/seller',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSellerIndexRoute =
+  AuthenticatedSellerIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
+const AuthenticatedSellerProductsRoute =
+  AuthenticatedSellerProductsRouteImport.update({
+    id: '/products',
+    path: '/products',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
+const AuthenticatedSellerOrdersRoute =
+  AuthenticatedSellerOrdersRouteImport.update({
+    id: '/orders',
+    path: '/orders',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
+const AuthenticatedSellerProductsNewRoute =
+  AuthenticatedSellerProductsNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedSellerProductsRoute,
+  } as any)
+const AuthenticatedSellerProductsIdRoute =
+  AuthenticatedSellerProductsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedSellerProductsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -106,8 +147,14 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/seller': typeof AuthenticatedSellerRouteWithChildren
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/seller/': typeof AuthenticatedSellerIndexRoute
+  '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
+  '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,6 +170,11 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/seller': typeof AuthenticatedSellerIndexRoute
+  '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
+  '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -138,8 +190,14 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
+  '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
+  '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -155,8 +213,14 @@ export interface FileRouteTypes {
     | '/shop'
     | '/signup'
     | '/account'
+    | '/seller'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/seller/orders'
+    | '/seller/products'
+    | '/seller/'
+    | '/seller/products/$id'
+    | '/seller/products/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,6 +236,11 @@ export interface FileRouteTypes {
     | '/account'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/seller/orders'
+    | '/seller/products'
+    | '/seller'
+    | '/seller/products/$id'
+    | '/seller/products/new'
   id:
     | '__root__'
     | '/'
@@ -186,8 +255,14 @@ export interface FileRouteTypes {
     | '/shop'
     | '/signup'
     | '/_authenticated/account'
+    | '/_authenticated/seller'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/_authenticated/seller/orders'
+    | '/_authenticated/seller/products'
+    | '/_authenticated/seller/'
+    | '/_authenticated/seller/products/$id'
+    | '/_authenticated/seller/products/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -298,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/seller': {
+      id: '/_authenticated/seller'
+      path: '/seller'
+      fullPath: '/seller'
+      preLoaderRoute: typeof AuthenticatedSellerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -305,15 +387,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/seller/': {
+      id: '/_authenticated/seller/'
+      path: '/'
+      fullPath: '/seller/'
+      preLoaderRoute: typeof AuthenticatedSellerIndexRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
+    '/_authenticated/seller/products': {
+      id: '/_authenticated/seller/products'
+      path: '/products'
+      fullPath: '/seller/products'
+      preLoaderRoute: typeof AuthenticatedSellerProductsRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
+    '/_authenticated/seller/orders': {
+      id: '/_authenticated/seller/orders'
+      path: '/orders'
+      fullPath: '/seller/orders'
+      preLoaderRoute: typeof AuthenticatedSellerOrdersRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
+    '/_authenticated/seller/products/new': {
+      id: '/_authenticated/seller/products/new'
+      path: '/new'
+      fullPath: '/seller/products/new'
+      preLoaderRoute: typeof AuthenticatedSellerProductsNewRouteImport
+      parentRoute: typeof AuthenticatedSellerProductsRoute
+    }
+    '/_authenticated/seller/products/$id': {
+      id: '/_authenticated/seller/products/$id'
+      path: '/$id'
+      fullPath: '/seller/products/$id'
+      preLoaderRoute: typeof AuthenticatedSellerProductsIdRouteImport
+      parentRoute: typeof AuthenticatedSellerProductsRoute
+    }
   }
 }
 
+interface AuthenticatedSellerProductsRouteChildren {
+  AuthenticatedSellerProductsIdRoute: typeof AuthenticatedSellerProductsIdRoute
+  AuthenticatedSellerProductsNewRoute: typeof AuthenticatedSellerProductsNewRoute
+}
+
+const AuthenticatedSellerProductsRouteChildren: AuthenticatedSellerProductsRouteChildren =
+  {
+    AuthenticatedSellerProductsIdRoute: AuthenticatedSellerProductsIdRoute,
+    AuthenticatedSellerProductsNewRoute: AuthenticatedSellerProductsNewRoute,
+  }
+
+const AuthenticatedSellerProductsRouteWithChildren =
+  AuthenticatedSellerProductsRoute._addFileChildren(
+    AuthenticatedSellerProductsRouteChildren,
+  )
+
+interface AuthenticatedSellerRouteChildren {
+  AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRoute
+  AuthenticatedSellerProductsRoute: typeof AuthenticatedSellerProductsRouteWithChildren
+  AuthenticatedSellerIndexRoute: typeof AuthenticatedSellerIndexRoute
+}
+
+const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
+  AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRoute,
+  AuthenticatedSellerProductsRoute:
+    AuthenticatedSellerProductsRouteWithChildren,
+  AuthenticatedSellerIndexRoute: AuthenticatedSellerIndexRoute,
+}
+
+const AuthenticatedSellerRouteWithChildren =
+  AuthenticatedSellerRoute._addFileChildren(AuthenticatedSellerRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedSellerRoute: typeof AuthenticatedSellerRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedSellerRoute: AuthenticatedSellerRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
