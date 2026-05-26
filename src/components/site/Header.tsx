@@ -47,7 +47,7 @@ export function Header() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link to="/login">
+          <Link to="/account">
             <Button variant="ghost" size="icon" aria-label="Account">
               <User className="h-4 w-4" />
             </Button>
