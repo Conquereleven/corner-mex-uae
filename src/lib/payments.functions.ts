@@ -95,7 +95,7 @@ export const confirmBnplPayment = createServerFn({ method: "POST" })
     });
 
     await supabaseAdmin.from("orders")
-      .update({ payment_status: "paid", status: "confirmed" })
+      .update({ payment_status: "paid", status: "paid" })
       .eq("id", data.orderId);
 
     return { success: true };

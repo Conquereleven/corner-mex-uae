@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
         // Verify signature
         const { default: Stripe } = await import("stripe");
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-03-31.basil" as any });
-        let event: Stripe.Event;
+        let event: any;
         try {
           event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
         } catch (err: any) {
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
           // Update order
           const { error: orderErr } = await supabaseAdmin
             .from("orders")
-            .update({ payment_status: "paid", status: "confirmed", updated_at: new Date().toISOString() })
+            .update({ payment_status: "paid", status: "paid", updated_at: new Date().toISOString() })
             .eq("id", orderId);
           if (orderErr) {
             console.error("[Stripe Webhook] Failed to update order:", orderErr.message);
