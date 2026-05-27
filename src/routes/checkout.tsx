@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCart, cartTotals, groupBySeller } from "@/lib/cart";
 import { placeOrder } from "@/lib/orders.functions";
+import { createStripeSession } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/checkout")({
@@ -45,6 +46,7 @@ function Checkout() {
   const groups = groupBySeller(items);
   const navigate = useNavigate();
   const place = useServerFn(placeOrder);
+  const createStripe = useServerFn(createStripeSession);
 
   const [authed, setAuthed] = useState<boolean | null>(null);
   useEffect(() => {
@@ -116,9 +118,31 @@ function Checkout() {
           notes: form.notes || null,
         },
       });
-      clear();
-      toast.success(`Order ${res.orderNumber} placed`);
-      navigate({ to: "/order-confirmed", search: { n: res.orderNumber } });
+
+      // Route based on payment method
+      if (["card", "apple_pay", "google_pay"].includes(payment)) {
+        try {
+          const stripeRes = await createStripe({ data: { orderId: res.orderId } });
+          if (stripeRes.url) {
+            clear();
+            window.location.href = stripeRes.url;
+            return;
+          }
+        } catch (stripeErr: any) {
+          toast.error(stripeErr?.message ?? "Payment gateway error");
+          setSubmitting(false);
+          return;
+        }
+      } else if (["tabby", "tamara"].includes(payment)) {
+        clear();
+        navigate({ to: "/checkout/bnpl/$provider/$orderId", params: { provider: payment, orderId: res.orderId } });
+        return;
+      } else {
+        // COD / bank_transfer
+        clear();
+        toast.success(`Order ${res.orderNumber} placed`);
+        navigate({ to: "/order-confirmed", search: { order: res.orderId } });
+      }
     } catch (err: any) {
       toast.error(err?.message ?? "Could not place order");
     } finally {
@@ -180,7 +204,7 @@ function Checkout() {
                 })}
               </div>
               <p className="mt-4 text-[11px] text-muted-foreground">
-                Demo checkout. Card / Apple Pay / Google Pay / Tabby / Tamara will route to a live gateway once the merchant account is connected.
+                Card / Apple Pay / Google Pay redirect to Stripe. Tabby / Tamara are in demo mode.
               </p>
             </div>
           </div>

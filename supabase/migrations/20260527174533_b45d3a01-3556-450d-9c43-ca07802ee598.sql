@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_payments_external_id ON payments(external_id);
