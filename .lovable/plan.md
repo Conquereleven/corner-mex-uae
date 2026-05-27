@@ -1,124 +1,74 @@
+# Plan — Fix signup + Fase 5: Pagos reales
 
-# Corner Mex — Marketplace de productos mexicanos para EAU
+## Parte A — Diagnóstico del signup
 
-Marketplace B2B/B2C multi-seller para distribuir productos mexicanos (snacks, salsas, chiles secos, supplies) a restaurantes, hoteles, caterings y supermercados en Emiratos Árabes Unidos.
+Síntoma: al crear cuenta te redirige a `/` pero no quedas logueado.
 
-## 1. Alcance funcional del MVP
+Causa: `supabase.auth.signUp()` en `src/routes/signup.tsx` no crea sesión cuando la confirmación por email está activa (que es el default seguro). El usuario se crea, pero hasta que confirma el correo no hay `session`, así que el `navigate("/")` te deja deslogueado en la home.
 
-**Compradores (público y B2B)**
-- Catálogo navegable con filtros (categoría, seller, marca, picante, sin gluten, halal, formato bulk/retail)
-- Búsqueda con autocompletar
-- Página de producto con galería, variantes (tamaño/peso), descuentos por volumen
-- Carrito multi-seller (split por vendor en checkout)
-- Checkout con dirección de entrega EAU (emirato, área, edificio)
-- Historial de pedidos, tracking de estado, facturas descargables
-- Cuenta de empresa opcional (TRN para VAT, datos de facturación)
+Dos arreglos posibles — propongo hacer **ambos**:
 
-**Sellers (vendedores)**
-- Onboarding: registro, datos fiscales EAU (TRN), cuenta bancaria/payout
-- CRUD de productos (con imágenes, variantes, inventario)
-- Gestión de pedidos (aceptar, marcar listo, enviar, completar)
-- Dashboard con métricas: ventas (día/semana/mes), AOV, top productos, conversión, pedidos pendientes, ingresos netos vs comisión, gráficos
-- Configuración de tienda (logo, descripción, horarios)
+1. **UX honesto en signup**: detectar si `data.session` viene null tras `signUp`. Si es null → mostrar pantalla "Revisa tu correo para confirmar tu cuenta" en vez de redirigir. Si viene con sesión (auto-confirm activo) → seguir con el redirect.
+2. **Activar auto-confirmación de email** vía `supabase--configure_auth` con `auto_confirm_email: true` para que la experiencia en desarrollo sea inmediata (la doc lo permite si el usuario lo pide explícitamente — y lo estás pidiendo al reportar este bug).
 
-**Admin (tú)**
-- Aprobación de sellers y productos
-- Gestión de usuarios, sellers, categorías, comisión por seller
-- Dashboard global: GMV, comisiones, sellers activos, top categorías, top sellers, pedidos por emirato, crecimiento MoM, alertas de inventario bajo
-- Moderación y soporte (ver pedidos, reembolsos manuales)
-- Configuración de la plataforma (idiomas, monedas, métodos de pago activos)
+También: añadir `redirect` search param al login (`useSearch`) para que tras login te devuelva al destino original (hoy se ignora).
 
-**Plataforma**
-- Trilingüe: Inglés, Árabe (RTL completo), Español — selector de idioma persistente
-- Moneda AED por defecto
-- SEO por ruta (cada categoría/producto con metadatos propios, og:image desde la imagen del producto)
-- Responsive mobile-first
+## Parte B — Fase 5: Pagos
 
-## 2. Pagos
+### B1. Integración Stripe (tarjeta + Apple Pay + Google Pay)
 
-Soporte para múltiples métodos en el mismo checkout, configurables por el admin:
+Usar la integración nativa de Lovable (`payments--enable_stripe_payments`). Esto evita pedirte claves y maneja webhooks por nosotros. Luego:
 
-- **Stripe** (tarjeta, Apple/Google Pay) — vía Lovable Payments (Stripe seamless)
-- **Cash on Delivery** — método nativo, muy usado en EAU
-- **Transferencia bancaria** — instrucciones con referencia + confirmación manual por admin
-- **Cotización B2B** — para pedidos grandes: el comprador solicita, el seller/admin responde con quote y factura
+- **Server fn `createCheckoutSession`** (`src/lib/payments.functions.ts`): recibe `orderId`, busca la orden en DB, crea Stripe Checkout Session en modo `payment` con line items por cada `order_item` (precio en `aed`, qty), `success_url=/order-confirmed?order={id}`, `cancel_url=/checkout`. Guarda `external_id` en `payments`.
+- **Reescribir `/checkout`**: en submit, primero llama `placeOrder` (ya existente, deja la orden en `payment_status='pending'`), luego según el método:
+  - `card` / `apple_pay` / `google_pay` → `createCheckoutSession` y `window.location.href = url`.
+  - `tabby` / `tamara` → simulación (ver B2).
+- **Webhook Stripe** (`src/routes/api/public/stripe-webhook.ts`): verifica firma, en `checkout.session.completed` marca `orders.payment_status='paid'`, `status='confirmed'`, inserta/actualiza fila en `payments`, decrementa stock de `product_variants`. Usa `supabaseAdmin`.
 
-Una segunda iteración puede sumar Tabby/Tamara (BNPL populares en EAU) y Apple Pay nativo si requieren cuentas dedicadas.
+### B2. Tabby / Tamara (modo simulación)
 
-## 3. Direcciones de diseño
+No hay integración nativa; los keys reales requieren cuenta merchant en EAU. Implemento un **flujo simulado realista** marcado como "Sandbox":
+- Ruta `/checkout/bnpl/$provider/$orderId` que muestra UI tipo "Confirmar en 4 pagos sin interés" (Tabby) o "Págalo en 4" (Tamara) con su branding.
+- Botón "Aprobar pago" → llama server fn `confirmBnplPayment(orderId, provider)` que marca la orden como pagada (mismo efecto que el webhook). Botón "Cancelar" → vuelve al checkout.
+- Banner visible: "Pago simulado para demo. Conecta tu cuenta merchant real para producción."
 
-Antes de construir generaré **3 direcciones visuales** (Awwwards-level) para que elijas:
-- Todas minimalistas, fluidas, con foco en mostrar producto
-- Cada una con una personalidad distinta (ej. editorial cálido / mercado moderno / lujo desértico)
-- Tipografía, paleta, composición y motion definidos en cada prototipo
-- Tras tu elección, los tokens (colores, fuentes, radii) se copian textualmente al proyecto
+Cuando consigas las API keys reales me lo dices y reemplazo la simulación por las llamadas a `api.tabby.ai` / `api.tamara.co` (estructura ya queda lista).
 
-## 4. Arquitectura técnica
+### B3. Confirmación post-pago
 
-**Stack**
-- Frontend: TanStack Start + React + Tailwind v4 + shadcn/ui
-- Backend: Lovable Cloud (Postgres + Auth + Storage + Server Functions)
-- i18n: `i18next` con namespaces por sección; soporte RTL via `dir="rtl"` en `<html>` cuando el idioma es árabe
-- Pagos: Lovable Payments (Stripe seamless) + tablas propias para COD/transferencia/quotes
+- `/order-confirmed?order=...`: cargar la orden vía server fn `getOrderForBuyer`, mostrar resumen real (número, items por seller, total), botón "Ver mis pedidos" → `/account`.
+- Vaciar carrito **solo** cuando se confirma el pago, no antes.
 
-**Modelo de datos (resumen)**
-```text
-profiles          (id, full_name, phone, preferred_lang, company_name, trn)
-user_roles        (user_id, role: buyer|seller|admin)  ← seguridad en tabla aparte
-sellers           (id, user_id, store_name, slug, logo, status, commission_rate, bank_*)
-categories        (id, parent_id, slug, name_translations jsonb)
-products          (id, seller_id, category_id, slug, status, attrs jsonb, halal, …)
-product_translations (product_id, lang, name, description)
-product_variants  (id, product_id, sku, price_aed, stock, weight_g, bulk_tiers jsonb)
-product_images    (id, product_id, url, sort)
-addresses         (id, user_id, emirate, area, building, …)
-orders            (id, buyer_id, status, totals, currency, payment_method, address)
-order_items       (id, order_id, seller_id, variant_id, qty, unit_price, commission)
-quotes            (id, buyer_id, status, items jsonb, replies)
-payments          (id, order_id, provider, status, external_id, raw jsonb)
-seller_payouts    (id, seller_id, period, gross, commission, net, status)
-audit_log         (id, actor, action, target, meta)
-```
-RLS estricto: buyers solo ven sus pedidos; sellers solo sus productos/pedidos; admin todo. Roles en `user_roles` con función `has_role()` security-definer.
+### B4. Migración DB
 
-**Server functions clave**
-- `createCheckoutSession` (multi-seller split)
-- `submitQuoteRequest` / `respondQuote`
-- `sellerMetrics(range)` y `adminMetrics(range)` — agregaciones SQL
-- Webhooks de Stripe en `/api/public/stripe-webhook` con verificación de firma
+Una migración pequeña para:
+- Añadir índice en `payments(external_id)` (lookup desde webhook).
+- Añadir columna `payments.provider_session_id` por si necesitamos distinguir session vs intent.
 
-**Rutas (TanStack Start, separadas para SEO)**
-```text
-/                       landing
-/shop                   catálogo
-/shop/$category
-/product/$slug
-/sellers/$slug          tienda del seller
-/cart  /checkout  /orders  /orders/$id
-/account  /account/addresses
-/login  /signup  /reset-password
-/seller (layout)
-  /seller/dashboard /seller/products /seller/orders /seller/payouts /seller/settings
-/admin (layout)
-  /admin/dashboard /admin/sellers /admin/products /admin/orders /admin/categories /admin/users /admin/settings
-```
+## Detalles técnicos
 
-## 5. Plan de entrega por fases
+- Stripe en AED: Stripe soporta AED nativo, no hace falta conversión.
+- Webhook URL estable: `https://project--d9495376-339d-44dd-9c8a-db0f7b451f96.lovable.app/api/public/stripe-webhook` — la registramos en la integración.
+- Stock decrement: dentro del webhook, no en `placeOrder` (porque la orden puede no completarse).
+- `placeOrder` ya valida stock antes de crear la orden — se queda igual.
+- Seguridad: webhook verifica firma de Stripe con `STRIPE_WEBHOOK_SECRET`; rechaza con 401 si falla.
 
-1. **Diseño**: generar 3 direcciones, tú eliges una.
-2. **Fase 1 — Fundaciones**: Cloud + auth + roles + i18n (EN/AR/ES con RTL) + layout público + landing.
-3. **Fase 2 — Catálogo**: categorías, productos, página de producto, búsqueda y filtros, tienda de seller.
-4. **Fase 3 — Carrito y checkout**: carrito multi-seller, direcciones EAU, checkout con Stripe + COD + transferencia.
-5. **Fase 4 — Seller**: onboarding, gestión de productos/pedidos, dashboard con métricas.
-6. **Fase 5 — Admin**: aprobaciones, gestión global, dashboard con métricas.
-7. **Fase 6 — B2B quotes** y refinamientos (facturas PDF, notificaciones por email).
+## Archivos a tocar
 
-Cada fase es entregable y revisable por separado.
+Fix signup:
+- `src/routes/signup.tsx` — manejar session null
+- `src/routes/login.tsx` — respetar `?redirect=`
+- llamada a `supabase--configure_auth` con `auto_confirm_email: true`
 
-## 6. Preguntas abiertas (puedo decidir por ti si no respondes)
+Fase 5:
+- `payments--enable_stripe_payments` (tool call)
+- `src/lib/payments.functions.ts` (nuevo)
+- `src/routes/checkout.tsx` (modificar submit)
+- `src/routes/order-confirmed.tsx` (cargar orden real)
+- `src/routes/api/public/stripe-webhook.ts` (nuevo)
+- `src/routes/checkout.bnpl.$provider.$orderId.tsx` (nuevo, simulación)
+- Nueva migración SQL
 
-- ¿Comisión fija (ej. 12%) o configurable por seller? → por defecto: configurable, default 12%.
-- ¿Envío gestionado por seller o por plataforma? → por defecto: seller fija tarifas por emirato; flat rate inicial.
-- ¿Necesitas integración con un courier real (Aramex, Quiqup) en MVP? → por defecto: no, solo estados manuales.
+## Pregunta abierta
 
-Al aprobar este plan, arranco generando las 3 direcciones de diseño.
+¿Confirmas que quieres **activar auto-confirm de email** para desarrollo? Si prefieres mantener la confirmación real, solo aplico el arreglo de UX (mostrar "revisa tu correo").
