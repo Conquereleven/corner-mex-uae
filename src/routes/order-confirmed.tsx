@@ -104,7 +104,7 @@ function OrderConfirmed() {
               </ul>
               <dl className="mt-4 space-y-1 border-t border-border pt-3 text-sm">
                 <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd>AED {Number(data.subtotal_aed).toFixed(2)}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">Shipping</dt><dd>{data.shipping_aed === 0 || data.shipping_aed === "0.00" ? "Free" : `AED ${Number(data.shipping_aed).toFixed(2)}`}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted-foreground">Shipping</dt><dd>{Number(data.shipping_aed) === 0 ? "Free" : `AED ${Number(data.shipping_aed).toFixed(2)}`}</dd></div>
                 <div className="flex justify-between"><dt className="text-muted-foreground">VAT (5%)</dt><dd>AED {Number(data.tax_aed).toFixed(2)}</dd></div>
                 <div className="flex justify-between pt-2 text-base font-medium"><dt>Total</dt><dd>AED {Number(data.total_aed).toFixed(2)}</dd></div>
               </dl>
