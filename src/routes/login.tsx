@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (s) => z.object({ redirect: z.string().optional() }).parse(s),
   head: () => ({ meta: [{ title: "Sign in — Corner Mex" }] }),
   component: Login,
 });
@@ -16,6 +18,7 @@ export const Route = createFileRoute("/login")({
 function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +31,13 @@ function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) setError(error.message);
-    else navigate({ to: "/" });
+    else navigate({ to: (redirect as any) ?? "/" });
   };
 
   const google = async () => {
-    await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}${redirect ?? "/"}`,
+    });
   };
 
   return (
