@@ -21,12 +21,13 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [needsConfirm, setNeedsConfirm] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -35,13 +36,37 @@ function Signup() {
       },
     });
     setLoading(false);
-    if (error) setError(error.message);
-    else navigate({ to: "/" });
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    // If email confirmation is required, Supabase returns no session.
+    if (!data.session) {
+      setNeedsConfirm(true);
+      return;
+    }
+    navigate({ to: "/" });
   };
 
   const google = async () => {
     await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
   };
+
+  if (needsConfirm) {
+    return (
+      <SiteLayout>
+        <section className="mx-auto max-w-md px-4 py-20 text-center sm:px-6">
+          <h1 className="font-display text-3xl tracking-tight">Check your inbox</h1>
+          <p className="mt-4 text-sm text-muted-foreground">
+            We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click it to activate your account, then sign in.
+          </p>
+          <Link to="/login">
+            <Button className="mt-8 w-full rounded-full">{t("auth.signin")}</Button>
+          </Link>
+        </section>
+      </SiteLayout>
+    );
+  }
 
   return (
     <SiteLayout>
