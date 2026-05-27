@@ -27,10 +27,12 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenticated/seller.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
 import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authenticated/seller.orders'
 import { Route as AuthenticatedAdminSellersRouteImport } from './routes/_authenticated/admin.sellers'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
+import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
 
@@ -124,6 +126,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe-webhook',
+  path: '/api/public/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSellerProductsRoute =
   AuthenticatedSellerProductsRouteImport.update({
     id: '/products',
@@ -148,6 +155,12 @@ const AuthenticatedAdminOrdersRoute =
     path: '/orders',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const CheckoutBnplProviderOrderIdRoute =
+  CheckoutBnplProviderOrderIdRouteImport.update({
+    id: '/bnpl/$provider/$orderId',
+    path: '/bnpl/$provider/$orderId',
+    getParentRoute: () => CheckoutRoute,
+  } as any)
 const AuthenticatedSellerProductsNewRoute =
   AuthenticatedSellerProductsNewRouteImport.update({
     id: '/new',
@@ -166,7 +179,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
@@ -181,17 +194,19 @@ export interface FileRoutesByFullPath {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
@@ -204,10 +219,12 @@ export interface FileRoutesByTo {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -216,7 +233,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/sellers': typeof SellersRouteWithChildren
@@ -231,10 +248,12 @@ export interface FileRoutesById {
   '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
   '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -258,10 +277,12 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/seller/orders'
     | '/seller/products'
+    | '/api/public/stripe-webhook'
     | '/admin/'
     | '/seller/'
     | '/seller/products/$id'
     | '/seller/products/new'
+    | '/checkout/bnpl/$provider/$orderId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -281,10 +302,12 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/seller/orders'
     | '/seller/products'
+    | '/api/public/stripe-webhook'
     | '/admin'
     | '/seller'
     | '/seller/products/$id'
     | '/seller/products/new'
+    | '/checkout/bnpl/$provider/$orderId'
   id:
     | '__root__'
     | '/'
@@ -307,10 +330,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/sellers'
     | '/_authenticated/seller/orders'
     | '/_authenticated/seller/products'
+    | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
     | '/_authenticated/seller/products/$id'
     | '/_authenticated/seller/products/new'
+    | '/checkout/bnpl/$provider/$orderId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -319,13 +344,14 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   B2bRoute: typeof B2bRoute
   CartRoute: typeof CartRoute
-  CheckoutRoute: typeof CheckoutRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
   LoginRoute: typeof LoginRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
   SellersRoute: typeof SellersRouteWithChildren
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -456,6 +482,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/stripe-webhook': {
+      id: '/api/public/stripe-webhook'
+      path: '/api/public/stripe-webhook'
+      fullPath: '/api/public/stripe-webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/seller/products': {
       id: '/_authenticated/seller/products'
       path: '/products'
@@ -483,6 +516,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/orders'
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/checkout/bnpl/$provider/$orderId': {
+      id: '/checkout/bnpl/$provider/$orderId'
+      path: '/bnpl/$provider/$orderId'
+      fullPath: '/checkout/bnpl/$provider/$orderId'
+      preLoaderRoute: typeof CheckoutBnplProviderOrderIdRouteImport
+      parentRoute: typeof CheckoutRoute
     }
     '/_authenticated/seller/products/new': {
       id: '/_authenticated/seller/products/new'
@@ -564,6 +604,18 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface CheckoutRouteChildren {
+  CheckoutBnplProviderOrderIdRoute: typeof CheckoutBnplProviderOrderIdRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutBnplProviderOrderIdRoute: CheckoutBnplProviderOrderIdRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 interface SellersRouteChildren {
   SellersSlugRoute: typeof SellersSlugRoute
 }
@@ -581,13 +633,14 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   B2bRoute: B2bRoute,
   CartRoute: CartRoute,
-  CheckoutRoute: CheckoutRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
   LoginRoute: LoginRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
   SellersRoute: SellersRouteWithChildren,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
   ProductSlugRoute: ProductSlugRoute,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
