@@ -123,7 +123,7 @@ function AdminHome() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={d.statusBreakdown.filter((s) => s.count > 0)} dataKey="count" nameKey="status" innerRadius={50} outerRadius={90} paddingAngle={2}>
-                  {d.statusBreakdown.map((s) => <Cell key={s.status} fill={STATUS_COLORS[s.status] ?? "hsl(var(--muted))"} />)}
+                  {d.statusBreakdown.map((s) => <Cell key={s.status} fill={STATUS_COLORS[s.status] ?? "var(--muted)"} />)}
                 </Pie>
                 <Tooltip contentStyle={{ background: "var(--background)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
               </PieChart>
