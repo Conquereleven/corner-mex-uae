@@ -1,74 +1,61 @@
-# Plan — Fix signup + Fase 5: Pagos reales
+## Diagnóstico
 
-## Parte A — Diagnóstico del signup
+Probé el endpoint de signup directamente y encontré dos causas que juntas explican lo que ves:
 
-Síntoma: al crear cuenta te redirige a `/` pero no quedas logueado.
+### Causa 1 — Tu contraseña está siendo rechazada (probable)
+La protección anti-contraseñas filtradas (HIBP) está activa. Cuando uso una contraseña común como `Password12345!` el servidor responde:
+```
+{"code":422,"error_code":"weak_password","msg":"Password is known to be weak..."}
+```
+Con una contraseña fuerte y única, el signup funciona perfecto y devuelve sesión inmediatamente (auto-confirm ya está activo).
 
-Causa: `supabase.auth.signUp()` en `src/routes/signup.tsx` no crea sesión cuando la confirmación por email está activa (que es el default seguro). El usuario se crea, pero hasta que confirma el correo no hay `session`, así que el `navigate("/")` te deja deslogueado en la home.
+El formulario sí muestra `error.message`, pero:
+- el mensaje viene en inglés ("Password is known to be weak…"),
+- no hay pista previa de los requisitos ("mín. 8 caracteres" no basta; también debe no estar filtrada),
+- al hacer submit, el botón vuelve a "Crear cuenta" y el texto rojo es discreto → parece que "no pasó nada".
 
-Dos arreglos posibles — propongo hacer **ambos**:
+### Causa 2 — Header no reacciona al login
+No hay listener `onAuthStateChange` en `__root.tsx`. Si el signup sí tuvo éxito y te redirige a `/`, el header sigue mostrando "Empezar" porque nada invalida el router. Refuerza la sensación de "no me creó la cuenta".
 
-1. **UX honesto en signup**: detectar si `data.session` viene null tras `signUp`. Si es null → mostrar pantalla "Revisa tu correo para confirmar tu cuenta" en vez de redirigir. Si viene con sesión (auto-confirm activo) → seguir con el redirect.
-2. **Activar auto-confirmación de email** vía `supabase--configure_auth` con `auto_confirm_email: true` para que la experiencia en desarrollo sea inmediata (la doc lo permite si el usuario lo pide explícitamente — y lo estás pidiendo al reportar este bug).
+### Lo que NO es el problema
+- El trigger `on_auth_user_created` existe y funciona (probado en vivo, crea profile + user_role).
+- Auto-confirm de email está activo (la sesión vuelve en la misma respuesta).
+- Las funciones de servidor / RLS no intervienen en el signup.
 
-También: añadir `redirect` search param al login (`useSearch`) para que tras login te devuelva al destino original (hoy se ignora).
+## Plan de cambios
 
-## Parte B — Fase 5: Pagos
+### 1. `src/routes/signup.tsx` — UX honesta
+- Traducir / mapear los errores comunes de Supabase a español:
+  - `weak_password` / "known to be weak" → "Esta contraseña es muy común o ha aparecido en filtraciones. Usa una más fuerte y única."
+  - `user_already_exists` → "Ya existe una cuenta con este correo. Inicia sesión."
+  - `over_email_send_rate_limit` → "Demasiados intentos. Espera un minuto y vuelve a intentar."
+  - Otros → mostrar `error.message` tal cual.
+- Pista bajo el campo de contraseña: "Mínimo 8 caracteres. Evita contraseñas comunes o filtradas."
+- Hacer el bloque de error más visible (caja con borde `border-destructive/40 bg-destructive/10 p-3 rounded`).
+- Subir `minLength` a 10 para reducir choques con HIBP.
+- Tras éxito (con sesión), mostrar `toast.success("Cuenta creada")` antes del `navigate("/")` para feedback inmediato.
 
-### B1. Integración Stripe (tarjeta + Apple Pay + Google Pay)
+### 2. `src/routes/login.tsx` — mismo tratamiento de errores
+- Mapear `invalid_credentials` → "Email o contraseña incorrectos.", `email_not_confirmed` → "Confirma tu correo antes de iniciar sesión.", `over_request_rate_limit` → "Demasiados intentos, espera un momento."
+- Caja de error con el mismo estilo destacado.
 
-Usar la integración nativa de Lovable (`payments--enable_stripe_payments`). Esto evita pedirte claves y maneja webhooks por nosotros. Luego:
+### 3. `src/routes/__root.tsx` — listener global de auth
+Añadir dentro de `RootComponent` un `useEffect` que se suscribe a `supabase.auth.onAuthStateChange` y al disparar llama a `router.invalidate()` + `queryClient.invalidateQueries()`. Así el header y las rutas reaccionan inmediatamente al login/signup/logout sin recargar.
 
-- **Server fn `createCheckoutSession`** (`src/lib/payments.functions.ts`): recibe `orderId`, busca la orden en DB, crea Stripe Checkout Session en modo `payment` con line items por cada `order_item` (precio en `aed`, qty), `success_url=/order-confirmed?order={id}`, `cancel_url=/checkout`. Guarda `external_id` en `payments`.
-- **Reescribir `/checkout`**: en submit, primero llama `placeOrder` (ya existente, deja la orden en `payment_status='pending'`), luego según el método:
-  - `card` / `apple_pay` / `google_pay` → `createCheckoutSession` y `window.location.href = url`.
-  - `tabby` / `tamara` → simulación (ver B2).
-- **Webhook Stripe** (`src/routes/api/public/stripe-webhook.ts`): verifica firma, en `checkout.session.completed` marca `orders.payment_status='paid'`, `status='confirmed'`, inserta/actualiza fila en `payments`, decrementa stock de `product_variants`. Usa `supabaseAdmin`.
+### 4. `src/components/site/Header.tsx` — botones de cuenta reactivos
+- Leer la sesión actual con un pequeño hook (`useSession`) que use `supabase.auth.getSession()` + suscripción a `onAuthStateChange`.
+- Si hay sesión: mostrar botón "Mi cuenta" → `/account` y ocultar "Empezar".
+- Si no hay sesión: mantener "Empezar" como ahora.
 
-### B2. Tabby / Tamara (modo simulación)
-
-No hay integración nativa; los keys reales requieren cuenta merchant en EAU. Implemento un **flujo simulado realista** marcado como "Sandbox":
-- Ruta `/checkout/bnpl/$provider/$orderId` que muestra UI tipo "Confirmar en 4 pagos sin interés" (Tabby) o "Págalo en 4" (Tamara) con su branding.
-- Botón "Aprobar pago" → llama server fn `confirmBnplPayment(orderId, provider)` que marca la orden como pagada (mismo efecto que el webhook). Botón "Cancelar" → vuelve al checkout.
-- Banner visible: "Pago simulado para demo. Conecta tu cuenta merchant real para producción."
-
-Cuando consigas las API keys reales me lo dices y reemplazo la simulación por las llamadas a `api.tabby.ai` / `api.tamara.co` (estructura ya queda lista).
-
-### B3. Confirmación post-pago
-
-- `/order-confirmed?order=...`: cargar la orden vía server fn `getOrderForBuyer`, mostrar resumen real (número, items por seller, total), botón "Ver mis pedidos" → `/account`.
-- Vaciar carrito **solo** cuando se confirma el pago, no antes.
-
-### B4. Migración DB
-
-Una migración pequeña para:
-- Añadir índice en `payments(external_id)` (lookup desde webhook).
-- Añadir columna `payments.provider_session_id` por si necesitamos distinguir session vs intent.
+Esto cierra el bucle visual: tras crear cuenta, el header cambia y queda claro que estás dentro.
 
 ## Detalles técnicos
 
-- Stripe en AED: Stripe soporta AED nativo, no hace falta conversión.
-- Webhook URL estable: `https://project--d9495376-339d-44dd-9c8a-db0f7b451f96.lovable.app/api/public/stripe-webhook` — la registramos en la integración.
-- Stock decrement: dentro del webhook, no en `placeOrder` (porque la orden puede no completarse).
-- `placeOrder` ya valida stock antes de crear la orden — se queda igual.
-- Seguridad: webhook verifica firma de Stripe con `STRIPE_WEBHOOK_SECRET`; rechaza con 401 si falla.
+- No hay cambios de schema ni de Supabase Auth config.
+- No se modifican `src/integrations/supabase/*` ni `routeTree.gen.ts`.
+- El listener se desuscribe en cleanup del `useEffect`.
+- `useSession` vive en `src/lib/use-session.ts` (nuevo, ~15 líneas) para reutilizar en Header y futuros componentes.
 
-## Archivos a tocar
+## Pregunta abierta (opcional)
 
-Fix signup:
-- `src/routes/signup.tsx` — manejar session null
-- `src/routes/login.tsx` — respetar `?redirect=`
-- llamada a `supabase--configure_auth` con `auto_confirm_email: true`
-
-Fase 5:
-- `payments--enable_stripe_payments` (tool call)
-- `src/lib/payments.functions.ts` (nuevo)
-- `src/routes/checkout.tsx` (modificar submit)
-- `src/routes/order-confirmed.tsx` (cargar orden real)
-- `src/routes/api/public/stripe-webhook.ts` (nuevo)
-- `src/routes/checkout.bnpl.$provider.$orderId.tsx` (nuevo, simulación)
-- Nueva migración SQL
-
-## Pregunta abierta
-
-¿Confirmas que quieres **activar auto-confirm de email** para desarrollo? Si prefieres mantener la confirmación real, solo aplico el arreglo de UX (mostrar "revisa tu correo").
+¿Quieres que también desactive la protección HIBP para que se permitan contraseñas más simples en desarrollo? **No lo recomiendo** (es una de las mejores defensas gratis que ofrece Supabase), pero si lo pides lo hago con `configure_auth`.

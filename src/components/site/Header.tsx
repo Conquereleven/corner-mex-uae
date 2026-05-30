@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LANGS } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
+import { useSession } from "@/lib/use-session";
 
 export function Header() {
   const { t, i18n } = useTranslation();
   const change = (code: string) => i18n.changeLanguage(code);
   const cartCount = useCart((s) => s.items.reduce((a, i) => a + i.qty, 0));
+  const { user } = useSession();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -62,11 +64,19 @@ export function Header() {
               )}
             </Button>
           </Link>
-          <Link to="/signup" className="ms-2 hidden sm:block">
-            <Button size="sm" className="rounded-full bg-foreground text-background hover:bg-foreground/90">
-              {t("nav.signup")}
-            </Button>
-          </Link>
+          {user ? (
+            <Link to="/account" className="ms-2 hidden sm:block">
+              <Button size="sm" variant="outline" className="rounded-full">
+                Mi cuenta
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/signup" className="ms-2 hidden sm:block">
+              <Button size="sm" className="rounded-full bg-foreground text-background hover:bg-foreground/90">
+                {t("nav.signup")}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>

@@ -9,6 +9,22 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
+function mapLoginError(err: { message?: string; code?: string } | null): string {
+  if (!err) return "";
+  const msg = (err.message ?? "").toLowerCase();
+  const code = err.code ?? "";
+  if (code === "invalid_credentials" || msg.includes("invalid login") || msg.includes("invalid credentials")) {
+    return "Email o contraseña incorrectos.";
+  }
+  if (code === "email_not_confirmed" || msg.includes("email not confirmed")) {
+    return "Confirma tu correo antes de iniciar sesión.";
+  }
+  if (msg.includes("rate limit")) {
+    return "Demasiados intentos. Espera un momento y vuelve a intentar.";
+  }
+  return err.message ?? "No se pudo iniciar sesión.";
+}
+
 export const Route = createFileRoute("/login")({
   validateSearch: (s) => z.object({ redirect: z.string().optional() }).parse(s),
   head: () => ({ meta: [{ title: "Sign in — Corner Mex" }] }),
@@ -30,7 +46,7 @@ function Login() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) setError(error.message);
+    if (error) setError(mapLoginError(error as any));
     else navigate({ to: (redirect as any) ?? "/" });
   };
 
@@ -59,7 +75,11 @@ function Login() {
             <Label htmlFor="password">{t("auth.password")}</Label>
             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
           <Button type="submit" disabled={loading} className="w-full rounded-full">
             {loading ? "..." : t("auth.signin")}
           </Button>

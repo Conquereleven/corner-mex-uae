@@ -7,6 +7,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { toast } from "sonner";
+
+function mapSignupError(err: { message?: string; code?: string } | null): string {
+  if (!err) return "";
+  const msg = (err.message ?? "").toLowerCase();
+  const code = err.code ?? "";
+  if (code === "weak_password" || msg.includes("weak") || msg.includes("pwned")) {
+    return "Esta contraseña es muy común o ha aparecido en filtraciones de seguridad. Usa una contraseña más fuerte y única.";
+  }
+  if (code === "user_already_exists" || msg.includes("already registered") || msg.includes("already exists")) {
+    return "Ya existe una cuenta con este correo. Inicia sesión.";
+  }
+  if (msg.includes("rate limit") || msg.includes("over_email_send_rate")) {
+    return "Demasiados intentos. Espera un minuto y vuelve a intentar.";
+  }
+  if (msg.includes("invalid") && msg.includes("email")) {
+    return "El correo no es válido.";
+  }
+  return err.message ?? "No se pudo crear la cuenta.";
+}
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Create account — Corner Mex" }] }),
@@ -37,7 +57,7 @@ function Signup() {
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(mapSignupError(error as any));
       return;
     }
     // If email confirmation is required, Supabase returns no session.
@@ -45,6 +65,7 @@ function Signup() {
       setNeedsConfirm(true);
       return;
     }
+    toast.success("Cuenta creada. ¡Bienvenido!");
     navigate({ to: "/" });
   };
 
@@ -89,9 +110,16 @@ function Signup() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">{t("auth.password")}</Label>
-            <Input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" type="password" required minLength={10} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <p className="text-xs text-muted-foreground">
+              Mínimo 10 caracteres. Evita contraseñas comunes o que hayan aparecido en filtraciones.
+            </p>
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
           <Button type="submit" disabled={loading} className="w-full rounded-full">
             {loading ? "..." : t("auth.signup")}
           </Button>
