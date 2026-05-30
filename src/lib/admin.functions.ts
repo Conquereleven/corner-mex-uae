@@ -31,7 +31,7 @@ export const adminOverview = createServerFn({ method: "GET" })
       supabaseAdmin.from("sellers").select("id, status, store_name, created_at"),
       supabaseAdmin.from("products").select("id, status"),
       supabaseAdmin.from("sellers").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      supabaseAdmin.from("order_items").select("seller_id, product_id, product_name, qty, line_total_aed, commission_aed, created_at:order_id").limit(5000),
+      supabaseAdmin.from("order_items").select("seller_id, product_id, product_name, qty, line_total_aed, commission_aed").limit(5000),
       supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
       supabaseAdmin.from("orders").select("id, order_number, total_aed, status, payment_status, created_at").order("created_at", { ascending: false }).limit(8),
       supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
