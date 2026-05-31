@@ -21,6 +21,32 @@ const en = {
   b2b: { eyebrow: "For restaurants, hotels & caterings", title: "Stock your kitchen with the real thing.", body: "Open a business account to unlock wholesale pricing, dedicated account managers and consolidated monthly invoicing across the Emirates.", cta: "Request access" },
   footer: { tagline: "Mexican corner. Emirati table.", rights: "All rights reserved.", shop: "Shop", company: "Company", legal: "Legal" },
   auth: { signin: "Sign in", signup: "Create account", email: "Email", password: "Password", name: "Full name", google: "Continue with Google", or: "or", haveAccount: "Already have an account?", noAccount: "New to Corner Mex?" },
+  dash: {
+    backToSite: "Back to site",
+    signOut: "Sign out",
+    soon: "Coming soon",
+    groups: { overview: "Overview", catalog: "Catalog", sales: "Sales", finance: "Finance", store: "Store", ops: "Operations", config: "Settings" },
+    nav: {
+      overview: "Overview", sellers: "Sellers", orders: "Orders", products: "Products", newProduct: "New product",
+      payouts: "Payouts", commissions: "Commissions", categories: "Categories", customers: "Customers",
+      storefront: "Storefront", settings: "Settings",
+    },
+    kpi: {
+      gmv30: "GMV (30d)", orders30: "Orders (30d)", aov: "Avg. order value", commission: "Commission",
+      activeSellers: "Active sellers", activeProducts: "Active products", pending: "Pending fulfillment", lowStock: "Low stock",
+      gross: "Gross", net: "Net", units: "Units sold", buyers: "Unique buyers (30d)",
+      gmvToday: "Today", gmv7: "Last 7 days", orderCount: "Orders",
+    },
+    sections: {
+      revenue30: "Revenue · last 30 days", dailyGmv: "Daily GMV", ordersByStatus: "Orders by status",
+      last60: "Last 60 days", dailyOrders: "Daily orders", volume30: "Volume over the last 30 days",
+      paymentHealth: "Payment status", paymentMethods: "Payment methods",
+      topSellers: "Top sellers", topProducts: "Top products", byGmv: "By GMV", byRevenue: "By revenue",
+      recentOrders: "Recent orders", recentOrdersSub: "Latest 8 transactions",
+      registeredBuyers: "Registered buyers", pendingApps: "Pending applications", lifetimeGmv: "Lifetime GMV",
+      noSales: "No sales yet", noProductsSold: "No products sold yet", noOrders: "No orders yet",
+    },
+  },
 };
 
 const es = {
@@ -43,6 +69,32 @@ const es = {
   b2b: { eyebrow: "Para restaurantes, hoteles y caterings", title: "Surte tu cocina con lo auténtico.", body: "Abre una cuenta de negocio para acceder a precios mayoristas, gerentes dedicados y facturación mensual consolidada.", cta: "Solicitar acceso" },
   footer: { tagline: "Esquina mexicana. Mesa emiratí.", rights: "Todos los derechos reservados.", shop: "Tienda", company: "Empresa", legal: "Legal" },
   auth: { signin: "Entrar", signup: "Crear cuenta", email: "Correo", password: "Contraseña", name: "Nombre completo", google: "Continuar con Google", or: "o", haveAccount: "¿Ya tienes cuenta?", noAccount: "¿Nuevo en Corner Mex?" },
+  dash: {
+    backToSite: "Volver al sitio",
+    signOut: "Cerrar sesión",
+    soon: "Próximamente",
+    groups: { overview: "Resumen", catalog: "Catálogo", sales: "Ventas", finance: "Finanzas", store: "Tienda", ops: "Operación", config: "Configuración" },
+    nav: {
+      overview: "Resumen", sellers: "Vendedores", orders: "Pedidos", products: "Productos", newProduct: "Nuevo producto",
+      payouts: "Pagos", commissions: "Comisiones", categories: "Categorías", customers: "Clientes",
+      storefront: "Tienda pública", settings: "Configuración",
+    },
+    kpi: {
+      gmv30: "GMV (30d)", orders30: "Pedidos (30d)", aov: "Ticket promedio", commission: "Comisión",
+      activeSellers: "Vendedores activos", activeProducts: "Productos activos", pending: "Por procesar", lowStock: "Stock bajo",
+      gross: "Bruto", net: "Neto", units: "Unidades vendidas", buyers: "Compradores únicos (30d)",
+      gmvToday: "Hoy", gmv7: "Últimos 7 días", orderCount: "Pedidos",
+    },
+    sections: {
+      revenue30: "Ingresos · últimos 30 días", dailyGmv: "GMV diario", ordersByStatus: "Pedidos por estado",
+      last60: "Últimos 60 días", dailyOrders: "Pedidos diarios", volume30: "Volumen últimos 30 días",
+      paymentHealth: "Estado de pagos", paymentMethods: "Métodos de pago",
+      topSellers: "Top vendedores", topProducts: "Top productos", byGmv: "Por GMV", byRevenue: "Por ingresos",
+      recentOrders: "Pedidos recientes", recentOrdersSub: "Últimas 8 transacciones",
+      registeredBuyers: "Compradores registrados", pendingApps: "Aplicaciones pendientes", lifetimeGmv: "GMV histórico",
+      noSales: "Sin ventas aún", noProductsSold: "Sin productos vendidos", noOrders: "Sin pedidos aún",
+    },
+  },
 };
 
 const ar = {
