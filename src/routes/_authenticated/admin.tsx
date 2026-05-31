@@ -35,7 +35,7 @@ function AdminLayout() {
         {
           label: t("dash.groups.ops"),
           items: [
-            { label: t("dash.nav.payouts"), icon: Wallet, soon: true },
+            { to: "/admin/payouts", label: t("dash.nav.payouts"), icon: Wallet },
             { label: t("dash.nav.categories"), icon: Tags, soon: true },
             { label: t("dash.nav.customers"), icon: Users, soon: true },
           ],
