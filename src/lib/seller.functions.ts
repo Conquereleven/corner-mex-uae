@@ -15,25 +15,116 @@ export const getSellerOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const seller = await getSellerForUser(context.userId);
-    const [productsCount, ordersAgg] = await Promise.all([
-      supabaseAdmin.from("products").select("id", { count: "exact", head: true }).eq("seller_id", seller.id),
-      supabaseAdmin.from("order_items").select("line_total_aed, commission_aed, fulfillment_status, order_id").eq("seller_id", seller.id),
+    const now = new Date();
+    const day = 24 * 60 * 60 * 1000;
+    const since60 = new Date(now.getTime() - 60 * day).toISOString();
+    const since30 = new Date(now.getTime() - 30 * day).toISOString();
+    const since7 = new Date(now.getTime() - 7 * day).toISOString();
+    const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+    const [items60, productsAll, lowStock, recent] = await Promise.all([
+      supabaseAdmin
+        .from("order_items")
+        .select(`id, qty, line_total_aed, commission_aed, fulfillment_status, product_id, product_name,
+          order:orders!inner(id, order_number, status, payment_status, total_aed, buyer_id, created_at)`)
+        .eq("seller_id", seller.id)
+        .gte("order.created_at", since60),
+      supabaseAdmin.from("products").select("id, status").eq("seller_id", seller.id),
+      supabaseAdmin
+        .from("product_variants")
+        .select("product_id, stock, products!inner(seller_id)")
+        .eq("products.seller_id", seller.id)
+        .lte("stock", 5),
+      supabaseAdmin
+        .from("order_items")
+        .select(`id, product_name, variant_label, qty, line_total_aed, fulfillment_status,
+          order:orders!inner(order_number, created_at, payment_status)`)
+        .eq("seller_id", seller.id)
+        .order("id", { ascending: false })
+        .limit(8),
     ]);
-    const items = ordersAgg.data ?? [];
-    const gross = items.reduce((a, i) => a + Number(i.line_total_aed), 0);
-    const commission = items.reduce((a, i) => a + Number(i.commission_aed), 0);
-    const pending = items.filter((i) => i.fulfillment_status === "pending").length;
+
+    const items = (items60.data ?? []) as any[];
+    const allItems = await supabaseAdmin
+      .from("order_items")
+      .select("line_total_aed, commission_aed")
+      .eq("seller_id", seller.id);
+    const lifetime = (allItems.data ?? []) as any[];
+
+    const inWin = (iso: string, from: string) => iso >= from;
+    const sum = (xs: any[], k: string) => xs.reduce((a, x) => a + Number(x[k] ?? 0), 0);
+
+    const it30 = items.filter((i) => i.order && inWin(i.order.created_at, since30));
+    const itPrev30 = items.filter((i) => i.order && i.order.created_at < since30);
+    const it7 = items.filter((i) => i.order && inWin(i.order.created_at, since7));
+    const itToday = items.filter((i) => i.order && inWin(i.order.created_at, startToday));
+
+    const gmv30 = +sum(it30, "line_total_aed").toFixed(2);
+    const gmvPrev = +sum(itPrev30, "line_total_aed").toFixed(2);
+    const gmvDelta = gmvPrev > 0 ? +(((gmv30 - gmvPrev) / gmvPrev) * 100).toFixed(1) : null;
+
+    // Daily series 30d
+    const series: { date: string; gmv: number; orders: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * day);
+      const key = d.toISOString().slice(0, 10);
+      const dayItems = it30.filter((x) => x.order.created_at.slice(0, 10) === key);
+      const orderIds = new Set(dayItems.map((x) => x.order.id));
+      series.push({ date: key, gmv: +sum(dayItems, "line_total_aed").toFixed(2), orders: orderIds.size });
+    }
+
+    // Status breakdown (fulfillment, 60d)
+    const statusBreakdown = ["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"].map((s) => ({
+      status: s,
+      count: items.filter((i) => i.fulfillment_status === s).length,
+    }));
+
+    // Top products
+    const prodAgg = new Map<string, { name: string; units: number; gmv: number }>();
+    for (const it of it30) {
+      const cur = prodAgg.get(it.product_id) ?? { name: it.product_name, units: 0, gmv: 0 };
+      cur.units += Number(it.qty ?? 0);
+      cur.gmv += Number(it.line_total_aed ?? 0);
+      prodAgg.set(it.product_id, cur);
+    }
+    const topProducts = Array.from(prodAgg.entries())
+      .map(([id, v]) => ({ id, name: v.name, units: v.units, gmv: +v.gmv.toFixed(2) }))
+      .sort((a, b) => b.gmv - a.gmv)
+      .slice(0, 5);
+
+    const order30Ids = new Set(it30.map((i) => i.order.id));
+    const buyerIds30 = new Set(it30.map((i) => i.order.buyer_id));
+    const products = productsAll.data ?? [];
+
     return {
       seller,
       stats: {
-        productCount: productsCount.count ?? 0,
-        orderItemCount: items.length,
-        orderCount: new Set(items.map((i) => i.order_id)).size,
-        grossAed: +gross.toFixed(2),
-        commissionAed: +commission.toFixed(2),
-        netAed: +(gross - commission).toFixed(2),
-        pendingItems: pending,
+        // KPIs
+        gmv30,
+        gmvDelta,
+        gmvToday: +sum(itToday, "line_total_aed").toFixed(2),
+        gmv7: +sum(it7, "line_total_aed").toFixed(2),
+        orders30: order30Ids.size,
+        orders7: new Set(it7.map((i) => i.order.id)).size,
+        ordersToday: new Set(itToday.map((i) => i.order.id)).size,
+        aov: order30Ids.size ? +(gmv30 / order30Ids.size).toFixed(2) : 0,
+        units30: it30.reduce((a, i) => a + Number(i.qty ?? 0), 0),
+        buyers30: buyerIds30.size,
+        grossLifetime: +sum(lifetime, "line_total_aed").toFixed(2),
+        commissionLifetime: +sum(lifetime, "commission_aed").toFixed(2),
+        netLifetime: +(sum(lifetime, "line_total_aed") - sum(lifetime, "commission_aed")).toFixed(2),
+        // counts
+        productCount: products.length,
+        activeProducts: products.filter((p: any) => p.status === "active").length,
+        draftProducts: products.filter((p: any) => p.status === "draft").length,
+        lowStockCount: (lowStock.data ?? []).length,
+        pendingItems: items.filter((i) => i.fulfillment_status === "pending").length,
+        confirmedItems: items.filter((i) => i.fulfillment_status === "confirmed").length,
       },
+      series,
+      statusBreakdown,
+      topProducts,
+      recentItems: (recent.data ?? []) as any[],
     };
   });
 
