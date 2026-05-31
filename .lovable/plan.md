@@ -1,61 +1,98 @@
-## Diagnóstico
+## Objetivo
 
-Probé el endpoint de signup directamente y encontré dos causas que juntas explican lo que ves:
+Llevar los dashboards de **Admin** y **Seller** a nivel "master admin" tipo Garnet Place / Shopify Admin: navegación lateral profesional, agrupación lógica de secciones, KPIs ricos, tablas pulidas y bilingüe (EN/ES). **Sin tocar lógica de negocio** ni añadir features nuevos del backend (mass upload, messaging, shipping engine, white-label vienen en una fase posterior).
 
-### Causa 1 — Tu contraseña está siendo rechazada (probable)
-La protección anti-contraseñas filtradas (HIBP) está activa. Cuando uso una contraseña común como `Password12345!` el servidor responde:
-```
-{"code":422,"error_code":"weak_password","msg":"Password is known to be weak..."}
-```
-Con una contraseña fuerte y única, el signup funciona perfecto y devuelve sesión inmediatamente (auto-confirm ya está activo).
+## Alcance (Fase 1)
 
-El formulario sí muestra `error.message`, pero:
-- el mensaje viene en inglés ("Password is known to be weak…"),
-- no hay pista previa de los requisitos ("mín. 8 caracteres" no basta; también debe no estar filtrada),
-- al hacer submit, el botón vuelve a "Crear cuenta" y el texto rojo es discreto → parece que "no pasó nada".
+Solo presentación + métricas que ya podemos calcular desde el schema existente. Cero migraciones, cero secrets nuevos, cero edge functions.
 
-### Causa 2 — Header no reacciona al login
-No hay listener `onAuthStateChange` en `__root.tsx`. Si el signup sí tuvo éxito y te redirige a `/`, el header sigue mostrando "Empezar" porque nada invalida el router. Refuerza la sensación de "no me creó la cuenta".
+## Cambios
 
-### Lo que NO es el problema
-- El trigger `on_auth_user_created` existe y funciona (probado en vivo, crea profile + user_role).
-- Auto-confirm de email está activo (la sesión vuelve en la misma respuesta).
-- Las funciones de servidor / RLS no intervienen en el signup.
+### 1. Nuevo `DashboardShell` con sidebar shadcn colapsable
 
-## Plan de cambios
+Reescribir `src/components/site/DashboardShell.tsx` usando el sistema `Sidebar` de shadcn ya disponible (`src/components/ui/sidebar.tsx`):
+- `SidebarProvider` + `Sidebar collapsible="icon"` → colapsa a tira de iconos (no desaparece).
+- Cabecera del sidebar: logo Corner**Mex** + badge del rol ("Admin" / "Seller — store name").
+- Grupos del menú con label, icono Lucide por item, item activo resaltado vía `useRouterState`.
+- `SidebarTrigger` siempre visible en la topbar.
+- Topbar interna con: breadcrumb (sección actual), selector de idioma (i18n existente), avatar/menú usuario con "Sign out", "Back to site".
+- Wrapper `w-full` (regla Tailwind 4) y `w-[var(--sidebar-width)]` explícito.
 
-### 1. `src/routes/signup.tsx` — UX honesta
-- Traducir / mapear los errores comunes de Supabase a español:
-  - `weak_password` / "known to be weak" → "Esta contraseña es muy común o ha aparecido en filtraciones. Usa una más fuerte y única."
-  - `user_already_exists` → "Ya existe una cuenta con este correo. Inicia sesión."
-  - `over_email_send_rate_limit` → "Demasiados intentos. Espera un minuto y vuelve a intentar."
-  - Otros → mostrar `error.message` tal cual.
-- Pista bajo el campo de contraseña: "Mínimo 8 caracteres. Evita contraseñas comunes o filtradas."
-- Hacer el bloque de error más visible (caja con borde `border-destructive/40 bg-destructive/10 p-3 rounded`).
-- Subir `minLength` a 10 para reducir choques con HIBP.
-- Tras éxito (con sesión), mostrar `toast.success("Cuenta creada")` antes del `navigate("/")` para feedback inmediato.
+Acepta `nav` con grupos: `{ label, items: [{ to, label, icon }] }`.
 
-### 2. `src/routes/login.tsx` — mismo tratamiento de errores
-- Mapear `invalid_credentials` → "Email o contraseña incorrectos.", `email_not_confirmed` → "Confirma tu correo antes de iniciar sesión.", `over_request_rate_limit` → "Demasiados intentos, espera un momento."
-- Caja de error con el mismo estilo destacado.
+### 2. Grupos de navegación
 
-### 3. `src/routes/__root.tsx` — listener global de auth
-Añadir dentro de `RootComponent` un `useEffect` que se suscribe a `supabase.auth.onAuthStateChange` y al disparar llama a `router.invalidate()` + `queryClient.invalidateQueries()`. Así el header y las rutas reaccionan inmediatamente al login/signup/logout sin recargar.
+**Admin** (`src/routes/_authenticated/admin.tsx`):
+- **Overview** → `/admin` (LayoutDashboard)
+- **Catálogo**: Sellers (`/admin/sellers`, Store), Orders (`/admin/orders`, ShoppingCart)
+- **Operación** (placeholders deshabilitados con tooltip "Coming soon"): Payouts, Categories, Customers
+- **Configuración** (placeholder): Settings
 
-### 4. `src/components/site/Header.tsx` — botones de cuenta reactivos
-- Leer la sesión actual con un pequeño hook (`useSession`) que use `supabase.auth.getSession()` + suscripción a `onAuthStateChange`.
-- Si hay sesión: mostrar botón "Mi cuenta" → `/account` y ocultar "Empezar".
-- Si no hay sesión: mantener "Empezar" como ahora.
+**Seller** (`src/routes/_authenticated/seller.tsx`):
+- **Overview** → `/seller` (LayoutDashboard)
+- **Catálogo**: Products (`/seller/products`, Package), New product (`/seller/products/new`, Plus)
+- **Ventas**: Orders (`/seller/orders`, ShoppingCart)
+- **Finanzas** (placeholder coming soon): Payouts, Commissions
+- **Tienda** (placeholder coming soon): Storefront, Settings
 
-Esto cierra el bucle visual: tras crear cuenta, el header cambia y queda claro que estás dentro.
+Los items "Coming soon" se renderizan deshabilitados (no rompen rutas inexistentes).
 
-## Detalles técnicos
+### 3. Seller Overview rediseñado (`seller.index.tsx`)
 
-- No hay cambios de schema ni de Supabase Auth config.
-- No se modifican `src/integrations/supabase/*` ni `routeTree.gen.ts`.
-- El listener se desuscribe en cleanup del `useEffect`.
-- `useSession` vive en `src/lib/use-session.ts` (nuevo, ~15 líneas) para reutilizar en Header y futuros componentes.
+Expandir `getSellerOverview` en `src/lib/seller.functions.ts` para calcular:
+- GMV 30d + delta vs 30d previos, GMV hoy, GMV 7d, AOV.
+- Órdenes (total, 30d, 7d, hoy), unidades vendidas, clientes únicos 30d.
+- Comisión acumulada + neto.
+- Conteos: productos activos/draft, low-stock (≤5).
+- Pending fulfillment, breakdown por status (pending/confirmed/shipped/delivered…).
+- Serie diaria 30d (gmv + orders) para gráficos.
+- Top 5 productos propios por GMV.
+- Últimas 8 órdenes.
 
-## Pregunta abierta (opcional)
+Render con `recharts` (ya instalado): grid de KPIs, Area chart de revenue 30d, Pie chart de status, Bar chart de órdenes diarias, leaderboard productos, lista recientes — mismo patrón visual que el admin overview rediseñado.
 
-¿Quieres que también desactive la protección HIBP para que se permitan contraseñas más simples en desarrollo? **No lo recomiendo** (es una de las mejores defensas gratis que ofrece Supabase), pero si lo pides lo hago con `configure_auth`.
+### 4. Admin: pulir páginas existentes
+
+- `admin.sellers.tsx` y `admin.orders.tsx`: usar `Table` de shadcn en vez de `<ul>`, filtros por status (Select), búsqueda por texto en cliente, badges con colores semánticos consistentes con el overview.
+- Mantener `adminSetSellerStatus` / `adminSetOrderStatus` intactos.
+
+### 5. i18n
+
+Añadir bloque `dash` a `src/lib/i18n.ts` en `en` y `es` con todas las etiquetas nuevas (Overview, Catalog, Sales, Orders, Products, Sellers, KPIs, etc.). Componentes consumen vía `t("dash.overview")`. AR queda en EN como fallback en esta fase.
+
+### 6. Estilos
+
+Tokens semánticos existentes (`--primary`, `--muted`, etc.). Colores de status centralizados en `src/lib/dashboard-tokens.ts` (mapa `status → var(--…)` ya derivado de la paleta, sin hex hard-coded en componentes).
+
+## Lo que NO se toca
+
+- Schema, RLS, migraciones, secrets.
+- Rutas públicas, checkout, auth.
+- `routeTree.gen.ts` (regenerado por el plugin).
+- Lógica de productos / órdenes existente.
+- Features nuevos del backend (mass upload, messaging, shipping engine, white-label, vendor discounts, automated payouts) — esos van en Fase 2 con su propio plan.
+
+## Archivos
+
+**Editar**:
+- `src/components/site/DashboardShell.tsx` (reescritura con sidebar)
+- `src/routes/_authenticated/admin.tsx` (nuevos grupos)
+- `src/routes/_authenticated/seller.tsx` (nuevos grupos)
+- `src/routes/_authenticated/seller.index.tsx` (rediseño con charts)
+- `src/routes/_authenticated/admin.index.tsx` (i18n + tokens centralizados)
+- `src/routes/_authenticated/admin.sellers.tsx` (Table + filtros)
+- `src/routes/_authenticated/admin.orders.tsx` (Table + filtros)
+- `src/lib/seller.functions.ts` (expandir `getSellerOverview`)
+- `src/lib/i18n.ts` (bloque `dash`)
+
+**Crear**:
+- `src/lib/dashboard-tokens.ts` (mapa de colores por status)
+
+## Verificación post-implementación
+
+1. Build pasa sin errores.
+2. Sidebar colapsa a iconos y vuelve a expandirse.
+3. Item activo resaltado correctamente al navegar entre secciones.
+4. Overview de admin y seller cargan KPIs + 3 gráficos sin errores en consola.
+5. Cambio de idioma EN↔ES actualiza todos los labels del shell.
+6. Mobile: sidebar entra como sheet/drawer.
