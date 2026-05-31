@@ -39,7 +39,7 @@ function SellerLayout() {
         {
           label: t("dash.groups.finance"),
           items: [
-            { label: t("dash.nav.payouts"), icon: Wallet, soon: true },
+            { to: "/seller/payouts", label: t("dash.nav.payouts"), icon: Wallet },
             { label: t("dash.nav.commissions"), icon: Percent, soon: true },
           ],
         },

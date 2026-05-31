@@ -203,3 +203,124 @@ export const adminBootstrap = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ============= Payouts =============
+
+export const adminListPayouts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { data, error } = await supabaseAdmin
+      .from("seller_payouts")
+      .select(`id, seller_id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at,
+        seller:sellers(store_name, slug, contact_email)`)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const adminPayoutPreview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { sellerId: string; periodStart: string; periodEnd: string }) =>
+    z.object({
+      sellerId: z.string().uuid(),
+      periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    if (data.periodEnd < data.periodStart) throw new Error("End date must be after start date");
+    const startIso = `${data.periodStart}T00:00:00.000Z`;
+    const endIso = `${data.periodEnd}T23:59:59.999Z`;
+    const { data: items, error } = await supabaseAdmin
+      .from("order_items")
+      .select(`qty, line_total_aed, commission_aed,
+        order:orders!inner(id, order_number, created_at, payment_status)`)
+      .eq("seller_id", data.sellerId)
+      .eq("order.payment_status", "paid")
+      .gte("order.created_at", startIso)
+      .lte("order.created_at", endIso);
+    if (error) throw new Error(error.message);
+    const rows = (items ?? []) as any[];
+    const gross = +rows.reduce((a, x) => a + Number(x.line_total_aed ?? 0), 0).toFixed(2);
+    const commission = +rows.reduce((a, x) => a + Number(x.commission_aed ?? 0), 0).toFixed(2);
+    const orderIds = new Set(rows.map((r) => r.order?.id).filter(Boolean));
+    return {
+      gross,
+      commission,
+      net: +(gross - commission).toFixed(2),
+      itemCount: rows.length,
+      orderCount: orderIds.size,
+    };
+  });
+
+export const adminGeneratePayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { sellerId: string; periodStart: string; periodEnd: string }) =>
+    z.object({
+      sellerId: z.string().uuid(),
+      periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    if (data.periodEnd < data.periodStart) throw new Error("End date must be after start date");
+    const startIso = `${data.periodStart}T00:00:00.000Z`;
+    const endIso = `${data.periodEnd}T23:59:59.999Z`;
+    const { data: items, error } = await supabaseAdmin
+      .from("order_items")
+      .select(`line_total_aed, commission_aed,
+        order:orders!inner(id, created_at, payment_status)`)
+      .eq("seller_id", data.sellerId)
+      .eq("order.payment_status", "paid")
+      .gte("order.created_at", startIso)
+      .lte("order.created_at", endIso);
+    if (error) throw new Error(error.message);
+    const rows = (items ?? []) as any[];
+    const gross = +rows.reduce((a, x) => a + Number(x.line_total_aed ?? 0), 0).toFixed(2);
+    const commission = +rows.reduce((a, x) => a + Number(x.commission_aed ?? 0), 0).toFixed(2);
+    const net = +(gross - commission).toFixed(2);
+    if (gross <= 0) throw new Error("No paid orders in that period — nothing to pay out");
+    const { data: created, error: insErr } = await supabaseAdmin.from("seller_payouts").insert({
+      seller_id: data.sellerId,
+      period_start: data.periodStart,
+      period_end: data.periodEnd,
+      gross_aed: gross,
+      commission_aed: commission,
+      net_aed: net,
+      status: "pending",
+    }).select("id").single();
+    if (insErr) throw new Error(insErr.message);
+    return { id: created.id, gross, commission, net };
+  });
+
+export const adminUpdatePayoutStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { payoutId: string; status: string }) =>
+    z.object({
+      payoutId: z.string().uuid(),
+      status: z.enum(["pending", "processing", "paid", "cancelled"]),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const patch: any = { status: data.status };
+    if (data.status === "paid") patch.paid_at = new Date().toISOString();
+    if (data.status !== "paid") patch.paid_at = null;
+    const { error } = await supabaseAdmin.from("seller_payouts").update(patch).eq("id", data.payoutId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminDeletePayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { payoutId: string }) => z.object({ payoutId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("seller_payouts").delete().eq("id", data.payoutId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

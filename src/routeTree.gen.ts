@@ -29,8 +29,10 @@ import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
+import { Route as AuthenticatedSellerPayoutsRouteImport } from './routes/_authenticated/seller.payouts'
 import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authenticated/seller.orders'
 import { Route as AuthenticatedAdminSellersRouteImport } from './routes/_authenticated/admin.sellers'
+import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
@@ -137,6 +139,12 @@ const AuthenticatedSellerProductsRoute =
     path: '/products',
     getParentRoute: () => AuthenticatedSellerRoute,
   } as any)
+const AuthenticatedSellerPayoutsRoute =
+  AuthenticatedSellerPayoutsRouteImport.update({
+    id: '/payouts',
+    path: '/payouts',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
 const AuthenticatedSellerOrdersRoute =
   AuthenticatedSellerOrdersRouteImport.update({
     id: '/orders',
@@ -147,6 +155,12 @@ const AuthenticatedAdminSellersRoute =
   AuthenticatedAdminSellersRouteImport.update({
     id: '/sellers',
     path: '/sellers',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPayoutsRoute =
+  AuthenticatedAdminPayoutsRouteImport.update({
+    id: '/payouts',
+    path: '/payouts',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminOrdersRoute =
@@ -191,8 +205,10 @@ export interface FileRoutesByFullPath {
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -216,8 +232,10 @@ export interface FileRoutesByTo {
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -245,8 +263,10 @@ export interface FileRoutesById {
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/_authenticated/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -274,8 +294,10 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/sellers/$slug'
     | '/admin/orders'
+    | '/admin/payouts'
     | '/admin/sellers'
     | '/seller/orders'
+    | '/seller/payouts'
     | '/seller/products'
     | '/api/public/stripe-webhook'
     | '/admin/'
@@ -299,8 +321,10 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/sellers/$slug'
     | '/admin/orders'
+    | '/admin/payouts'
     | '/admin/sellers'
     | '/seller/orders'
+    | '/seller/payouts'
     | '/seller/products'
     | '/api/public/stripe-webhook'
     | '/admin'
@@ -327,8 +351,10 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/sellers/$slug'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/admin/payouts'
     | '/_authenticated/admin/sellers'
     | '/_authenticated/seller/orders'
+    | '/_authenticated/seller/payouts'
     | '/_authenticated/seller/products'
     | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
@@ -496,6 +522,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerProductsRouteImport
       parentRoute: typeof AuthenticatedSellerRoute
     }
+    '/_authenticated/seller/payouts': {
+      id: '/_authenticated/seller/payouts'
+      path: '/payouts'
+      fullPath: '/seller/payouts'
+      preLoaderRoute: typeof AuthenticatedSellerPayoutsRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
     '/_authenticated/seller/orders': {
       id: '/_authenticated/seller/orders'
       path: '/orders'
@@ -508,6 +541,13 @@ declare module '@tanstack/react-router' {
       path: '/sellers'
       fullPath: '/admin/sellers'
       preLoaderRoute: typeof AuthenticatedAdminSellersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/payouts': {
+      id: '/_authenticated/admin/payouts'
+      path: '/payouts'
+      fullPath: '/admin/payouts'
+      preLoaderRoute: typeof AuthenticatedAdminPayoutsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/orders': {
@@ -543,12 +583,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminSellersRoute: typeof AuthenticatedAdminSellersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminSellersRoute: AuthenticatedAdminSellersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
@@ -574,12 +616,14 @@ const AuthenticatedSellerProductsRouteWithChildren =
 
 interface AuthenticatedSellerRouteChildren {
   AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRoute
+  AuthenticatedSellerPayoutsRoute: typeof AuthenticatedSellerPayoutsRoute
   AuthenticatedSellerProductsRoute: typeof AuthenticatedSellerProductsRouteWithChildren
   AuthenticatedSellerIndexRoute: typeof AuthenticatedSellerIndexRoute
 }
 
 const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
   AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRoute,
+  AuthenticatedSellerPayoutsRoute: AuthenticatedSellerPayoutsRoute,
   AuthenticatedSellerProductsRoute:
     AuthenticatedSellerProductsRouteWithChildren,
   AuthenticatedSellerIndexRoute: AuthenticatedSellerIndexRoute,
@@ -645,13 +689,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
