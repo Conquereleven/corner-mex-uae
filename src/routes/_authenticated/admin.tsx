@@ -1,4 +1,8 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import {
+  LayoutDashboard, ShoppingCart, Store, Wallet, Tags, Users, Settings,
+} from "lucide-react";
 import { isAdmin } from "@/lib/admin.functions";
 import { DashboardShell } from "@/components/site/DashboardShell";
 
@@ -11,13 +15,35 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminLayout() {
+  const { t } = useTranslation();
   return (
     <DashboardShell
-      title="Admin"
+      title="Corner Mex Admin"
+      subtitle="Marketplace control"
       nav={[
-        { to: "/admin", label: "Overview" },
-        { to: "/admin/sellers", label: "Sellers" },
-        { to: "/admin/orders", label: "Orders" },
+        {
+          label: t("dash.groups.overview"),
+          items: [{ to: "/admin", label: t("dash.nav.overview"), icon: LayoutDashboard }],
+        },
+        {
+          label: t("dash.groups.catalog"),
+          items: [
+            { to: "/admin/sellers", label: t("dash.nav.sellers"), icon: Store },
+            { to: "/admin/orders", label: t("dash.nav.orders"), icon: ShoppingCart },
+          ],
+        },
+        {
+          label: t("dash.groups.ops"),
+          items: [
+            { label: t("dash.nav.payouts"), icon: Wallet, soon: true },
+            { label: t("dash.nav.categories"), icon: Tags, soon: true },
+            { label: t("dash.nav.customers"), icon: Users, soon: true },
+          ],
+        },
+        {
+          label: t("dash.groups.config"),
+          items: [{ label: t("dash.nav.settings"), icon: Settings, soon: true }],
+        },
       ]}
     >
       <Outlet />
