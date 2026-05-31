@@ -327,3 +327,34 @@ export const deleteSellerProduct = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const getMyPayouts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const { data, error } = await supabaseAdmin
+      .from("seller_payouts")
+      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at")
+      .eq("seller_id", seller.id)
+      .order("period_end", { ascending: false });
+    if (error) throw new Error(error.message);
+    const list = data ?? [];
+    const sum = (k: string) => +list.reduce((a, r: any) => a + Number(r[k] ?? 0), 0).toFixed(2);
+    const paid = list.filter((r: any) => r.status === "paid");
+    return {
+      payouts: list,
+      totals: {
+        all: { gross: sum("gross_aed"), commission: sum("commission_aed"), net: sum("net_aed"), count: list.length },
+        paid: {
+          gross: +paid.reduce((a, r: any) => a + Number(r.gross_aed ?? 0), 0).toFixed(2),
+          net: +paid.reduce((a, r: any) => a + Number(r.net_aed ?? 0), 0).toFixed(2),
+          count: paid.length,
+        },
+        pending: {
+          net: +list.filter((r: any) => r.status !== "paid" && r.status !== "cancelled")
+            .reduce((a, r: any) => a + Number(r.net_aed ?? 0), 0).toFixed(2),
+          count: list.filter((r: any) => r.status !== "paid" && r.status !== "cancelled").length,
+        },
+      },
+    };
+  });
