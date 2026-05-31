@@ -1,10 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Search } from "lucide-react";
 import { adminListSellers, adminSetSellerStatus } from "@/lib/admin.functions";
+import { statusColor } from "@/lib/dashboard-tokens";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/sellers")({
@@ -25,28 +31,86 @@ function Sellers() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const rows = useMemo(() => {
+    const list = (q.data ?? []) as any[];
+    return list.filter((s) => {
+      if (statusFilter !== "all" && s.status !== statusFilter) return false;
+      if (!search) return true;
+      const t = search.toLowerCase();
+      return (s.store_name ?? "").toLowerCase().includes(t)
+        || (s.contact_email ?? "").toLowerCase().includes(t)
+        || (s.trn ?? "").toLowerCase().includes(t);
+    });
+  }, [q.data, search, statusFilter]);
+
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl tracking-tight">Sellers</h1>
+      <div>
+        <h1 className="font-display text-3xl tracking-tight">Sellers</h1>
+        <p className="text-sm text-muted-foreground">{rows.length} of {(q.data ?? []).length} sellers</p>
+      </div>
+
       <Card>
+        <CardHeader className="flex flex-row flex-wrap items-center gap-3 space-y-0">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search store, email, TRN…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {STATUSES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </CardHeader>
         <CardContent className="p-0">
-          {q.isLoading ? <p className="p-6 text-sm text-muted-foreground">Loading…</p> : (
-            <ul className="divide-y divide-border">
-              {(q.data ?? []).map((s: any) => (
-                <li key={s.id} className="grid grid-cols-1 gap-3 p-4 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
-                  <div>
-                    <p className="font-medium">{s.store_name}</p>
-                    <p className="text-xs text-muted-foreground">{s.contact_email ?? "—"} · {s.contact_phone ?? "—"} · TRN {s.trn ?? "—"}</p>
-                  </div>
-                  <div className="text-sm">Comm. {Number(s.commission_rate)}%</div>
-                  <Badge variant="outline">{new Date(s.created_at).toLocaleDateString()}</Badge>
-                  <Select value={s.status} onValueChange={(v) => m.mutate({ sellerId: s.id, status: v })}>
-                    <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
-                    <SelectContent>{STATUSES.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent>
-                  </Select>
-                </li>
-              ))}
-            </ul>
+          {q.isLoading ? (
+            <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
+          ) : rows.length === 0 ? (
+            <p className="p-8 text-center text-sm text-muted-foreground">No sellers match your filters.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Store</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead className="text-right">Commission</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell>
+                        <p className="font-medium">{s.store_name}</p>
+                        <p className="text-xs text-muted-foreground">TRN {s.trn ?? "—"}</p>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        <p>{s.contact_email ?? "—"}</p>
+                        <p className="text-xs">{s.contact_phone ?? "—"}</p>
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">{Number(s.commission_rate)}%</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(s.status), color: statusColor(s.status) }}>{s.status}</Badge>
+                          <Select value={s.status} onValueChange={(v) => m.mutate({ sellerId: s.id, status: v })}>
+                            <SelectTrigger className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>{STATUSES.map((x) => <SelectItem key={x} value={x} className="capitalize">{x}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
