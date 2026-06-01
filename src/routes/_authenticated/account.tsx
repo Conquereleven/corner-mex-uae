@@ -45,6 +45,9 @@ function Account() {
             )}
             <Link to="/account/quotes"><Button variant="outline" className="rounded-full">My quotes</Button></Link>
             <Link to="/account/notifications"><Button variant="outline" className="rounded-full">Notifications</Button></Link>
+            <Link to="/account/wishlist"><Button variant="outline" className="rounded-full">Wishlist</Button></Link>
+            <Link to="/account/loyalty"><Button variant="outline" className="rounded-full">Loyalty</Button></Link>
+            <Link to="/account/returns"><Button variant="outline" className="rounded-full">Returns</Button></Link>
             <Button variant="ghost" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}>Sign out</Button>
           </div>
         </div>
