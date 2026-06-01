@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyAccount, getMyOrders, becomeSeller } from "@/lib/account.functions";
 import { adminBootstrap, isAdmin } from "@/lib/admin.functions";
+import { buyerListOrderShipments } from "@/lib/shipments.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -58,19 +59,7 @@ function Account() {
               ) : (
                 <ul className="divide-y divide-border">
                   {(orders.data ?? []).map((o: any) => (
-                    <li key={o.id} className="py-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <p className="font-medium">{o.order_number}</p>
-                          <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} · {o.items?.length ?? 0} items</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary">{o.status}</Badge>
-                          <Badge variant="outline">{o.payment_status}</Badge>
-                          <span className="font-medium tabular-nums">{Number(o.total_aed).toFixed(2)} AED</span>
-                        </div>
-                      </div>
-                    </li>
+                    <OrderRow key={o.id} order={o} />
                   ))}
                 </ul>
               )}
@@ -84,6 +73,57 @@ function Account() {
         </div>
       </section>
     </SiteLayout>
+  );
+}
+
+function OrderRow({ order }: { order: any }) {
+  const fn = useServerFn(buyerListOrderShipments);
+  const [open, setOpen] = useState(false);
+  const q = useQuery({
+    queryKey: ["my-order-shipments", order.id],
+    queryFn: () => fn({ data: { orderId: order.id } }),
+    enabled: open,
+  });
+  return (
+    <li className="py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="font-medium">{order.order_number}</p>
+          <p className="text-xs text-muted-foreground">
+            {new Date(order.created_at).toLocaleString()} · {order.items?.length ?? 0} items
+            {order.sla_min_days ? <> · ETA {order.sla_min_days}-{order.sla_max_days} days</> : null}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">{order.status}</Badge>
+          <Badge variant="outline">{order.payment_status}</Badge>
+          <span className="font-medium tabular-nums">{Number(order.total_aed).toFixed(2)} AED</span>
+          <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)}>{open ? "Hide" : "Track"}</Button>
+        </div>
+      </div>
+      {open && (
+        <div className="mt-3 rounded-lg border bg-muted/30 p-3 text-sm">
+          {q.isLoading ? <p className="text-muted-foreground">Loading…</p> :
+           (q.data ?? []).length === 0 ? <p className="text-muted-foreground">No shipments yet — your seller hasn't dispatched this order.</p> : (
+            <ul className="space-y-2">
+              {(q.data as any[]).map((s) => (
+                <li key={s.id} className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="font-medium">{s.seller?.store_name}</span>
+                    <span className="ml-2 uppercase text-xs text-muted-foreground">{s.carrier}</span>
+                    {s.tracking_number && <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{s.status}</Badge>
+                    {s.tracking_url && <a className="text-xs underline" href={s.tracking_url} target="_blank" rel="noreferrer">Track</a>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </li>
   );
 }
 
