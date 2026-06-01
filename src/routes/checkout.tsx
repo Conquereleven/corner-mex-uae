@@ -12,7 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCart, cartTotals, groupBySeller } from "@/lib/cart";
 import { placeOrder } from "@/lib/orders.functions";
 import { createStripeSession } from "@/lib/payments.functions";
+import { getShippingQuote, EMIRATE_FORM_TO_DB } from "@/lib/shipping.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Corner Mex" }] }),
@@ -47,6 +49,7 @@ function Checkout() {
   const navigate = useNavigate();
   const place = useServerFn(placeOrder);
   const createStripe = useServerFn(createStripeSession);
+  const quoteFn = useServerFn(getShippingQuote);
 
   const [authed, setAuthed] = useState<boolean | null>(null);
   useEffect(() => {
@@ -66,6 +69,24 @@ function Checkout() {
   });
   const [payment, setPayment] = useState<(typeof PAYMENT_OPTIONS)[number]["id"]>("card");
   const [submitting, setSubmitting] = useState(false);
+
+  const dbEmirate = EMIRATE_FORM_TO_DB[form.emirate];
+  const quoteEnabled = items.length > 0 && !!dbEmirate;
+  const shippingQuery = useQuery({
+    queryKey: ["shipping-quote", dbEmirate, items.map((i) => `${i.variantId}:${i.qty}`).join(",")],
+    queryFn: () => quoteFn({
+      data: {
+        emirate: dbEmirate as any,
+        items: items.map((i) => ({ variantId: i.variantId, qty: i.qty })),
+      },
+    }),
+    enabled: quoteEnabled,
+    staleTime: 30_000,
+  });
+
+  const liveShipping = shippingQuery.data?.error ? null : (shippingQuery.data?.total ?? null);
+  const effectiveShipping = liveShipping ?? totals.shipping;
+  const effectiveTotal = +(totals.subtotal + effectiveShipping + totals.tax).toFixed(2);
 
   if (items.length === 0) {
     return (
@@ -228,12 +249,37 @@ function Checkout() {
             </ul>
             <dl className="mt-6 space-y-2 border-t border-border pt-4 text-sm">
               <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd>AED {totals.subtotal.toFixed(2)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">Shipping</dt><dd>{totals.shipping === 0 ? "Free" : `AED ${totals.shipping.toFixed(2)}`}</dd></div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">
+                  Shipping
+                  {shippingQuery.isLoading && <span className="ms-1 text-xs">…</span>}
+                </dt>
+                <dd>{effectiveShipping === 0 ? "Free" : `AED ${effectiveShipping.toFixed(2)}`}</dd>
+              </div>
+              {shippingQuery.data?.perSeller && shippingQuery.data.perSeller.length > 1 && (
+                <div className="space-y-1 pt-1 text-xs text-muted-foreground">
+                  {shippingQuery.data.perSeller.map((s) => (
+                    <div key={s.sellerId} className="flex justify-between">
+                      <span className="truncate pe-2">↳ {s.sellerName}{s.freeShippingApplied ? " (free)" : ""}</span>
+                      <span>AED {s.cost.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {shippingQuery.data?.slaMin != null && shippingQuery.data.slaMax != null && (
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <dt>Estimated delivery</dt>
+                  <dd>{shippingQuery.data.slaMin}–{shippingQuery.data.slaMax} business days</dd>
+                </div>
+              )}
+              {shippingQuery.data?.error && (
+                <div className="text-xs text-destructive">{shippingQuery.data.error}</div>
+              )}
               <div className="flex justify-between"><dt className="text-muted-foreground">VAT (5%)</dt><dd>AED {totals.tax.toFixed(2)}</dd></div>
-              <div className="flex justify-between border-t border-border pt-3 text-base font-medium"><dt>Total</dt><dd>AED {totals.total.toFixed(2)}</dd></div>
+              <div className="flex justify-between border-t border-border pt-3 text-base font-medium"><dt>Total</dt><dd>AED {effectiveTotal.toFixed(2)}</dd></div>
             </dl>
             <Button type="submit" size="lg" disabled={submitting} className="mt-6 w-full rounded-full bg-foreground text-background hover:bg-foreground/90">
-              {submitting ? "Placing order…" : `Place order · AED ${totals.total.toFixed(2)}`}
+              {submitting ? "Placing order…" : `Place order · AED ${effectiveTotal.toFixed(2)}`}
             </Button>
           </aside>
         </form>
