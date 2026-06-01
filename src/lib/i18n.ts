@@ -119,6 +119,32 @@ const en = {
         roles: "Roles",
       },
     },
+    performance: {
+      title: "Performance",
+      adminSub: "Marketplace metrics, fulfillment health and seller ranking.",
+      sellerSub: "Your store's metrics compared to marketplace averages.",
+      range: { d7: "7 days", d30: "30 days", d90: "90 days" },
+      kpi: {
+        gmv: "GMV", orders: "Orders", aov: "Avg. order value", units: "Units sold",
+        fulfillment: "Fulfillment rate", cancellation: "Cancellation rate",
+        repeat: "Repeat buyer rate", stockHealth: "Stock alerts",
+      },
+      repeatSub: "repeat / unique",
+      health: { excellent: "Excellent", ok: "Acceptable", risk: "At risk" },
+      stock: { out: "out of stock", low: "low stock" },
+      bench: { above: "Above avg", below: "Below avg", onPar: "On par" },
+      chart: { title: "Revenue trend", sub: "Daily GMV over the last {{days}} days" },
+      ranking: {
+        title: "Seller ranking",
+        sub: "Ordered by GMV in the selected period.",
+        col: {
+          rank: "Rank", seller: "Seller", gmv: "GMV", orders: "Orders",
+          fulfillment: "Fulfillment", cancellation: "Cancellation",
+          product: "Product", units: "Units", revenue: "Revenue",
+        },
+      },
+      topProducts: "Top 5 products",
+    },
   },
 };
 
