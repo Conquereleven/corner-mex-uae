@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { buildTrackingUrl, tplOrderShipped, tplOrderDelivered, tplOrderPlaced, type OrderEmailContext } from "@/lib/email-templates";
+import { createNotification } from "@/lib/notifications.functions";
 
 const CARRIERS = ["aramex", "dhl", "fedex", "talabat", "local_courier", "pickup", "other"] as const;
 const SHIP_STATUSES = ["prepared", "in_transit", "delivered", "returned", "lost"] as const;
@@ -193,6 +194,23 @@ export const sellerCreateShipment = createServerFn({ method: "POST" })
       console.error("Shipment email failed", e);
     }
 
+    // In-app notification to buyer
+    try {
+      const { data: ord } = await supabaseAdmin.from("orders").select("buyer_id, order_number").eq("id", data.orderId).maybeSingle();
+      if (ord) {
+        await createNotification({
+          userId: ord.buyer_id,
+          kind: "order_shipped",
+          title: `Order ${ord.order_number} shipped`,
+          body: data.trackingNumber ? `${data.carrier.toUpperCase()} · ${data.trackingNumber}` : `${data.carrier.toUpperCase()} shipment created.`,
+          link: "/account",
+          orderId: data.orderId,
+          shipmentId: shipment.id,
+          metadata: { carrier: data.carrier, tracking_number: data.trackingNumber, tracking_url: trackingUrl },
+        });
+      }
+    } catch (e) { console.error("notify shipped failed", e); }
+
     return { id: shipment.id };
   });
 
@@ -251,7 +269,34 @@ export const sellerMarkDelivered = createServerFn({ method: "POST" })
           await logNotification(sh.order_id, "delivered", r.ok ? "sent" : "failed", { to: loaded.buyerEmail });
         }
       } catch (e) { console.error(e); }
+      try {
+        const { data: ord } = await supabaseAdmin.from("orders").select("buyer_id, order_number").eq("id", sh.order_id).maybeSingle();
+        if (ord) {
+          await createNotification({
+            userId: ord.buyer_id,
+            kind: "order_delivered",
+            title: `Order ${ord.order_number} delivered`,
+            body: "Thanks for shopping with Corner Mex!",
+            link: "/account",
+            orderId: sh.order_id,
+          });
+        }
+      } catch (e) { console.error("notify delivered failed", e); }
     }
+
+    // Notify the seller their shipment was marked delivered
+    try {
+      await createNotification({
+        userId: context.userId,
+        kind: "shipment_delivered",
+        title: `Shipment delivered`,
+        body: `A shipment on order has been marked delivered.`,
+        link: "/seller/orders",
+        orderId: sh.order_id,
+        shipmentId: sh.id,
+      });
+    } catch (e) { console.error("notify seller delivered failed", e); }
+
     return { ok: true };
   });
 
