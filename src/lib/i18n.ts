@@ -74,6 +74,57 @@ const en = {
         generated: "Payout generated", loading: "Working…",
       },
     },
+      categories: {
+        title: "Categories",
+        sub: "Organize your catalog. Create parent categories and group products under them.",
+        new: "New category",
+        edit: "Edit category",
+        searchPh: "Search by name or slug…",
+        allParents: "All parents",
+        topLevel: "Top level",
+        empty: "No categories match your filters.",
+        created: "Category created",
+        updated: "Category updated",
+        deleted: "Category deleted",
+        toggled: "Status updated",
+        active: "Active",
+        inactive: "Inactive",
+        cancel: "Cancel", save: "Save", create: "Create",
+        kpi: { total: "Total", active: "Active", inactive: "Inactive", withProducts: "With products" },
+        col: { image: "Image", name: "Name", slug: "Slug", parent: "Parent", products: "Products", order: "Order", status: "Status", actions: "" },
+        form: {
+          slug: "Slug", slugHint: "Lowercase letters, numbers and dashes",
+          parent: "Parent category", none: "None (top level)",
+          sortOrder: "Sort order", imageUrl: "Image URL", imageHint: "Optional cover image",
+          nameEn: "Name (English)", nameEs: "Nombre (Español)", nameAr: "Name (Arabic)",
+          descEn: "Description (English)", descEs: "Descripción (Español)", descAr: "Description (Arabic)",
+          active: "Visible on storefront",
+        },
+        delete: { title: "Delete category?", desc: "This permanently removes the category. Products and subcategories must be moved first.", confirm: "Delete" },
+      },
+      customers: {
+        title: "Customers",
+        sub: "All registered buyers, their lifetime value and recent activity.",
+        searchPh: "Search by name, email or phone…",
+        empty: "No customers match your search.",
+        viewDetail: "View profile",
+        kpi: { total: "Total customers", new30: "New (30d)", withOrders: "With orders", avgGmv: "Avg. GMV / customer" },
+        col: { name: "Name", email: "Email", phone: "Phone", orders: "Orders", gmv: "GMV", last: "Last order", lang: "Lang" },
+        detail: {
+          back: "Back to customers",
+          profile: "Profile", company: "Company", phone: "Phone", lang: "Preferred language", joined: "Joined",
+          addresses: "Addresses", noAddresses: "No addresses on file.",
+          orders: "Recent orders", noOrders: "No orders yet.",
+          stats: "Lifetime", aov: "Avg. order value", firstOrder: "First order", lastOrder: "Last order",
+          roles: "Roles",
+        },
+      },
+    },
+  },
+};
+
+// keep TS happy — old closing braces removed above
+const __unused_marker_en = (en as any).dash?.categories;
   },
 };
 
