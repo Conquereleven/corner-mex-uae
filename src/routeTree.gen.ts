@@ -39,6 +39,7 @@ import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
+import { Route as AuthenticatedAccountQuotesRouteImport } from './routes/_authenticated/account.quotes'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
@@ -206,6 +207,12 @@ const AuthenticatedAdminCategoriesRoute =
     path: '/categories',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAccountQuotesRoute =
+  AuthenticatedAccountQuotesRouteImport.update({
+    id: '/quotes',
+    path: '/quotes',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 const CheckoutBnplProviderOrderIdRoute =
   CheckoutBnplProviderOrderIdRouteImport.update({
     id: '/bnpl/$provider/$orderId',
@@ -254,12 +261,13 @@ export interface FileRoutesByFullPath {
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
-  '/account': typeof AuthenticatedAccountRoute
+  '/account': typeof AuthenticatedAccountRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -291,10 +299,11 @@ export interface FileRoutesByTo {
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
-  '/account': typeof AuthenticatedAccountRoute
+  '/account': typeof AuthenticatedAccountRouteWithChildren
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -328,12 +337,13 @@ export interface FileRoutesById {
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
-  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/_authenticated/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/account/quotes'
     | '/admin/categories'
     | '/admin/customers'
     | '/admin/orders'
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/account/quotes'
     | '/admin/categories'
     | '/admin/customers'
     | '/admin/orders'
@@ -446,6 +458,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/_authenticated/account/quotes'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/orders'
@@ -695,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCategoriesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/account/quotes': {
+      id: '/_authenticated/account/quotes'
+      path: '/quotes'
+      fullPath: '/account/quotes'
+      preLoaderRoute: typeof AuthenticatedAccountQuotesRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
     '/checkout/bnpl/$provider/$orderId': {
       id: '/checkout/bnpl/$provider/$orderId'
       path: '/bnpl/$provider/$orderId'
@@ -739,6 +759,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountQuotesRoute: typeof AuthenticatedAccountQuotesRoute
+}
+
+const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountQuotesRoute: AuthenticatedAccountQuotesRoute,
+}
+
+const AuthenticatedAccountRouteWithChildren =
+  AuthenticatedAccountRoute._addFileChildren(AuthenticatedAccountRouteChildren)
 
 interface AuthenticatedAdminCustomersRouteChildren {
   AuthenticatedAdminCustomersIdRoute: typeof AuthenticatedAdminCustomersIdRoute
@@ -820,13 +851,13 @@ const AuthenticatedSellerRouteWithChildren =
   AuthenticatedSellerRoute._addFileChildren(AuthenticatedSellerRouteChildren)
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRouteWithChildren
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedSellerRoute: typeof AuthenticatedSellerRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAccountRoute: AuthenticatedAccountRouteWithChildren,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedSellerRoute: AuthenticatedSellerRouteWithChildren,
 }
