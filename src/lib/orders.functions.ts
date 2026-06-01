@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { EMIRATE_FORM_TO_DB } from "@/lib/shipping.functions";
 import { tplOrderPlaced } from "@/lib/email-templates";
+import { createNotification, notifyOrderSellers } from "@/lib/notifications.functions";
 
 const Emirate = z.enum(["AD", "DU", "SH", "AJ", "UQ", "RK", "FU"]);
 const PaymentMethod = z.enum(["card", "apple_pay", "google_pay", "tabby", "tamara", "cod", "bank_transfer"]);
@@ -191,6 +192,24 @@ export const placeOrder = createServerFn({ method: "POST" })
         });
       }
     } catch (e) { console.error("order_placed email failed", e); }
+
+    // In-app notifications (best-effort)
+    try {
+      await createNotification({
+        userId,
+        kind: "order_placed",
+        title: `Order ${order.order_number} placed`,
+        body: `Total AED ${total.toFixed(2)} — we'll notify you when it ships.`,
+        link: "/account",
+        orderId: order.id,
+      });
+      await notifyOrderSellers(order.id, {
+        kind: "new_sale",
+        title: `New sale on order ${order.order_number}`,
+        body: `You have new items to fulfill.`,
+        link: "/seller/orders",
+      });
+    } catch (e) { console.error("notifications failed", e); }
 
     return { orderId: order.id, orderNumber: order.order_number, total };
   });
