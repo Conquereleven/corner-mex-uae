@@ -118,6 +118,69 @@ export type Database = {
           },
         ]
       }
+      loyalty_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          lifetime_spend_aed: number
+          points_balance: number
+          tier: Database["public"]["Enums"]["loyalty_tier"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lifetime_spend_aed?: number
+          points_balance?: number
+          tier?: Database["public"]["Enums"]["loyalty_tier"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lifetime_spend_aed?: number
+          points_balance?: number
+          tier?: Database["public"]["Enums"]["loyalty_tier"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_transactions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          kind: Database["public"]["Enums"]["loyalty_txn_kind"]
+          metadata: Json | null
+          order_id: string | null
+          points: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["loyalty_txn_kind"]
+          metadata?: Json | null
+          order_id?: string | null
+          points: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["loyalty_txn_kind"]
+          metadata?: Json | null
+          order_id?: string | null
+          points?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -421,6 +484,48 @@ export type Database = {
           },
         ]
       }
+      product_reviews: {
+        Row: {
+          body: string | null
+          buyer_id: string
+          created_at: string
+          id: string
+          order_id: string | null
+          product_id: string
+          rating: number
+          seller_id: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          buyer_id: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id: string
+          rating: number
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string
+          rating?: number
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_translations: {
         Row: {
           description: string | null
@@ -659,6 +764,60 @@ export type Database = {
           total_estimate_aed?: number | null
           updated_at?: string
           valid_until?: string | null
+        }
+        Relationships: []
+      }
+      returns: {
+        Row: {
+          buyer_id: string
+          buyer_notes: string | null
+          created_at: string
+          id: string
+          order_id: string
+          order_item_id: string
+          qty: number
+          reason: Database["public"]["Enums"]["return_reason"]
+          refund_aed: number | null
+          resolved_at: string | null
+          return_number: string
+          seller_id: string
+          seller_response: string | null
+          status: Database["public"]["Enums"]["return_status"]
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          buyer_notes?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          order_item_id: string
+          qty: number
+          reason: Database["public"]["Enums"]["return_reason"]
+          refund_aed?: number | null
+          resolved_at?: string | null
+          return_number?: string
+          seller_id: string
+          seller_response?: string | null
+          status?: Database["public"]["Enums"]["return_status"]
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          buyer_notes?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          order_item_id?: string
+          qty?: number
+          reason?: Database["public"]["Enums"]["return_reason"]
+          refund_aed?: number | null
+          resolved_at?: string | null
+          return_number?: string
+          seller_id?: string
+          seller_response?: string | null
+          status?: Database["public"]["Enums"]["return_status"]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -937,6 +1096,27 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -969,6 +1149,8 @@ export type Database = {
         | "ras_al_khaimah"
         | "fujairah"
       lang_code: "en" | "ar" | "es"
+      loyalty_tier: "bronze" | "silver" | "gold" | "platinum"
+      loyalty_txn_kind: "earn" | "redeem" | "adjust" | "expire"
       notification_kind:
         | "order_placed"
         | "order_confirmed"
@@ -996,6 +1178,21 @@ export type Database = {
       payment_status: "pending" | "authorized" | "paid" | "failed" | "refunded"
       product_status: "draft" | "pending" | "active" | "archived"
       quote_status: "open" | "responded" | "accepted" | "rejected" | "expired"
+      return_reason:
+        | "damaged"
+        | "wrong_item"
+        | "not_as_described"
+        | "quality_issue"
+        | "no_longer_needed"
+        | "other"
+      return_status:
+        | "requested"
+        | "approved"
+        | "rejected"
+        | "received"
+        | "refunded"
+        | "cancelled"
+      review_status: "pending" | "approved" | "hidden"
       seller_status: "pending" | "active" | "suspended"
       shipment_status:
         | "prepared"
@@ -1150,6 +1347,8 @@ export const Constants = {
         "fujairah",
       ],
       lang_code: ["en", "ar", "es"],
+      loyalty_tier: ["bronze", "silver", "gold", "platinum"],
+      loyalty_txn_kind: ["earn", "redeem", "adjust", "expire"],
       notification_kind: [
         "order_placed",
         "order_confirmed",
@@ -1180,6 +1379,23 @@ export const Constants = {
       payment_status: ["pending", "authorized", "paid", "failed", "refunded"],
       product_status: ["draft", "pending", "active", "archived"],
       quote_status: ["open", "responded", "accepted", "rejected", "expired"],
+      return_reason: [
+        "damaged",
+        "wrong_item",
+        "not_as_described",
+        "quality_issue",
+        "no_longer_needed",
+        "other",
+      ],
+      return_status: [
+        "requested",
+        "approved",
+        "rejected",
+        "received",
+        "refunded",
+        "cancelled",
+      ],
+      review_status: ["pending", "approved", "hidden"],
       seller_status: ["pending", "active", "suspended"],
       shipment_status: [
         "prepared",
