@@ -22,6 +22,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as B2bQuoteRouteImport } from './routes/b2b.quote'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -108,6 +109,11 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const B2bQuoteRoute = B2bQuoteRouteImport.update({
+  id: '/quote',
+  path: '/quote',
+  getParentRoute: () => B2bRoute,
 } as any)
 const AuthenticatedSellerRoute = AuthenticatedSellerRouteImport.update({
   id: '/seller',
@@ -240,7 +246,7 @@ const AuthenticatedAdminCustomersIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/b2b': typeof B2bRoute
+  '/b2b': typeof B2bRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
+  '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -276,7 +283,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/b2b': typeof B2bRoute
+  '/b2b': typeof B2bRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
@@ -285,6 +292,7 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -312,7 +320,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/b2b': typeof B2bRoute
+  '/b2b': typeof B2bRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
@@ -323,6 +331,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
+  '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/seller'
+    | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/admin/categories'
@@ -395,6 +405,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/signup'
     | '/account'
+    | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/admin/categories'
@@ -432,6 +443,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/seller'
+    | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/_authenticated/admin/categories'
@@ -459,7 +471,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
-  B2bRoute: typeof B2bRoute
+  B2bRoute: typeof B2bRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -563,6 +575,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/product/$slug'
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/b2b/quote': {
+      id: '/b2b/quote'
+      path: '/quote'
+      fullPath: '/b2b/quote'
+      preLoaderRoute: typeof B2bQuoteRouteImport
+      parentRoute: typeof B2bRoute
     }
     '/_authenticated/seller': {
       id: '/_authenticated/seller'
@@ -816,6 +835,16 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface B2bRouteChildren {
+  B2bQuoteRoute: typeof B2bQuoteRoute
+}
+
+const B2bRouteChildren: B2bRouteChildren = {
+  B2bQuoteRoute: B2bQuoteRoute,
+}
+
+const B2bRouteWithChildren = B2bRoute._addFileChildren(B2bRouteChildren)
+
 interface CheckoutRouteChildren {
   CheckoutBnplProviderOrderIdRoute: typeof CheckoutBnplProviderOrderIdRoute
 }
@@ -843,7 +872,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
-  B2bRoute: B2bRoute,
+  B2bRoute: B2bRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   LoginRoute: LoginRoute,
@@ -857,3 +886,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
