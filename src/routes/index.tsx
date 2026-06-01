@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight, Flame, Leaf, Wheat, Cookie, CupSoda, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { PromoBanners } from "@/components/site/PromoBanners";
 import heroChiles from "@/assets/hero-chiles.jpg";
 import featureSalsa from "@/assets/feature-salsa.jpg";
 import b2bKitchen from "@/assets/b2b-kitchen.jpg";
@@ -23,6 +24,7 @@ function Index() {
   return (
     <SiteLayout>
       <Hero />
+      <PromoBanners />
       <Categories />
       <Features />
       <B2BBlock />
