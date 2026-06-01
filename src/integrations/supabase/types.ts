@@ -203,11 +203,15 @@ export type Database = {
           payment_status: Database["public"]["Enums"]["payment_status"]
           shipping_address: Json
           shipping_aed: number
+          shipping_zone_id: string | null
+          sla_max_days: number | null
+          sla_min_days: number | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal_aed: number
           tax_aed: number
           total_aed: number
           updated_at: string
+          weight_grams_total: number | null
         }
         Insert: {
           buyer_id: string
@@ -219,11 +223,15 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           shipping_address: Json
           shipping_aed?: number
+          shipping_zone_id?: string | null
+          sla_max_days?: number | null
+          sla_min_days?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_aed?: number
           tax_aed?: number
           total_aed?: number
           updated_at?: string
+          weight_grams_total?: number | null
         }
         Update: {
           buyer_id?: string
@@ -235,13 +243,25 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["payment_status"]
           shipping_address?: Json
           shipping_aed?: number
+          shipping_zone_id?: string | null
+          sla_max_days?: number | null
+          sla_min_days?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_aed?: number
           tax_aed?: number
           total_aed?: number
           updated_at?: string
+          weight_grams_total?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_shipping_zone_id_fkey"
+            columns: ["shipping_zone_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -667,6 +687,96 @@ export type Database = {
           trn?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      shipping_rates: {
+        Row: {
+          base_aed: number
+          created_at: string
+          free_above_aed: number | null
+          id: string
+          is_active: boolean
+          per_kg_aed: number
+          seller_id: string | null
+          sla_max_days: number
+          sla_min_days: number
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          base_aed?: number
+          created_at?: string
+          free_above_aed?: number | null
+          id?: string
+          is_active?: boolean
+          per_kg_aed?: number
+          seller_id?: string | null
+          sla_max_days?: number
+          sla_min_days?: number
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          base_aed?: number
+          created_at?: string
+          free_above_aed?: number | null
+          id?: string
+          is_active?: boolean
+          per_kg_aed?: number
+          seller_id?: string | null
+          sla_max_days?: number
+          sla_min_days?: number
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_rates_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipping_rates_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipping_zones: {
+        Row: {
+          created_at: string
+          emirates: Database["public"]["Enums"]["emirate"][]
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          emirates?: Database["public"]["Enums"]["emirate"][]
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          emirates?: Database["public"]["Enums"]["emirate"][]
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
