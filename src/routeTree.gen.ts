@@ -44,6 +44,7 @@ import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
 import { Route as AuthenticatedAccountQuotesRouteImport } from './routes/_authenticated/account.quotes'
+import { Route as AuthenticatedAccountNotificationsRouteImport } from './routes/_authenticated/account.notifications'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
@@ -241,6 +242,12 @@ const AuthenticatedAccountQuotesRoute =
     path: '/quotes',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
+const AuthenticatedAccountNotificationsRoute =
+  AuthenticatedAccountNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 const CheckoutBnplProviderOrderIdRoute =
   CheckoutBnplProviderOrderIdRouteImport.update({
     id: '/bnpl/$provider/$orderId',
@@ -295,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
@@ -335,6 +343,7 @@ export interface FileRoutesByTo {
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
@@ -379,6 +388,7 @@ export interface FileRoutesById {
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/_authenticated/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/_authenticated/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
@@ -423,6 +433,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/account/notifications'
     | '/account/quotes'
     | '/admin/categories'
     | '/admin/customers'
@@ -463,6 +474,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/account/notifications'
     | '/account/quotes'
     | '/admin/categories'
     | '/admin/customers'
@@ -506,6 +518,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/_authenticated/account/notifications'
     | '/_authenticated/account/quotes'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/customers'
@@ -795,6 +808,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountQuotesRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
+    '/_authenticated/account/notifications': {
+      id: '/_authenticated/account/notifications'
+      path: '/notifications'
+      fullPath: '/account/notifications'
+      preLoaderRoute: typeof AuthenticatedAccountNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
     '/checkout/bnpl/$provider/$orderId': {
       id: '/checkout/bnpl/$provider/$orderId'
       path: '/bnpl/$provider/$orderId'
@@ -841,10 +861,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountNotificationsRoute: typeof AuthenticatedAccountNotificationsRoute
   AuthenticatedAccountQuotesRoute: typeof AuthenticatedAccountQuotesRoute
 }
 
 const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountNotificationsRoute:
+    AuthenticatedAccountNotificationsRoute,
   AuthenticatedAccountQuotesRoute: AuthenticatedAccountQuotesRoute,
 }
 
@@ -1005,3 +1028,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
