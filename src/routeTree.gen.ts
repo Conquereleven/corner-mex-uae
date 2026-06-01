@@ -34,9 +34,12 @@ import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminSellersRouteImport } from './routes/_authenticated/admin.sellers'
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
+import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
+import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
+import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -169,6 +172,18 @@ const AuthenticatedAdminOrdersRoute =
     path: '/orders',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCustomersRoute =
+  AuthenticatedAdminCustomersRouteImport.update({
+    id: '/customers',
+    path: '/customers',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCategoriesRoute =
+  AuthenticatedAdminCategoriesRouteImport.update({
+    id: '/categories',
+    path: '/categories',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const CheckoutBnplProviderOrderIdRoute =
   CheckoutBnplProviderOrderIdRouteImport.update({
     id: '/bnpl/$provider/$orderId',
@@ -187,6 +202,12 @@ const AuthenticatedSellerProductsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedSellerProductsRoute,
   } as any)
+const AuthenticatedAdminCustomersIdRoute =
+  AuthenticatedAdminCustomersIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminCustomersRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -204,6 +225,8 @@ export interface FileRoutesByFullPath {
   '/seller': typeof AuthenticatedSellerRouteWithChildren
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
+  '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
@@ -213,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
+  '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -231,6 +255,8 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
+  '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
@@ -240,6 +266,7 @@ export interface FileRoutesByTo {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
+  '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -262,6 +289,8 @@ export interface FileRoutesById {
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
+  '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
@@ -271,6 +300,7 @@ export interface FileRoutesById {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
+  '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -293,6 +323,8 @@ export interface FileRouteTypes {
     | '/seller'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/admin/categories'
+    | '/admin/customers'
     | '/admin/orders'
     | '/admin/payouts'
     | '/admin/sellers'
@@ -302,6 +334,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/admin/'
     | '/seller/'
+    | '/admin/customers/$id'
     | '/seller/products/$id'
     | '/seller/products/new'
     | '/checkout/bnpl/$provider/$orderId'
@@ -320,6 +353,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/admin/categories'
+    | '/admin/customers'
     | '/admin/orders'
     | '/admin/payouts'
     | '/admin/sellers'
@@ -329,6 +364,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/admin'
     | '/seller'
+    | '/admin/customers/$id'
     | '/seller/products/$id'
     | '/seller/products/new'
     | '/checkout/bnpl/$provider/$orderId'
@@ -350,6 +386,8 @@ export interface FileRouteTypes {
     | '/_authenticated/seller'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/_authenticated/admin/categories'
+    | '/_authenticated/admin/customers'
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/payouts'
     | '/_authenticated/admin/sellers'
@@ -359,6 +397,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
+    | '/_authenticated/admin/customers/$id'
     | '/_authenticated/seller/products/$id'
     | '/_authenticated/seller/products/new'
     | '/checkout/bnpl/$provider/$orderId'
@@ -557,6 +596,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/customers': {
+      id: '/_authenticated/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AuthenticatedAdminCustomersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/categories': {
+      id: '/_authenticated/admin/categories'
+      path: '/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AuthenticatedAdminCategoriesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/checkout/bnpl/$provider/$orderId': {
       id: '/checkout/bnpl/$provider/$orderId'
       path: '/bnpl/$provider/$orderId'
@@ -578,10 +631,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerProductsIdRouteImport
       parentRoute: typeof AuthenticatedSellerProductsRoute
     }
+    '/_authenticated/admin/customers/$id': {
+      id: '/_authenticated/admin/customers/$id'
+      path: '/$id'
+      fullPath: '/admin/customers/$id'
+      preLoaderRoute: typeof AuthenticatedAdminCustomersIdRouteImport
+      parentRoute: typeof AuthenticatedAdminCustomersRoute
+    }
   }
 }
 
+interface AuthenticatedAdminCustomersRouteChildren {
+  AuthenticatedAdminCustomersIdRoute: typeof AuthenticatedAdminCustomersIdRoute
+}
+
+const AuthenticatedAdminCustomersRouteChildren: AuthenticatedAdminCustomersRouteChildren =
+  {
+    AuthenticatedAdminCustomersIdRoute: AuthenticatedAdminCustomersIdRoute,
+  }
+
+const AuthenticatedAdminCustomersRouteWithChildren =
+  AuthenticatedAdminCustomersRoute._addFileChildren(
+    AuthenticatedAdminCustomersRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
+  AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRouteWithChildren
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminSellersRoute: typeof AuthenticatedAdminSellersRoute
@@ -589,6 +665,9 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCategoriesRoute: AuthenticatedAdminCategoriesRoute,
+  AuthenticatedAdminCustomersRoute:
+    AuthenticatedAdminCustomersRouteWithChildren,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminSellersRoute: AuthenticatedAdminSellersRoute,
@@ -689,13 +768,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

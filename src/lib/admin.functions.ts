@@ -324,3 +324,155 @@ export const adminDeletePayout = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ============= Categories =============
+
+const slugSchema = z.string().min(1).max(80).regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers and dashes");
+const categoryBaseSchema = {
+  slug: slugSchema,
+  name_en: z.string().min(1).max(120),
+  name_es: z.string().min(1).max(120),
+  name_ar: z.string().min(1).max(120),
+  description_en: z.string().max(2000).optional().nullable(),
+  description_es: z.string().max(2000).optional().nullable(),
+  description_ar: z.string().max(2000).optional().nullable(),
+  image_url: z.string().url().max(500).optional().nullable().or(z.literal("")),
+  parent_id: z.string().uuid().optional().nullable(),
+  sort_order: z.number().int().min(0).max(9999),
+  is_active: z.boolean(),
+};
+
+export const adminListCategories = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const [cats, prods] = await Promise.all([
+      supabaseAdmin.from("categories").select("id, slug, name_en, name_es, name_ar, description_en, description_es, description_ar, image_url, parent_id, sort_order, is_active, created_at").order("sort_order").order("name_en"),
+      supabaseAdmin.from("products").select("category_id"),
+    ]);
+    if (cats.error) throw new Error(cats.error.message);
+    const counts = new Map<string, number>();
+    for (const p of (prods.data ?? []) as any[]) {
+      if (!p.category_id) continue;
+      counts.set(p.category_id, (counts.get(p.category_id) ?? 0) + 1);
+    }
+    return (cats.data ?? []).map((c: any) => ({ ...c, product_count: counts.get(c.id) ?? 0 }));
+  });
+
+export const adminCreateCategory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: any) => z.object(categoryBaseSchema).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const payload: any = { ...data };
+    if (!payload.image_url) payload.image_url = null;
+    if (!payload.parent_id) payload.parent_id = null;
+    const { data: row, error } = await supabaseAdmin.from("categories").insert(payload).select("id").single();
+    if (error) throw new Error(error.message);
+    return { id: row.id };
+  });
+
+export const adminUpdateCategory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: any) => z.object({ id: z.string().uuid(), ...categoryBaseSchema }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    if (data.parent_id === data.id) throw new Error("A category cannot be its own parent");
+    const { id, ...patch } = data as any;
+    if (!patch.image_url) patch.image_url = null;
+    if (!patch.parent_id) patch.parent_id = null;
+    const { error } = await supabaseAdmin.from("categories").update(patch).eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminToggleCategoryActive = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; is_active: boolean }) => z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("categories").update({ is_active: data.is_active }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminDeleteCategory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const [{ count: childCount }, { count: prodCount }] = await Promise.all([
+      supabaseAdmin.from("categories").select("id", { count: "exact", head: true }).eq("parent_id", data.id),
+      supabaseAdmin.from("products").select("id", { count: "exact", head: true }).eq("category_id", data.id),
+    ]);
+    if ((childCount ?? 0) > 0) throw new Error(`Cannot delete: ${childCount} subcategor${childCount === 1 ? "y" : "ies"} attached`);
+    if ((prodCount ?? 0) > 0) throw new Error(`Cannot delete: ${prodCount} product${prodCount === 1 ? "" : "s"} use this category`);
+    const { error } = await supabaseAdmin.from("categories").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ============= Customers =============
+
+export const adminListCustomers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const [profiles, orders, authList] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name, phone, preferred_lang, company_name, created_at").order("created_at", { ascending: false }),
+      supabaseAdmin.from("orders").select("buyer_id, total_aed, created_at, status"),
+      supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
+    ]);
+    if (profiles.error) throw new Error(profiles.error.message);
+    const emailMap = new Map<string, string>();
+    for (const u of (authList.data?.users ?? []) as any[]) emailMap.set(u.id, u.email ?? "");
+    const orderAgg = new Map<string, { count: number; gmv: number; last: string | null }>();
+    for (const o of (orders.data ?? []) as any[]) {
+      const cur = orderAgg.get(o.buyer_id) ?? { count: 0, gmv: 0, last: null };
+      cur.count += 1;
+      cur.gmv += Number(o.total_aed ?? 0);
+      if (!cur.last || o.created_at > cur.last) cur.last = o.created_at;
+      orderAgg.set(o.buyer_id, cur);
+    }
+    return (profiles.data ?? []).map((p: any) => {
+      const agg = orderAgg.get(p.id);
+      return {
+        ...p,
+        email: emailMap.get(p.id) ?? null,
+        order_count: agg?.count ?? 0,
+        gmv: +(agg?.gmv ?? 0).toFixed(2),
+        last_order_at: agg?.last ?? null,
+      };
+    });
+  });
+
+export const adminGetCustomer = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const [profileRes, addrs, orders, authUser, roles] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*").eq("id", data.id).maybeSingle(),
+      supabaseAdmin.from("addresses").select("*").eq("user_id", data.id).order("is_default", { ascending: false }),
+      supabaseAdmin.from("orders").select("id, order_number, status, payment_status, total_aed, created_at").eq("buyer_id", data.id).order("created_at", { ascending: false }).limit(20),
+      supabaseAdmin.auth.admin.getUserById(data.id),
+      supabaseAdmin.from("user_roles").select("role").eq("user_id", data.id),
+    ]);
+    if (profileRes.error) throw new Error(profileRes.error.message);
+    if (!profileRes.data) throw new Error("Customer not found");
+    const allOrders = (orders.data ?? []) as any[];
+    const gmv = +allOrders.reduce((a, o) => a + Number(o.total_aed ?? 0), 0).toFixed(2);
+    return {
+      profile: { ...profileRes.data, email: authUser.data?.user?.email ?? null },
+      addresses: addrs.data ?? [],
+      orders: allOrders,
+      roles: (roles.data ?? []).map((r: any) => r.role),
+      stats: {
+        orders: allOrders.length,
+        gmv,
+        aov: allOrders.length ? +(gmv / allOrders.length).toFixed(2) : 0,
+        first_order: allOrders.length ? allOrders[allOrders.length - 1].created_at : null,
+        last_order: allOrders.length ? allOrders[0].created_at : null,
+      },
+    };
+  });

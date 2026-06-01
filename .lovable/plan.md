@@ -1,98 +1,61 @@
-## Objetivo
+# Fase 2 — Admin: Categorías + Customers
 
-Llevar los dashboards de **Admin** y **Seller** a nivel "master admin" tipo Garnet Place / Shopify Admin: navegación lateral profesional, agrupación lógica de secciones, KPIs ricos, tablas pulidas y bilingüe (EN/ES). **Sin tocar lógica de negocio** ni añadir features nuevos del backend (mass upload, messaging, shipping engine, white-label vienen en una fase posterior).
+## Alcance
+Activar las dos entradas "Coming soon" del sidebar admin con CRUD real, manteniendo el patrón visual de Payouts/Orders (shadcn Table + dialogs + i18n ES/EN).
 
-## Alcance (Fase 1)
+## 1. Categorías (CRUD completo)
 
-Solo presentación + métricas que ya podemos calcular desde el schema existente. Cero migraciones, cero secrets nuevos, cero edge functions.
+**Server functions** (`src/lib/admin.functions.ts`)
+- `adminListCategories` — lista jerárquica (parent → children) con conteo de productos por categoría
+- `adminCreateCategory` — inputs: `slug`, `name_en`, `name_ar`, `name_es`, `parent_id?`, `description_*?`, `image_url?`, `sort_order`, `is_active`
+- `adminUpdateCategory` — mismos campos, por `id`
+- `adminToggleCategoryActive` — flip `is_active`
+- `adminDeleteCategory` — bloquea si tiene productos o subcategorías; mensaje claro
 
-## Cambios
+Validación Zod: slug `^[a-z0-9-]+$`, nombres min 1 / max 120, sort_order int ≥ 0.
 
-### 1. Nuevo `DashboardShell` con sidebar shadcn colapsable
+**Ruta** `src/routes/_authenticated/admin.categories.tsx`
+- KPIs: total, activas, inactivas, con productos
+- Tabla con: imagen mini, nombre (EN/ES), slug, parent, # productos, orden, estado (badge), acciones
+- Filtros: buscar por nombre/slug, filtro estado (all/active/inactive), filtro parent
+- Dialog "Nueva categoría" + "Editar" (mismo formulario): tabs ES/EN/AR para nombres y descripciones, selector de parent (excluye self/descendientes en edición), preview de imagen por URL
+- Switch para activar/desactivar inline en cada fila
+- Confirmación shadcn AlertDialog antes de eliminar
 
-Reescribir `src/components/site/DashboardShell.tsx` usando el sistema `Sidebar` de shadcn ya disponible (`src/components/ui/sidebar.tsx`):
-- `SidebarProvider` + `Sidebar collapsible="icon"` → colapsa a tira de iconos (no desaparece).
-- Cabecera del sidebar: logo Corner**Mex** + badge del rol ("Admin" / "Seller — store name").
-- Grupos del menú con label, icono Lucide por item, item activo resaltado vía `useRouterState`.
-- `SidebarTrigger` siempre visible en la topbar.
-- Topbar interna con: breadcrumb (sección actual), selector de idioma (i18n existente), avatar/menú usuario con "Sign out", "Back to site".
-- Wrapper `w-full` (regla Tailwind 4) y `w-[var(--sidebar-width)]` explícito.
+## 2. Customers (read + light actions)
 
-Acepta `nav` con grupos: `{ label, items: [{ to, label, icon }] }`.
+**Server functions** (`src/lib/admin.functions.ts`)
+- `adminListCustomers` — join `profiles` + agregados: # órdenes, GMV total, última orden, idioma preferido, rol(es); filtros opcionales por search
+- `adminGetCustomer` — detalle: profile completo, direcciones, últimas 20 órdenes con status/total, lifetime stats (orders, GMV, AOV, primera/última compra)
 
-### 2. Grupos de navegación
+Sin update/delete de profiles (respeta RLS y modelo auth).
 
-**Admin** (`src/routes/_authenticated/admin.tsx`):
-- **Overview** → `/admin` (LayoutDashboard)
-- **Catálogo**: Sellers (`/admin/sellers`, Store), Orders (`/admin/orders`, ShoppingCart)
-- **Operación** (placeholders deshabilitados con tooltip "Coming soon"): Payouts, Categories, Customers
-- **Configuración** (placeholder): Settings
+**Rutas**
+- `src/routes/_authenticated/admin.customers.tsx` — lista
+  - KPIs: total customers, nuevos (30d), con órdenes, GMV promedio por customer
+  - Tabla: nombre, email (de auth via admin), teléfono, # órdenes, GMV, última orden, idioma; click → detalle
+  - Search por nombre / email / teléfono
+- `src/routes/_authenticated/admin.customers.$id.tsx` — detalle drawer/page
+  - Card de perfil + direcciones
+  - Historial de órdenes con link a `/admin/orders` filtrado
+  - Stats panel
 
-**Seller** (`src/routes/_authenticated/seller.tsx`):
-- **Overview** → `/seller` (LayoutDashboard)
-- **Catálogo**: Products (`/seller/products`, Package), New product (`/seller/products/new`, Plus)
-- **Ventas**: Orders (`/seller/orders`, ShoppingCart)
-- **Finanzas** (placeholder coming soon): Payouts, Commissions
-- **Tienda** (placeholder coming soon): Storefront, Settings
+## 3. Navegación + i18n
+- `admin.tsx`: quitar `soon: true` de Categories y Customers, apuntar a las rutas reales
+- `src/lib/i18n.ts`: agregar bloque `dash.categories.*` y `dash.customers.*` en ES + EN (labels, columnas, dialogs, estados, mensajes de error)
 
-Los items "Coming soon" se renderizan deshabilitados (no rompen rutas inexistentes).
-
-### 3. Seller Overview rediseñado (`seller.index.tsx`)
-
-Expandir `getSellerOverview` en `src/lib/seller.functions.ts` para calcular:
-- GMV 30d + delta vs 30d previos, GMV hoy, GMV 7d, AOV.
-- Órdenes (total, 30d, 7d, hoy), unidades vendidas, clientes únicos 30d.
-- Comisión acumulada + neto.
-- Conteos: productos activos/draft, low-stock (≤5).
-- Pending fulfillment, breakdown por status (pending/confirmed/shipped/delivered…).
-- Serie diaria 30d (gmv + orders) para gráficos.
-- Top 5 productos propios por GMV.
-- Últimas 8 órdenes.
-
-Render con `recharts` (ya instalado): grid de KPIs, Area chart de revenue 30d, Pie chart de status, Bar chart de órdenes diarias, leaderboard productos, lista recientes — mismo patrón visual que el admin overview rediseñado.
-
-### 4. Admin: pulir páginas existentes
-
-- `admin.sellers.tsx` y `admin.orders.tsx`: usar `Table` de shadcn en vez de `<ul>`, filtros por status (Select), búsqueda por texto en cliente, badges con colores semánticos consistentes con el overview.
-- Mantener `adminSetSellerStatus` / `adminSetOrderStatus` intactos.
-
-### 5. i18n
-
-Añadir bloque `dash` a `src/lib/i18n.ts` en `en` y `es` con todas las etiquetas nuevas (Overview, Catalog, Sales, Orders, Products, Sellers, KPIs, etc.). Componentes consumen vía `t("dash.overview")`. AR queda en EN como fallback en esta fase.
-
-### 6. Estilos
-
-Tokens semánticos existentes (`--primary`, `--muted`, etc.). Colores de status centralizados en `src/lib/dashboard-tokens.ts` (mapa `status → var(--…)` ya derivado de la paleta, sin hex hard-coded en componentes).
-
-## Lo que NO se toca
-
-- Schema, RLS, migraciones, secrets.
-- Rutas públicas, checkout, auth.
-- `routeTree.gen.ts` (regenerado por el plugin).
-- Lógica de productos / órdenes existente.
-- Features nuevos del backend (mass upload, messaging, shipping engine, white-label, vendor discounts, automated payouts) — esos van en Fase 2 con su propio plan.
+## Detalles técnicos
+- Tablas con shadcn `Table` + `Skeleton` loading, igual que `admin.orders.tsx`
+- Mutations con `useMutation` + `toast` (sonner) + `qc.invalidateQueries`
+- Para emails de customers: `supabaseAdmin.auth.admin.listUsers()` paginado y mergeado por `id` con `profiles` (evita exponer auth.users vía PostgREST)
+- Sin cambios de schema DB: tabla `categories` y `profiles` ya existen con los campos necesarios
+- Sin cambios de RLS (todo pasa por server fns con `assertAdmin`)
 
 ## Archivos
+**Editar:** `src/lib/admin.functions.ts`, `src/routes/_authenticated/admin.tsx`, `src/lib/i18n.ts`
+**Crear:** `src/routes/_authenticated/admin.categories.tsx`, `src/routes/_authenticated/admin.customers.tsx`, `src/routes/_authenticated/admin.customers.$id.tsx`
 
-**Editar**:
-- `src/components/site/DashboardShell.tsx` (reescritura con sidebar)
-- `src/routes/_authenticated/admin.tsx` (nuevos grupos)
-- `src/routes/_authenticated/seller.tsx` (nuevos grupos)
-- `src/routes/_authenticated/seller.index.tsx` (rediseño con charts)
-- `src/routes/_authenticated/admin.index.tsx` (i18n + tokens centralizados)
-- `src/routes/_authenticated/admin.sellers.tsx` (Table + filtros)
-- `src/routes/_authenticated/admin.orders.tsx` (Table + filtros)
-- `src/lib/seller.functions.ts` (expandir `getSellerOverview`)
-- `src/lib/i18n.ts` (bloque `dash`)
-
-**Crear**:
-- `src/lib/dashboard-tokens.ts` (mapa de colores por status)
-
-## Verificación post-implementación
-
-1. Build pasa sin errores.
-2. Sidebar colapsa a iconos y vuelve a expandirse.
-3. Item activo resaltado correctamente al navegar entre secciones.
-4. Overview de admin y seller cargan KPIs + 3 gráficos sin errores en consola.
-5. Cambio de idioma EN↔ES actualiza todos los labels del shell.
-6. Mobile: sidebar entra como sheet/drawer.
+## Fuera de alcance (Fase 3+)
+- Edición/merge de customers, envío de emails, notas internas
+- Drag & drop para reordenar categorías (usaremos input numérico `sort_order`)
+- Upload de imagen de categoría (por ahora solo URL)
