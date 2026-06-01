@@ -118,6 +118,48 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          metadata: Json | null
+          order_id: string | null
+          read_at: string | null
+          shipment_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          read_at?: string | null
+          shipment_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          read_at?: string | null
+          shipment_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           commission_aed: number
