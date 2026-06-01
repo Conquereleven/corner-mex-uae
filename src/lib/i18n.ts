@@ -121,8 +121,6 @@ const en = {
     },
   },
 };
-  },
-};
 
 const es = {
   nav: { shop: "Tienda", sellers: "Vendedores", b2b: "Para negocios", about: "Nosotros", account: "Cuenta", cart: "Carrito", login: "Entrar", signup: "Empezar" },
@@ -242,8 +240,6 @@ const es = {
         roles: "Roles",
       },
     },
-  },
-};
   },
 };
 
