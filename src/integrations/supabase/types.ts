@@ -129,6 +129,7 @@ export type Database = {
           product_name: string
           qty: number
           seller_id: string
+          shipment_id: string | null
           unit_price_aed: number
           variant_id: string
           variant_label: string | null
@@ -143,6 +144,7 @@ export type Database = {
           product_name: string
           qty: number
           seller_id: string
+          shipment_id?: string | null
           unit_price_aed: number
           variant_id: string
           variant_label?: string | null
@@ -157,6 +159,7 @@ export type Database = {
           product_name?: string
           qty?: number
           seller_id?: string
+          shipment_id?: string | null
           unit_price_aed?: number
           variant_id?: string
           variant_label?: string | null
@@ -184,6 +187,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "order_items_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "order_items_variant_id_fkey"
             columns: ["variant_id"]
             isOneToOne: false
@@ -191,6 +201,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      order_notifications: {
+        Row: {
+          channel: string
+          id: string
+          kind: Database["public"]["Enums"]["notification_kind"]
+          order_id: string
+          payload: Json | null
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          channel?: string
+          id?: string
+          kind: Database["public"]["Enums"]["notification_kind"]
+          order_id: string
+          payload?: Json | null
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          channel?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["notification_kind"]
+          order_id?: string
+          payload?: Json | null
+          sent_at?: string
+          status?: string
+        }
+        Relationships: []
       }
       orders: {
         Row: {
@@ -690,6 +730,60 @@ export type Database = {
         }
         Relationships: []
       }
+      shipments: {
+        Row: {
+          carrier: Database["public"]["Enums"]["carrier_code"]
+          cost_aed: number | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          label_url: string | null
+          notes: string | null
+          order_id: string
+          seller_id: string
+          shipped_at: string | null
+          status: Database["public"]["Enums"]["shipment_status"]
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string
+          weight_grams: number | null
+        }
+        Insert: {
+          carrier: Database["public"]["Enums"]["carrier_code"]
+          cost_aed?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          label_url?: string | null
+          notes?: string | null
+          order_id: string
+          seller_id: string
+          shipped_at?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+          weight_grams?: number | null
+        }
+        Update: {
+          carrier?: Database["public"]["Enums"]["carrier_code"]
+          cost_aed?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          label_url?: string | null
+          notes?: string | null
+          order_id?: string
+          seller_id?: string
+          shipped_at?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+          weight_grams?: number | null
+        }
+        Relationships: []
+      }
       shipping_rates: {
         Row: {
           base_aed: number
@@ -816,6 +910,14 @@ export type Database = {
     }
     Enums: {
       app_role: "buyer" | "seller" | "admin"
+      carrier_code:
+        | "aramex"
+        | "dhl"
+        | "fedex"
+        | "talabat"
+        | "local_courier"
+        | "pickup"
+        | "other"
       emirate:
         | "abu_dhabi"
         | "dubai"
@@ -825,6 +927,12 @@ export type Database = {
         | "ras_al_khaimah"
         | "fujairah"
       lang_code: "en" | "ar" | "es"
+      notification_kind:
+        | "order_placed"
+        | "order_confirmed"
+        | "shipped"
+        | "delivered"
+        | "payout_paid"
       order_status:
         | "pending"
         | "paid"
@@ -847,6 +955,12 @@ export type Database = {
       product_status: "draft" | "pending" | "active" | "archived"
       quote_status: "open" | "responded" | "accepted" | "rejected" | "expired"
       seller_status: "pending" | "active" | "suspended"
+      shipment_status:
+        | "prepared"
+        | "in_transit"
+        | "delivered"
+        | "returned"
+        | "lost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -975,6 +1089,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["buyer", "seller", "admin"],
+      carrier_code: [
+        "aramex",
+        "dhl",
+        "fedex",
+        "talabat",
+        "local_courier",
+        "pickup",
+        "other",
+      ],
       emirate: [
         "abu_dhabi",
         "dubai",
@@ -985,6 +1108,13 @@ export const Constants = {
         "fujairah",
       ],
       lang_code: ["en", "ar", "es"],
+      notification_kind: [
+        "order_placed",
+        "order_confirmed",
+        "shipped",
+        "delivered",
+        "payout_paid",
+      ],
       order_status: [
         "pending",
         "paid",
@@ -1009,6 +1139,13 @@ export const Constants = {
       product_status: ["draft", "pending", "active", "archived"],
       quote_status: ["open", "responded", "accepted", "rejected", "expired"],
       seller_status: ["pending", "active", "suspended"],
+      shipment_status: [
+        "prepared",
+        "in_transit",
+        "delivered",
+        "returned",
+        "lost",
+      ],
     },
   },
 } as const
