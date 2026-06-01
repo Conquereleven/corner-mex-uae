@@ -13,6 +13,7 @@ import { useCart, cartTotals, groupBySeller } from "@/lib/cart";
 import { placeOrder } from "@/lib/orders.functions";
 import { createStripeSession } from "@/lib/payments.functions";
 import { getShippingQuote, EMIRATE_FORM_TO_DB } from "@/lib/shipping.functions";
+import { validateCoupon } from "@/lib/coupons.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -50,6 +51,11 @@ function Checkout() {
   const place = useServerFn(placeOrder);
   const createStripe = useServerFn(createStripeSession);
   const quoteFn = useServerFn(getShippingQuote);
+  const validate = useServerFn(validateCoupon);
+
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState<null | { code: string; discount_aed: number; description: string | null }>(null);
+  const [couponMsg, setCouponMsg] = useState<string | null>(null);
 
   const [authed, setAuthed] = useState<boolean | null>(null);
   useEffect(() => {
@@ -86,7 +92,21 @@ function Checkout() {
 
   const liveShipping = shippingQuery.data?.error ? null : (shippingQuery.data?.total ?? null);
   const effectiveShipping = liveShipping ?? totals.shipping;
-  const effectiveTotal = +(totals.subtotal + effectiveShipping + totals.tax).toFixed(2);
+  const discount = coupon?.discount_aed ?? 0;
+  const effectiveTotal = +(totals.subtotal - discount + effectiveShipping + totals.tax).toFixed(2);
+
+  async function applyCoupon() {
+    setCouponMsg(null);
+    if (!couponInput.trim()) return;
+    const r = await validate({ data: { code: couponInput, subtotal: totals.subtotal } });
+    if (r.ok) {
+      setCoupon({ code: r.coupon.code, discount_aed: r.coupon.discount_aed, description: r.coupon.description });
+      setCouponMsg(`Applied: ${r.coupon.code} (−AED ${r.coupon.discount_aed.toFixed(2)})`);
+    } else {
+      setCoupon(null);
+      setCouponMsg(r.error);
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -137,6 +157,7 @@ function Checkout() {
             landmark: form.landmark || null,
           },
           notes: form.notes || null,
+          coupon_code: coupon?.code ?? null,
         },
       });
 
@@ -249,6 +270,9 @@ function Checkout() {
             </ul>
             <dl className="mt-6 space-y-2 border-t border-border pt-4 text-sm">
               <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd>AED {totals.subtotal.toFixed(2)}</dd></div>
+              {discount > 0 && (
+                <div className="flex justify-between text-primary"><dt>Discount ({coupon?.code})</dt><dd>− AED {discount.toFixed(2)}</dd></div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">
                   Shipping
@@ -278,6 +302,16 @@ function Checkout() {
               <div className="flex justify-between"><dt className="text-muted-foreground">VAT (5%)</dt><dd>AED {totals.tax.toFixed(2)}</dd></div>
               <div className="flex justify-between border-t border-border pt-3 text-base font-medium"><dt>Total</dt><dd>AED {effectiveTotal.toFixed(2)}</dd></div>
             </dl>
+
+            <div className="mt-5 border-t border-border pt-4">
+              <Label className="text-xs text-muted-foreground">Promo code</Label>
+              <div className="mt-1.5 flex gap-2">
+                <Input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="WELCOME10" />
+                <Button type="button" variant="outline" onClick={applyCoupon}>Apply</Button>
+              </div>
+              {couponMsg && <p className={`mt-2 text-xs ${coupon ? "text-primary" : "text-destructive"}`}>{couponMsg}</p>}
+            </div>
+
             <Button type="submit" size="lg" disabled={submitting} className="mt-6 w-full rounded-full bg-foreground text-background hover:bg-foreground/90">
               {submitting ? "Placing order…" : `Place order · AED ${effectiveTotal.toFixed(2)}`}
             </Button>
