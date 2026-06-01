@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { EMIRATE_FORM_TO_DB } from "@/lib/shipping.functions";
 import { tplOrderPlaced } from "@/lib/email-templates";
 import { createNotification, notifyOrderSellers } from "@/lib/notifications.functions";
+import { awardOrderPoints } from "@/lib/loyalty.functions";
 
 const Emirate = z.enum(["AD", "DU", "SH", "AJ", "UQ", "RK", "FU"]);
 const PaymentMethod = z.enum(["card", "apple_pay", "google_pay", "tabby", "tamara", "cod", "bank_transfer"]);
@@ -210,6 +211,19 @@ export const placeOrder = createServerFn({ method: "POST" })
         link: "/seller/orders",
       });
     } catch (e) { console.error("notifications failed", e); }
+
+    // Loyalty: award points based on subtotal (best-effort)
+    try {
+      await awardOrderPoints(userId, order.id, subtotal);
+      await createNotification({
+        userId,
+        kind: "loyalty_earned",
+        title: `You've earned loyalty points`,
+        body: `Your order ${order.order_number} contributed to your tier progress.`,
+        link: "/account/loyalty",
+        orderId: order.id,
+      });
+    } catch (e) { console.error("loyalty award failed", e); }
 
     return { orderId: order.id, orderNumber: order.order_number, total };
   });
