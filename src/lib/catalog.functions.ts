@@ -174,6 +174,15 @@ export const getProduct = createServerFn({ method: "GET" })
     const categoryName = cat ? (data.lang === "es" ? cat.name_es : data.lang === "ar" ? cat.name_ar : cat.name_en) : null;
     const seller = row.seller as any;
 
+    // Rating summary
+    const { data: revs } = await supabaseAdmin
+      .from("product_reviews")
+      .select("rating")
+      .eq("product_id", row.id)
+      .eq("status", "approved");
+    const rcount = revs?.length ?? 0;
+    const ravg = rcount ? Number(((revs!.reduce((s, r) => s + r.rating, 0)) / rcount).toFixed(2)) : 0;
+
     return {
       id: row.id,
       slug: row.slug,
@@ -192,6 +201,8 @@ export const getProduct = createServerFn({ method: "GET" })
       spice_level: row.spice_level,
       is_halal: row.is_halal,
       is_bulk: row.is_bulk,
+      rating_avg: ravg,
+      rating_count: rcount,
     };
   });
 
