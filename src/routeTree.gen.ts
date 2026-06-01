@@ -40,7 +40,9 @@ import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
+import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
 import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
+import { Route as AuthenticatedAdminProductsImportRouteImport } from './routes/_authenticated/admin.products.import'
 import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
 
 const SignupRoute = SignupRouteImport.update({
@@ -210,11 +212,23 @@ const AuthenticatedSellerProductsNewRoute =
     path: '/new',
     getParentRoute: () => AuthenticatedSellerProductsRoute,
   } as any)
+const AuthenticatedSellerProductsImportRoute =
+  AuthenticatedSellerProductsImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthenticatedSellerProductsRoute,
+  } as any)
 const AuthenticatedSellerProductsIdRoute =
   AuthenticatedSellerProductsIdRouteImport.update({
     id: '/$id',
     path: '/$id',
     getParentRoute: () => AuthenticatedSellerProductsRoute,
+  } as any)
+const AuthenticatedAdminProductsImportRoute =
+  AuthenticatedAdminProductsImportRouteImport.update({
+    id: '/products/import',
+    path: '/products/import',
+    getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminCustomersIdRoute =
   AuthenticatedAdminCustomersIdRouteImport.update({
@@ -253,7 +267,9 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
+  '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
@@ -285,7 +301,9 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
+  '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
@@ -321,7 +339,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
   '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/_authenticated/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
+  '/_authenticated/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
@@ -357,7 +377,9 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/seller/'
     | '/admin/customers/$id'
+    | '/admin/products/import'
     | '/seller/products/$id'
+    | '/seller/products/import'
     | '/seller/products/new'
     | '/checkout/bnpl/$provider/$orderId'
   fileRoutesByTo: FileRoutesByTo
@@ -389,7 +411,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/seller'
     | '/admin/customers/$id'
+    | '/admin/products/import'
     | '/seller/products/$id'
+    | '/seller/products/import'
     | '/seller/products/new'
     | '/checkout/bnpl/$provider/$orderId'
   id:
@@ -424,7 +448,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
     | '/_authenticated/admin/customers/$id'
+    | '/_authenticated/admin/products/import'
     | '/_authenticated/seller/products/$id'
+    | '/_authenticated/seller/products/import'
     | '/_authenticated/seller/products/new'
     | '/checkout/bnpl/$provider/$orderId'
   fileRoutesById: FileRoutesById
@@ -664,12 +690,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerProductsNewRouteImport
       parentRoute: typeof AuthenticatedSellerProductsRoute
     }
+    '/_authenticated/seller/products/import': {
+      id: '/_authenticated/seller/products/import'
+      path: '/import'
+      fullPath: '/seller/products/import'
+      preLoaderRoute: typeof AuthenticatedSellerProductsImportRouteImport
+      parentRoute: typeof AuthenticatedSellerProductsRoute
+    }
     '/_authenticated/seller/products/$id': {
       id: '/_authenticated/seller/products/$id'
       path: '/$id'
       fullPath: '/seller/products/$id'
       preLoaderRoute: typeof AuthenticatedSellerProductsIdRouteImport
       parentRoute: typeof AuthenticatedSellerProductsRoute
+    }
+    '/_authenticated/admin/products/import': {
+      id: '/_authenticated/admin/products/import'
+      path: '/products/import'
+      fullPath: '/admin/products/import'
+      preLoaderRoute: typeof AuthenticatedAdminProductsImportRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/customers/$id': {
       id: '/_authenticated/admin/customers/$id'
@@ -703,6 +743,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminPerformanceRoute: typeof AuthenticatedAdminPerformanceRoute
   AuthenticatedAdminSellersRoute: typeof AuthenticatedAdminSellersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminProductsImportRoute: typeof AuthenticatedAdminProductsImportRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -714,6 +755,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminPerformanceRoute: AuthenticatedAdminPerformanceRoute,
   AuthenticatedAdminSellersRoute: AuthenticatedAdminSellersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminProductsImportRoute: AuthenticatedAdminProductsImportRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
@@ -721,12 +763,15 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedSellerProductsRouteChildren {
   AuthenticatedSellerProductsIdRoute: typeof AuthenticatedSellerProductsIdRoute
+  AuthenticatedSellerProductsImportRoute: typeof AuthenticatedSellerProductsImportRoute
   AuthenticatedSellerProductsNewRoute: typeof AuthenticatedSellerProductsNewRoute
 }
 
 const AuthenticatedSellerProductsRouteChildren: AuthenticatedSellerProductsRouteChildren =
   {
     AuthenticatedSellerProductsIdRoute: AuthenticatedSellerProductsIdRoute,
+    AuthenticatedSellerProductsImportRoute:
+      AuthenticatedSellerProductsImportRoute,
     AuthenticatedSellerProductsNewRoute: AuthenticatedSellerProductsNewRoute,
   }
 
