@@ -10,7 +10,8 @@ import { listProductReviews, submitReview, myReviewForProduct } from "@/lib/revi
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 
-function Stars({ value, onChange, size = 4 }: { value: number; onChange?: (v: number) => void; size?: number }) {
+function Stars({ value, onChange, large = false }: { value: number; onChange?: (v: number) => void; large?: boolean }) {
+  const sz = large ? "h-5 w-5" : "h-4 w-4";
   return (
     <div className="inline-flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -21,9 +22,7 @@ function Stars({ value, onChange, size = 4 }: { value: number; onChange?: (v: nu
           disabled={!onChange}
           className={onChange ? "cursor-pointer" : "cursor-default"}
         >
-          <Star
-            className={`h-${size} w-${size} ${n <= value ? "fill-primary text-primary" : "text-muted-foreground"}`}
-          />
+          <Star className={`${sz} ${n <= value ? "fill-primary text-primary" : "text-muted-foreground"}`} />
         </button>
       ))}
     </div>
@@ -101,7 +100,7 @@ export function ProductReviews({ productId }: { productId: string }) {
       {open && user && (
         <div className="mt-6 rounded-2xl border border-border bg-card p-5">
           <Label>Rating</Label>
-          <div className="mt-1"><Stars value={rating} onChange={setRating} size={5} /></div>
+          <div className="mt-1"><Stars value={rating} onChange={setRating} large /></div>
           <div className="mt-3"><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Sums it up in a few words" /></div>
           <div className="mt-3"><Label>Your review</Label><Textarea rows={4} value={body} onChange={(e) => setBody(e.target.value)} placeholder="How did the product taste, ship, etc.?" /></div>
           <div className="mt-4 flex gap-2">
