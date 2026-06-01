@@ -34,6 +34,7 @@ import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authe
 import { Route as AuthenticatedSellerPerformanceRouteImport } from './routes/_authenticated/seller.performance'
 import { Route as AuthenticatedSellerPayoutsRouteImport } from './routes/_authenticated/seller.payouts'
 import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authenticated/seller.orders'
+import { Route as AuthenticatedSellerNotificationsRouteImport } from './routes/_authenticated/seller.notifications'
 import { Route as AuthenticatedAdminShippingRouteImport } from './routes/_authenticated/admin.shipping'
 import { Route as AuthenticatedAdminShipmentsRouteImport } from './routes/_authenticated/admin.shipments'
 import { Route as AuthenticatedAdminSellersRouteImport } from './routes/_authenticated/admin.sellers'
@@ -44,6 +45,7 @@ import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
 import { Route as AuthenticatedAccountQuotesRouteImport } from './routes/_authenticated/account.quotes'
+import { Route as AuthenticatedAccountNotificationsRouteImport } from './routes/_authenticated/account.notifications'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
@@ -181,6 +183,12 @@ const AuthenticatedSellerOrdersRoute =
     path: '/orders',
     getParentRoute: () => AuthenticatedSellerRoute,
   } as any)
+const AuthenticatedSellerNotificationsRoute =
+  AuthenticatedSellerNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
 const AuthenticatedAdminShippingRoute =
   AuthenticatedAdminShippingRouteImport.update({
     id: '/shipping',
@@ -241,6 +249,12 @@ const AuthenticatedAccountQuotesRoute =
     path: '/quotes',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
+const AuthenticatedAccountNotificationsRoute =
+  AuthenticatedAccountNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 const CheckoutBnplProviderOrderIdRoute =
   CheckoutBnplProviderOrderIdRouteImport.update({
     id: '/bnpl/$provider/$orderId',
@@ -295,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
@@ -305,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
@@ -335,6 +351,7 @@ export interface FileRoutesByTo {
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
@@ -345,6 +362,7 @@ export interface FileRoutesByTo {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
@@ -379,6 +397,7 @@ export interface FileRoutesById {
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/_authenticated/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/_authenticated/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
@@ -389,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/_authenticated/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/_authenticated/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/_authenticated/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/_authenticated/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/_authenticated/seller/performance': typeof AuthenticatedSellerPerformanceRoute
@@ -423,6 +443,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/account/notifications'
     | '/account/quotes'
     | '/admin/categories'
     | '/admin/customers'
@@ -433,6 +454,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/seller/notifications'
     | '/seller/orders'
     | '/seller/payouts'
     | '/seller/performance'
@@ -463,6 +485,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/account/notifications'
     | '/account/quotes'
     | '/admin/categories'
     | '/admin/customers'
@@ -473,6 +496,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/seller/notifications'
     | '/seller/orders'
     | '/seller/payouts'
     | '/seller/performance'
@@ -506,6 +530,7 @@ export interface FileRouteTypes {
     | '/b2b/quote'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/_authenticated/account/notifications'
     | '/_authenticated/account/quotes'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/customers'
@@ -516,6 +541,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/sellers'
     | '/_authenticated/admin/shipments'
     | '/_authenticated/admin/shipping'
+    | '/_authenticated/seller/notifications'
     | '/_authenticated/seller/orders'
     | '/_authenticated/seller/payouts'
     | '/_authenticated/seller/performance'
@@ -725,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerOrdersRouteImport
       parentRoute: typeof AuthenticatedSellerRoute
     }
+    '/_authenticated/seller/notifications': {
+      id: '/_authenticated/seller/notifications'
+      path: '/notifications'
+      fullPath: '/seller/notifications'
+      preLoaderRoute: typeof AuthenticatedSellerNotificationsRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
     '/_authenticated/admin/shipping': {
       id: '/_authenticated/admin/shipping'
       path: '/shipping'
@@ -795,6 +828,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountQuotesRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
+    '/_authenticated/account/notifications': {
+      id: '/_authenticated/account/notifications'
+      path: '/notifications'
+      fullPath: '/account/notifications'
+      preLoaderRoute: typeof AuthenticatedAccountNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
     '/checkout/bnpl/$provider/$orderId': {
       id: '/checkout/bnpl/$provider/$orderId'
       path: '/bnpl/$provider/$orderId'
@@ -841,10 +881,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountNotificationsRoute: typeof AuthenticatedAccountNotificationsRoute
   AuthenticatedAccountQuotesRoute: typeof AuthenticatedAccountQuotesRoute
 }
 
 const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountNotificationsRoute:
+    AuthenticatedAccountNotificationsRoute,
   AuthenticatedAccountQuotesRoute: AuthenticatedAccountQuotesRoute,
 }
 
@@ -917,6 +960,7 @@ const AuthenticatedSellerProductsRouteWithChildren =
   )
 
 interface AuthenticatedSellerRouteChildren {
+  AuthenticatedSellerNotificationsRoute: typeof AuthenticatedSellerNotificationsRoute
   AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRoute
   AuthenticatedSellerPayoutsRoute: typeof AuthenticatedSellerPayoutsRoute
   AuthenticatedSellerPerformanceRoute: typeof AuthenticatedSellerPerformanceRoute
@@ -926,6 +970,7 @@ interface AuthenticatedSellerRouteChildren {
 }
 
 const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
+  AuthenticatedSellerNotificationsRoute: AuthenticatedSellerNotificationsRoute,
   AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRoute,
   AuthenticatedSellerPayoutsRoute: AuthenticatedSellerPayoutsRoute,
   AuthenticatedSellerPerformanceRoute: AuthenticatedSellerPerformanceRoute,

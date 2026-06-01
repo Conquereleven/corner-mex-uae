@@ -11,6 +11,7 @@ import {
 import { LANGS } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
 import { useSession } from "@/lib/use-session";
+import { NotificationsBell } from "@/components/site/NotificationsBell";
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -54,6 +55,7 @@ export function Header() {
               <User className="h-4 w-4" />
             </Button>
           </Link>
+          <NotificationsBell />
           <Link to="/cart">
             <Button variant="ghost" size="icon" aria-label="Cart" className="relative">
               <ShoppingBag className="h-4 w-4" />
