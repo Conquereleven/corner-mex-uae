@@ -42,6 +42,7 @@ function Account() {
             {admin.data?.admin && (
               <Link to="/admin"><Button variant="outline" className="rounded-full">Admin</Button></Link>
             )}
+            <Link to="/account/quotes"><Button variant="outline" className="rounded-full">My quotes</Button></Link>
             <Button variant="ghost" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}>Sign out</Button>
           </div>
         </div>
