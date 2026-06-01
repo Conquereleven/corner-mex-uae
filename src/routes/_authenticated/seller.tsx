@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard, Package, Plus, ShoppingCart, Wallet, Percent, Store, Settings,
+  LayoutDashboard, Package, Plus, ShoppingCart, Wallet, Percent, Store, Settings, Activity,
 } from "lucide-react";
 import { getMyAccount } from "@/lib/account.functions";
 import { DashboardShell } from "@/components/site/DashboardShell";
@@ -23,7 +23,10 @@ function SellerLayout() {
       nav={[
         {
           label: t("dash.groups.overview"),
-          items: [{ to: "/seller", label: t("dash.nav.overview"), icon: LayoutDashboard }],
+          items: [
+            { to: "/seller", label: t("dash.nav.overview"), icon: LayoutDashboard },
+            { to: "/seller/performance", label: t("dash.nav.performance"), icon: Activity },
+          ],
         },
         {
           label: t("dash.groups.catalog"),

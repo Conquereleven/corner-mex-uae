@@ -29,7 +29,7 @@ const en = {
     nav: {
       overview: "Overview", sellers: "Sellers", orders: "Orders", products: "Products", newProduct: "New product",
       payouts: "Payouts", commissions: "Commissions", categories: "Categories", customers: "Customers",
-      storefront: "Storefront", settings: "Settings",
+      storefront: "Storefront", settings: "Settings", performance: "Performance",
     },
     kpi: {
       gmv30: "GMV (30d)", orders30: "Orders (30d)", aov: "Avg. order value", commission: "Commission",
@@ -150,7 +150,7 @@ const es = {
     nav: {
       overview: "Resumen", sellers: "Vendedores", orders: "Pedidos", products: "Productos", newProduct: "Nuevo producto",
       payouts: "Pagos", commissions: "Comisiones", categories: "Categorías", customers: "Clientes",
-      storefront: "Tienda pública", settings: "Configuración",
+      storefront: "Tienda pública", settings: "Configuración", performance: "Rendimiento",
     },
     kpi: {
       gmv30: "GMV (30d)", orders30: "Pedidos (30d)", aov: "Ticket promedio", commission: "Comisión",
