@@ -11,7 +11,10 @@ export type NotificationKind =
   | "shipment_created"
   | "shipment_delivered"
   | "quote_response"
-  | "payout_paid";
+  | "payout_paid"
+  | "loyalty_earned"
+  | "return_requested"
+  | "return_resolved";
 
 export interface NotifyParams {
   userId: string;
