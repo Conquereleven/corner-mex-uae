@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getMyAccount, getMyOrders, becomeSeller } from "@/lib/account.functions";
 import { adminBootstrap, isAdmin } from "@/lib/admin.functions";
 import { buyerListOrderShipments } from "@/lib/shipments.functions";
+import { getMyLoyalty } from "@/lib/loyalty.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -24,9 +25,11 @@ function Account() {
   const fetchAccount = useServerFn(getMyAccount);
   const fetchOrders = useServerFn(getMyOrders);
   const fetchIsAdmin = useServerFn(isAdmin);
+  const fetchLoyalty = useServerFn(getMyLoyalty);
   const account = useQuery({ queryKey: ["account"], queryFn: () => fetchAccount({}) });
   const orders = useQuery({ queryKey: ["my-orders"], queryFn: () => fetchOrders({}) });
   const admin = useQuery({ queryKey: ["is-admin"], queryFn: () => fetchIsAdmin({}) });
+  const loyalty = useQuery({ queryKey: ["my-loyalty"], queryFn: () => fetchLoyalty({}) });
 
   return (
     <SiteLayout>
@@ -34,7 +37,14 @@ function Account() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-4xl tracking-tight">My account</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{account.data?.email}</p>
+            <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{account.data?.email}</span>
+              {loyalty.data && (
+                <Badge variant="outline" className="uppercase tracking-wider">
+                  {loyalty.data.account.tier} · {loyalty.data.account.points_balance} pts
+                </Badge>
+              )}
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {account.data?.seller && (

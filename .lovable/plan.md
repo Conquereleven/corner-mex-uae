@@ -1,97 +1,36 @@
-## Fase 4 — Quotes B2B + Shipping/Fulfillment
+## Cableado restante Fase 5
 
-Objetivo: cerrar el ciclo B2B (cotización → orden) y profesionalizar la operación de envíos por emirato con tracking y notificaciones.
+Conectar los módulos ya creados (reviews, wishlist, loyalty, returns) al resto de la app.
 
-Plan en **3 mensajes** (uno por mensaje, ya tienes la app en producción y queremos cambios seguros).
+### 1. Wishlist en cards de producto
+- Insertar `<WishlistButton productId={...} />` en `ProductCard` (esquina superior derecha de la imagen, absolute).
+- Asegurar que funciona también en la grilla de la home, categorías, búsqueda y storefront del seller.
 
----
+### 2. Reviews en ficha de producto
+- En `routes/products.$slug.tsx` (o equivalente), añadir sección `<ProductReviews productId={...} />` debajo de la descripción.
+- Mostrar promedio de estrellas + número de reseñas junto al título del producto (usando `getProductRatingSummary` desde `reviews.functions.ts`).
+- En las cards de producto, mostrar mini-rating (★ 4.5 · 12) bajo el nombre cuando exista.
 
-### Mensaje 1 — Quotes B2B (cotizaciones admin ↔ buyer)
+### 3. Navegación seller y admin
+- **Seller sidebar** (`routes/_authenticated/seller.tsx`): añadir link "Devoluciones" → `/seller/returns`.
+- **Admin sidebar** (`routes/_authenticated/admin.tsx`): añadir links "Reseñas" → `/admin/reviews` y "Devoluciones" → `/admin/returns`.
 
-**DB (migración nueva, no rompe existente)**
-- Mantener tabla `quotes` actual. Añadir:
-  - `assigned_admin_id uuid` (nullable)
-  - `valid_until date` (nullable)
-  - `accepted_at`, `rejected_at`, `converted_order_id uuid` (nullable)
-- Nueva tabla `quote_items` (id, quote_id, product_id?, seller_id?, name, qty, unit_price_aed, line_total_aed, notes). RLS: buyer/admin pueden leer las suyas.
-- Trigger `tg_touch_updated_at` ya existe — reutilizar.
-- GRANTs + RLS estándar (buyer own + admin all).
+### 4. Acumulación de puntos de fidelidad
+- En `orders.functions.ts` → `placeOrder`, después de crear la orden llamar `awardOrderPoints({ userId, orderId, subtotalAed })`.
+- Disparar también notificación in-app "Has ganado X puntos" y actualización de tier si corresponde (la lógica ya vive en `loyalty.functions.ts`).
+- Mostrar badge de tier (bronze/silver/gold/platinum) en el header del `/account` junto al nombre.
 
-**Server functions (`src/lib/quotes.functions.ts`)**
-- `listMyQuotes` (buyer), `getQuote(id)` (buyer/admin), `submitQuote(items, contact, notes)` (buyer crea desde formulario público en `/b2b`).
-- `adminListQuotes(filters)`, `adminRespondQuote(id, items[], totalEstimate, validUntil, notes)` → status `quoted`.
-- `acceptQuote(id, shippingAddressId)` (buyer) → crea `orders` + `order_items` desde la respuesta, status `accepted`, `converted_order_id` set, `payment_status: pending`.
-- `rejectQuote(id, reason)` (buyer).
-- `adminCancelQuote(id)`.
+### 5. Detalles técnicos
+- Invalidar queries: tras toggle wishlist → `["wishlist"]`; tras review submit → `["reviews", productId]` y `["product-rating", productId]`.
+- El `WishlistButton` ya existe; solo cablearlo. Si el usuario no está autenticado, redirigir a `/login`.
+- Reviews: filtrar por `status = 'approved'` en la vista pública (RLS ya lo hace, pero ser explícito en la query).
+- Puntos: usar la fórmula ya definida en `loyalty.functions.ts` (multiplier por tier sobre `subtotal_aed`).
 
-**UI**
-- `/b2b/quote` (público para auth users): formulario multi-línea con productos, qty, notas, contacto, empresa.
-- `/account` → tab “Mis cotizaciones” con estados (open/quoted/accepted/rejected/expired) + botón "Aceptar y crear pedido".
-- `/admin/quotes` (CRUD): lista con filtros (status, asignado, fecha), búsqueda por nº cotización, drawer de respuesta con item editor (precio, qty, comisión preview), validez (default +14 días), totales calculados.
-- KPI cards: abiertas, cotizadas, aceptación rate, valor pipeline.
-
-**i18n**: bloque `dash.quotes.*` y `b2b.quote.*` (EN/ES/AR parcial).
-
----
-
-### Mensaje 2 — Shipping zones + tarifas + cálculo en checkout
-
-**DB**
-- Tabla `shipping_zones` (id, name, slug, emirates `emirate[]`, is_active, sort_order). Seed con 3 zonas: "Dubai/Sharjah", "Northern Emirates", "Western Region".
-- Tabla `shipping_rates` (id, seller_id (nullable = default marketplace), zone_id, base_aed, per_kg_aed, free_above_aed, sla_min_days, sla_max_days, is_active).
-- Migración liviana en `orders`: añadir `shipping_zone_id`, `weight_grams_total`, `sla_min_days`, `sla_max_days`.
-
-**Server**
-- `getShippingQuote({ items[], emirate })` → calcula coste por seller y total, devuelve breakdown (cliente lo llama en checkout antes de pagar).
-- `adminListZones`, `adminUpsertZone`, `adminDeleteZone`.
-- `adminListRates(zoneId?)`, `adminUpsertRate`, `adminDeleteRate`.
-- `sellerListMyRates`, `sellerUpsertMyRate` (solo overrides para su propio seller_id; tarifa por defecto la define admin).
-
-**UI**
-- `/admin/shipping` — dos tabs: **Zonas** (CRUD con emirates picker) y **Tarifas por defecto** (CRUD por zona).
-- `/seller` → nueva ruta `/seller/shipping`: tabla de zonas con sus tarifas (default vs override propio) y formulario inline.
-- Integración en `/checkout`: tras elegir address, se llama `getShippingQuote` y se muestra breakdown por vendedor con SLA estimado. El total de `shipping_aed` ahora viene de la cotización, no es 0.
-
-**i18n**: `dash.shipping.*`, `checkout.shipping.*`.
-
----
-
-### Mensaje 3 — Fulfillment: carriers, tracking, etiquetas y notifs
-
-**DB**
-- ENUM `carrier_code` (`aramex`, `dhl`, `fedex`, `talabat`, `local_courier`, `pickup`, `other`).
-- Tabla `shipments` (id, order_id, seller_id, carrier `carrier_code`, tracking_number, tracking_url, label_url, shipped_at, delivered_at, weight_grams, cost_aed, notes, status `shipment_status` enum: `prepared|in_transit|delivered|returned|lost`).
-- En `order_items` añadir `shipment_id uuid` (nullable) para items multi-paquete.
-- Tabla `order_notifications` (id, order_id, kind: `order_placed|order_confirmed|shipped|delivered|payout_paid`, sent_at, channel `email`, status, payload jsonb).
-
-**Server**
-- `sellerCreateShipment({ orderId, itemIds[], carrier, trackingNumber, weight, cost })` → setea fulfillment_status="shipped" en items asociados; si todos los items del order están shipped, marca `orders.status="shipped"`.
-- `sellerUpdateShipment`, `sellerMarkDelivered`.
-- `sellerGenerateTrackingUrl(carrier, trackingNumber)` helper (mapea a URL pública de cada carrier).
-- `adminListShipments(filters)` para panel global.
-- `sendOrderEmail(orderId, kind)` — usa Resend (connector). Trigger automático en `sellerCreateShipment` y en cambio de status. Plantillas EN/ES en `src/lib/email-templates.ts`.
-
-**UI**
-- `/seller/orders` → drawer por pedido con sección **Shipping**: form rápido (carrier select, tracking, peso, coste, items a incluir), historial de shipments, botón "Marcar como entregado".
-- `/admin/orders` → tab **Shipments** con tabla global filtrable.
-- `/account/orders/$id` → buyer ve tracking number, link al carrier y SLA estimado.
-- Email layout simple HTML branded (logo, color primario, tabla de items, CTA "Ver pedido").
-
-**i18n**: `dash.shipping.shipments.*`, `email.*`.
-
-**Secret a pedir antes del mensaje 3**: `RESEND_API_KEY` (a través del connector Resend, no API key directa).
-
----
-
-### Fuera de alcance (Fase 5+)
-- Etiquetas reales (Aramex/DHL API) → ahora solo guardamos `label_url` que sube el seller manualmente.
-- Webhooks de carriers para auto-actualizar status.
-- Notificaciones push / WhatsApp / centro in-app (eso es Fase 4-C que no elegiste).
-- Devoluciones / RMA.
-
----
-
-### Orden recomendado
-Sugiero empezar por **Mensaje 1 (Quotes B2B)** porque desbloquea el flujo /b2b que ya está promocionado en la home pero hoy es estático. Luego shipping y luego fulfillment + emails.
-
-¿Confirmo y arranco con **Mensaje 1 (Quotes B2B)**?
+### Archivos a editar
+- `src/components/site/ProductCard.tsx` (wishlist + rating)
+- `src/routes/products.$slug.tsx` (reviews + rating en header)
+- `src/routes/_authenticated/seller.tsx` (link returns)
+- `src/routes/_authenticated/admin.tsx` (links reviews + returns)
+- `src/routes/_authenticated/account.tsx` (badge de tier)
+- `src/lib/orders.functions.ts` (llamar awardOrderPoints)
+- `src/lib/reviews.functions.ts` (añadir `getProductRatingSummary` si no existe)

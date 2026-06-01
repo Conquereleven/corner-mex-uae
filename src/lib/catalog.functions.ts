@@ -26,6 +26,8 @@ export type ProductListItem = {
   origin_region: string | null;
   spice_level: number | null;
   is_bulk: boolean;
+  rating_avg: number;
+  rating_count: number;
 };
 
 export const listProducts = createServerFn({ method: "GET" })
@@ -91,6 +93,8 @@ export const listProducts = createServerFn({ method: "GET" })
         origin_region: row.origin_region,
         spice_level: row.spice_level,
         is_bulk: row.is_bulk,
+        rating_avg: 0,
+        rating_count: 0,
       };
     });
 
@@ -98,6 +102,30 @@ export const listProducts = createServerFn({ method: "GET" })
       const needle = data.q.toLowerCase();
       items = items.filter((p) => p.name.toLowerCase().includes(needle) || (p.brand ?? "").toLowerCase().includes(needle));
     }
+
+    // Batch attach rating summary (approved reviews)
+    const productIds = items.map((p) => p.id);
+    if (productIds.length) {
+      const { data: reviews } = await supabaseAdmin
+        .from("product_reviews")
+        .select("product_id, rating")
+        .in("product_id", productIds)
+        .eq("status", "approved");
+      const agg: Record<string, { sum: number; n: number }> = {};
+      for (const r of reviews ?? []) {
+        const a = agg[r.product_id] ?? { sum: 0, n: 0 };
+        a.sum += r.rating; a.n += 1;
+        agg[r.product_id] = a;
+      }
+      for (const p of items) {
+        const a = agg[p.id];
+        if (a && a.n > 0) {
+          p.rating_avg = Number((a.sum / a.n).toFixed(2));
+          p.rating_count = a.n;
+        }
+      }
+    }
+
     return items;
   });
 
@@ -146,6 +174,15 @@ export const getProduct = createServerFn({ method: "GET" })
     const categoryName = cat ? (data.lang === "es" ? cat.name_es : data.lang === "ar" ? cat.name_ar : cat.name_en) : null;
     const seller = row.seller as any;
 
+    // Rating summary
+    const { data: revs } = await supabaseAdmin
+      .from("product_reviews")
+      .select("rating")
+      .eq("product_id", row.id)
+      .eq("status", "approved");
+    const rcount = revs?.length ?? 0;
+    const ravg = rcount ? Number(((revs!.reduce((s, r) => s + r.rating, 0)) / rcount).toFixed(2)) : 0;
+
     return {
       id: row.id,
       slug: row.slug,
@@ -164,6 +201,8 @@ export const getProduct = createServerFn({ method: "GET" })
       spice_level: row.spice_level,
       is_halal: row.is_halal,
       is_bulk: row.is_bulk,
+      rating_avg: ravg,
+      rating_count: rcount,
     };
   });
 

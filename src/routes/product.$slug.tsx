@@ -2,9 +2,11 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { Flame, MapPin, ShieldCheck } from "lucide-react";
+import { Flame, MapPin, ShieldCheck, Star } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
+import { ProductReviews } from "@/components/site/ProductReviews";
+import { WishlistButton } from "@/components/site/WishlistButton";
 import { getProduct } from "@/lib/catalog.functions";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
@@ -91,6 +93,14 @@ function ProductPage() {
             )}
             <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">{product.name}</h1>
 
+            {product.rating_count > 0 && (
+              <div className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Star className="h-4 w-4 fill-primary text-primary" />
+                <span className="font-medium text-foreground">{product.rating_avg.toFixed(1)}</span>
+                <span>· {product.rating_count} review{product.rating_count === 1 ? "" : "s"}</span>
+              </div>
+            )}
+
             <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {product.origin_region && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {product.origin_region}</span>}
               {product.is_halal && <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Halal-friendly</span>}
@@ -135,12 +145,15 @@ function ProductPage() {
               <Button onClick={addToCart} size="lg" className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90">
                 Add to cart · AED {((variant?.price_aed ?? 0) * qty).toFixed(0)}
               </Button>
+              <WishlistButton productId={p.id} size="lg" />
             </div>
             {variant && variant.stock < 20 && variant.stock > 0 && (
               <p className="mt-3 text-xs text-primary">Only {variant.stock} left in stock.</p>
             )}
           </div>
         </div>
+
+        <ProductReviews productId={p.id} />
       </section>
     </SiteLayout>
   );
