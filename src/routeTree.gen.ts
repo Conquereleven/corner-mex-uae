@@ -29,6 +29,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenticated/seller.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as AuthenticatedSellerShippingRouteImport } from './routes/_authenticated/seller.shipping'
 import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
 import { Route as AuthenticatedSellerPerformanceRouteImport } from './routes/_authenticated/seller.performance'
 import { Route as AuthenticatedSellerPayoutsRouteImport } from './routes/_authenticated/seller.payouts'
@@ -149,6 +150,12 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSellerShippingRoute =
+  AuthenticatedSellerShippingRouteImport.update({
+    id: '/shipping',
+    path: '/shipping',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
 const AuthenticatedSellerProductsRoute =
   AuthenticatedSellerProductsRouteImport.update({
     id: '/products',
@@ -294,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/seller/shipping': typeof AuthenticatedSellerShippingRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
@@ -332,6 +340,7 @@ export interface FileRoutesByTo {
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/seller/shipping': typeof AuthenticatedSellerShippingRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
@@ -374,6 +383,7 @@ export interface FileRoutesById {
   '/_authenticated/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/_authenticated/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
+  '/_authenticated/seller/shipping': typeof AuthenticatedSellerShippingRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/seller/payouts'
     | '/seller/performance'
     | '/seller/products'
+    | '/seller/shipping'
     | '/api/public/stripe-webhook'
     | '/admin/'
     | '/seller/'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/seller/payouts'
     | '/seller/performance'
     | '/seller/products'
+    | '/seller/shipping'
     | '/api/public/stripe-webhook'
     | '/admin'
     | '/seller'
@@ -495,6 +507,7 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/payouts'
     | '/_authenticated/seller/performance'
     | '/_authenticated/seller/products'
+    | '/_authenticated/seller/shipping'
     | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
@@ -663,6 +676,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/stripe-webhook'
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/seller/shipping': {
+      id: '/_authenticated/seller/shipping'
+      path: '/shipping'
+      fullPath: '/seller/shipping'
+      preLoaderRoute: typeof AuthenticatedSellerShippingRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
     }
     '/_authenticated/seller/products': {
       id: '/_authenticated/seller/products'
@@ -879,6 +899,7 @@ interface AuthenticatedSellerRouteChildren {
   AuthenticatedSellerPayoutsRoute: typeof AuthenticatedSellerPayoutsRoute
   AuthenticatedSellerPerformanceRoute: typeof AuthenticatedSellerPerformanceRoute
   AuthenticatedSellerProductsRoute: typeof AuthenticatedSellerProductsRouteWithChildren
+  AuthenticatedSellerShippingRoute: typeof AuthenticatedSellerShippingRoute
   AuthenticatedSellerIndexRoute: typeof AuthenticatedSellerIndexRoute
 }
 
@@ -888,6 +909,7 @@ const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
   AuthenticatedSellerPerformanceRoute: AuthenticatedSellerPerformanceRoute,
   AuthenticatedSellerProductsRoute:
     AuthenticatedSellerProductsRouteWithChildren,
+  AuthenticatedSellerShippingRoute: AuthenticatedSellerShippingRoute,
   AuthenticatedSellerIndexRoute: AuthenticatedSellerIndexRoute,
 }
 
@@ -961,3 +983,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
