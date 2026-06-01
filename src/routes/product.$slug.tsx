@@ -36,6 +36,23 @@ function ProductPage() {
     throw notFound();
   }
   const p = product;
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    name: p.name,
+    description: p.description,
+    image: p.images,
+    brand: p.brand ?? p.seller?.name,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "AED",
+      price: p.price_aed,
+      availability: (p.variants[0]?.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+    ...(p.rating_count > 0 && {
+      aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating_avg, reviewCount: p.rating_count },
+    }),
+  };
 
   const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
   const hasDiscount = variant?.compare_at_price_aed && variant.compare_at_price_aed > variant.price_aed;
@@ -63,6 +80,7 @@ function ProductPage() {
 
   return (
     <SiteLayout>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <nav className="text-xs text-muted-foreground">
           <Link to="/shop" className="hover:text-foreground">Shop</Link>
