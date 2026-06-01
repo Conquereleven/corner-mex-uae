@@ -266,6 +266,32 @@ const es = {
         roles: "Roles",
       },
     },
+    performance: {
+      title: "Rendimiento",
+      adminSub: "Métricas del marketplace, salud de cumplimiento y ranking de vendedores.",
+      sellerSub: "Métricas de tu tienda comparadas con los promedios del marketplace.",
+      range: { d7: "7 días", d30: "30 días", d90: "90 días" },
+      kpi: {
+        gmv: "GMV", orders: "Pedidos", aov: "Ticket promedio", units: "Unidades vendidas",
+        fulfillment: "Tasa de cumplimiento", cancellation: "Tasa de cancelación",
+        repeat: "Tasa de recompra", stockHealth: "Alertas de stock",
+      },
+      repeatSub: "recurrentes / únicos",
+      health: { excellent: "Excelente", ok: "Aceptable", risk: "En riesgo" },
+      stock: { out: "sin stock", low: "stock bajo" },
+      bench: { above: "Sobre prom.", below: "Bajo prom.", onPar: "En línea" },
+      chart: { title: "Tendencia de ingresos", sub: "GMV diario en los últimos {{days}} días" },
+      ranking: {
+        title: "Ranking de vendedores",
+        sub: "Ordenado por GMV en el periodo seleccionado.",
+        col: {
+          rank: "Posición", seller: "Vendedor", gmv: "GMV", orders: "Pedidos",
+          fulfillment: "Cumplimiento", cancellation: "Cancelación",
+          product: "Producto", units: "Unidades", revenue: "Ingresos",
+        },
+      },
+      topProducts: "Top 5 productos",
+    },
   },
 };
 
