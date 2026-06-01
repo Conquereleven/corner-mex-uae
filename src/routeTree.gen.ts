@@ -29,6 +29,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenticated/seller.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 import { Route as AuthenticatedSellerShippingRouteImport } from './routes/_authenticated/seller.shipping'
 import { Route as AuthenticatedSellerReturnsRouteImport } from './routes/_authenticated/seller.returns'
 import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
@@ -45,8 +46,11 @@ import { Route as AuthenticatedAdminQuotesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminPerformanceRouteImport } from './routes/_authenticated/admin.performance'
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
+import { Route as AuthenticatedAdminNewsletterRouteImport } from './routes/_authenticated/admin.newsletter'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
+import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin.coupons'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
+import { Route as AuthenticatedAdminBannersRouteImport } from './routes/_authenticated/admin.banners'
 import { Route as AuthenticatedAccountWishlistRouteImport } from './routes/_authenticated/account.wishlist'
 import { Route as AuthenticatedAccountReturnsRouteImport } from './routes/_authenticated/account.returns'
 import { Route as AuthenticatedAccountQuotesRouteImport } from './routes/_authenticated/account.quotes'
@@ -159,6 +163,11 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
+  id: '/api/public/sitemap.xml',
+  path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedSellerShippingRoute =
   AuthenticatedSellerShippingRouteImport.update({
     id: '/shipping',
@@ -255,16 +264,34 @@ const AuthenticatedAdminOrdersRoute =
     path: '/orders',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminNewsletterRoute =
+  AuthenticatedAdminNewsletterRouteImport.update({
+    id: '/newsletter',
+    path: '/newsletter',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminCustomersRoute =
   AuthenticatedAdminCustomersRouteImport.update({
     id: '/customers',
     path: '/customers',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCouponsRoute =
+  AuthenticatedAdminCouponsRouteImport.update({
+    id: '/coupons',
+    path: '/coupons',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminCategoriesRoute =
   AuthenticatedAdminCategoriesRouteImport.update({
     id: '/categories',
     path: '/categories',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminBannersRoute =
+  AuthenticatedAdminBannersRouteImport.update({
+    id: '/banners',
+    path: '/banners',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAccountWishlistRoute =
@@ -356,8 +383,11 @@ export interface FileRoutesByFullPath {
   '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
   '/account/wishlist': typeof AuthenticatedAccountWishlistRoute
+  '/admin/banners': typeof AuthenticatedAdminBannersRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
+  '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
+  '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
@@ -374,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
   '/seller/shipping': typeof AuthenticatedSellerShippingRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
@@ -404,8 +435,11 @@ export interface FileRoutesByTo {
   '/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
   '/account/wishlist': typeof AuthenticatedAccountWishlistRoute
+  '/admin/banners': typeof AuthenticatedAdminBannersRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
+  '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
+  '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
@@ -422,6 +456,7 @@ export interface FileRoutesByTo {
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
   '/seller/shipping': typeof AuthenticatedSellerShippingRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
@@ -456,8 +491,11 @@ export interface FileRoutesById {
   '/_authenticated/account/quotes': typeof AuthenticatedAccountQuotesRoute
   '/_authenticated/account/returns': typeof AuthenticatedAccountReturnsRoute
   '/_authenticated/account/wishlist': typeof AuthenticatedAccountWishlistRoute
+  '/_authenticated/admin/banners': typeof AuthenticatedAdminBannersRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
+  '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
+  '/_authenticated/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/performance': typeof AuthenticatedAdminPerformanceRoute
@@ -474,6 +512,7 @@ export interface FileRoutesById {
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/_authenticated/seller/returns': typeof AuthenticatedSellerReturnsRoute
   '/_authenticated/seller/shipping': typeof AuthenticatedSellerShippingRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
@@ -508,8 +547,11 @@ export interface FileRouteTypes {
     | '/account/quotes'
     | '/account/returns'
     | '/account/wishlist'
+    | '/admin/banners'
     | '/admin/categories'
+    | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/newsletter'
     | '/admin/orders'
     | '/admin/payouts'
     | '/admin/performance'
@@ -526,6 +568,7 @@ export interface FileRouteTypes {
     | '/seller/products'
     | '/seller/returns'
     | '/seller/shipping'
+    | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
     | '/admin/'
     | '/seller/'
@@ -556,8 +599,11 @@ export interface FileRouteTypes {
     | '/account/quotes'
     | '/account/returns'
     | '/account/wishlist'
+    | '/admin/banners'
     | '/admin/categories'
+    | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/newsletter'
     | '/admin/orders'
     | '/admin/payouts'
     | '/admin/performance'
@@ -574,6 +620,7 @@ export interface FileRouteTypes {
     | '/seller/products'
     | '/seller/returns'
     | '/seller/shipping'
+    | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
     | '/admin'
     | '/seller'
@@ -607,8 +654,11 @@ export interface FileRouteTypes {
     | '/_authenticated/account/quotes'
     | '/_authenticated/account/returns'
     | '/_authenticated/account/wishlist'
+    | '/_authenticated/admin/banners'
     | '/_authenticated/admin/categories'
+    | '/_authenticated/admin/coupons'
     | '/_authenticated/admin/customers'
+    | '/_authenticated/admin/newsletter'
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/payouts'
     | '/_authenticated/admin/performance'
@@ -625,6 +675,7 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/products'
     | '/_authenticated/seller/returns'
     | '/_authenticated/seller/shipping'
+    | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
@@ -649,6 +700,7 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
@@ -794,6 +846,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sitemap.xml': {
+      id: '/api/public/sitemap.xml'
+      path: '/api/public/sitemap.xml'
+      fullPath: '/api/public/sitemap.xml'
+      preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/seller/shipping': {
       id: '/_authenticated/seller/shipping'
       path: '/shipping'
@@ -906,6 +965,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/newsletter': {
+      id: '/_authenticated/admin/newsletter'
+      path: '/newsletter'
+      fullPath: '/admin/newsletter'
+      preLoaderRoute: typeof AuthenticatedAdminNewsletterRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/customers': {
       id: '/_authenticated/admin/customers'
       path: '/customers'
@@ -913,11 +979,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCustomersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/coupons': {
+      id: '/_authenticated/admin/coupons'
+      path: '/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AuthenticatedAdminCouponsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/categories': {
       id: '/_authenticated/admin/categories'
       path: '/categories'
       fullPath: '/admin/categories'
       preLoaderRoute: typeof AuthenticatedAdminCategoriesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/banners': {
+      id: '/_authenticated/admin/banners'
+      path: '/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AuthenticatedAdminBannersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/account/wishlist': {
@@ -1035,8 +1115,11 @@ const AuthenticatedAdminCustomersRouteWithChildren =
   )
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminBannersRoute: typeof AuthenticatedAdminBannersRoute
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
+  AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRouteWithChildren
+  AuthenticatedAdminNewsletterRoute: typeof AuthenticatedAdminNewsletterRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminPerformanceRoute: typeof AuthenticatedAdminPerformanceRoute
@@ -1051,9 +1134,12 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminBannersRoute: AuthenticatedAdminBannersRoute,
   AuthenticatedAdminCategoriesRoute: AuthenticatedAdminCategoriesRoute,
+  AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
   AuthenticatedAdminCustomersRoute:
     AuthenticatedAdminCustomersRouteWithChildren,
+  AuthenticatedAdminNewsletterRoute: AuthenticatedAdminNewsletterRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminPerformanceRoute: AuthenticatedAdminPerformanceRoute,
@@ -1177,6 +1263,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
   ProductSlugRoute: ProductSlugRoute,
+  ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport

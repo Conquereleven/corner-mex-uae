@@ -6,6 +6,7 @@ import { EMIRATE_FORM_TO_DB } from "@/lib/shipping.functions";
 import { tplOrderPlaced } from "@/lib/email-templates";
 import { createNotification, notifyOrderSellers } from "@/lib/notifications.functions";
 import { awardOrderPoints } from "@/lib/loyalty.functions";
+import { evaluateCoupon } from "@/lib/coupons.functions";
 
 const Emirate = z.enum(["AD", "DU", "SH", "AJ", "UQ", "RK", "FU"]);
 const PaymentMethod = z.enum(["card", "apple_pay", "google_pay", "tabby", "tamara", "cod", "bank_transfer"]);
@@ -27,6 +28,7 @@ const Input = z.object({
     landmark: z.string().max(120).optional().nullable(),
   }),
   notes: z.string().max(500).optional().nullable(),
+  coupon_code: z.string().min(1).max(64).optional().nullable(),
 });
 
 export const placeOrder = createServerFn({ method: "POST" })
@@ -125,7 +127,18 @@ export const placeOrder = createServerFn({ method: "POST" })
     }
     shipping = +shipping.toFixed(2);
     const tax = +(subtotal * 0.05).toFixed(2);
-    const total = +(subtotal + shipping + tax).toFixed(2);
+
+    // Coupon evaluation (server-trusted)
+    let discount = 0;
+    let appliedCoupon: { id: string; code: string } | null = null;
+    if (data.coupon_code) {
+      const r = await evaluateCoupon(data.coupon_code, subtotal);
+      if (r.ok) {
+        discount = r.coupon.discount_aed;
+        appliedCoupon = { id: r.coupon.id, code: r.coupon.code };
+      }
+    }
+    const total = +(subtotal - discount + shipping + tax).toFixed(2);
 
     // Insert order with admin (auth_id captured separately)
     const { data: order, error: oErr } = await supabaseAdmin
@@ -137,6 +150,9 @@ export const placeOrder = createServerFn({ method: "POST" })
         shipping_aed: shipping,
         tax_aed: tax,
         total_aed: total,
+        discount_aed: discount,
+        coupon_id: appliedCoupon?.id ?? null,
+        coupon_code: appliedCoupon?.code ?? null,
         payment_method: data.payment_method,
         payment_status: data.payment_method === "cod" ? "pending" : "pending",
         shipping_address: data.shipping_address,
@@ -154,6 +170,17 @@ export const placeOrder = createServerFn({ method: "POST" })
       .from("order_items")
       .insert(orderItems.map((oi) => ({ ...oi, order_id: order.id })));
     if (oiErr) throw new Error(oiErr.message);
+
+    // Record coupon redemption + increment usage
+    if (appliedCoupon) {
+      try {
+        await supabaseAdmin.from("coupon_redemptions").insert({
+          coupon_id: appliedCoupon.id, order_id: order.id, user_id: userId, discount_aed: discount,
+        });
+        const { data: c } = await supabaseAdmin.from("coupons").select("uses_count").eq("id", appliedCoupon.id).maybeSingle();
+        if (c) await supabaseAdmin.from("coupons").update({ uses_count: (c.uses_count ?? 0) + 1 }).eq("id", appliedCoupon.id);
+      } catch (e) { console.error("coupon redemption failed", e); }
+    }
 
     // Decrement stock
     for (const it of data.items) {

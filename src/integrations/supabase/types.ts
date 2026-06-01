@@ -118,6 +118,87 @@ export type Database = {
           },
         ]
       }
+      coupon_redemptions: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          discount_aed: number
+          id: string
+          order_id: string
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          discount_aed: number
+          id?: string
+          order_id: string
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          discount_aed?: number
+          id?: string
+          order_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          max_discount_aed: number | null
+          max_uses: number | null
+          min_subtotal_aed: number
+          seller_id: string | null
+          starts_at: string | null
+          updated_at: string
+          uses_count: number
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          max_discount_aed?: number | null
+          max_uses?: number | null
+          min_subtotal_aed?: number
+          seller_id?: string | null
+          starts_at?: string | null
+          updated_at?: string
+          uses_count?: number
+          value: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["coupon_kind"]
+          max_discount_aed?: number | null
+          max_uses?: number | null
+          min_subtotal_aed?: number
+          seller_id?: string | null
+          starts_at?: string | null
+          updated_at?: string
+          uses_count?: number
+          value?: number
+        }
+        Relationships: []
+      }
       loyalty_accounts: {
         Row: {
           created_at: string
@@ -178,6 +259,33 @@ export type Database = {
           order_id?: string | null
           points?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          locale: string
+          source: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          locale?: string
+          source?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          locale?: string
+          source?: string | null
+          status?: string
         }
         Relationships: []
       }
@@ -340,7 +448,10 @@ export type Database = {
       orders: {
         Row: {
           buyer_id: string
+          coupon_code: string | null
+          coupon_id: string | null
           created_at: string
+          discount_aed: number
           id: string
           notes: string | null
           order_number: string
@@ -360,7 +471,10 @@ export type Database = {
         }
         Insert: {
           buyer_id: string
+          coupon_code?: string | null
+          coupon_id?: string | null
           created_at?: string
+          discount_aed?: number
           id?: string
           notes?: string | null
           order_number?: string
@@ -380,7 +494,10 @@ export type Database = {
         }
         Update: {
           buyer_id?: string
+          coupon_code?: string | null
+          coupon_id?: string | null
           created_at?: string
+          discount_aed?: number
           id?: string
           notes?: string | null
           order_number?: string
@@ -697,6 +814,51 @@ export type Database = {
           phone?: string | null
           preferred_lang?: Database["public"]["Enums"]["lang_code"]
           trn?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      promo_banners: {
+        Row: {
+          created_at: string
+          cta_label: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          link_url: string | null
+          sort_order: number
+          starts_at: string | null
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          sort_order?: number
+          starts_at?: string | null
+          subtitle?: string | null
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -1140,6 +1302,7 @@ export type Database = {
         | "local_courier"
         | "pickup"
         | "other"
+      coupon_kind: "percent" | "fixed"
       emirate:
         | "abu_dhabi"
         | "dubai"
@@ -1337,6 +1500,7 @@ export const Constants = {
         "pickup",
         "other",
       ],
+      coupon_kind: ["percent", "fixed"],
       emirate: [
         "abu_dhabi",
         "dubai",
