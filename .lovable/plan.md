@@ -1,61 +1,54 @@
-# Fase 2 — Admin: Categorías + Customers
+# Fase 3 · Mensaje 1 — Vendor Performance
 
-## Alcance
-Activar las dos entradas "Coming soon" del sidebar admin con CRUD real, manteniendo el patrón visual de Payouts/Orders (shadcn Table + dialogs + i18n ES/EN).
-
-## 1. Categorías (CRUD completo)
-
-**Server functions** (`src/lib/admin.functions.ts`)
-- `adminListCategories` — lista jerárquica (parent → children) con conteo de productos por categoría
-- `adminCreateCategory` — inputs: `slug`, `name_en`, `name_ar`, `name_es`, `parent_id?`, `description_*?`, `image_url?`, `sort_order`, `is_active`
-- `adminUpdateCategory` — mismos campos, por `id`
-- `adminToggleCategoryActive` — flip `is_active`
-- `adminDeleteCategory` — bloquea si tiene productos o subcategorías; mensaje claro
-
-Validación Zod: slug `^[a-z0-9-]+$`, nombres min 1 / max 120, sort_order int ≥ 0.
-
-**Ruta** `src/routes/_authenticated/admin.categories.tsx`
-- KPIs: total, activas, inactivas, con productos
-- Tabla con: imagen mini, nombre (EN/ES), slug, parent, # productos, orden, estado (badge), acciones
-- Filtros: buscar por nombre/slug, filtro estado (all/active/inactive), filtro parent
-- Dialog "Nueva categoría" + "Editar" (mismo formulario): tabs ES/EN/AR para nombres y descripciones, selector de parent (excluye self/descendientes en edición), preview de imagen por URL
-- Switch para activar/desactivar inline en cada fila
-- Confirmación shadcn AlertDialog antes de eliminar
-
-## 2. Customers (read + light actions)
-
-**Server functions** (`src/lib/admin.functions.ts`)
-- `adminListCustomers` — join `profiles` + agregados: # órdenes, GMV total, última orden, idioma preferido, rol(es); filtros opcionales por search
-- `adminGetCustomer` — detalle: profile completo, direcciones, últimas 20 órdenes con status/total, lifetime stats (orders, GMV, AOV, primera/última compra)
-
-Sin update/delete de profiles (respeta RLS y modelo auth).
-
-**Rutas**
-- `src/routes/_authenticated/admin.customers.tsx` — lista
-  - KPIs: total customers, nuevos (30d), con órdenes, GMV promedio por customer
-  - Tabla: nombre, email (de auth via admin), teléfono, # órdenes, GMV, última orden, idioma; click → detalle
-  - Search por nombre / email / teléfono
-- `src/routes/_authenticated/admin.customers.$id.tsx` — detalle drawer/page
-  - Card de perfil + direcciones
-  - Historial de órdenes con link a `/admin/orders` filtrado
-  - Stats panel
-
-## 3. Navegación + i18n
-- `admin.tsx`: quitar `soon: true` de Categories y Customers, apuntar a las rutas reales
-- `src/lib/i18n.ts`: agregar bloque `dash.categories.*` y `dash.customers.*` en ES + EN (labels, columnas, dialogs, estados, mensajes de error)
-
-## Detalles técnicos
-- Tablas con shadcn `Table` + `Skeleton` loading, igual que `admin.orders.tsx`
-- Mutations con `useMutation` + `toast` (sonner) + `qc.invalidateQueries`
-- Para emails de customers: `supabaseAdmin.auth.admin.listUsers()` paginado y mergeado por `id` con `profiles` (evita exponer auth.users vía PostgREST)
-- Sin cambios de schema DB: tabla `categories` y `profiles` ya existen con los campos necesarios
-- Sin cambios de RLS (todo pasa por server fns con `assertAdmin`)
+Métricas operacionales para Admin (marketplace + ranking) y Seller (tienda propia vs. benchmark anonimizado).
 
 ## Archivos
-**Editar:** `src/lib/admin.functions.ts`, `src/routes/_authenticated/admin.tsx`, `src/lib/i18n.ts`
-**Crear:** `src/routes/_authenticated/admin.categories.tsx`, `src/routes/_authenticated/admin.customers.tsx`, `src/routes/_authenticated/admin.customers.$id.tsx`
 
-## Fuera de alcance (Fase 3+)
-- Edición/merge de customers, envío de emails, notas internas
-- Drag & drop para reordenar categorías (usaremos input numérico `sort_order`)
-- Upload de imagen de categoría (por ahora solo URL)
+### Nuevo: `src/lib/performance.functions.ts`
+Server function única `getPerformance({ sellerId?, days })`:
+- `days`: 7 | 30 | 90 (default 30)
+- Admin sin `sellerId` → modo marketplace + ranking de sellers
+- Admin con `sellerId` → métricas de ese seller
+- Seller (no admin) → siempre forzado a su propio `sellerId` (validación server-side)
+- Una sola query trae 2× ventana (actual + período anterior) y se separa en memoria para trends
+- Benchmark de marketplace para vista seller (anonimizado: solo promedios)
+
+### Nueva ruta: `src/routes/_authenticated/admin.performance.tsx`
+- Selector de rango (7/30/90 días) con `Tabs`
+- KPI cards con trend (% vs período anterior, flecha ±, color semántico):
+  - GMV, Pedidos, AOV, Unidades
+- KPI operacionales:
+  - Fulfillment rate, Cancellation rate, Repeat buyer rate
+- Stock health (out of stock + low stock counts)
+- Chart: GMV diario (AreaChart) + Pedidos diarios overlay
+- Tabla **Seller Ranking** (solo admin marketplace): seller, GMV, pedidos, fulfillment %, cancelación %, con badges color-coded (verde/ámbar/rojo)
+- Top 5 productos por revenue
+
+### Nueva ruta: `src/routes/_authenticated/seller.performance.tsx`
+- Mismas KPIs que admin pero sin ranking
+- Cada KPI operacional muestra **benchmark** (promedio marketplace) al lado, con badge "Above avg" / "Below avg"
+- Top productos propios
+
+## Navegación + i18n
+- `admin.tsx`: agregar item "Performance" en grupo `ops` (después de Customers)
+- `seller.tsx`: agregar item "Performance" en grupo `overview` (después de Overview)
+- `src/lib/i18n.ts`: añadir bloque `dash.performance.*` en EN + ES:
+  - title, sub, ranges (7d/30d/90d), kpis, ranking columns, benchmark labels, stock labels, "Above/Below average"
+
+## Detalles técnicos
+- Query única con join `orders!inner` + filtro por `created_at >= sincePrev`, split en memoria
+- Fulfillment rate = items con `fulfillment_status ∈ {delivered, shipped}` / total items
+- Cancellation rate = items con `fulfillment_status ∈ {cancelled, refunded}` / total
+- Repeat rate = buyers con ≥2 orders / unique buyers
+- Trend = (curr − prev) / prev, con flecha y color (verde positivo / rojo negativo, invertido para cancellation)
+- Color thresholds: fulfillment >95% verde, 80–95% ámbar, <80% rojo
+- Sin tabla nueva: todo deriva de `orders`, `order_items`, `product_variants`, `sellers`
+- Stock health para marketplace usa `count: exact, head: true` (no carga filas)
+
+## Fuera de alcance
+- Export CSV de métricas (Fase 4)
+- Vista de Performance por seller individual desde admin (drill-down se hace pasando `sellerId` por query param — UI futura)
+- Cron de alertas (low stock notifications)
+
+## Siguiente (Mensaje 2)
+Mass Upload CSV de productos (seller + admin).

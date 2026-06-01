@@ -29,7 +29,7 @@ const en = {
     nav: {
       overview: "Overview", sellers: "Sellers", orders: "Orders", products: "Products", newProduct: "New product",
       payouts: "Payouts", commissions: "Commissions", categories: "Categories", customers: "Customers",
-      storefront: "Storefront", settings: "Settings",
+      storefront: "Storefront", settings: "Settings", performance: "Performance",
     },
     kpi: {
       gmv30: "GMV (30d)", orders30: "Orders (30d)", aov: "Avg. order value", commission: "Commission",
@@ -119,6 +119,32 @@ const en = {
         roles: "Roles",
       },
     },
+    performance: {
+      title: "Performance",
+      adminSub: "Marketplace metrics, fulfillment health and seller ranking.",
+      sellerSub: "Your store's metrics compared to marketplace averages.",
+      range: { d7: "7 days", d30: "30 days", d90: "90 days" },
+      kpi: {
+        gmv: "GMV", orders: "Orders", aov: "Avg. order value", units: "Units sold",
+        fulfillment: "Fulfillment rate", cancellation: "Cancellation rate",
+        repeat: "Repeat buyer rate", stockHealth: "Stock alerts",
+      },
+      repeatSub: "repeat / unique",
+      health: { excellent: "Excellent", ok: "Acceptable", risk: "At risk" },
+      stock: { out: "out of stock", low: "low stock" },
+      bench: { above: "Above avg", below: "Below avg", onPar: "On par" },
+      chart: { title: "Revenue trend", sub: "Daily GMV over the last {{days}} days" },
+      ranking: {
+        title: "Seller ranking",
+        sub: "Ordered by GMV in the selected period.",
+        col: {
+          rank: "Rank", seller: "Seller", gmv: "GMV", orders: "Orders",
+          fulfillment: "Fulfillment", cancellation: "Cancellation",
+          product: "Product", units: "Units", revenue: "Revenue",
+        },
+      },
+      topProducts: "Top 5 products",
+    },
   },
 };
 
@@ -150,7 +176,7 @@ const es = {
     nav: {
       overview: "Resumen", sellers: "Vendedores", orders: "Pedidos", products: "Productos", newProduct: "Nuevo producto",
       payouts: "Pagos", commissions: "Comisiones", categories: "Categorías", customers: "Clientes",
-      storefront: "Tienda pública", settings: "Configuración",
+      storefront: "Tienda pública", settings: "Configuración", performance: "Rendimiento",
     },
     kpi: {
       gmv30: "GMV (30d)", orders30: "Pedidos (30d)", aov: "Ticket promedio", commission: "Comisión",
@@ -239,6 +265,32 @@ const es = {
         stats: "Histórico", aov: "Ticket promedio", firstOrder: "Primer pedido", lastOrder: "Último pedido",
         roles: "Roles",
       },
+    },
+    performance: {
+      title: "Rendimiento",
+      adminSub: "Métricas del marketplace, salud de cumplimiento y ranking de vendedores.",
+      sellerSub: "Métricas de tu tienda comparadas con los promedios del marketplace.",
+      range: { d7: "7 días", d30: "30 días", d90: "90 días" },
+      kpi: {
+        gmv: "GMV", orders: "Pedidos", aov: "Ticket promedio", units: "Unidades vendidas",
+        fulfillment: "Tasa de cumplimiento", cancellation: "Tasa de cancelación",
+        repeat: "Tasa de recompra", stockHealth: "Alertas de stock",
+      },
+      repeatSub: "recurrentes / únicos",
+      health: { excellent: "Excelente", ok: "Aceptable", risk: "En riesgo" },
+      stock: { out: "sin stock", low: "stock bajo" },
+      bench: { above: "Sobre prom.", below: "Bajo prom.", onPar: "En línea" },
+      chart: { title: "Tendencia de ingresos", sub: "GMV diario en los últimos {{days}} días" },
+      ranking: {
+        title: "Ranking de vendedores",
+        sub: "Ordenado por GMV en el periodo seleccionado.",
+        col: {
+          rank: "Posición", seller: "Vendedor", gmv: "GMV", orders: "Pedidos",
+          fulfillment: "Cumplimiento", cancellation: "Cancelación",
+          product: "Producto", units: "Unidades", revenue: "Ingresos",
+        },
+      },
+      topProducts: "Top 5 productos",
     },
   },
 };
