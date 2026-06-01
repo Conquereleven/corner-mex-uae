@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard, ShoppingCart, Store, Wallet, Tags, Users, Settings, Activity, Upload, FileText,
+  LayoutDashboard, ShoppingCart, Store, Wallet, Tags, Users, Settings, Activity, Upload, FileText, Truck,
 } from "lucide-react";
 import { isAdmin } from "@/lib/admin.functions";
 import { DashboardShell } from "@/components/site/DashboardShell";
@@ -41,6 +41,7 @@ function AdminLayout() {
             { to: "/admin/categories", label: t("dash.nav.categories"), icon: Tags },
             { to: "/admin/customers", label: t("dash.nav.customers"), icon: Users },
             { to: "/admin/performance", label: t("dash.nav.performance"), icon: Activity },
+            { to: "/admin/shipping", label: "Shipping", icon: Truck },
           ],
         },
         {
