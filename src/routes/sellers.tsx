@@ -4,7 +4,15 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { listSellers } from "@/lib/catalog.functions";
 
 export const Route = createFileRoute("/sellers")({
-  head: () => ({ meta: [{ title: "Sellers — Corner Mex" }] }),
+  head: () => ({
+    meta: [
+      { title: "Verified sellers — Corner Mex" },
+      { name: "description", content: "Browse the verified Mexican food sellers serving the UAE through Corner Mex." },
+      { property: "og:title", content: "Verified sellers — Corner Mex" },
+      { property: "og:description", content: "Mexican food brands and importers operating in the UAE." },
+    ],
+    links: [{ rel: "canonical", href: "https://corner-mex-uae.lovable.app/sellers" }],
+  }),
   component: Sellers,
 });
 

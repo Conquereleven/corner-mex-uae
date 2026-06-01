@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /admin
+Disallow: /seller
+Disallow: /checkout
+Disallow: /cart
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://corner-mex-uae.lovable.app/api/public/sitemap.xml

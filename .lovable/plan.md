@@ -1,36 +1,27 @@
-## Cableado restante Fase 5
+## Cierre de Fase 6
 
-Conectar los módulos ya creados (reviews, wishlist, loyalty, returns) al resto de la app.
+Tareas pendientes para dejar Fase 6 completa:
 
-### 1. Wishlist en cards de producto
-- Insertar `<WishlistButton productId={...} />` en `ProductCard` (esquina superior derecha de la imagen, absolute).
-- Asegurar que funciona también en la grilla de la home, categorías, búsqueda y storefront del seller.
+### 1. `robots.txt` + sitemap discovery
+- Crear `public/robots.txt` con `User-agent: *` / `Allow: /` y directiva `Sitemap: https://corner-mex-uae.lovable.app/api/public/sitemap.xml`.
+- Bloquear rutas privadas: `Disallow: /account`, `/admin`, `/seller`, `/checkout`, `/login`, `/signup`.
 
-### 2. Reviews en ficha de producto
-- En `routes/products.$slug.tsx` (o equivalente), añadir sección `<ProductReviews productId={...} />` debajo de la descripción.
-- Mostrar promedio de estrellas + número de reseñas junto al título del producto (usando `getProductRatingSummary` desde `reviews.functions.ts`).
-- En las cards de producto, mostrar mini-rating (★ 4.5 · 12) bajo el nombre cuando exista.
+### 2. Regenerar tipos de Supabase
+- Tras las migraciones de Fase 6 (coupons, coupon_redemptions, promo_banners, newsletter_subscribers, columnas nuevas en `orders`), refrescar `src/integrations/supabase/types.ts` para que los server functions tengan tipos correctos y desaparezcan los `any` residuales.
 
-### 3. Navegación seller y admin
-- **Seller sidebar** (`routes/_authenticated/seller.tsx`): añadir link "Devoluciones" → `/seller/returns`.
-- **Admin sidebar** (`routes/_authenticated/admin.tsx`): añadir links "Reseñas" → `/admin/reviews` y "Devoluciones" → `/admin/returns`.
+### 3. Página de cupones para sellers
+- Nueva ruta `src/routes/_authenticated/seller.coupons.tsx`: listar cupones propios del seller, crear/editar/desactivar (scope = su `seller_id`).
+- Extender `src/lib/coupons.functions.ts` con `sellerListCoupons`, `sellerUpsertCoupon`, `sellerToggleCoupon` (middleware `requireSupabaseAuth` + verificación de `seller_id` del usuario).
+- Añadir entrada "Coupons" en el sidebar de `src/routes/_authenticated/seller.tsx`.
+- Ajustar `evaluateCoupon` si hace falta para respetar `seller_id` cuando un cupón es por-seller (verificar que ya filtra por items del seller en el carrito).
 
-### 4. Acumulación de puntos de fidelidad
-- En `orders.functions.ts` → `placeOrder`, después de crear la orden llamar `awardOrderPoints({ userId, orderId, subtotalAed })`.
-- Disparar también notificación in-app "Has ganado X puntos" y actualización de tier si corresponde (la lógica ya vive en `loyalty.functions.ts`).
-- Mostrar badge de tier (bronze/silver/gold/platinum) en el header del `/account` junto al nombre.
+### 4. SEO menor
+- Añadir `head()` con title/description/og en rutas públicas que aún no lo tengan claro (revisión rápida de `about.tsx`, `b2b.tsx`, `sellers.tsx`).
+- Confirmar JSON-LD `Organization` en `__root.tsx` (si falta, añadir).
 
-### 5. Detalles técnicos
-- Invalidar queries: tras toggle wishlist → `["wishlist"]`; tras review submit → `["reviews", productId]` y `["product-rating", productId]`.
-- El `WishlistButton` ya existe; solo cablearlo. Si el usuario no está autenticado, redirigir a `/login`.
-- Reviews: filtrar por `status = 'approved'` en la vista pública (RLS ya lo hace, pero ser explícito en la query).
-- Puntos: usar la fórmula ya definida en `loyalty.functions.ts` (multiplier por tier sobre `subtotal_aed`).
+### Out of scope (para fases siguientes)
+- i18n completo + RTL Arabic.
+- Dashboard analítico avanzado (más allá de `admin.performance`).
+- Campañas de email transaccional desde newsletter (solo capturamos subs por ahora).
 
-### Archivos a editar
-- `src/components/site/ProductCard.tsx` (wishlist + rating)
-- `src/routes/products.$slug.tsx` (reviews + rating en header)
-- `src/routes/_authenticated/seller.tsx` (link returns)
-- `src/routes/_authenticated/admin.tsx` (links reviews + returns)
-- `src/routes/_authenticated/account.tsx` (badge de tier)
-- `src/lib/orders.functions.ts` (llamar awardOrderPoints)
-- `src/lib/reviews.functions.ts` (añadir `getProductRatingSummary` si no existe)
+¿Procedo con estas 4 tareas en build mode?

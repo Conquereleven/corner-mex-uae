@@ -75,19 +75,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Corner Mex — Authentic Mexican pantry in the UAE" },
+      { name: "description", content: "Authentic Mexican chiles, salsas, masa and snacks — sourced for the UAE. Shop the marketplace or order in bulk for your venue." },
+      { property: "og:title", content: "Corner Mex — Authentic Mexican pantry in the UAE" },
+      { property: "og:description", content: "Marketplace of verified Mexican food sellers serving the UAE. Retail and B2B." },
+      { property: "og:site_name", content: "Corner Mex" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Corner Mex",
+          url: "https://corner-mex-uae.lovable.app",
+          description: "Marketplace of authentic Mexican food sellers in the UAE.",
+        }),
       },
     ],
   }),
