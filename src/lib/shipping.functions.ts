@@ -3,7 +3,16 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const Emirate = z.enum(["AD", "DU", "SH", "AJ", "UQ", "RK", "FU"]);
+const Emirate = z.enum([
+  "abu_dhabi", "dubai", "sharjah", "ajman",
+  "umm_al_quwain", "ras_al_khaimah", "fujairah",
+]);
+export type EmirateCode = z.infer<typeof Emirate>;
+
+export const EMIRATE_FORM_TO_DB: Record<string, EmirateCode> = {
+  AD: "abu_dhabi", DU: "dubai", SH: "sharjah", AJ: "ajman",
+  UQ: "umm_al_quwain", RK: "ras_al_khaimah", FU: "fujairah",
+};
 
 export const listShippingZones = createServerFn({ method: "GET" }).handler(async () => {
   const { data, error } = await supabaseAdmin
