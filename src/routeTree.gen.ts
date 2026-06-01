@@ -29,6 +29,7 @@ import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
+import { Route as AuthenticatedSellerPerformanceRouteImport } from './routes/_authenticated/seller.performance'
 import { Route as AuthenticatedSellerPayoutsRouteImport } from './routes/_authenticated/seller.payouts'
 import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authenticated/seller.orders'
 import { Route as AuthenticatedAdminSellersRouteImport } from './routes/_authenticated/admin.sellers'
@@ -143,6 +144,12 @@ const AuthenticatedSellerProductsRoute =
     path: '/products',
     getParentRoute: () => AuthenticatedSellerRoute,
   } as any)
+const AuthenticatedSellerPerformanceRoute =
+  AuthenticatedSellerPerformanceRouteImport.update({
+    id: '/performance',
+    path: '/performance',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
 const AuthenticatedSellerPayoutsRoute =
   AuthenticatedSellerPayoutsRouteImport.update({
     id: '/payouts',
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
+  '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -271,6 +279,7 @@ export interface FileRoutesByTo {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
+  '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -306,6 +315,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/_authenticated/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
+  '/_authenticated/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/seller/orders'
     | '/seller/payouts'
+    | '/seller/performance'
     | '/seller/products'
     | '/api/public/stripe-webhook'
     | '/admin/'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/seller/orders'
     | '/seller/payouts'
+    | '/seller/performance'
     | '/seller/products'
     | '/api/public/stripe-webhook'
     | '/admin'
@@ -406,6 +418,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/sellers'
     | '/_authenticated/seller/orders'
     | '/_authenticated/seller/payouts'
+    | '/_authenticated/seller/performance'
     | '/_authenticated/seller/products'
     | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
@@ -574,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerProductsRouteImport
       parentRoute: typeof AuthenticatedSellerRoute
     }
+    '/_authenticated/seller/performance': {
+      id: '/_authenticated/seller/performance'
+      path: '/performance'
+      fullPath: '/seller/performance'
+      preLoaderRoute: typeof AuthenticatedSellerPerformanceRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
     '/_authenticated/seller/payouts': {
       id: '/_authenticated/seller/payouts'
       path: '/payouts'
@@ -718,6 +738,7 @@ const AuthenticatedSellerProductsRouteWithChildren =
 interface AuthenticatedSellerRouteChildren {
   AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRoute
   AuthenticatedSellerPayoutsRoute: typeof AuthenticatedSellerPayoutsRoute
+  AuthenticatedSellerPerformanceRoute: typeof AuthenticatedSellerPerformanceRoute
   AuthenticatedSellerProductsRoute: typeof AuthenticatedSellerProductsRouteWithChildren
   AuthenticatedSellerIndexRoute: typeof AuthenticatedSellerIndexRoute
 }
@@ -725,6 +746,7 @@ interface AuthenticatedSellerRouteChildren {
 const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
   AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRoute,
   AuthenticatedSellerPayoutsRoute: AuthenticatedSellerPayoutsRoute,
+  AuthenticatedSellerPerformanceRoute: AuthenticatedSellerPerformanceRoute,
   AuthenticatedSellerProductsRoute:
     AuthenticatedSellerProductsRouteWithChildren,
   AuthenticatedSellerIndexRoute: AuthenticatedSellerIndexRoute,
