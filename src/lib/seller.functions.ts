@@ -194,20 +194,15 @@ const ProductInput = z.object({
   name_es: z.string().max(160).optional().nullable(),
   name_ar: z.string().max(160).optional().nullable(),
   description_en: z.string().max(2000).optional().nullable(),
+  description_es: z.string().max(2000).optional().nullable(),
+  description_ar: z.string().max(2000).optional().nullable(),
   brand: z.string().max(120).optional().nullable(),
   origin_region: z.string().max(120).optional().nullable(),
   spice_level: z.number().int().min(0).max(5).optional().nullable(),
   is_bulk: z.boolean().default(false),
+  is_halal: z.boolean().default(true),
   status: z.enum(["draft", "active", "archived"]).default("active"),
   category_slug: z.string().optional().nullable(),
-  image_url: z.string().url().optional().nullable(),
-  variant: z.object({
-    format_label: z.string().max(120).optional().nullable(),
-    price_aed: z.number().min(0).max(99999),
-    compare_at_price_aed: z.number().min(0).max(99999).optional().nullable(),
-    stock: z.number().int().min(0).max(100000),
-    sku: z.string().max(60).optional().nullable(),
-  }),
 });
 
 export const upsertSellerProduct = createServerFn({ method: "POST" })
@@ -237,11 +232,20 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         origin_region: data.origin_region || null,
         spice_level: data.spice_level ?? null,
         is_bulk: data.is_bulk,
+        is_halal: data.is_halal,
         status: data.status,
         category_id: categoryId,
       }).select("id").single();
       if (error) throw new Error(error.message);
       productId = created.id;
+      // Seed a default placeholder variant so the row is usable
+      await supabaseAdmin.from("product_variants").insert({
+        product_id: productId,
+        format_label: null,
+        price_aed: 0,
+        stock: 0,
+        is_default: true,
+      });
     } else {
       // verify ownership
       const { data: own } = await supabaseAdmin.from("products").select("id").eq("id", productId).eq("seller_id", seller.id).maybeSingle();
@@ -251,6 +255,7 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         origin_region: data.origin_region || null,
         spice_level: data.spice_level ?? null,
         is_bulk: data.is_bulk,
+        is_halal: data.is_halal,
         status: data.status,
         category_id: categoryId,
       }).eq("id", productId);
@@ -260,44 +265,11 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
     // Upsert translations
     const trRows = [
       { product_id: productId, lang: "en" as const, name: data.name_en, description: data.description_en ?? null },
-      ...(data.name_es ? [{ product_id: productId, lang: "es" as const, name: data.name_es, description: null }] : []),
-      ...(data.name_ar ? [{ product_id: productId, lang: "ar" as const, name: data.name_ar, description: null }] : []),
+      ...(data.name_es ? [{ product_id: productId, lang: "es" as const, name: data.name_es, description: data.description_es ?? null }] : []),
+      ...(data.name_ar ? [{ product_id: productId, lang: "ar" as const, name: data.name_ar, description: data.description_ar ?? null }] : []),
     ];
     await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
     if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
-
-    // Image: replace
-    if (data.image_url) {
-      await supabaseAdmin.from("product_images").delete().eq("product_id", productId);
-      await supabaseAdmin.from("product_images").insert({ product_id: productId, url: data.image_url, sort_order: 0 });
-    }
-
-    // Variant: single default variant
-    const { data: existingVariants } = await supabaseAdmin.from("product_variants").select("id").eq("product_id", productId);
-    if (existingVariants && existingVariants.length > 0) {
-      const vId = existingVariants[0].id;
-      await supabaseAdmin.from("product_variants").update({
-        format_label: data.variant.format_label || null,
-        price_aed: data.variant.price_aed,
-        compare_at_price_aed: data.variant.compare_at_price_aed ?? null,
-        stock: data.variant.stock,
-        sku: data.variant.sku || null,
-        is_default: true,
-      }).eq("id", vId);
-      // delete other variants for simplicity
-      const others = existingVariants.slice(1).map((v) => v.id);
-      if (others.length) await supabaseAdmin.from("product_variants").delete().in("id", others);
-    } else {
-      await supabaseAdmin.from("product_variants").insert({
-        product_id: productId,
-        format_label: data.variant.format_label || null,
-        price_aed: data.variant.price_aed,
-        compare_at_price_aed: data.variant.compare_at_price_aed ?? null,
-        stock: data.variant.stock,
-        sku: data.variant.sku || null,
-        is_default: true,
-      });
-    }
 
     return { productId };
   });
@@ -309,10 +281,10 @@ export const getSellerProduct = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data: p, error } = await supabaseAdmin
       .from("products")
-      .select(`id, slug, brand, origin_region, spice_level, is_bulk, status, category:categories(slug),
+      .select(`id, slug, brand, origin_region, spice_level, is_bulk, is_halal, status, category:categories(slug),
         translations:product_translations(lang, name, description),
-        images:product_images(url, sort_order),
-        variants:product_variants(id, format_label, sku, price_aed, compare_at_price_aed, stock, is_default)`)
+        images:product_images(id, url, sort_order),
+        variants:product_variants(id, format_label, sku, price_aed, compare_at_price_aed, stock, weight_grams, is_default)`)
       .eq("id", data.id).eq("seller_id", seller.id).maybeSingle();
     if (error) throw new Error(error.message);
     return p;
@@ -357,4 +329,140 @@ export const getMyPayouts = createServerFn({ method: "GET" })
         },
       },
     };
+  });
+// ===== Product images (private bucket -> long signed URLs) =====
+const BUCKET = "product-images";
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // ~10 years
+
+async function assertOwnsProduct(productId: string, userId: string) {
+  const seller = await getSellerForUser(userId);
+  const { data: own } = await supabaseAdmin
+    .from("products").select("id").eq("id", productId).eq("seller_id", seller.id).maybeSingle();
+  if (!own) throw new Error("Not allowed");
+  return seller;
+}
+
+export const uploadProductImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { productId: string; filename: string; contentType: string; dataBase64: string }) =>
+    z.object({
+      productId: z.string().uuid(),
+      filename: z.string().min(1).max(200),
+      contentType: z.string().min(3).max(120),
+      dataBase64: z.string().min(10).max(8_000_000),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertOwnsProduct(data.productId, context.userId);
+    const ext = (data.filename.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = `${data.productId}/${crypto.randomUUID()}.${ext}`;
+    const buffer = Buffer.from(data.dataBase64, "base64");
+    const up = await supabaseAdmin.storage.from(BUCKET).upload(path, buffer, {
+      contentType: data.contentType, upsert: false,
+    });
+    if (up.error) throw new Error(up.error.message);
+    const signed = await supabaseAdmin.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL);
+    if (signed.error || !signed.data) throw new Error(signed.error?.message ?? "Sign failed");
+    const { data: existing } = await supabaseAdmin
+      .from("product_images").select("id").eq("product_id", data.productId);
+    const nextOrder = (existing ?? []).length;
+    const { data: row, error } = await supabaseAdmin.from("product_images").insert({
+      product_id: data.productId, url: signed.data.signedUrl, sort_order: nextOrder, alt_text: data.filename,
+    }).select("id, url, sort_order").single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const removeProductImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { imageId: string }) => z.object({ imageId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: img } = await supabaseAdmin
+      .from("product_images").select("id, url, product_id").eq("id", data.imageId).maybeSingle();
+    if (!img) throw new Error("Not found");
+    await assertOwnsProduct(img.product_id, context.userId);
+    // Best-effort delete from storage (parse path from URL)
+    try {
+      const match = img.url.match(/product-images\/([^?]+)/);
+      if (match?.[1]) await supabaseAdmin.storage.from(BUCKET).remove([decodeURIComponent(match[1])]);
+    } catch {}
+    const { error } = await supabaseAdmin.from("product_images").delete().eq("id", data.imageId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const reorderProductImages = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { productId: string; orderedIds: string[] }) =>
+    z.object({ productId: z.string().uuid(), orderedIds: z.array(z.string().uuid()).max(30) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertOwnsProduct(data.productId, context.userId);
+    for (let i = 0; i < data.orderedIds.length; i++) {
+      await supabaseAdmin.from("product_images")
+        .update({ sort_order: i }).eq("id", data.orderedIds[i]).eq("product_id", data.productId);
+    }
+    return { ok: true };
+  });
+
+// ===== Variants =====
+const VariantInput = z.object({
+  id: z.string().uuid().optional(),
+  productId: z.string().uuid(),
+  format_label: z.string().max(120).optional().nullable(),
+  sku: z.string().max(60).optional().nullable(),
+  price_aed: z.number().min(0).max(99999),
+  compare_at_price_aed: z.number().min(0).max(99999).optional().nullable(),
+  stock: z.number().int().min(0).max(100000),
+  weight_grams: z.number().int().min(0).max(1_000_000).optional().nullable(),
+  is_default: z.boolean().default(false),
+});
+
+export const upsertVariant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.input<typeof VariantInput>) => VariantInput.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertOwnsProduct(data.productId, context.userId);
+    const row = {
+      product_id: data.productId,
+      format_label: data.format_label || null,
+      sku: data.sku || null,
+      price_aed: data.price_aed,
+      compare_at_price_aed: data.compare_at_price_aed ?? null,
+      stock: data.stock,
+      weight_grams: data.weight_grams ?? null,
+      is_default: !!data.is_default,
+    };
+    if (data.is_default) {
+      await supabaseAdmin.from("product_variants").update({ is_default: false }).eq("product_id", data.productId);
+    }
+    if (data.id) {
+      const { error } = await supabaseAdmin.from("product_variants").update(row).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { id: data.id };
+    } else {
+      const { data: created, error } = await supabaseAdmin.from("product_variants").insert(row).select("id").single();
+      if (error) throw new Error(error.message);
+      return { id: created.id };
+    }
+  });
+
+export const deleteVariant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { variantId: string }) => z.object({ variantId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: v } = await supabaseAdmin
+      .from("product_variants").select("id, product_id, is_default").eq("id", data.variantId).maybeSingle();
+    if (!v) throw new Error("Not found");
+    await assertOwnsProduct(v.product_id, context.userId);
+    const { data: siblings } = await supabaseAdmin
+      .from("product_variants").select("id").eq("product_id", v.product_id);
+    if ((siblings ?? []).length <= 1) throw new Error("A product needs at least one variant");
+    const { error } = await supabaseAdmin.from("product_variants").delete().eq("id", data.variantId);
+    if (error) throw new Error(error.message);
+    if (v.is_default) {
+      const next = (siblings ?? []).find((s) => s.id !== data.variantId);
+      if (next) await supabaseAdmin.from("product_variants").update({ is_default: true }).eq("id", next.id);
+    }
+    return { ok: true };
   });

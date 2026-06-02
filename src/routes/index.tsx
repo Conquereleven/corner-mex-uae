@@ -68,7 +68,7 @@ function Hero() {
           </div>
           <div className="absolute -bottom-6 -start-6 hidden rounded-2xl border border-border bg-background/95 px-5 py-4 shadow-xl backdrop-blur sm:block">
             <div className="font-display text-3xl font-semibold text-foreground">120+</div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">SKUs · 18 sellers</div>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground">SKUs</div>
           </div>
         </div>
       </div>
