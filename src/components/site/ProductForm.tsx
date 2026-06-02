@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { upsertSellerProduct } from "@/lib/seller.functions";
+import { ProductImagesEditor, type ProductImage } from "@/components/site/ProductImagesEditor";
+import { ProductVariantsEditor, type Variant } from "@/components/site/ProductVariantsEditor";
 import { toast } from "sonner";
 
 export type ProductFormValues = {
@@ -16,43 +18,65 @@ export type ProductFormValues = {
   name_es?: string;
   name_ar?: string;
   description_en?: string;
+  description_es?: string;
+  description_ar?: string;
   brand?: string;
   origin_region?: string;
   spice_level?: number;
   is_bulk: boolean;
+  is_halal: boolean;
   status: "draft" | "active" | "archived";
   category_slug?: string;
-  image_url?: string;
-  variant: {
-    format_label?: string;
-    price_aed: number;
-    compare_at_price_aed?: number;
-    stock: number;
-    sku?: string;
-  };
+  images?: ProductImage[];
+  variants?: Variant[];
 };
 
 const defaults: ProductFormValues = {
   name_en: "",
   is_bulk: false,
+  is_halal: true,
   status: "active",
-  variant: { price_aed: 0, stock: 0 },
+  images: [],
+  variants: [],
 };
 
 const CATEGORIES = ["chiles", "salsas", "masa", "snacks", "drinks", "pantry"];
 
 export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues; onSaved?: () => void }) {
   const [form, setForm] = useState<ProductFormValues>({ ...defaults, ...(initial ?? {}) });
+  const [productId, setProductId] = useState<string | undefined>(initial?.id);
+  const [images, setImages] = useState<ProductImage[]>(initial?.images ?? []);
+  const [variants, setVariants] = useState<Variant[]>(initial?.variants ?? []);
   const fn = useServerFn(upsertSellerProduct);
   const qc = useQueryClient();
   const m = useMutation({
-    mutationFn: (input: ProductFormValues) => fn({ data: input as any }),
-    onSuccess: () => { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["seller-products"] }); onSaved?.(); },
+    mutationFn: (input: ProductFormValues) => fn({ data: {
+      id: input.id,
+      name_en: input.name_en,
+      name_es: input.name_es || null,
+      name_ar: input.name_ar || null,
+      description_en: input.description_en || null,
+      description_es: input.description_es || null,
+      description_ar: input.description_ar || null,
+      brand: input.brand || null,
+      origin_region: input.origin_region || null,
+      spice_level: input.spice_level ?? null,
+      is_bulk: input.is_bulk,
+      is_halal: input.is_halal,
+      status: input.status,
+      category_slug: input.category_slug || null,
+    } as any }),
+    onSuccess: (res: any) => {
+      toast.success("Saved");
+      qc.invalidateQueries({ queryKey: ["seller-products"] });
+      if (res?.productId) {
+        setProductId(res.productId);
+        setForm((f) => ({ ...f, id: res.productId }));
+      }
+    },
     onError: (e: any) => toast.error(e.message),
   });
   const set = <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => setForm((f) => ({ ...f, [k]: v }));
-  const setV = <K extends keyof ProductFormValues["variant"]>(k: K, v: ProductFormValues["variant"][K]) =>
-    setForm((f) => ({ ...f, variant: { ...f.variant, [k]: v } }));
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); m.mutate(form); }} className="space-y-6">
@@ -77,6 +101,10 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
       </div>
 
       <div><Label>Description (English)</Label><Textarea rows={4} value={form.description_en ?? ""} onChange={(e) => set("description_en", e.target.value)} /></div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><Label>Description (Español)</Label><Textarea rows={3} value={form.description_es ?? ""} onChange={(e) => set("description_es", e.target.value)} /></div>
+        <div><Label>Description (العربية)</Label><Textarea rows={3} value={form.description_ar ?? ""} onChange={(e) => set("description_ar", e.target.value)} dir="rtl" /></div>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <div><Label>Brand</Label><Input value={form.brand ?? ""} onChange={(e) => set("brand", e.target.value)} /></div>
@@ -92,24 +120,28 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <div><Label>Spice level (0–5)</Label><Input type="number" min={0} max={5} value={form.spice_level ?? 0} onChange={(e) => set("spice_level", Number(e.target.value))} /></div>
         <div className="flex items-end gap-3"><div className="flex items-center gap-2 pb-2"><Switch checked={form.is_bulk} onCheckedChange={(v) => set("is_bulk", v)} /><span className="text-sm">Bulk / wholesale</span></div></div>
-        <div><Label>Image URL</Label><Input value={form.image_url ?? ""} onChange={(e) => set("image_url", e.target.value)} placeholder="https://..." /></div>
+        <div className="flex items-end gap-3"><div className="flex items-center gap-2 pb-2"><Switch checked={form.is_halal} onCheckedChange={(v) => set("is_halal", v)} /><span className="text-sm">Halal</span></div></div>
       </div>
 
-      <div className="rounded-lg border border-border/60 p-4">
-        <h3 className="mb-3 font-medium">Default variant</h3>
-        <div className="grid gap-4 md:grid-cols-4">
-          <div><Label>Format</Label><Input value={form.variant.format_label ?? ""} onChange={(e) => setV("format_label", e.target.value)} placeholder="500 g" /></div>
-          <div><Label>Price (AED)</Label><Input type="number" step="0.01" min={0} required value={form.variant.price_aed} onChange={(e) => setV("price_aed", Number(e.target.value))} /></div>
-          <div><Label>Compare-at (AED)</Label><Input type="number" step="0.01" min={0} value={form.variant.compare_at_price_aed ?? 0} onChange={(e) => setV("compare_at_price_aed", Number(e.target.value))} /></div>
-          <div><Label>Stock</Label><Input type="number" min={0} required value={form.variant.stock} onChange={(e) => setV("stock", Number(e.target.value))} /></div>
-          <div className="md:col-span-2"><Label>SKU</Label><Input value={form.variant.sku ?? ""} onChange={(e) => setV("sku", e.target.value)} /></div>
-        </div>
-      </div>
+      <ProductImagesEditor productId={productId} images={images} onChange={setImages} />
+      <ProductVariantsEditor productId={productId} variants={variants} onChange={setVariants} />
 
-      <Button type="submit" disabled={m.isPending} className="rounded-full">{m.isPending ? "Saving…" : "Save product"}</Button>
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit" disabled={m.isPending} className="rounded-full">
+          {m.isPending ? "Saving…" : productId ? "Save changes" : "Create product"}
+        </Button>
+        {productId && onSaved && (
+          <Button type="button" variant="outline" className="rounded-full" onClick={() => onSaved()}>
+            Done
+          </Button>
+        )}
+      </div>
+      {!productId && (
+        <p className="text-xs text-muted-foreground">Tip: after creating the product, you'll be able to upload images and add variants below.</p>
+      )}
     </form>
   );
 }
