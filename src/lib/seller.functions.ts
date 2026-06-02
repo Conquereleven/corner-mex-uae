@@ -281,10 +281,10 @@ export const getSellerProduct = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data: p, error } = await supabaseAdmin
       .from("products")
-      .select(`id, slug, brand, origin_region, spice_level, is_bulk, status, category:categories(slug),
+      .select(`id, slug, brand, origin_region, spice_level, is_bulk, is_halal, status, category:categories(slug),
         translations:product_translations(lang, name, description),
-        images:product_images(url, sort_order),
-        variants:product_variants(id, format_label, sku, price_aed, compare_at_price_aed, stock, is_default)`)
+        images:product_images(id, url, sort_order),
+        variants:product_variants(id, format_label, sku, price_aed, compare_at_price_aed, stock, weight_grams, is_default)`)
       .eq("id", data.id).eq("seller_id", seller.id).maybeSingle();
     if (error) throw new Error(error.message);
     return p;
