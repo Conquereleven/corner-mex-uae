@@ -194,20 +194,15 @@ const ProductInput = z.object({
   name_es: z.string().max(160).optional().nullable(),
   name_ar: z.string().max(160).optional().nullable(),
   description_en: z.string().max(2000).optional().nullable(),
+  description_es: z.string().max(2000).optional().nullable(),
+  description_ar: z.string().max(2000).optional().nullable(),
   brand: z.string().max(120).optional().nullable(),
   origin_region: z.string().max(120).optional().nullable(),
   spice_level: z.number().int().min(0).max(5).optional().nullable(),
   is_bulk: z.boolean().default(false),
+  is_halal: z.boolean().default(true),
   status: z.enum(["draft", "active", "archived"]).default("active"),
   category_slug: z.string().optional().nullable(),
-  image_url: z.string().url().optional().nullable(),
-  variant: z.object({
-    format_label: z.string().max(120).optional().nullable(),
-    price_aed: z.number().min(0).max(99999),
-    compare_at_price_aed: z.number().min(0).max(99999).optional().nullable(),
-    stock: z.number().int().min(0).max(100000),
-    sku: z.string().max(60).optional().nullable(),
-  }),
 });
 
 export const upsertSellerProduct = createServerFn({ method: "POST" })
@@ -237,11 +232,20 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         origin_region: data.origin_region || null,
         spice_level: data.spice_level ?? null,
         is_bulk: data.is_bulk,
+        is_halal: data.is_halal,
         status: data.status,
         category_id: categoryId,
       }).select("id").single();
       if (error) throw new Error(error.message);
       productId = created.id;
+      // Seed a default placeholder variant so the row is usable
+      await supabaseAdmin.from("product_variants").insert({
+        product_id: productId,
+        format_label: null,
+        price_aed: 0,
+        stock: 0,
+        is_default: true,
+      });
     } else {
       // verify ownership
       const { data: own } = await supabaseAdmin.from("products").select("id").eq("id", productId).eq("seller_id", seller.id).maybeSingle();
@@ -251,6 +255,7 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         origin_region: data.origin_region || null,
         spice_level: data.spice_level ?? null,
         is_bulk: data.is_bulk,
+        is_halal: data.is_halal,
         status: data.status,
         category_id: categoryId,
       }).eq("id", productId);
@@ -260,44 +265,11 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
     // Upsert translations
     const trRows = [
       { product_id: productId, lang: "en" as const, name: data.name_en, description: data.description_en ?? null },
-      ...(data.name_es ? [{ product_id: productId, lang: "es" as const, name: data.name_es, description: null }] : []),
-      ...(data.name_ar ? [{ product_id: productId, lang: "ar" as const, name: data.name_ar, description: null }] : []),
+      ...(data.name_es ? [{ product_id: productId, lang: "es" as const, name: data.name_es, description: data.description_es ?? null }] : []),
+      ...(data.name_ar ? [{ product_id: productId, lang: "ar" as const, name: data.name_ar, description: data.description_ar ?? null }] : []),
     ];
     await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
     if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
-
-    // Image: replace
-    if (data.image_url) {
-      await supabaseAdmin.from("product_images").delete().eq("product_id", productId);
-      await supabaseAdmin.from("product_images").insert({ product_id: productId, url: data.image_url, sort_order: 0 });
-    }
-
-    // Variant: single default variant
-    const { data: existingVariants } = await supabaseAdmin.from("product_variants").select("id").eq("product_id", productId);
-    if (existingVariants && existingVariants.length > 0) {
-      const vId = existingVariants[0].id;
-      await supabaseAdmin.from("product_variants").update({
-        format_label: data.variant.format_label || null,
-        price_aed: data.variant.price_aed,
-        compare_at_price_aed: data.variant.compare_at_price_aed ?? null,
-        stock: data.variant.stock,
-        sku: data.variant.sku || null,
-        is_default: true,
-      }).eq("id", vId);
-      // delete other variants for simplicity
-      const others = existingVariants.slice(1).map((v) => v.id);
-      if (others.length) await supabaseAdmin.from("product_variants").delete().in("id", others);
-    } else {
-      await supabaseAdmin.from("product_variants").insert({
-        product_id: productId,
-        format_label: data.variant.format_label || null,
-        price_aed: data.variant.price_aed,
-        compare_at_price_aed: data.variant.compare_at_price_aed ?? null,
-        stock: data.variant.stock,
-        sku: data.variant.sku || null,
-        is_default: true,
-      });
-    }
 
     return { productId };
   });
