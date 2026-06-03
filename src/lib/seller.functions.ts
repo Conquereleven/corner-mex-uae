@@ -205,6 +205,8 @@ const ProductInput = z.object({
   category_slug: z.string().optional().nullable(),
 });
 
+const AttrsSchema = z.record(z.string(), z.any());
+
 export const upsertSellerProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof ProductInput>) => ProductInput.parse(input))
