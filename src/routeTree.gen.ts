@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SellersRouteImport } from './routes/sellers'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -83,6 +84,11 @@ const ShopRoute = ShopRouteImport.update({
 const SellersRoute = SellersRouteImport.update({
   id: '/sellers',
   path: '/sellers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrderConfirmedRoute = OrderConfirmedRouteImport.update({
@@ -382,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
+  '/privacy': typeof PrivacyRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -438,6 +445,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
+  '/privacy': typeof PrivacyRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
+  '/privacy': typeof PrivacyRoute
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -552,6 +561,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/order-confirmed'
+    | '/privacy'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -608,6 +618,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/order-confirmed'
+    | '/privacy'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -663,6 +674,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/order-confirmed'
+    | '/privacy'
     | '/sellers'
     | '/shop'
     | '/signup'
@@ -721,6 +733,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   LoginRoute: typeof LoginRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
+  PrivacyRoute: typeof PrivacyRoute
   SellersRoute: typeof SellersRouteWithChildren
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
@@ -758,6 +771,13 @@ declare module '@tanstack/react-router' {
       path: '/sellers'
       fullPath: '/sellers'
       preLoaderRoute: typeof SellersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/order-confirmed': {
@@ -1301,6 +1321,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   LoginRoute: LoginRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
+  PrivacyRoute: PrivacyRoute,
   SellersRoute: SellersRouteWithChildren,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
