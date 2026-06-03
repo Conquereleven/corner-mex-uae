@@ -14,7 +14,7 @@ import { getSellerStorefront, updateSellerStorefront, uploadSellerAsset } from "
 
 export const Route = createFileRoute("/_authenticated/seller/storefront")({
   head: () => ({ meta: [{ title: "Storefront — Seller Studio" }] }),
-  component: SellerStorefront;
+  component: SellerStorefront,
 });
 
 function SellerStorefront() {
