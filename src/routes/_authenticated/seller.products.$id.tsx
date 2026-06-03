@@ -57,6 +57,7 @@ function EditProduct() {
             is_halal: p.is_halal ?? true,
             status: p.status,
             category_slug: p.category?.slug ?? "",
+            attrs: (p.attrs ?? {}) as Record<string, any>,
             images,
             variants,
           }}

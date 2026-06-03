@@ -63,8 +63,8 @@ export function Footer() {
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">{t("footer.legal")}</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>Terms</li>
-            <li>Privacy</li>
+            <li><Link to="/terms" className="hover:text-foreground">Terms</Link></li>
+            <li><Link to="/privacy" className="hover:text-foreground">Privacy</Link></li>
           </ul>
         </div>
       </div>

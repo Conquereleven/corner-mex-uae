@@ -27,6 +27,7 @@ export type ProductFormValues = {
   is_halal: boolean;
   status: "draft" | "active" | "archived";
   category_slug?: string;
+  attrs?: Record<string, any>;
   images?: ProductImage[];
   variants?: Variant[];
 };
@@ -36,6 +37,7 @@ const defaults: ProductFormValues = {
   is_bulk: false,
   is_halal: true,
   status: "active",
+  attrs: {},
   images: [],
   variants: [],
 };
@@ -47,6 +49,10 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
   const [productId, setProductId] = useState<string | undefined>(initial?.id);
   const [images, setImages] = useState<ProductImage[]>(initial?.images ?? []);
   const [variants, setVariants] = useState<Variant[]>(initial?.variants ?? []);
+  const [attrsText, setAttrsText] = useState<string>(
+    JSON.stringify(initial?.attrs ?? {}, null, 2),
+  );
+  const [attrsError, setAttrsError] = useState<string | null>(null);
   const fn = useServerFn(upsertSellerProduct);
   const qc = useQueryClient();
   const m = useMutation({
@@ -65,6 +71,7 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
       is_halal: input.is_halal,
       status: input.status,
       category_slug: input.category_slug || null,
+      attrs: input.attrs ?? {},
     } as any }),
     onSuccess: (res: any) => {
       toast.success("Saved");
@@ -78,8 +85,27 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
   });
   const set = <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => setForm((f) => ({ ...f, [k]: v }));
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    let parsed: Record<string, any> = {};
+    const txt = attrsText.trim();
+    if (txt) {
+      try {
+        const v = JSON.parse(txt);
+        if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("Must be a JSON object");
+        parsed = v;
+        setAttrsError(null);
+      } catch (err: any) {
+        setAttrsError(err?.message ?? "Invalid JSON");
+        toast.error("Attributes JSON is invalid");
+        return;
+      }
+    }
+    m.mutate({ ...form, attrs: parsed });
+  }
+
   return (
-    <form onSubmit={(e) => { e.preventDefault(); m.mutate(form); }} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         <div className="md:col-span-2"><Label>Name (English)</Label><Input required value={form.name_en} onChange={(e) => set("name_en", e.target.value)} /></div>
         <div>
@@ -128,6 +154,24 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
 
       <ProductImagesEditor productId={productId} images={images} onChange={setImages} />
       <ProductVariantsEditor productId={productId} variants={variants} onChange={setVariants} />
+
+      <div className="rounded-lg border border-border/60 p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <h3 className="font-medium">Custom attributes</h3>
+            <p className="text-xs text-muted-foreground">Optional JSON metadata shown on the product page (e.g. <code>{`{"scoville": 30000, "shelf_life_months": 12}`}</code>).</p>
+          </div>
+        </div>
+        <Textarea
+          rows={6}
+          spellCheck={false}
+          className="font-mono text-xs"
+          value={attrsText}
+          onChange={(e) => { setAttrsText(e.target.value); setAttrsError(null); }}
+          placeholder='{}'
+        />
+        {attrsError && <p className="mt-1 text-xs text-destructive">{attrsError}</p>}
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={m.isPending} className="rounded-full">

@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -19,6 +20,11 @@ function About() {
         <p className="mt-6 text-lg text-muted-foreground">
           Corner Mex is a curated marketplace bringing authentic Mexican pantry — chiles, moles, masa, snacks and drinks — to the UAE's restaurants, hotels, caterings, supermarkets and homes.
         </p>
+        <div className="mt-10 flex flex-wrap gap-3">
+          <Link to="/shop"><Button size="lg" className="rounded-full">Shop the marketplace</Button></Link>
+          <Link to="/b2b"><Button size="lg" variant="outline" className="rounded-full">For business</Button></Link>
+          <Link to="/sellers"><Button size="lg" variant="ghost" className="rounded-full">Meet the sellers</Button></Link>
+        </div>
       </section>
     </SiteLayout>
   );
