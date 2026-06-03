@@ -40,6 +40,7 @@ import { Route as AuthenticatedSellerPayoutsRouteImport } from './routes/_authen
 import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authenticated/seller.orders'
 import { Route as AuthenticatedSellerNotificationsRouteImport } from './routes/_authenticated/seller.notifications'
 import { Route as AuthenticatedSellerCouponsRouteImport } from './routes/_authenticated/seller.coupons'
+import { Route as AuthenticatedSellerCommissionsRouteImport } from './routes/_authenticated/seller.commissions'
 import { Route as AuthenticatedAdminShippingRouteImport } from './routes/_authenticated/admin.shipping'
 import { Route as AuthenticatedAdminShipmentsRouteImport } from './routes/_authenticated/admin.shipments'
 import { Route as AuthenticatedAdminSellersRouteImport } from './routes/_authenticated/admin.sellers'
@@ -227,6 +228,12 @@ const AuthenticatedSellerCouponsRoute =
   AuthenticatedSellerCouponsRouteImport.update({
     id: '/coupons',
     path: '/coupons',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
+const AuthenticatedSellerCommissionsRoute =
+  AuthenticatedSellerCommissionsRouteImport.update({
+    id: '/commissions',
+    path: '/commissions',
     getParentRoute: () => AuthenticatedSellerRoute,
   } as any)
 const AuthenticatedAdminShippingRoute =
@@ -418,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
@@ -473,6 +481,7 @@ export interface FileRoutesByTo {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
@@ -532,6 +541,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/_authenticated/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/_authenticated/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/_authenticated/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/_authenticated/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/_authenticated/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
@@ -591,6 +601,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/seller/commissions'
     | '/seller/coupons'
     | '/seller/notifications'
     | '/seller/orders'
@@ -646,6 +657,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/seller/commissions'
     | '/seller/coupons'
     | '/seller/notifications'
     | '/seller/orders'
@@ -704,6 +716,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/sellers'
     | '/_authenticated/admin/shipments'
     | '/_authenticated/admin/shipping'
+    | '/_authenticated/seller/commissions'
     | '/_authenticated/seller/coupons'
     | '/_authenticated/seller/notifications'
     | '/_authenticated/seller/orders'
@@ -960,6 +973,13 @@ declare module '@tanstack/react-router' {
       path: '/coupons'
       fullPath: '/seller/coupons'
       preLoaderRoute: typeof AuthenticatedSellerCouponsRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
+    '/_authenticated/seller/commissions': {
+      id: '/_authenticated/seller/commissions'
+      path: '/commissions'
+      fullPath: '/seller/commissions'
+      preLoaderRoute: typeof AuthenticatedSellerCommissionsRouteImport
       parentRoute: typeof AuthenticatedSellerRoute
     }
     '/_authenticated/admin/shipping': {
@@ -1236,6 +1256,7 @@ const AuthenticatedSellerProductsRouteWithChildren =
   )
 
 interface AuthenticatedSellerRouteChildren {
+  AuthenticatedSellerCommissionsRoute: typeof AuthenticatedSellerCommissionsRoute
   AuthenticatedSellerCouponsRoute: typeof AuthenticatedSellerCouponsRoute
   AuthenticatedSellerNotificationsRoute: typeof AuthenticatedSellerNotificationsRoute
   AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRoute
@@ -1248,6 +1269,7 @@ interface AuthenticatedSellerRouteChildren {
 }
 
 const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
+  AuthenticatedSellerCommissionsRoute: AuthenticatedSellerCommissionsRoute,
   AuthenticatedSellerCouponsRoute: AuthenticatedSellerCouponsRoute,
   AuthenticatedSellerNotificationsRoute: AuthenticatedSellerNotificationsRoute,
   AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRoute,
