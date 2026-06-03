@@ -34,6 +34,7 @@ import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 import { Route as AuthenticatedSellerStorefrontRouteImport } from './routes/_authenticated/seller.storefront'
 import { Route as AuthenticatedSellerShippingRouteImport } from './routes/_authenticated/seller.shipping'
+import { Route as AuthenticatedSellerSettingsRouteImport } from './routes/_authenticated/seller.settings'
 import { Route as AuthenticatedSellerReturnsRouteImport } from './routes/_authenticated/seller.returns'
 import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
 import { Route as AuthenticatedSellerPerformanceRouteImport } from './routes/_authenticated/seller.performance'
@@ -193,6 +194,12 @@ const AuthenticatedSellerShippingRoute =
   AuthenticatedSellerShippingRouteImport.update({
     id: '/shipping',
     path: '/shipping',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
+const AuthenticatedSellerSettingsRoute =
+  AuthenticatedSellerSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
     getParentRoute: () => AuthenticatedSellerRoute,
   } as any)
 const AuthenticatedSellerReturnsRoute =
@@ -440,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
+  '/seller/settings': typeof AuthenticatedSellerSettingsRoute
   '/seller/shipping': typeof AuthenticatedSellerShippingRoute
   '/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -497,6 +505,7 @@ export interface FileRoutesByTo {
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
+  '/seller/settings': typeof AuthenticatedSellerSettingsRoute
   '/seller/shipping': typeof AuthenticatedSellerShippingRoute
   '/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -558,6 +567,7 @@ export interface FileRoutesById {
   '/_authenticated/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/_authenticated/seller/returns': typeof AuthenticatedSellerReturnsRoute
+  '/_authenticated/seller/settings': typeof AuthenticatedSellerSettingsRoute
   '/_authenticated/seller/shipping': typeof AuthenticatedSellerShippingRoute
   '/_authenticated/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -619,6 +629,7 @@ export interface FileRouteTypes {
     | '/seller/performance'
     | '/seller/products'
     | '/seller/returns'
+    | '/seller/settings'
     | '/seller/shipping'
     | '/seller/storefront'
     | '/api/public/sitemap.xml'
@@ -676,6 +687,7 @@ export interface FileRouteTypes {
     | '/seller/performance'
     | '/seller/products'
     | '/seller/returns'
+    | '/seller/settings'
     | '/seller/shipping'
     | '/seller/storefront'
     | '/api/public/sitemap.xml'
@@ -736,6 +748,7 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/performance'
     | '/_authenticated/seller/products'
     | '/_authenticated/seller/returns'
+    | '/_authenticated/seller/settings'
     | '/_authenticated/seller/shipping'
     | '/_authenticated/seller/storefront'
     | '/api/public/sitemap.xml'
@@ -944,6 +957,13 @@ declare module '@tanstack/react-router' {
       path: '/shipping'
       fullPath: '/seller/shipping'
       preLoaderRoute: typeof AuthenticatedSellerShippingRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
+    '/_authenticated/seller/settings': {
+      id: '/_authenticated/seller/settings'
+      path: '/settings'
+      fullPath: '/seller/settings'
+      preLoaderRoute: typeof AuthenticatedSellerSettingsRouteImport
       parentRoute: typeof AuthenticatedSellerRoute
     }
     '/_authenticated/seller/returns': {
@@ -1284,6 +1304,7 @@ interface AuthenticatedSellerRouteChildren {
   AuthenticatedSellerPerformanceRoute: typeof AuthenticatedSellerPerformanceRoute
   AuthenticatedSellerProductsRoute: typeof AuthenticatedSellerProductsRouteWithChildren
   AuthenticatedSellerReturnsRoute: typeof AuthenticatedSellerReturnsRoute
+  AuthenticatedSellerSettingsRoute: typeof AuthenticatedSellerSettingsRoute
   AuthenticatedSellerShippingRoute: typeof AuthenticatedSellerShippingRoute
   AuthenticatedSellerStorefrontRoute: typeof AuthenticatedSellerStorefrontRoute
   AuthenticatedSellerIndexRoute: typeof AuthenticatedSellerIndexRoute
@@ -1299,6 +1320,7 @@ const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
   AuthenticatedSellerProductsRoute:
     AuthenticatedSellerProductsRouteWithChildren,
   AuthenticatedSellerReturnsRoute: AuthenticatedSellerReturnsRoute,
+  AuthenticatedSellerSettingsRoute: AuthenticatedSellerSettingsRoute,
   AuthenticatedSellerShippingRoute: AuthenticatedSellerShippingRoute,
   AuthenticatedSellerStorefrontRoute: AuthenticatedSellerStorefrontRoute,
   AuthenticatedSellerIndexRoute: AuthenticatedSellerIndexRoute,
