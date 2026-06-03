@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SellersRouteImport } from './routes/sellers'
@@ -64,6 +65,11 @@ import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminProductsImportRouteImport } from './routes/_authenticated/admin.products.import'
 import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -379,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
@@ -434,6 +441,7 @@ export interface FileRoutesByTo {
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/b2b/quote': typeof B2bQuoteRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -489,6 +497,7 @@ export interface FileRoutesById {
   '/sellers': typeof SellersRouteWithChildren
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
@@ -546,6 +555,7 @@ export interface FileRouteTypes {
     | '/sellers'
     | '/shop'
     | '/signup'
+    | '/terms'
     | '/account'
     | '/admin'
     | '/seller'
@@ -601,6 +611,7 @@ export interface FileRouteTypes {
     | '/sellers'
     | '/shop'
     | '/signup'
+    | '/terms'
     | '/account'
     | '/b2b/quote'
     | '/product/$slug'
@@ -655,6 +666,7 @@ export interface FileRouteTypes {
     | '/sellers'
     | '/shop'
     | '/signup'
+    | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/seller'
@@ -712,6 +724,7 @@ export interface RootRouteChildren {
   SellersRoute: typeof SellersRouteWithChildren
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -719,6 +732,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -1284,6 +1304,7 @@ const rootRouteChildren: RootRouteChildren = {
   SellersRoute: SellersRouteWithChildren,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
