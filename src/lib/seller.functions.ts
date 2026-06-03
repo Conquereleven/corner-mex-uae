@@ -469,3 +469,187 @@ export const deleteVariant = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+// ===== Commissions =====
+export const getSellerCommissions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const { data: items } = await supabaseAdmin
+      .from("order_items")
+      .select(`id, qty, line_total_aed, commission_aed, product_id, product_name,
+        order:orders!inner(id, created_at, payment_status)`)
+      .eq("seller_id", seller.id);
+    const list = (items ?? []) as any[];
+    const now = new Date();
+    const since30 = new Date(now.getTime() - 30 * 86400000).toISOString();
+    const last30 = list.filter((i) => i.order?.created_at >= since30);
+    const sum = (xs: any[], k: string) => +xs.reduce((a, x) => a + Number(x[k] ?? 0), 0).toFixed(2);
+
+    // Monthly buckets (last 12 months)
+    const months: { key: string; label: string; gmv: number; commission: number; net: number; orders: number; rate: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const inMonth = list.filter((x) => (x.order?.created_at ?? "").slice(0, 7) === key);
+      const gmv = sum(inMonth, "line_total_aed");
+      const commission = sum(inMonth, "commission_aed");
+      months.push({
+        key, label: d.toLocaleString("en", { month: "short", year: "numeric" }),
+        gmv, commission, net: +(gmv - commission).toFixed(2),
+        orders: new Set(inMonth.map((x) => x.order.id)).size,
+        rate: gmv > 0 ? +((commission / gmv) * 100).toFixed(2) : 0,
+      });
+    }
+
+    // Top products by commission
+    const agg = new Map<string, { name: string; units: number; gmv: number; commission: number }>();
+    for (const it of list) {
+      const cur = agg.get(it.product_id) ?? { name: it.product_name, units: 0, gmv: 0, commission: 0 };
+      cur.units += Number(it.qty ?? 0);
+      cur.gmv += Number(it.line_total_aed ?? 0);
+      cur.commission += Number(it.commission_aed ?? 0);
+      agg.set(it.product_id, cur);
+    }
+    const topProducts = Array.from(agg.entries())
+      .map(([id, v]) => ({ id, name: v.name, units: v.units, gmv: +v.gmv.toFixed(2), commission: +v.commission.toFixed(2) }))
+      .sort((a, b) => b.commission - a.commission)
+      .slice(0, 5);
+
+    const gmvAll = sum(list, "line_total_aed");
+    const commissionAll = sum(list, "commission_aed");
+
+    return {
+      rate: Number(seller.commission_rate ?? 0),
+      stats: {
+        gmv30: sum(last30, "line_total_aed"),
+        commission30: sum(last30, "commission_aed"),
+        net30: +(sum(last30, "line_total_aed") - sum(last30, "commission_aed")).toFixed(2),
+        gmvLifetime: gmvAll,
+        commissionLifetime: commissionAll,
+        netLifetime: +(gmvAll - commissionAll).toFixed(2),
+        effectiveRate: gmvAll > 0 ? +((commissionAll / gmvAll) * 100).toFixed(2) : 0,
+      },
+      months,
+      topProducts,
+    };
+  });
+
+// ===== Storefront =====
+export const getSellerStorefront = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const s = await getSellerForUser(context.userId);
+    return {
+      id: s.id, slug: s.slug, store_name: s.store_name, tagline: s.tagline, bio: s.bio,
+      logo_url: s.logo_url, cover_url: s.cover_url, contact_email: s.contact_email,
+      contact_phone: s.contact_phone, social_links: s.social_links ?? {}, is_published: s.is_published,
+    };
+  });
+
+const StorefrontInput = z.object({
+  store_name: z.string().min(1).max(120),
+  tagline: z.string().max(160).optional().nullable(),
+  bio: z.string().max(2000).optional().nullable(),
+  logo_url: z.string().url().optional().nullable(),
+  cover_url: z.string().url().optional().nullable(),
+  contact_email: z.string().email().optional().nullable(),
+  contact_phone: z.string().max(40).optional().nullable(),
+  social_links: z.record(z.string().max(40), z.string().max(300)).optional().nullable(),
+  is_published: z.boolean().default(true),
+});
+
+export const updateSellerStorefront = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.input<typeof StorefrontInput>) => StorefrontInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const s = await getSellerForUser(context.userId);
+    const { error } = await supabaseAdmin.from("sellers").update({
+      store_name: data.store_name,
+      tagline: data.tagline ?? null,
+      bio: data.bio ?? null,
+      logo_url: data.logo_url ?? null,
+      cover_url: data.cover_url ?? null,
+      contact_email: data.contact_email ?? null,
+      contact_phone: data.contact_phone ?? null,
+      social_links: data.social_links ?? {},
+      is_published: data.is_published,
+    }).eq("id", s.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const uploadSellerAsset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { kind: "logo" | "cover"; filename: string; contentType: string; dataBase64: string }) =>
+    z.object({
+      kind: z.enum(["logo", "cover"]),
+      filename: z.string().min(1).max(200),
+      contentType: z.string().min(3).max(120),
+      dataBase64: z.string().min(10).max(8_000_000),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const s = await getSellerForUser(context.userId);
+    const ext = (data.filename.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = `sellers/${s.id}/${data.kind}-${crypto.randomUUID()}.${ext}`;
+    const buffer = Buffer.from(data.dataBase64, "base64");
+    const up = await supabaseAdmin.storage.from(BUCKET).upload(path, buffer, {
+      contentType: data.contentType, upsert: false,
+    });
+    if (up.error) throw new Error(up.error.message);
+    const signed = await supabaseAdmin.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL);
+    if (signed.error || !signed.data) throw new Error(signed.error?.message ?? "Sign failed");
+    return { url: signed.data.signedUrl };
+  });
+
+// ===== Settings =====
+export const getSellerSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const s = await getSellerForUser(context.userId);
+    return {
+      legal_name: s.legal_name, trn: s.trn, vat_number: s.vat_number,
+      support_email: s.support_email, support_phone: s.support_phone, contact_address: s.contact_address,
+      processing_days: s.processing_days, auto_accept_orders: s.auto_accept_orders,
+      vacation_mode: s.vacation_mode, vacation_message: s.vacation_message,
+      payout_method: s.payout_method, bank_name: s.bank_name, bank_iban: s.bank_iban,
+      bank_swift: s.bank_swift, bank_account_holder: s.bank_account_holder,
+      notify_new_order: s.notify_new_order, notify_low_stock: s.notify_low_stock, notify_payout: s.notify_payout,
+    };
+  });
+
+const SettingsInput = z.object({
+  legal_name: z.string().max(160).optional().nullable(),
+  trn: z.string().max(40).optional().nullable(),
+  vat_number: z.string().max(40).optional().nullable(),
+  support_email: z.string().email().optional().nullable().or(z.literal("")),
+  support_phone: z.string().max(40).optional().nullable(),
+  contact_address: z.string().max(500).optional().nullable(),
+  processing_days: z.number().int().min(1).max(14),
+  auto_accept_orders: z.boolean(),
+  vacation_mode: z.boolean(),
+  vacation_message: z.string().max(280).optional().nullable(),
+  payout_method: z.enum(["bank", "wallet"]),
+  bank_name: z.string().max(120).optional().nullable(),
+  bank_iban: z.string().max(60).optional().nullable(),
+  bank_swift: z.string().max(20).optional().nullable(),
+  bank_account_holder: z.string().max(160).optional().nullable(),
+  notify_new_order: z.boolean(),
+  notify_low_stock: z.boolean(),
+  notify_payout: z.boolean(),
+});
+
+export const updateSellerSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.input<typeof SettingsInput>) => SettingsInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const s = await getSellerForUser(context.userId);
+    const payload = {
+      ...data,
+      support_email: data.support_email || null,
+    };
+    const { error } = await supabaseAdmin.from("sellers").update(payload).eq("id", s.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
