@@ -203,6 +203,7 @@ const ProductInput = z.object({
   is_halal: z.boolean().default(true),
   status: z.enum(["draft", "active", "archived"]).default("active"),
   category_slug: z.string().optional().nullable(),
+  attrs: z.record(z.string(), z.any()).optional().nullable(),
 });
 
 export const upsertSellerProduct = createServerFn({ method: "POST" })
@@ -235,6 +236,7 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         is_halal: data.is_halal,
         status: data.status,
         category_id: categoryId,
+        attrs: data.attrs ?? {},
       }).select("id").single();
       if (error) throw new Error(error.message);
       productId = created.id;
@@ -258,6 +260,7 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         is_halal: data.is_halal,
         status: data.status,
         category_id: categoryId,
+        attrs: data.attrs ?? {},
       }).eq("id", productId);
       if (error) throw new Error(error.message);
     }
@@ -281,7 +284,7 @@ export const getSellerProduct = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data: p, error } = await supabaseAdmin
       .from("products")
-      .select(`id, slug, brand, origin_region, spice_level, is_bulk, is_halal, status, category:categories(slug),
+      .select(`id, slug, brand, origin_region, spice_level, is_bulk, is_halal, status, attrs, category:categories(slug),
         translations:product_translations(lang, name, description),
         images:product_images(id, url, sort_order),
         variants:product_variants(id, format_label, sku, price_aed, compare_at_price_aed, stock, weight_grams, is_default)`)
