@@ -50,14 +50,14 @@ function SellerLayout() {
           items: [
             { to: "/seller/payouts", label: t("dash.nav.payouts"), icon: Wallet },
             { to: "/seller/coupons", label: "Coupons", icon: Percent },
-            { label: t("dash.nav.commissions"), icon: Percent, soon: true },
+            { to: "/seller/commissions", label: t("dash.nav.commissions"), icon: Percent },
           ],
         },
         {
           label: t("dash.groups.store"),
           items: [
-            { label: t("dash.nav.storefront"), icon: Store, soon: true },
-            { label: t("dash.nav.settings"), icon: Settings, soon: true },
+            { to: "/seller/storefront", label: t("dash.nav.storefront"), icon: Store },
+            { to: "/seller/settings", label: t("dash.nav.settings"), icon: Settings },
           ],
         },
       ]}

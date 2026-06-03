@@ -32,7 +32,9 @@ import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as AuthenticatedSellerStorefrontRouteImport } from './routes/_authenticated/seller.storefront'
 import { Route as AuthenticatedSellerShippingRouteImport } from './routes/_authenticated/seller.shipping'
+import { Route as AuthenticatedSellerSettingsRouteImport } from './routes/_authenticated/seller.settings'
 import { Route as AuthenticatedSellerReturnsRouteImport } from './routes/_authenticated/seller.returns'
 import { Route as AuthenticatedSellerProductsRouteImport } from './routes/_authenticated/seller.products'
 import { Route as AuthenticatedSellerPerformanceRouteImport } from './routes/_authenticated/seller.performance'
@@ -40,6 +42,7 @@ import { Route as AuthenticatedSellerPayoutsRouteImport } from './routes/_authen
 import { Route as AuthenticatedSellerOrdersRouteImport } from './routes/_authenticated/seller.orders'
 import { Route as AuthenticatedSellerNotificationsRouteImport } from './routes/_authenticated/seller.notifications'
 import { Route as AuthenticatedSellerCouponsRouteImport } from './routes/_authenticated/seller.coupons'
+import { Route as AuthenticatedSellerCommissionsRouteImport } from './routes/_authenticated/seller.commissions'
 import { Route as AuthenticatedAdminShippingRouteImport } from './routes/_authenticated/admin.shipping'
 import { Route as AuthenticatedAdminShipmentsRouteImport } from './routes/_authenticated/admin.shipments'
 import { Route as AuthenticatedAdminSellersRouteImport } from './routes/_authenticated/admin.sellers'
@@ -181,10 +184,22 @@ const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   path: '/api/public/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSellerStorefrontRoute =
+  AuthenticatedSellerStorefrontRouteImport.update({
+    id: '/storefront',
+    path: '/storefront',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
 const AuthenticatedSellerShippingRoute =
   AuthenticatedSellerShippingRouteImport.update({
     id: '/shipping',
     path: '/shipping',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
+const AuthenticatedSellerSettingsRoute =
+  AuthenticatedSellerSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
     getParentRoute: () => AuthenticatedSellerRoute,
   } as any)
 const AuthenticatedSellerReturnsRoute =
@@ -227,6 +242,12 @@ const AuthenticatedSellerCouponsRoute =
   AuthenticatedSellerCouponsRouteImport.update({
     id: '/coupons',
     path: '/coupons',
+    getParentRoute: () => AuthenticatedSellerRoute,
+  } as any)
+const AuthenticatedSellerCommissionsRoute =
+  AuthenticatedSellerCommissionsRouteImport.update({
+    id: '/commissions',
+    path: '/commissions',
     getParentRoute: () => AuthenticatedSellerRoute,
   } as any)
 const AuthenticatedAdminShippingRoute =
@@ -418,6 +439,7 @@ export interface FileRoutesByFullPath {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
@@ -425,7 +447,9 @@ export interface FileRoutesByFullPath {
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
+  '/seller/settings': typeof AuthenticatedSellerSettingsRoute
   '/seller/shipping': typeof AuthenticatedSellerShippingRoute
+  '/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -473,6 +497,7 @@ export interface FileRoutesByTo {
   '/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
@@ -480,7 +505,9 @@ export interface FileRoutesByTo {
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
+  '/seller/settings': typeof AuthenticatedSellerSettingsRoute
   '/seller/shipping': typeof AuthenticatedSellerShippingRoute
+  '/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -532,6 +559,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
   '/_authenticated/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/_authenticated/admin/shipping': typeof AuthenticatedAdminShippingRoute
+  '/_authenticated/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/_authenticated/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/_authenticated/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
   '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
@@ -539,7 +567,9 @@ export interface FileRoutesById {
   '/_authenticated/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/_authenticated/seller/returns': typeof AuthenticatedSellerReturnsRoute
+  '/_authenticated/seller/settings': typeof AuthenticatedSellerSettingsRoute
   '/_authenticated/seller/shipping': typeof AuthenticatedSellerShippingRoute
+  '/_authenticated/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -591,6 +621,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/seller/commissions'
     | '/seller/coupons'
     | '/seller/notifications'
     | '/seller/orders'
@@ -598,7 +629,9 @@ export interface FileRouteTypes {
     | '/seller/performance'
     | '/seller/products'
     | '/seller/returns'
+    | '/seller/settings'
     | '/seller/shipping'
+    | '/seller/storefront'
     | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
     | '/admin/'
@@ -646,6 +679,7 @@ export interface FileRouteTypes {
     | '/admin/sellers'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/seller/commissions'
     | '/seller/coupons'
     | '/seller/notifications'
     | '/seller/orders'
@@ -653,7 +687,9 @@ export interface FileRouteTypes {
     | '/seller/performance'
     | '/seller/products'
     | '/seller/returns'
+    | '/seller/settings'
     | '/seller/shipping'
+    | '/seller/storefront'
     | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
     | '/admin'
@@ -704,6 +740,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/sellers'
     | '/_authenticated/admin/shipments'
     | '/_authenticated/admin/shipping'
+    | '/_authenticated/seller/commissions'
     | '/_authenticated/seller/coupons'
     | '/_authenticated/seller/notifications'
     | '/_authenticated/seller/orders'
@@ -711,7 +748,9 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/performance'
     | '/_authenticated/seller/products'
     | '/_authenticated/seller/returns'
+    | '/_authenticated/seller/settings'
     | '/_authenticated/seller/shipping'
+    | '/_authenticated/seller/storefront'
     | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
@@ -906,11 +945,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/seller/storefront': {
+      id: '/_authenticated/seller/storefront'
+      path: '/storefront'
+      fullPath: '/seller/storefront'
+      preLoaderRoute: typeof AuthenticatedSellerStorefrontRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
     '/_authenticated/seller/shipping': {
       id: '/_authenticated/seller/shipping'
       path: '/shipping'
       fullPath: '/seller/shipping'
       preLoaderRoute: typeof AuthenticatedSellerShippingRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
+    '/_authenticated/seller/settings': {
+      id: '/_authenticated/seller/settings'
+      path: '/settings'
+      fullPath: '/seller/settings'
+      preLoaderRoute: typeof AuthenticatedSellerSettingsRouteImport
       parentRoute: typeof AuthenticatedSellerRoute
     }
     '/_authenticated/seller/returns': {
@@ -960,6 +1013,13 @@ declare module '@tanstack/react-router' {
       path: '/coupons'
       fullPath: '/seller/coupons'
       preLoaderRoute: typeof AuthenticatedSellerCouponsRouteImport
+      parentRoute: typeof AuthenticatedSellerRoute
+    }
+    '/_authenticated/seller/commissions': {
+      id: '/_authenticated/seller/commissions'
+      path: '/commissions'
+      fullPath: '/seller/commissions'
+      preLoaderRoute: typeof AuthenticatedSellerCommissionsRouteImport
       parentRoute: typeof AuthenticatedSellerRoute
     }
     '/_authenticated/admin/shipping': {
@@ -1236,6 +1296,7 @@ const AuthenticatedSellerProductsRouteWithChildren =
   )
 
 interface AuthenticatedSellerRouteChildren {
+  AuthenticatedSellerCommissionsRoute: typeof AuthenticatedSellerCommissionsRoute
   AuthenticatedSellerCouponsRoute: typeof AuthenticatedSellerCouponsRoute
   AuthenticatedSellerNotificationsRoute: typeof AuthenticatedSellerNotificationsRoute
   AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRoute
@@ -1243,11 +1304,14 @@ interface AuthenticatedSellerRouteChildren {
   AuthenticatedSellerPerformanceRoute: typeof AuthenticatedSellerPerformanceRoute
   AuthenticatedSellerProductsRoute: typeof AuthenticatedSellerProductsRouteWithChildren
   AuthenticatedSellerReturnsRoute: typeof AuthenticatedSellerReturnsRoute
+  AuthenticatedSellerSettingsRoute: typeof AuthenticatedSellerSettingsRoute
   AuthenticatedSellerShippingRoute: typeof AuthenticatedSellerShippingRoute
+  AuthenticatedSellerStorefrontRoute: typeof AuthenticatedSellerStorefrontRoute
   AuthenticatedSellerIndexRoute: typeof AuthenticatedSellerIndexRoute
 }
 
 const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
+  AuthenticatedSellerCommissionsRoute: AuthenticatedSellerCommissionsRoute,
   AuthenticatedSellerCouponsRoute: AuthenticatedSellerCouponsRoute,
   AuthenticatedSellerNotificationsRoute: AuthenticatedSellerNotificationsRoute,
   AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRoute,
@@ -1256,7 +1320,9 @@ const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
   AuthenticatedSellerProductsRoute:
     AuthenticatedSellerProductsRouteWithChildren,
   AuthenticatedSellerReturnsRoute: AuthenticatedSellerReturnsRoute,
+  AuthenticatedSellerSettingsRoute: AuthenticatedSellerSettingsRoute,
   AuthenticatedSellerShippingRoute: AuthenticatedSellerShippingRoute,
+  AuthenticatedSellerStorefrontRoute: AuthenticatedSellerStorefrontRoute,
   AuthenticatedSellerIndexRoute: AuthenticatedSellerIndexRoute,
 }
 

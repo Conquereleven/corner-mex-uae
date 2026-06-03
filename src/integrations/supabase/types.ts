@@ -1032,64 +1032,112 @@ export type Database = {
       }
       sellers: {
         Row: {
+          auto_accept_orders: boolean
           bank_account_holder: string | null
           bank_iban: string | null
           bank_name: string | null
+          bank_swift: string | null
           bio: string | null
           commission_rate: number
+          contact_address: string | null
           contact_email: string | null
           contact_phone: string | null
           cover_url: string | null
           created_at: string
           id: string
+          is_published: boolean
+          legal_name: string | null
           logo_url: string | null
+          notify_low_stock: boolean
+          notify_new_order: boolean
+          notify_payout: boolean
+          payout_method: string
+          processing_days: number
           slug: string
+          social_links: Json
           status: Database["public"]["Enums"]["seller_status"]
           store_name: string
+          support_email: string | null
+          support_phone: string | null
           tagline: string | null
           trn: string | null
           updated_at: string
           user_id: string
+          vacation_message: string | null
+          vacation_mode: boolean
+          vat_number: string | null
         }
         Insert: {
+          auto_accept_orders?: boolean
           bank_account_holder?: string | null
           bank_iban?: string | null
           bank_name?: string | null
+          bank_swift?: string | null
           bio?: string | null
           commission_rate?: number
+          contact_address?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           cover_url?: string | null
           created_at?: string
           id?: string
+          is_published?: boolean
+          legal_name?: string | null
           logo_url?: string | null
+          notify_low_stock?: boolean
+          notify_new_order?: boolean
+          notify_payout?: boolean
+          payout_method?: string
+          processing_days?: number
           slug: string
+          social_links?: Json
           status?: Database["public"]["Enums"]["seller_status"]
           store_name: string
+          support_email?: string | null
+          support_phone?: string | null
           tagline?: string | null
           trn?: string | null
           updated_at?: string
           user_id: string
+          vacation_message?: string | null
+          vacation_mode?: boolean
+          vat_number?: string | null
         }
         Update: {
+          auto_accept_orders?: boolean
           bank_account_holder?: string | null
           bank_iban?: string | null
           bank_name?: string | null
+          bank_swift?: string | null
           bio?: string | null
           commission_rate?: number
+          contact_address?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           cover_url?: string | null
           created_at?: string
           id?: string
+          is_published?: boolean
+          legal_name?: string | null
           logo_url?: string | null
+          notify_low_stock?: boolean
+          notify_new_order?: boolean
+          notify_payout?: boolean
+          payout_method?: string
+          processing_days?: number
           slug?: string
+          social_links?: Json
           status?: Database["public"]["Enums"]["seller_status"]
           store_name?: string
+          support_email?: string | null
+          support_phone?: string | null
           tagline?: string | null
           trn?: string | null
           updated_at?: string
           user_id?: string
+          vacation_message?: string | null
+          vacation_mode?: boolean
+          vat_number?: string | null
         }
         Relationships: []
       }
