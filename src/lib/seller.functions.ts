@@ -731,6 +731,14 @@ export const getSellerSettings = createServerFn({ method: "GET" })
       payout_method: s.payout_method, bank_name: s.bank_name, bank_iban: s.bank_iban,
       bank_swift: s.bank_swift, bank_account_holder: s.bank_account_holder,
       notify_new_order: s.notify_new_order, notify_low_stock: s.notify_low_stock, notify_payout: s.notify_payout,
+      address_line1: (s as any).address_line1, address_line2: (s as any).address_line2,
+      city: (s as any).city, country: (s as any).country, postal_code: (s as any).postal_code,
+      currency: (s as any).currency ?? "AED",
+      tax_inclusive_pricing: (s as any).tax_inclusive_pricing ?? false,
+      tax_rate: (s as any).tax_rate ?? 0,
+      accepted_payment_methods: (s as any).accepted_payment_methods ?? ["card"],
+      notify_review: (s as any).notify_review ?? true,
+      notify_return: (s as any).notify_return ?? true,
     };
   });
 
@@ -753,6 +761,17 @@ const SettingsInput = z.object({
   notify_new_order: z.boolean(),
   notify_low_stock: z.boolean(),
   notify_payout: z.boolean(),
+  address_line1: z.string().max(160).optional().nullable(),
+  address_line2: z.string().max(160).optional().nullable(),
+  city: z.string().max(80).optional().nullable(),
+  country: z.string().max(80).optional().nullable(),
+  postal_code: z.string().max(20).optional().nullable(),
+  currency: z.enum(["AED", "USD", "EUR", "MXN", "SAR"]).default("AED"),
+  tax_inclusive_pricing: z.boolean().default(false),
+  tax_rate: z.number().min(0).max(100).default(0),
+  accepted_payment_methods: z.array(z.enum(["card", "apple_pay", "google_pay", "cod", "bank_transfer"])).default(["card"]),
+  notify_review: z.boolean().default(true),
+  notify_return: z.boolean().default(true),
 });
 
 export const updateSellerSettings = createServerFn({ method: "POST" })
