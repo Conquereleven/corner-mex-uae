@@ -309,7 +309,7 @@ export const getMyPayouts = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at")
+      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, created_at")
       .eq("seller_id", seller.id)
       .order("period_end", { ascending: false });
     if (error) throw new Error(error.message);
@@ -332,6 +332,89 @@ export const getMyPayouts = createServerFn({ method: "GET" })
         },
       },
     };
+  });
+
+// ===== Request payout =====
+async function computeAvailableBalance(sellerId: string) {
+  const [{ data: items }, { data: payouts }] = await Promise.all([
+    supabaseAdmin.from("order_items").select("line_total_aed, commission_aed").eq("seller_id", sellerId),
+    supabaseAdmin.from("seller_payouts").select("net_aed, status, requested_at, created_at").eq("seller_id", sellerId),
+  ]);
+  const gross = (items ?? []).reduce((a, x: any) => a + Number(x.line_total_aed ?? 0), 0);
+  const commission = (items ?? []).reduce((a, x: any) => a + Number(x.commission_aed ?? 0), 0);
+  const netLifetime = gross - commission;
+  const reserved = (payouts ?? [])
+    .filter((p: any) => p.status !== "cancelled")
+    .reduce((a, p: any) => a + Number(p.net_aed ?? 0), 0);
+  const open = (payouts ?? []).find((p: any) => p.status === "pending" || p.status === "processing");
+  const lastRequest = (payouts ?? [])
+    .map((p: any) => p.requested_at ?? p.created_at)
+    .filter(Boolean)
+    .sort()
+    .pop() ?? null;
+  return {
+    availableBalance: Math.max(0, +(netLifetime - reserved).toFixed(2)),
+    hasOpenRequest: !!open,
+    lastPayoutRequestAt: lastRequest,
+    grossLifetime: +gross.toFixed(2),
+    commissionLifetime: +commission.toFixed(2),
+  };
+}
+
+export const requestSellerPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { amount?: number }) =>
+    z.object({ amount: z.number().positive().max(10_000_000).optional() }).parse(input ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const balance = await computeAvailableBalance(seller.id);
+    if (balance.hasOpenRequest) throw new Error("You already have a pending payout request.");
+    if (balance.availableBalance <= 0) throw new Error("No funds available for payout.");
+    const amount = data.amount ? Math.min(data.amount, balance.availableBalance) : balance.availableBalance;
+    if (amount <= 0) throw new Error("Invalid amount.");
+
+    const rate = Number(seller.commission_rate ?? 0) / 100;
+    const gross = rate > 0 && rate < 1 ? +(amount / (1 - rate)).toFixed(2) : amount;
+    const commission = +(gross - amount).toFixed(2);
+
+    const today = new Date();
+    const { data: lastPaid } = await supabaseAdmin
+      .from("seller_payouts")
+      .select("period_end")
+      .eq("seller_id", seller.id).eq("status", "paid")
+      .order("period_end", { ascending: false }).limit(1).maybeSingle();
+    const periodStart = lastPaid?.period_end
+      ? new Date(new Date(lastPaid.period_end).getTime() + 86400000).toISOString().slice(0, 10)
+      : new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().slice(0, 10);
+    const periodEnd = today.toISOString().slice(0, 10);
+
+    const { data: created, error } = await supabaseAdmin.from("seller_payouts").insert({
+      seller_id: seller.id,
+      period_start: periodStart,
+      period_end: periodEnd,
+      gross_aed: gross,
+      commission_aed: commission,
+      net_aed: amount,
+      status: "pending",
+      requested_at: new Date().toISOString(),
+    }).select("id").single();
+    if (error) throw new Error(error.message);
+
+    // Notify admins
+    const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+    if (admins && admins.length) {
+      await supabaseAdmin.from("notifications").insert(
+        admins.map((a: any) => ({
+          user_id: a.user_id,
+          type: "payout_requested",
+          title: "Payout requested",
+          body: `${seller.store_name} requested ${amount.toFixed(2)} AED`,
+          link: `/admin/payouts`,
+        })),
+      );
+    }
+    return { ok: true, payoutId: created.id, amount };
   });
 // ===== Product images (private bucket -> long signed URLs) =====
 const BUCKET = "product-images";
