@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { getSellerSettings, updateSellerSettings } from "@/lib/seller.functions";
 
@@ -39,6 +40,13 @@ function SellerSettings() {
       bank_name: f.bank_name || null, bank_iban: f.bank_iban || null,
       bank_swift: f.bank_swift || null, bank_account_holder: f.bank_account_holder || null,
       notify_new_order: !!f.notify_new_order, notify_low_stock: !!f.notify_low_stock, notify_payout: !!f.notify_payout,
+      address_line1: f.address_line1 || null, address_line2: f.address_line2 || null,
+      city: f.city || null, country: f.country || null, postal_code: f.postal_code || null,
+      currency: (f.currency || "AED") as any,
+      tax_inclusive_pricing: !!f.tax_inclusive_pricing,
+      tax_rate: Number(f.tax_rate) || 0,
+      accepted_payment_methods: (f.accepted_payment_methods?.length ? f.accepted_payment_methods : ["card"]) as any,
+      notify_review: !!f.notify_review, notify_return: !!f.notify_return,
     }}),
     onSuccess: () => { toast.success("Settings saved"); qc.invalidateQueries({ queryKey: ["seller-settings"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
@@ -66,8 +74,10 @@ function SellerSettings() {
       <Tabs defaultValue="business">
         <TabsList>
           <TabsTrigger value="business">Business</TabsTrigger>
+          <TabsTrigger value="address">Address</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
           <TabsTrigger value="ops">Operations</TabsTrigger>
+          <TabsTrigger value="tax">Tax</TabsTrigger>
           <TabsTrigger value="payout">Payout</TabsTrigger>
           <TabsTrigger value="notif">Notifications</TabsTrigger>
         </TabsList>
@@ -78,6 +88,37 @@ function SellerSettings() {
               <div><Label>Legal name</Label><Input value={f.legal_name ?? ""} onChange={(e) => set("legal_name", e.target.value)} /></div>
               <div><Label>Trade license / TRN</Label><Input value={f.trn ?? ""} onChange={(e) => set("trn", e.target.value)} /></div>
               <div><Label>VAT number</Label><Input value={f.vat_number ?? ""} onChange={(e) => set("vat_number", e.target.value)} /></div>
+              <div>
+                <Label>Default currency</Label>
+                <Select value={f.currency ?? "AED"} onValueChange={(v) => set("currency", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["AED", "USD", "EUR", "MXN", "SAR"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent></Card>
+        </TabsContent>
+
+        <TabsContent value="address">
+          <Card><CardHeader><CardTitle>Business address</CardTitle></CardHeader><CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="md:col-span-2"><Label>Address line 1</Label><Input value={f.address_line1 ?? ""} onChange={(e) => set("address_line1", e.target.value)} /></div>
+              <div className="md:col-span-2"><Label>Address line 2</Label><Input value={f.address_line2 ?? ""} onChange={(e) => set("address_line2", e.target.value)} /></div>
+              <div><Label>City</Label><Input value={f.city ?? ""} onChange={(e) => set("city", e.target.value)} /></div>
+              <div><Label>Postal code</Label><Input value={f.postal_code ?? ""} onChange={(e) => set("postal_code", e.target.value)} /></div>
+              <div>
+                <Label>Country</Label>
+                <Select value={f.country ?? ""} onValueChange={(v) => set("country", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
+                  <SelectContent>
+                    {["United Arab Emirates", "Saudi Arabia", "Mexico", "United States", "Spain", "United Kingdom", "Other"].map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent></Card>
         </TabsContent>
@@ -115,6 +156,19 @@ function SellerSettings() {
           </CardContent></Card>
         </TabsContent>
 
+        <TabsContent value="tax">
+          <Card><CardHeader><CardTitle>Tax</CardTitle></CardHeader><CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div><Label>Tax-inclusive pricing</Label><p className="text-xs text-muted-foreground">Show prices with tax already included.</p></div>
+              <Switch checked={!!f.tax_inclusive_pricing} onCheckedChange={(v) => set("tax_inclusive_pricing", v)} />
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div><Label>Tax rate (%)</Label><Input type="number" min={0} max={100} step="0.01" value={f.tax_rate ?? 0} onChange={(e) => set("tax_rate", Number(e.target.value))} /></div>
+            </div>
+            <p className="text-xs text-muted-foreground">Configure VAT or sales tax if your jurisdiction requires it. The marketplace uses the platform tax setting; this is informational and used in invoices.</p>
+          </CardContent></Card>
+        </TabsContent>
+
         <TabsContent value="payout">
           <Card><CardHeader><CardTitle>Payout details</CardTitle></CardHeader><CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
@@ -133,6 +187,31 @@ function SellerSettings() {
               <div><Label>IBAN / account #</Label><Input value={f.bank_iban ?? ""} onChange={(e) => set("bank_iban", e.target.value)} /></div>
               <div><Label>SWIFT / BIC</Label><Input value={f.bank_swift ?? ""} onChange={(e) => set("bank_swift", e.target.value)} /></div>
             </div>
+            <div className="pt-4 border-t">
+              <Label className="text-sm">Accepted payment methods from buyers</Label>
+              <p className="text-xs text-muted-foreground mb-2">Methods you accept for your sales.</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  { k: "card", label: "Credit / debit card" },
+                  { k: "apple_pay", label: "Apple Pay" },
+                  { k: "google_pay", label: "Google Pay" },
+                  { k: "cod", label: "Cash on delivery" },
+                  { k: "bank_transfer", label: "Bank transfer" },
+                ].map((opt) => {
+                  const arr: string[] = f.accepted_payment_methods ?? [];
+                  const on = arr.includes(opt.k);
+                  return (
+                    <label key={opt.k} className="flex items-center gap-2 rounded-md border p-2 cursor-pointer">
+                      <Checkbox checked={on} onCheckedChange={(v) => {
+                        const next = v ? [...arr, opt.k] : arr.filter((x) => x !== opt.k);
+                        set("accepted_payment_methods", next.length ? next : ["card"]);
+                      }} />
+                      <span className="text-sm">{opt.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           </CardContent></Card>
         </TabsContent>
 
@@ -142,6 +221,8 @@ function SellerSettings() {
               { k: "notify_new_order", label: "New order", desc: "When a buyer places a new order with your store." },
               { k: "notify_low_stock", label: "Low stock", desc: "When a variant drops to 5 units or fewer." },
               { k: "notify_payout", label: "Payout updates", desc: "When a payout is scheduled or paid." },
+              { k: "notify_review", label: "New review", desc: "When a buyer leaves a review on your product." },
+              { k: "notify_return", label: "Return requests", desc: "When a buyer requests a return or refund." },
             ].map((row) => (
               <div className="flex items-center justify-between" key={row.k}>
                 <div><Label>{row.label}</Label><p className="text-xs text-muted-foreground">{row.desc}</p></div>

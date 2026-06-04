@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, ShoppingCart, Store, Wallet, Tags, Users, Settings, Activity, Upload, FileText, Truck,
-  Package, Star, RotateCcw, Ticket, Megaphone, Mail,
+  Package, Star, RotateCcw, Ticket, Megaphone, Mail, Plus,
 } from "lucide-react";
 import { isAdmin } from "@/lib/admin.functions";
 import { DashboardShell } from "@/components/site/DashboardShell";
@@ -32,6 +32,7 @@ function AdminLayout() {
             { to: "/admin/sellers", label: t("dash.nav.sellers"), icon: Store },
             { to: "/admin/orders", label: t("dash.nav.orders"), icon: ShoppingCart },
             { to: "/admin/quotes", label: "Quotes", icon: FileText },
+            { to: "/admin/products/new", label: "New product", icon: Plus },
             { to: "/admin/products/import", label: t("dash.import.nav"), icon: Upload },
           ],
         },
@@ -53,7 +54,7 @@ function AdminLayout() {
         },
         {
           label: t("dash.groups.config"),
-          items: [{ label: t("dash.nav.settings"), icon: Settings, soon: true }],
+          items: [{ to: "/admin/settings", label: t("dash.nav.settings"), icon: Settings }],
         },
       ]}
     >

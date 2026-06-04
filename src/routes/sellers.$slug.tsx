@@ -26,7 +26,18 @@ function SellerPage() {
   }
   if (!seller.data) throw notFound();
 
-  const s = seller.data;
+  const s = seller.data as any;
+  const allProducts = products.data ?? [];
+  const featuredIds: string[] = s.featured_product_ids ?? [];
+  const featured = featuredIds
+    .map((id) => allProducts.find((p) => p.id === id))
+    .filter(Boolean) as any[];
+  const rest = featuredIds.length ? allProducts.filter((p) => !featuredIds.includes(p.id)) : allProducts;
+  const bh = s.business_hours ?? {};
+  const DAY_ORDER: Array<[string, string]> = [
+    ["mon", "Mon"], ["tue", "Tue"], ["wed", "Wed"], ["thu", "Thu"], ["fri", "Fri"], ["sat", "Sat"], ["sun", "Sun"],
+  ];
+  const hasHours = DAY_ORDER.some(([k]) => bh[k] && (bh[k].open || bh[k].close || bh[k].closed));
   return (
     <SiteLayout>
       {s.cover_url && (
@@ -49,8 +60,37 @@ function SellerPage() {
         </div>
         {s.bio && <p className="mt-8 max-w-2xl text-sm leading-relaxed text-muted-foreground">{s.bio}</p>}
 
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {(products.data ?? []).map((p) => <ProductCard key={p.id} p={p} />)}
+        {hasHours && (
+          <div className="mt-8 max-w-md rounded-lg border border-border bg-card p-4">
+            <h3 className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Business hours</h3>
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+              {DAY_ORDER.map(([k, label]) => {
+                const v = bh[k] ?? {};
+                return (
+                  <li key={k} className="flex justify-between">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span>{v.closed ? "Closed" : v.open && v.close ? `${v.open}–${v.close}` : "—"}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        {featured.length > 0 && (
+          <div className="mt-12">
+            <h2 className="font-display text-2xl tracking-tight mb-4">Featured</h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {featured.map((p) => <ProductCard key={p.id} p={p} />)}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-12">
+          {featured.length > 0 && <h2 className="font-display text-2xl tracking-tight mb-4">All products</h2>}
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {rest.map((p) => <ProductCard key={p.id} p={p} />)}
+          </div>
         </div>
       </section>
     </SiteLayout>

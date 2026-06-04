@@ -309,7 +309,7 @@ export const getMyPayouts = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at")
+      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, created_at")
       .eq("seller_id", seller.id)
       .order("period_end", { ascending: false });
     if (error) throw new Error(error.message);
@@ -332,6 +332,89 @@ export const getMyPayouts = createServerFn({ method: "GET" })
         },
       },
     };
+  });
+
+// ===== Request payout =====
+async function computeAvailableBalance(sellerId: string) {
+  const [{ data: items }, { data: payouts }] = await Promise.all([
+    supabaseAdmin.from("order_items").select("line_total_aed, commission_aed").eq("seller_id", sellerId),
+    supabaseAdmin.from("seller_payouts").select("net_aed, status, requested_at, created_at").eq("seller_id", sellerId),
+  ]);
+  const gross = (items ?? []).reduce((a, x: any) => a + Number(x.line_total_aed ?? 0), 0);
+  const commission = (items ?? []).reduce((a, x: any) => a + Number(x.commission_aed ?? 0), 0);
+  const netLifetime = gross - commission;
+  const reserved = (payouts ?? [])
+    .filter((p: any) => p.status !== "cancelled")
+    .reduce((a, p: any) => a + Number(p.net_aed ?? 0), 0);
+  const open = (payouts ?? []).find((p: any) => p.status === "pending" || p.status === "processing");
+  const lastRequest = (payouts ?? [])
+    .map((p: any) => p.requested_at ?? p.created_at)
+    .filter(Boolean)
+    .sort()
+    .pop() ?? null;
+  return {
+    availableBalance: Math.max(0, +(netLifetime - reserved).toFixed(2)),
+    hasOpenRequest: !!open,
+    lastPayoutRequestAt: lastRequest,
+    grossLifetime: +gross.toFixed(2),
+    commissionLifetime: +commission.toFixed(2),
+  };
+}
+
+export const requestSellerPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { amount?: number }) =>
+    z.object({ amount: z.number().positive().max(10_000_000).optional() }).parse(input ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const balance = await computeAvailableBalance(seller.id);
+    if (balance.hasOpenRequest) throw new Error("You already have a pending payout request.");
+    if (balance.availableBalance <= 0) throw new Error("No funds available for payout.");
+    const amount = data.amount ? Math.min(data.amount, balance.availableBalance) : balance.availableBalance;
+    if (amount <= 0) throw new Error("Invalid amount.");
+
+    const rate = Number(seller.commission_rate ?? 0) / 100;
+    const gross = rate > 0 && rate < 1 ? +(amount / (1 - rate)).toFixed(2) : amount;
+    const commission = +(gross - amount).toFixed(2);
+
+    const today = new Date();
+    const { data: lastPaid } = await supabaseAdmin
+      .from("seller_payouts")
+      .select("period_end")
+      .eq("seller_id", seller.id).eq("status", "paid")
+      .order("period_end", { ascending: false }).limit(1).maybeSingle();
+    const periodStart = lastPaid?.period_end
+      ? new Date(new Date(lastPaid.period_end).getTime() + 86400000).toISOString().slice(0, 10)
+      : new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().slice(0, 10);
+    const periodEnd = today.toISOString().slice(0, 10);
+
+    const { data: created, error } = await supabaseAdmin.from("seller_payouts").insert({
+      seller_id: seller.id,
+      period_start: periodStart,
+      period_end: periodEnd,
+      gross_aed: gross,
+      commission_aed: commission,
+      net_aed: amount,
+      status: "pending",
+      requested_at: new Date().toISOString(),
+    }).select("id").single();
+    if (error) throw new Error(error.message);
+
+    // Notify admins
+    const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+    if (admins && admins.length) {
+      await supabaseAdmin.from("notifications").insert(
+        admins.map((a: any) => ({
+          user_id: a.user_id,
+          kind: "payout_requested",
+          title: "Payout requested",
+          body: `${seller.store_name} requested ${amount.toFixed(2)} AED`,
+          link: `/admin/payouts`,
+        })),
+      );
+    }
+    return { ok: true, payoutId: created.id, amount };
   });
 // ===== Product images (private bucket -> long signed URLs) =====
 const BUCKET = "product-images";
@@ -532,6 +615,7 @@ export const getSellerCommissions = createServerFn({ method: "GET" })
       },
       months,
       topProducts,
+      balance: await computeAvailableBalance(seller.id),
     };
   });
 
@@ -540,10 +624,22 @@ export const getSellerStorefront = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const s = await getSellerForUser(context.userId);
+    const { data: prods } = await supabaseAdmin
+      .from("products")
+      .select(`id, status, translations:product_translations(lang, name), images:product_images(url, sort_order)`)
+      .eq("seller_id", s.id);
+    const products = (prods ?? []).map((p: any) => {
+      const tr = (p.translations ?? []).find((t: any) => t.lang === "en") ?? p.translations?.[0];
+      const img = (p.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
+      return { id: p.id, name: tr?.name ?? "(untitled)", image: img?.url ?? null, status: p.status };
+    });
     return {
       id: s.id, slug: s.slug, store_name: s.store_name, tagline: s.tagline, bio: s.bio,
       logo_url: s.logo_url, cover_url: s.cover_url, contact_email: s.contact_email,
       contact_phone: s.contact_phone, social_links: s.social_links ?? {}, is_published: s.is_published,
+      featured_product_ids: (s as any).featured_product_ids ?? [],
+      business_hours: (s as any).business_hours ?? {},
+      products,
     };
   });
 
@@ -557,6 +653,15 @@ const StorefrontInput = z.object({
   contact_phone: z.string().max(40).optional().nullable(),
   social_links: z.record(z.string().max(40), z.string().max(300)).optional().nullable(),
   is_published: z.boolean().default(true),
+  featured_product_ids: z.array(z.string().uuid()).max(8).optional().nullable(),
+  business_hours: z.record(
+    z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+    z.object({
+      open: z.string().max(5).optional().nullable(),
+      close: z.string().max(5).optional().nullable(),
+      closed: z.boolean().optional(),
+    }),
+  ).optional().nullable(),
 });
 
 export const updateSellerStorefront = createServerFn({ method: "POST" })
@@ -564,6 +669,14 @@ export const updateSellerStorefront = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof StorefrontInput>) => StorefrontInput.parse(input))
   .handler(async ({ data, context }) => {
     const s = await getSellerForUser(context.userId);
+    // validate featured product ownership
+    let featured: string[] = [];
+    if (data.featured_product_ids?.length) {
+      const { data: owned } = await supabaseAdmin.from("products")
+        .select("id").eq("seller_id", s.id).in("id", data.featured_product_ids);
+      const ownedSet = new Set((owned ?? []).map((p: any) => p.id));
+      featured = data.featured_product_ids.filter((id) => ownedSet.has(id));
+    }
     const { error } = await supabaseAdmin.from("sellers").update({
       store_name: data.store_name,
       tagline: data.tagline ?? null,
@@ -574,6 +687,8 @@ export const updateSellerStorefront = createServerFn({ method: "POST" })
       contact_phone: data.contact_phone ?? null,
       social_links: data.social_links ?? {},
       is_published: data.is_published,
+      featured_product_ids: featured,
+      business_hours: data.business_hours ?? {},
     }).eq("id", s.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -616,6 +731,14 @@ export const getSellerSettings = createServerFn({ method: "GET" })
       payout_method: s.payout_method, bank_name: s.bank_name, bank_iban: s.bank_iban,
       bank_swift: s.bank_swift, bank_account_holder: s.bank_account_holder,
       notify_new_order: s.notify_new_order, notify_low_stock: s.notify_low_stock, notify_payout: s.notify_payout,
+      address_line1: (s as any).address_line1, address_line2: (s as any).address_line2,
+      city: (s as any).city, country: (s as any).country, postal_code: (s as any).postal_code,
+      currency: (s as any).currency ?? "AED",
+      tax_inclusive_pricing: (s as any).tax_inclusive_pricing ?? false,
+      tax_rate: (s as any).tax_rate ?? 0,
+      accepted_payment_methods: (s as any).accepted_payment_methods ?? ["card"],
+      notify_review: (s as any).notify_review ?? true,
+      notify_return: (s as any).notify_return ?? true,
     };
   });
 
@@ -638,6 +761,17 @@ const SettingsInput = z.object({
   notify_new_order: z.boolean(),
   notify_low_stock: z.boolean(),
   notify_payout: z.boolean(),
+  address_line1: z.string().max(160).optional().nullable(),
+  address_line2: z.string().max(160).optional().nullable(),
+  city: z.string().max(80).optional().nullable(),
+  country: z.string().max(80).optional().nullable(),
+  postal_code: z.string().max(20).optional().nullable(),
+  currency: z.enum(["AED", "USD", "EUR", "MXN", "SAR"]).default("AED"),
+  tax_inclusive_pricing: z.boolean().default(false),
+  tax_rate: z.number().min(0).max(100).default(0),
+  accepted_payment_methods: z.array(z.enum(["card", "apple_pay", "google_pay", "cod", "bank_transfer"])).default(["card"]),
+  notify_review: z.boolean().default(true),
+  notify_return: z.boolean().default(true),
 });
 
 export const updateSellerSettings = createServerFn({ method: "POST" })

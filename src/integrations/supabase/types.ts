@@ -993,6 +993,7 @@ export type Database = {
           paid_at: string | null
           period_end: string
           period_start: string
+          requested_at: string | null
           seller_id: string
           status: string
         }
@@ -1005,6 +1006,7 @@ export type Database = {
           paid_at?: string | null
           period_end: string
           period_start: string
+          requested_at?: string | null
           seller_id: string
           status?: string
         }
@@ -1017,6 +1019,7 @@ export type Database = {
           paid_at?: string | null
           period_end?: string
           period_start?: string
+          requested_at?: string | null
           seller_id?: string
           status?: string
         }
@@ -1032,18 +1035,26 @@ export type Database = {
       }
       sellers: {
         Row: {
+          accepted_payment_methods: string[] | null
+          address_line1: string | null
+          address_line2: string | null
           auto_accept_orders: boolean
           bank_account_holder: string | null
           bank_iban: string | null
           bank_name: string | null
           bank_swift: string | null
           bio: string | null
+          business_hours: Json | null
+          city: string | null
           commission_rate: number
           contact_address: string | null
           contact_email: string | null
           contact_phone: string | null
+          country: string | null
           cover_url: string | null
           created_at: string
+          currency: string | null
+          featured_product_ids: string[] | null
           id: string
           is_published: boolean
           legal_name: string | null
@@ -1051,7 +1062,10 @@ export type Database = {
           notify_low_stock: boolean
           notify_new_order: boolean
           notify_payout: boolean
+          notify_return: boolean | null
+          notify_review: boolean | null
           payout_method: string
+          postal_code: string | null
           processing_days: number
           slug: string
           social_links: Json
@@ -1060,6 +1074,8 @@ export type Database = {
           support_email: string | null
           support_phone: string | null
           tagline: string | null
+          tax_inclusive_pricing: boolean | null
+          tax_rate: number | null
           trn: string | null
           updated_at: string
           user_id: string
@@ -1068,18 +1084,26 @@ export type Database = {
           vat_number: string | null
         }
         Insert: {
+          accepted_payment_methods?: string[] | null
+          address_line1?: string | null
+          address_line2?: string | null
           auto_accept_orders?: boolean
           bank_account_holder?: string | null
           bank_iban?: string | null
           bank_name?: string | null
           bank_swift?: string | null
           bio?: string | null
+          business_hours?: Json | null
+          city?: string | null
           commission_rate?: number
           contact_address?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string | null
           cover_url?: string | null
           created_at?: string
+          currency?: string | null
+          featured_product_ids?: string[] | null
           id?: string
           is_published?: boolean
           legal_name?: string | null
@@ -1087,7 +1111,10 @@ export type Database = {
           notify_low_stock?: boolean
           notify_new_order?: boolean
           notify_payout?: boolean
+          notify_return?: boolean | null
+          notify_review?: boolean | null
           payout_method?: string
+          postal_code?: string | null
           processing_days?: number
           slug: string
           social_links?: Json
@@ -1096,6 +1123,8 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tagline?: string | null
+          tax_inclusive_pricing?: boolean | null
+          tax_rate?: number | null
           trn?: string | null
           updated_at?: string
           user_id: string
@@ -1104,18 +1133,26 @@ export type Database = {
           vat_number?: string | null
         }
         Update: {
+          accepted_payment_methods?: string[] | null
+          address_line1?: string | null
+          address_line2?: string | null
           auto_accept_orders?: boolean
           bank_account_holder?: string | null
           bank_iban?: string | null
           bank_name?: string | null
           bank_swift?: string | null
           bio?: string | null
+          business_hours?: Json | null
+          city?: string | null
           commission_rate?: number
           contact_address?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string | null
           cover_url?: string | null
           created_at?: string
+          currency?: string | null
+          featured_product_ids?: string[] | null
           id?: string
           is_published?: boolean
           legal_name?: string | null
@@ -1123,7 +1160,10 @@ export type Database = {
           notify_low_stock?: boolean
           notify_new_order?: boolean
           notify_payout?: boolean
+          notify_return?: boolean | null
+          notify_review?: boolean | null
           payout_method?: string
+          postal_code?: string | null
           processing_days?: number
           slug?: string
           social_links?: Json
@@ -1132,6 +1172,8 @@ export type Database = {
           support_email?: string | null
           support_phone?: string | null
           tagline?: string | null
+          tax_inclusive_pricing?: boolean | null
+          tax_rate?: number | null
           trn?: string | null
           updated_at?: string
           user_id?: string

@@ -25,7 +25,14 @@ function SellerStorefront() {
   const q = useQuery({ queryKey: ["seller-storefront"], queryFn: () => get({}) });
 
   const [f, setF] = useState<any>(null);
-  useEffect(() => { if (q.data && !f) setF({ ...q.data, social_links: q.data.social_links ?? {} }); }, [q.data]);
+  useEffect(() => {
+    if (q.data && !f) setF({
+      ...q.data,
+      social_links: q.data.social_links ?? {},
+      featured_product_ids: q.data.featured_product_ids ?? [],
+      business_hours: q.data.business_hours ?? {},
+    });
+  }, [q.data]);
 
   const m = useMutation({
     mutationFn: () => save({ data: {
@@ -33,6 +40,8 @@ function SellerStorefront() {
       logo_url: f.logo_url || null, cover_url: f.cover_url || null,
       contact_email: f.contact_email || null, contact_phone: f.contact_phone || null,
       social_links: f.social_links || {}, is_published: !!f.is_published,
+      featured_product_ids: f.featured_product_ids ?? [],
+      business_hours: f.business_hours ?? {},
     }}),
     onSuccess: () => { toast.success("Storefront saved"); qc.invalidateQueries({ queryKey: ["seller-storefront"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
@@ -54,6 +63,23 @@ function SellerStorefront() {
   };
 
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/sellers/${f.slug}` : `/sellers/${f.slug}`;
+  const activeProducts = (f.products ?? []).filter((p: any) => p.status === "active");
+  const featuredIds: string[] = f.featured_product_ids ?? [];
+  const DAYS: { k: "mon"|"tue"|"wed"|"thu"|"fri"|"sat"|"sun"; label: string }[] = [
+    { k: "mon", label: "Monday" }, { k: "tue", label: "Tuesday" }, { k: "wed", label: "Wednesday" },
+    { k: "thu", label: "Thursday" }, { k: "fri", label: "Friday" }, { k: "sat", label: "Saturday" }, { k: "sun", label: "Sunday" },
+  ];
+  const toggleFeatured = (id: string) => {
+    const cur: string[] = f.featured_product_ids ?? [];
+    if (cur.includes(id)) setF({ ...f, featured_product_ids: cur.filter((x) => x !== id) });
+    else if (cur.length < 8) setF({ ...f, featured_product_ids: [...cur, id] });
+    else toast.error("You can feature up to 8 products");
+  };
+  const setHour = (day: string, key: "open"|"close"|"closed", val: any) => {
+    const bh = { ...(f.business_hours ?? {}) };
+    bh[day] = { ...(bh[day] ?? {}), [key]: val };
+    setF({ ...f, business_hours: bh });
+  };
 
   return (
     <div className="space-y-6">
@@ -137,6 +163,64 @@ function SellerStorefront() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Featured products</CardTitle>
+          <p className="text-sm text-muted-foreground">Pick up to 8 active products to highlight at the top of your public store. {featuredIds.length}/8 selected.</p>
+        </CardHeader>
+        <CardContent>
+          {activeProducts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">You have no active products yet.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {activeProducts.map((p: any) => {
+                const on = featuredIds.includes(p.id);
+                return (
+                  <button key={p.id} type="button" onClick={() => toggleFeatured(p.id)}
+                    className={`group relative rounded-lg border-2 overflow-hidden text-left transition ${on ? "border-primary" : "border-border hover:border-muted-foreground/40"}`}>
+                    <div className="aspect-square bg-muted">
+                      {p.image && <img src={p.image} alt="" className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="p-2">
+                      <p className="text-xs line-clamp-2">{p.name}</p>
+                    </div>
+                    {on && (
+                      <span className="absolute top-1.5 right-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-medium text-primary-foreground">
+                        {featuredIds.indexOf(p.id) + 1}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Business hours</CardTitle>
+          <p className="text-sm text-muted-foreground">Shown publicly on your storefront. Leave empty to hide.</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {DAYS.map((d) => {
+            const v = f.business_hours?.[d.k] ?? {};
+            return (
+              <div key={d.k} className="flex items-center gap-3 flex-wrap">
+                <div className="w-28 text-sm">{d.label}</div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={!v.closed} onCheckedChange={(on) => setHour(d.k, "closed", !on)} />
+                  <span className="text-xs text-muted-foreground w-12">{v.closed ? "Closed" : "Open"}</span>
+                </div>
+                <Input type="time" className="w-32" disabled={!!v.closed} value={v.open ?? ""} onChange={(e) => setHour(d.k, "open", e.target.value)} />
+                <span className="text-xs text-muted-foreground">to</span>
+                <Input type="time" className="w-32" disabled={!!v.closed} value={v.close ?? ""} onChange={(e) => setHour(d.k, "close", e.target.value)} />
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
     </div>
   );
 }
