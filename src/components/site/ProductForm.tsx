@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { upsertSellerProduct } from "@/lib/seller.functions";
+import { adminUpsertProduct } from "@/lib/admin.functions";
 import { ProductImagesEditor, type ProductImage } from "@/components/site/ProductImagesEditor";
 import { ProductVariantsEditor, type Variant } from "@/components/site/ProductVariantsEditor";
 import { toast } from "sonner";
@@ -44,7 +45,7 @@ const defaults: ProductFormValues = {
 
 const CATEGORIES = ["chiles", "salsas", "masa", "snacks", "drinks", "pantry"];
 
-export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues; onSaved?: () => void }) {
+export function ProductForm({ initial, onSaved, adminSellerId }: { initial?: ProductFormValues; onSaved?: () => void; adminSellerId?: string }) {
   const [form, setForm] = useState<ProductFormValues>({ ...defaults, ...(initial ?? {}) });
   const [productId, setProductId] = useState<string | undefined>(initial?.id);
   const [images, setImages] = useState<ProductImage[]>(initial?.images ?? []);
@@ -53,11 +54,13 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
     JSON.stringify(initial?.attrs ?? {}, null, 2),
   );
   const [attrsError, setAttrsError] = useState<string | null>(null);
-  const fn = useServerFn(upsertSellerProduct);
+  const sellerFn = useServerFn(upsertSellerProduct);
+  const adminFn = useServerFn(adminUpsertProduct);
   const qc = useQueryClient();
   const m = useMutation({
-    mutationFn: (input: ProductFormValues) => fn({ data: {
-      id: input.id,
+    mutationFn: (input: ProductFormValues) => {
+      const payload = {
+        id: input.id,
       name_en: input.name_en,
       name_es: input.name_es || null,
       name_ar: input.name_ar || null,
@@ -72,7 +75,11 @@ export function ProductForm({ initial, onSaved }: { initial?: ProductFormValues;
       status: input.status,
       category_slug: input.category_slug || null,
       attrs: input.attrs ?? {},
-    } as any }),
+      };
+      return adminSellerId
+        ? adminFn({ data: { ...payload, seller_id: adminSellerId } as any })
+        : sellerFn({ data: payload as any });
+    },
     onSuccess: (res: any) => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["seller-products"] });
