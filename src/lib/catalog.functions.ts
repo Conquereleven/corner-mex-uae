@@ -241,14 +241,20 @@ export const getSeller = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<SellerSummary | null> => {
     const { data: row, error } = await supabaseAdmin
       .from("sellers")
-      .select("id, slug, store_name, tagline, bio, logo_url, cover_url")
+      .select("id, slug, store_name, tagline, bio, logo_url, cover_url, featured_product_ids, business_hours, social_links, contact_email, contact_phone")
       .eq("slug", data.slug).eq("status", "active").maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) return null;
     const { count } = await supabaseAdmin.from("products").select("id", { count: "exact", head: true })
       .eq("seller_id", row.id).eq("status", "active");
     return { id: row.id, slug: row.slug, name: row.store_name, tagline: row.tagline, bio: row.bio,
-      logo_url: row.logo_url, cover_url: row.cover_url, product_count: count ?? 0 };
+      logo_url: row.logo_url, cover_url: row.cover_url, product_count: count ?? 0,
+      featured_product_ids: ((row as any).featured_product_ids ?? []) as string[],
+      business_hours: ((row as any).business_hours ?? {}) as Record<string, { open?: string | null; close?: string | null; closed?: boolean }>,
+      social_links: ((row as any).social_links ?? {}) as Record<string, string>,
+      contact_email: (row as any).contact_email ?? null,
+      contact_phone: (row as any).contact_phone ?? null,
+    } as any;
   });
 
 export const listCategories = createServerFn({ method: "GET" })
