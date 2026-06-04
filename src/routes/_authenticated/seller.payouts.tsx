@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Wallet, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getMyPayouts } from "@/lib/seller.functions";
@@ -41,9 +42,12 @@ function SellerPayouts() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl tracking-tight">{t("dash.payouts.title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("dash.payouts.sellerSub")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl tracking-tight">{t("dash.payouts.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("dash.payouts.sellerSub")}</p>
+        </div>
+        <Link to="/seller/commissions"><Button className="rounded-full">Request payout</Button></Link>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -73,6 +77,7 @@ function SellerPayouts() {
                     <TableHead className="text-right">{t("dash.payouts.col.commission")}</TableHead>
                     <TableHead className="text-right">{t("dash.payouts.col.net")}</TableHead>
                     <TableHead>{t("dash.payouts.col.status")}</TableHead>
+                    <TableHead className="text-right">Requested</TableHead>
                     <TableHead className="text-right">{t("dash.payouts.col.paidAt")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -87,6 +92,9 @@ function SellerPayouts() {
                         <Badge variant="outline" className={STATUS_TONE[p.status] ?? ""}>
                           {t(`dash.payouts.status.${p.status}`)}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right text-xs text-muted-foreground">
+                        {p.requested_at ? new Date(p.requested_at).toLocaleDateString() : "—"}
                       </TableCell>
                       <TableCell className="text-right text-xs text-muted-foreground">
                         {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : "—"}
