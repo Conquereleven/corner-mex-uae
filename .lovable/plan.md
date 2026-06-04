@@ -1,70 +1,79 @@
-# Fase 7b — Completar funciones "SOON" del Seller Studio
+# Fase 7c — Pulido final del Seller/Admin Studio
 
-Reemplazar los tres items marcados como `SOON` en el sidebar del seller por páginas funcionales reales.
+Cinco bloques. Todos los archivos clave ya existen; ampliamos lo que falta sin refactor mayor.
 
-## 1. Commissions (`/seller/commissions`)
+## 1. Comisiones + Solicitar Payout
 
-Página de transparencia de comisiones por venta.
+**Backend** (`src/lib/seller.functions.ts`):
+- `getSellerCommissions` se amplía para devolver `availableBalance` (neto lifetime − suma de payouts en estado `pending|processing|paid`) y `lastPayoutRequestAt`.
+- Nueva `requestSellerPayout({ amount? })`:
+  - Valida con zod (`amount > 0` y ≤ `availableBalance`, opcional → toma todo el saldo).
+  - Bloquea si hay un payout `pending` o `processing` reciente (<24h) → toast informativo.
+  - Inserta en `seller_payouts` con `status='pending'`, `period_start/end` = ventana desde el último payout pagado hasta hoy, `gross_aed`, `commission_aed`, `net_aed`, `requested_at = now()`.
+  - Crea una notificación interna para admins (`notifications` con `type='payout_requested'`).
 
-- **Server fn nueva** en `seller.functions.ts`: `getSellerCommissions`
-  - Lee `order_items` del seller (últimos 90 días + lifetime)
-  - Agrupa por mes: GMV, comisión cobrada, neto
-  - Calcula tasa efectiva (commission / gmv)
-  - Devuelve breakdown por categoría/producto top
-  - Devuelve la tasa configurada en `sellers.commission_rate` (si existe) o la default de plataforma
-- **Ruta** `src/routes/_authenticated/seller.commissions.tsx`:
-  - KPIs: tasa actual, comisión 30d, comisión lifetime, neto lifetime
-  - Tabla mensual (mes, pedidos, GMV, comisión, neto, tasa efectiva)
-  - Top 5 productos por comisión generada
-  - Nota legal explicando cómo se calcula
+**Migración** (`supabase/migrations/...`): añadir columna `requested_at timestamptz` a `seller_payouts` si no existe.
 
-## 2. Storefront (`/seller/storefront`)
+**UI** (`src/routes/_authenticated/seller.commissions.tsx`):
+- KPI nueva: "Available to withdraw" (`availableBalance`).
+- Card con título "Request payout": Input AED + botón `Request payout` (deshabilitado si saldo = 0 o hay solicitud pendiente). Dialog de confirmación. Toast + invalidate.
+- Link "Ver historial" → `/seller/payouts`.
 
-Editor del perfil público del seller (la página `/sellers/$slug`).
+**UI** (`src/routes/_authenticated/seller.payouts.tsx`):
+- Mostrar columna `Requested at` cuando exista.
+- Mismo botón `Request payout` arriba (reutiliza dialog).
 
-- **Server fns nuevas** en `seller.functions.ts`:
-  - `getSellerStorefront` — devuelve datos editables del row `sellers`
-  - `updateSellerStorefront` — actualiza: `display_name`, `tagline`, `bio`, `logo_url`, `cover_url`, `country`, `social_links` (jsonb: instagram, website, whatsapp), `is_published`
-  - `uploadSellerAsset` — sube logo/cover al bucket `product-images` (reutilizado) con signed URL a 10 años, o crear bucket `seller-assets` si conviene
-- **Migración**: añadir columnas faltantes a `sellers` si no existen (`tagline`, `cover_url`, `social_links jsonb`, `is_published bool default true`)
-- **Ruta** `src/routes/_authenticated/seller.storefront.tsx`:
-  - Form con preview en vivo
-  - Inputs para logo y cover (drag & drop, reusa patrón de `ProductImagesEditor`)
-  - Toggle "Storefront público"
-  - Link directo a `/sellers/{slug}` para previsualizar
-  - Botón "Copiar link"
+## 2. Storefront — showcase de productos
 
-## 3. Settings (`/seller/settings`)
+**Migración**: `ALTER TABLE sellers ADD COLUMN IF NOT EXISTS featured_product_ids uuid[] DEFAULT '{}'::uuid[]; ADD COLUMN IF NOT EXISTS business_hours jsonb DEFAULT '{}'::jsonb;`
 
-Configuración operativa de la cuenta seller.
+**Backend** (`src/lib/seller.functions.ts`):
+- `getSellerStorefront` ahora también devuelve `featured_product_ids`, `business_hours` y la lista de productos activos del seller (`id`, `name`, `image`, `status`) para poder elegir.
+- `updateSellerStorefront` acepta `featured_product_ids: string[]` (máx 8, todos deben pertenecer al seller y estar `active`) y `business_hours` (`{ mon: {open, close, closed}, … }` con zod).
 
-- **Server fns nuevas** en `seller.functions.ts`:
-  - `getSellerSettings` — devuelve campos no-públicos
-  - `updateSellerSettings` — actualiza:
-    - **Negocio**: `legal_name`, `trade_license`, `vat_number`
-    - **Contacto**: `support_email`, `support_phone`, `contact_address`
-    - **Operaciones**: `processing_days` (1–14), `auto_accept_orders` bool, `vacation_mode` bool + `vacation_message`
-    - **Payout**: `payout_method` (bank|wallet), `bank_name`, `iban`, `swift`, `account_holder`
-    - **Notificaciones**: `notify_new_order`, `notify_low_stock`, `notify_payout` (bool)
-- **Migración**: añadir columnas faltantes a `sellers` para los campos arriba que no existen
-- **Ruta** `src/routes/_authenticated/seller.settings.tsx`:
-  - Tabs: Business · Contact · Operations · Payout · Notifications
-  - Validación con zod, toasts de éxito/error
-  - Banner si `vacation_mode = true` recordando que la tienda está pausada
+**UI** (`src/routes/_authenticated/seller.storefront.tsx`):
+- Nueva sección **"Productos destacados"**: grid de los productos activos con checkbox/toggle (máx 8). Vista previa lateral muestra los seleccionados.
+- Nueva sección **"Horario"**: 7 filas (Lun–Dom) con `open`/`close` y switch "Cerrado".
+- Preview en vivo del storefront público.
 
-## 4. Sidebar (`src/routes/_authenticated/seller.tsx`)
+**Storefront público** (`src/routes/sellers.$slug.tsx`):
+- Si `featured_product_ids.length > 0`, mostrar primero una sección "Featured" con esos productos en el orden elegido; el resto del catálogo queda debajo.
+- Renderizar el bloque de horario debajo de la bio si tiene datos.
 
-Quitar `soon: true` de los tres items y apuntar a las rutas reales:
-- Commissions → `/seller/commissions`
-- Storefront → `/seller/storefront`
-- Settings → `/seller/settings`
+## 3. Settings — completar perfil + preferencias
 
-## i18n
+**Migración**: añadir a `sellers` (`IF NOT EXISTS` para cada columna): `address_line1 text`, `address_line2 text`, `city text`, `country text`, `postal_code text`, `currency text DEFAULT 'AED'`, `tax_inclusive_pricing bool DEFAULT false`, `tax_rate numeric DEFAULT 0`, `accepted_payment_methods text[] DEFAULT ARRAY['card']`, `notify_review bool DEFAULT true`, `notify_return bool DEFAULT true`.
 
-Añadir keys a `src/lib/i18n.ts` (EN/ES/AR) para los títulos y labels nuevos de las tres páginas.
+**Backend** (`src/lib/seller.functions.ts`):
+- Ampliar `getSellerSettings`/`updateSellerSettings` schema con los campos arriba.
+
+**UI** (`src/routes/_authenticated/seller.settings.tsx`):
+- Nueva pestaña **"Address"** (líneas, ciudad, país via Select, CP).
+- Pestaña **"Business"** añade Select de `currency` (AED/USD/EUR/MXN/SAR).
+- Nueva pestaña **"Tax"**: switch `tax_inclusive_pricing` + input `tax_rate` (%).
+- Pestaña **"Payout"** añade checkboxes `Accepted payment methods` (`card`, `apple_pay`, `google_pay`, `cod`, `bank_transfer`).
+- Pestaña **"Notifications"** añade `notify_review` y `notify_return`.
+
+## 4. Auditar y eliminar "SOON"
+
+- `src/routes/_authenticated/admin.tsx`: el único item con `soon: true` (Settings → grupo Config) se elimina o se reemplaza por un placeholder real `/admin/settings`. **Decisión**: crear ruta mínima `/_authenticated/admin.settings.tsx` con tarjetas link a las páginas ya existentes (Categories, Coupons, Banners, Newsletter, Shipping) + nota "Más opciones próximamente con cambio reciente". Esto cumple "mensaje de estado con próximos pasos".
+- Quitar la condición `item.soon` del sidebar (`DashboardShell.tsx`) o dejarla pero sin usos.
+- `grep` final para confirmar 0 ocurrencias de `soon:` y `SOON` en `src/routes` y `src/components`.
+
+## 5. Botón "Nuevo Producto" en Admin
+
+Actualmente Admin solo tiene **Import CSV**. Añadir:
+
+- **Backend** (`src/lib/admin.functions.ts`): nueva `adminUpsertProduct` que reutiliza la misma lógica que `upsertSellerProduct` pero recibe `seller_id` y usa `supabaseAdmin` (sin RLS de seller).
+- **Ruta** `src/routes/_authenticated/admin.products.new.tsx`:
+  - Header "New product (admin)" con Select de seller (de `adminListSellers` activos).
+  - Reutiliza `<ProductForm>` (se le añade prop opcional `sellerId` que cuando viene fuerza el uso de `adminUpsertProduct` en vez de `upsertSellerProduct`).
+- **Sidebar admin**: añadir item `New product` con icon `Plus` → `/admin/products/new` en el grupo Catalog (al lado de Import).
+- **Seller**: el botón "New product" en `seller.products.tsx` ya enlaza a `/seller/products/new` — verificar visualmente que el `<Link>` envuelve correctamente y el click navega (es el patrón Shopify: lista + botón superior derecho → editor de página completa con tabs Images / Variants / Pricing / SEO / Status, todo eso ya vive en `ProductForm`).
 
 ## Fuera de alcance
 
-- Editor visual avanzado del storefront (temas, colores custom).
-- Reglas de comisión variables por categoría (sigue siendo flat).
-- Verificación KYC del trade license (sólo se guarda el dato).
+- Cálculo automático de payouts por cron (sigue manual + solicitud).
+- Editor de temas/colores custom del storefront.
+- Conversión multi-divisa real (`currency` solo se guarda como preferencia).
+- Verificación KYC del trade license.
