@@ -407,7 +407,7 @@ export const requestSellerPayout = createServerFn({ method: "POST" })
       await supabaseAdmin.from("notifications").insert(
         admins.map((a: any) => ({
           user_id: a.user_id,
-          type: "payout_requested",
+          kind: "payout_requested",
           title: "Payout requested",
           body: `${seller.store_name} requested ${amount.toFixed(2)} AED`,
           link: `/admin/payouts`,
