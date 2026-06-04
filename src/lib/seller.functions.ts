@@ -615,6 +615,7 @@ export const getSellerCommissions = createServerFn({ method: "GET" })
       },
       months,
       topProducts,
+      balance: await computeAvailableBalance(seller.id),
     };
   });
 
@@ -623,10 +624,22 @@ export const getSellerStorefront = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const s = await getSellerForUser(context.userId);
+    const { data: prods } = await supabaseAdmin
+      .from("products")
+      .select(`id, status, translations:product_translations(lang, name), images:product_images(url, sort_order)`)
+      .eq("seller_id", s.id);
+    const products = (prods ?? []).map((p: any) => {
+      const tr = (p.translations ?? []).find((t: any) => t.lang === "en") ?? p.translations?.[0];
+      const img = (p.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
+      return { id: p.id, name: tr?.name ?? "(untitled)", image: img?.url ?? null, status: p.status };
+    });
     return {
       id: s.id, slug: s.slug, store_name: s.store_name, tagline: s.tagline, bio: s.bio,
       logo_url: s.logo_url, cover_url: s.cover_url, contact_email: s.contact_email,
       contact_phone: s.contact_phone, social_links: s.social_links ?? {}, is_published: s.is_published,
+      featured_product_ids: (s as any).featured_product_ids ?? [],
+      business_hours: (s as any).business_hours ?? {},
+      products,
     };
   });
 
@@ -640,6 +653,15 @@ const StorefrontInput = z.object({
   contact_phone: z.string().max(40).optional().nullable(),
   social_links: z.record(z.string().max(40), z.string().max(300)).optional().nullable(),
   is_published: z.boolean().default(true),
+  featured_product_ids: z.array(z.string().uuid()).max(8).optional().nullable(),
+  business_hours: z.record(
+    z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+    z.object({
+      open: z.string().max(5).optional().nullable(),
+      close: z.string().max(5).optional().nullable(),
+      closed: z.boolean().optional(),
+    }),
+  ).optional().nullable(),
 });
 
 export const updateSellerStorefront = createServerFn({ method: "POST" })
@@ -647,6 +669,14 @@ export const updateSellerStorefront = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof StorefrontInput>) => StorefrontInput.parse(input))
   .handler(async ({ data, context }) => {
     const s = await getSellerForUser(context.userId);
+    // validate featured product ownership
+    let featured: string[] = [];
+    if (data.featured_product_ids?.length) {
+      const { data: owned } = await supabaseAdmin.from("products")
+        .select("id").eq("seller_id", s.id).in("id", data.featured_product_ids);
+      const ownedSet = new Set((owned ?? []).map((p: any) => p.id));
+      featured = data.featured_product_ids.filter((id) => ownedSet.has(id));
+    }
     const { error } = await supabaseAdmin.from("sellers").update({
       store_name: data.store_name,
       tagline: data.tagline ?? null,
@@ -657,6 +687,8 @@ export const updateSellerStorefront = createServerFn({ method: "POST" })
       contact_phone: data.contact_phone ?? null,
       social_links: data.social_links ?? {},
       is_published: data.is_published,
+      featured_product_ids: featured,
+      business_hours: data.business_hours ?? {},
     }).eq("id", s.id);
     if (error) throw new Error(error.message);
     return { ok: true };
