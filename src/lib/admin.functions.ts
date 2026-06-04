@@ -476,3 +476,71 @@ export const adminGetCustomer = createServerFn({ method: "GET" })
       },
     };
   });
+
+// ===== Admin product creation =====
+const AdminProductInput = z.object({
+  seller_id: z.string().uuid(),
+  id: z.string().uuid().optional(),
+  name_en: z.string().min(1).max(160),
+  name_es: z.string().max(160).optional().nullable(),
+  name_ar: z.string().max(160).optional().nullable(),
+  description_en: z.string().max(2000).optional().nullable(),
+  description_es: z.string().max(2000).optional().nullable(),
+  description_ar: z.string().max(2000).optional().nullable(),
+  brand: z.string().max(120).optional().nullable(),
+  origin_region: z.string().max(120).optional().nullable(),
+  spice_level: z.number().int().min(0).max(5).optional().nullable(),
+  is_bulk: z.boolean().default(false),
+  is_halal: z.boolean().default(true),
+  status: z.enum(["draft", "active", "archived"]).default("active"),
+  category_slug: z.string().optional().nullable(),
+  attrs: z.record(z.string(), z.any()).optional().nullable(),
+});
+
+export const adminUpsertProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.input<typeof AdminProductInput>) => AdminProductInput.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    let categoryId: string | null = null;
+    if (data.category_slug) {
+      const { data: cat } = await supabaseAdmin.from("categories").select("id").eq("slug", data.category_slug).maybeSingle();
+      categoryId = cat?.id ?? null;
+    }
+    const baseSlug = data.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "product";
+    let productId = data.id;
+    if (!productId) {
+      let slug = baseSlug;
+      for (let i = 1; i < 30; i++) {
+        const { data: hit } = await supabaseAdmin.from("products").select("id").eq("slug", slug).maybeSingle();
+        if (!hit) break;
+        slug = `${baseSlug}-${i}`;
+      }
+      const { data: created, error } = await supabaseAdmin.from("products").insert({
+        seller_id: data.seller_id, slug, brand: data.brand || null,
+        origin_region: data.origin_region || null, spice_level: data.spice_level ?? null,
+        is_bulk: data.is_bulk, is_halal: data.is_halal, status: data.status,
+        category_id: categoryId, attrs: data.attrs ?? {},
+      }).select("id").single();
+      if (error) throw new Error(error.message);
+      productId = created.id;
+      await supabaseAdmin.from("product_variants").insert({
+        product_id: productId, format_label: null, price_aed: 0, stock: 0, is_default: true,
+      });
+    } else {
+      const { error } = await supabaseAdmin.from("products").update({
+        brand: data.brand || null, origin_region: data.origin_region || null,
+        spice_level: data.spice_level ?? null, is_bulk: data.is_bulk, is_halal: data.is_halal,
+        status: data.status, category_id: categoryId, attrs: data.attrs ?? {},
+      }).eq("id", productId);
+      if (error) throw new Error(error.message);
+    }
+    const trRows = [
+      { product_id: productId, lang: "en" as const, name: data.name_en, description: data.description_en ?? null },
+      ...(data.name_es ? [{ product_id: productId, lang: "es" as const, name: data.name_es, description: data.description_es ?? null }] : []),
+      ...(data.name_ar ? [{ product_id: productId, lang: "ar" as const, name: data.name_ar, description: data.description_ar ?? null }] : []),
+    ];
+    await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
+    if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
+    return { productId };
+  });
