@@ -159,8 +159,16 @@ export function ProductForm({ initial, onSaved, adminSellerId }: { initial?: Pro
         <div className="flex items-end gap-3"><div className="flex items-center gap-2 pb-2"><Switch checked={form.is_halal} onCheckedChange={(v) => set("is_halal", v)} /><span className="text-sm">Halal</span></div></div>
       </div>
 
-      <ProductImagesEditor productId={productId} images={images} onChange={setImages} />
-      <ProductVariantsEditor productId={productId} variants={variants} onChange={setVariants} />
+      {adminSellerId ? (
+        <div className="rounded-lg border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
+          Images and variants can be added by the seller from their Seller Studio after creation, or imported via CSV.
+        </div>
+      ) : (
+        <>
+          <ProductImagesEditor productId={productId} images={images} onChange={setImages} />
+          <ProductVariantsEditor productId={productId} variants={variants} onChange={setVariants} />
+        </>
+      )}
 
       <div className="rounded-lg border border-border/60 p-4">
         <div className="mb-2 flex items-center justify-between">
