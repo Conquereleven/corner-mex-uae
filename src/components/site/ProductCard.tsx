@@ -2,9 +2,11 @@ import { Link } from "@tanstack/react-router";
 import type { ProductListItem } from "@/lib/catalog.functions";
 import { Flame, Star } from "lucide-react";
 import { WishlistButton } from "@/components/site/WishlistButton";
+import { useCurrency } from "@/lib/use-currency";
 
 export function ProductCard({ p }: { p: ProductListItem }) {
   const hasDiscount = p.compare_at_price_aed && p.compare_at_price_aed > p.price_aed;
+  const cur = useCurrency();
   return (
     <Link
       to="/product/$slug"
@@ -36,8 +38,8 @@ export function ProductCard({ p }: { p: ProductListItem }) {
         )}
         <div className="mt-auto flex items-end justify-between pt-3">
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-lg font-semibold text-foreground">AED {p.price_aed.toFixed(0)}</span>
-            {hasDiscount && <span className="text-xs text-muted-foreground line-through">{p.compare_at_price_aed!.toFixed(0)}</span>}
+            <span className="font-display text-lg font-semibold text-foreground">{cur.format(p.price_aed)}</span>
+            {hasDiscount && <span className="text-xs text-muted-foreground line-through">{cur.format(p.compare_at_price_aed!)}</span>}
           </div>
           {p.spice_level && p.spice_level > 0 && (
             <span className="flex items-center gap-0.5 text-primary">
