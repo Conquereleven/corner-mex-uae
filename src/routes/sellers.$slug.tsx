@@ -34,12 +34,22 @@ function SellerPage() {
     .filter(Boolean) as any[];
   const rest = featuredIds.length ? allProducts.filter((p) => !featuredIds.includes(p.id)) : allProducts;
   const bh = s.business_hours ?? {};
+  const theme = (s.theme ?? {}) as any;
+  const themeStyle: React.CSSProperties & Record<string, string> = {};
+  if (theme.primary) themeStyle["--store-primary"] = theme.primary;
+  if (theme.accent) themeStyle["--store-accent"] = theme.accent;
+  if (theme.bg) themeStyle["--store-bg"] = theme.bg;
+  if (theme.text) themeStyle["--store-text"] = theme.text;
+  const fontFamily = theme.font && theme.font !== "System" ? `'${theme.font}', sans-serif` : undefined;
+  const radiusMap: Record<string, string> = { none: "0", sm: "0.25rem", md: "0.5rem", lg: "0.75rem", xl: "1rem" };
+  if (theme.radius) themeStyle["--store-radius"] = radiusMap[theme.radius];
   const DAY_ORDER: Array<[string, string]> = [
     ["mon", "Mon"], ["tue", "Tue"], ["wed", "Wed"], ["thu", "Thu"], ["fri", "Fri"], ["sat", "Sat"], ["sun", "Sun"],
   ];
   const hasHours = DAY_ORDER.some(([k]) => bh[k] && (bh[k].open || bh[k].close || bh[k].closed));
   return (
     <SiteLayout>
+      <div style={{ ...themeStyle, fontFamily, background: theme.bg, color: theme.text }}>
       {s.cover_url && (
         <div className="relative h-64 w-full overflow-hidden md:h-80">
           <img src={s.cover_url} alt="" className="h-full w-full object-cover" />
@@ -53,10 +63,10 @@ function SellerPage() {
           )}
           <div className="flex-1">
             <Link to="/sellers" className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">← All sellers</Link>
-            <h1 className="mt-2 font-display text-4xl tracking-tight text-foreground sm:text-5xl">{s.name}</h1>
+            <h1 className="mt-2 font-display text-4xl tracking-tight sm:text-5xl" style={{ color: theme.primary || undefined }}>{s.name}</h1>
             {s.tagline && <p className="mt-2 text-muted-foreground">{s.tagline}</p>}
           </div>
-          <span className="text-xs uppercase tracking-widest text-primary">{s.product_count} products</span>
+          <span className="text-xs uppercase tracking-widest" style={{ color: theme.accent || undefined }}>{s.product_count} products</span>
         </div>
         {s.bio && <p className="mt-8 max-w-2xl text-sm leading-relaxed text-muted-foreground">{s.bio}</p>}
 
@@ -88,11 +98,12 @@ function SellerPage() {
 
         <div className="mt-12">
           {featured.length > 0 && <h2 className="font-display text-2xl tracking-tight mb-4">All products</h2>}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className={theme.layout === "list" ? "flex flex-col gap-4" : theme.layout === "masonry" ? "columns-2 sm:columns-3 lg:columns-4 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid" : "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"}>
             {rest.map((p) => <ProductCard key={p.id} p={p} />)}
           </div>
         </div>
       </section>
+      </div>
     </SiteLayout>
   );
 }
