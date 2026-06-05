@@ -629,12 +629,15 @@ export const getSellerStorefront = createServerFn({ method: "GET" })
     const s = await getSellerForUser(context.userId);
     const { data: prods } = await supabaseAdmin
       .from("products")
-      .select(`id, status, translations:product_translations(lang, name), images:product_images(url, sort_order)`)
+      .select(`id, status, category_id, translations:product_translations(lang, name), images:product_images(url, sort_order), category:categories(slug, name_en)`)
       .eq("seller_id", s.id);
     const products = (prods ?? []).map((p: any) => {
       const tr = (p.translations ?? []).find((t: any) => t.lang === "en") ?? p.translations?.[0];
       const img = (p.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
-      return { id: p.id, name: tr?.name ?? "(untitled)", image: img?.url ?? null, status: p.status };
+      return {
+        id: p.id, name: tr?.name ?? "(untitled)", image: img?.url ?? null, status: p.status,
+        category_id: p.category_id, category_name: p.category?.name_en ?? null, category_slug: p.category?.slug ?? null,
+      };
     });
     return {
       id: s.id, slug: s.slug, store_name: s.store_name, tagline: s.tagline, bio: s.bio,
@@ -642,6 +645,7 @@ export const getSellerStorefront = createServerFn({ method: "GET" })
       contact_phone: s.contact_phone, social_links: s.social_links ?? {}, is_published: s.is_published,
       featured_product_ids: (s as any).featured_product_ids ?? [],
       business_hours: (s as any).business_hours ?? {},
+      theme: (s as any).theme ?? {},
       products,
     };
   });
@@ -665,6 +669,15 @@ const StorefrontInput = z.object({
       closed: z.boolean().optional(),
     }),
   ).optional().nullable(),
+  theme: z.object({
+    primary: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    accent: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    bg: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    text: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    font: z.enum(["Inter", "Playfair Display", "Space Grotesk", "System"]).optional().nullable(),
+    radius: z.enum(["none", "sm", "md", "lg", "xl"]).optional().nullable(),
+    layout: z.enum(["grid", "masonry", "list"]).optional().nullable(),
+  }).partial().optional().nullable(),
 });
 
 export const updateSellerStorefront = createServerFn({ method: "POST" })
@@ -692,6 +705,7 @@ export const updateSellerStorefront = createServerFn({ method: "POST" })
       is_published: data.is_published,
       featured_product_ids: featured,
       business_hours: data.business_hours ?? {},
+      theme: data.theme ?? {},
     }).eq("id", s.id);
     if (error) throw new Error(error.message);
     return { ok: true };
