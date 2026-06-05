@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import type { CSSProperties } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { getSeller, listProducts } from "@/lib/catalog.functions";
@@ -35,7 +36,7 @@ function SellerPage() {
   const rest = featuredIds.length ? allProducts.filter((p) => !featuredIds.includes(p.id)) : allProducts;
   const bh = s.business_hours ?? {};
   const theme = (s.theme ?? {}) as any;
-  const themeStyle: React.CSSProperties & Record<string, string> = {};
+  const themeStyle: CSSProperties & Record<string, string> = {};
   if (theme.primary) themeStyle["--store-primary"] = theme.primary;
   if (theme.accent) themeStyle["--store-accent"] = theme.accent;
   if (theme.bg) themeStyle["--store-bg"] = theme.bg;
