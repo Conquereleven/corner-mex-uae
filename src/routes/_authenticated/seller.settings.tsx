@@ -12,8 +12,11 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { getSellerSettings, updateSellerSettings } from "@/lib/seller.functions";
+import { useRef } from "react";
+import { getSellerSettings, updateSellerSettings, getKycStatus, uploadKycDocument, removeKycDocument, submitKycForReview } from "@/lib/seller.functions";
+import { ShieldCheck, ShieldAlert, ShieldX, Clock, Upload as UploadIcon, Trash2, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/seller/settings")({
   head: () => ({ meta: [{ title: "Settings — Seller Studio" }] }),
@@ -47,6 +50,8 @@ function SellerSettings() {
       tax_rate: Number(f.tax_rate) || 0,
       accepted_payment_methods: (f.accepted_payment_methods?.length ? f.accepted_payment_methods : ["card"]) as any,
       notify_review: !!f.notify_review, notify_return: !!f.notify_return,
+      payout_schedule: (f.payout_schedule ?? "manual") as any,
+      min_payout_aed: Number(f.min_payout_aed) || 0,
     }}),
     onSuccess: () => { toast.success("Settings saved"); qc.invalidateQueries({ queryKey: ["seller-settings"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
@@ -79,6 +84,7 @@ function SellerSettings() {
           <TabsTrigger value="ops">Operations</TabsTrigger>
           <TabsTrigger value="tax">Tax</TabsTrigger>
           <TabsTrigger value="payout">Payout</TabsTrigger>
+          <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="notif">Notifications</TabsTrigger>
         </TabsList>
 
@@ -173,6 +179,26 @@ function SellerSettings() {
           <Card><CardHeader><CardTitle>Payout details</CardTitle></CardHeader><CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
+                <Label>Payout schedule</Label>
+                <Select value={f.payout_schedule ?? "manual"} onValueChange={(v) => set("payout_schedule", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">Manual (request anytime)</SelectItem>
+                    <SelectItem value="weekly">Weekly (auto)</SelectItem>
+                    <SelectItem value="biweekly">Every 2 weeks (auto)</SelectItem>
+                    <SelectItem value="monthly">Monthly (auto)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Automatic payouts run nightly and require KYC verification.</p>
+              </div>
+              <div>
+                <Label>Minimum payout (AED)</Label>
+                <Input type="number" min={0} step="1" value={f.min_payout_aed ?? 0} onChange={(e) => set("min_payout_aed", Number(e.target.value))} />
+                <p className="text-xs text-muted-foreground mt-1">Auto payouts are skipped if available balance is below this threshold.</p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
                 <Label>Payout method</Label>
                 <Select value={f.payout_method ?? "bank"} onValueChange={(v) => set("payout_method", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -213,6 +239,10 @@ function SellerSettings() {
               </div>
             </div>
           </CardContent></Card>
+        </TabsContent>
+
+        <TabsContent value="verification">
+          <KycSection />
         </TabsContent>
 
         <TabsContent value="notif">
