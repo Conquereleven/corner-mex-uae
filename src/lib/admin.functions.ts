@@ -212,12 +212,17 @@ export const adminListPayouts = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select(`id, seller_id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at,
+      .select(`id, seller_id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at, requested_at, reviewed_at, review_note, receipt_path,
         seller:sellers(store_name, slug, contact_email)`)
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const rows = await Promise.all((data ?? []).map(async (r: any) => {
+      if (!r.receipt_path) return r;
+      const signed = await supabaseAdmin.storage.from("payout-receipts").createSignedUrl(r.receipt_path, 60 * 60);
+      return { ...r, receipt_url: signed.data?.signedUrl ?? null };
+    }));
+    return rows;
   });
 
 export const adminPayoutPreview = createServerFn({ method: "POST" })
