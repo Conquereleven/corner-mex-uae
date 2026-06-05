@@ -343,3 +343,29 @@ function AssetUploader({ label, url, onFile, aspect }: { label: string; url: str
     </div>
   );
 }
+
+function SortableFeaturedItem({ id, idx, name, image, onRemove }: { id: string; idx: number; name: string; image: string | null; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="group relative w-32 rounded-lg border overflow-hidden bg-card">
+      <div className="aspect-square bg-muted">
+        {image && <img src={image} alt="" className="w-full h-full object-cover" />}
+      </div>
+      <div className="p-1.5 flex items-center gap-1">
+        <span className="text-[10px] font-medium px-1 rounded bg-primary text-primary-foreground">{idx}</span>
+        <span className="text-[11px] line-clamp-1 flex-1">{name}</span>
+      </div>
+      <button type="button" {...attributes} {...listeners} className="absolute top-1 left-1 rounded bg-background/80 p-0.5 cursor-grab active:cursor-grabbing">
+        <GripVertical className="h-3 w-3" />
+      </button>
+      <button type="button" onClick={onRemove} className="absolute top-1 right-1 rounded bg-background/80 p-0.5 hover:bg-destructive hover:text-destructive-foreground">
+        <X className="h-3 w-3" />
+      </button>
+    </div>
+  );
+}
