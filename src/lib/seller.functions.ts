@@ -789,6 +789,8 @@ const SettingsInput = z.object({
   accepted_payment_methods: z.array(z.enum(["card", "apple_pay", "google_pay", "cod", "bank_transfer"])).default(["card"]),
   notify_review: z.boolean().default(true),
   notify_return: z.boolean().default(true),
+  payout_schedule: z.enum(["manual", "weekly", "biweekly", "monthly"]).default("manual"),
+  min_payout_aed: z.number().min(0).max(1_000_000).default(0),
 });
 
 export const updateSellerSettings = createServerFn({ method: "POST" })
