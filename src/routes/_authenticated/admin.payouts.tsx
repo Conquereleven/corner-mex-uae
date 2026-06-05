@@ -3,13 +3,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, Trash2, Wallet } from "lucide-react";
+import { Plus, Search, Trash2, Wallet, Check, X, Upload as UploadIcon, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -27,7 +28,9 @@ import { toast } from "sonner";
 import {
   adminListPayouts, adminListSellers, adminPayoutPreview,
   adminGeneratePayout, adminUpdatePayoutStatus, adminDeletePayout,
+  adminApprovePayout, adminRejectPayout, adminUploadPayoutReceipt,
 } from "@/lib/admin.functions";
+import { useRef } from "react";
 
 export const Route = createFileRoute("/_authenticated/admin/payouts")({
   head: () => ({ meta: [{ title: "Admin — Payouts" }] }),
@@ -190,7 +193,17 @@ function AdminPayouts() {
                         {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : "—"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <AlertDialog>
+                        <div className="flex items-center justify-end gap-1">
+                          {(p.status === "pending" || p.status === "processing") && (
+                            <ReviewPayoutDialog payout={p} />
+                          )}
+                          {p.review_note && (
+                            <span title={p.review_note}><FileText className="h-3.5 w-3.5 text-muted-foreground" /></span>
+                          )}
+                          {p.receipt_url && (
+                            <a href={p.receipt_url} target="_blank" rel="noreferrer" title="Receipt"><FileText className="h-3.5 w-3.5 text-primary" /></a>
+                          )}
+                          <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
                               <Trash2 className="h-4 w-4" />
@@ -212,6 +225,7 @@ function AdminPayouts() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
