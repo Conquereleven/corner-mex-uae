@@ -309,11 +309,21 @@ export const getMyPayouts = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, created_at")
+      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, reviewed_at, review_note, receipt_path, created_at")
       .eq("seller_id", seller.id)
       .order("period_end", { ascending: false });
     if (error) throw new Error(error.message);
-    const list = data ?? [];
+    let list = (data ?? []) as any[];
+    // Attach signed receipt URLs for the seller (RLS allows them via the policy)
+    list = await Promise.all(list.map(async (r) => {
+      if (!r.receipt_path) return r;
+      const signed = await supabaseAdmin.storage.from("payout-receipts").createSignedUrl(r.receipt_path, 60 * 60 * 24 * 7);
+      return { ...r, receipt_url: signed.data?.signedUrl ?? null };
+    }));
+    const paidList = list.filter((p: any) => p.status === "paid" && p.requested_at && p.paid_at);
+    const avgDays = paidList.length
+      ? +(paidList.reduce((a: number, p: any) => a + (new Date(p.paid_at).getTime() - new Date(p.requested_at).getTime()) / 86400000, 0) / paidList.length).toFixed(1)
+      : null;
     const sum = (k: string) => +list.reduce((a, r: any) => a + Number(r[k] ?? 0), 0).toFixed(2);
     const paid = list.filter((r: any) => r.status === "paid");
     return {
@@ -330,6 +340,7 @@ export const getMyPayouts = createServerFn({ method: "GET" })
             .reduce((a, r: any) => a + Number(r.net_aed ?? 0), 0).toFixed(2),
           count: list.filter((r: any) => r.status !== "paid" && r.status !== "cancelled").length,
         },
+        avgProcessingDays: avgDays,
       },
     };
   });
@@ -368,6 +379,9 @@ export const requestSellerPayout = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const seller = await getSellerForUser(context.userId);
+    if ((seller as any).kyc_status !== "verified") {
+      throw new Error("Your account must be KYC-verified before requesting payouts. Submit your trade license in Settings → Verification.");
+    }
     const balance = await computeAvailableBalance(seller.id);
     if (balance.hasOpenRequest) throw new Error("You already have a pending payout request.");
     if (balance.availableBalance <= 0) throw new Error("No funds available for payout.");
@@ -626,12 +640,15 @@ export const getSellerStorefront = createServerFn({ method: "GET" })
     const s = await getSellerForUser(context.userId);
     const { data: prods } = await supabaseAdmin
       .from("products")
-      .select(`id, status, translations:product_translations(lang, name), images:product_images(url, sort_order)`)
+      .select(`id, status, category_id, translations:product_translations(lang, name), images:product_images(url, sort_order), category:categories(slug, name_en)`)
       .eq("seller_id", s.id);
     const products = (prods ?? []).map((p: any) => {
       const tr = (p.translations ?? []).find((t: any) => t.lang === "en") ?? p.translations?.[0];
       const img = (p.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
-      return { id: p.id, name: tr?.name ?? "(untitled)", image: img?.url ?? null, status: p.status };
+      return {
+        id: p.id, name: tr?.name ?? "(untitled)", image: img?.url ?? null, status: p.status,
+        category_id: p.category_id, category_name: p.category?.name_en ?? null, category_slug: p.category?.slug ?? null,
+      };
     });
     return {
       id: s.id, slug: s.slug, store_name: s.store_name, tagline: s.tagline, bio: s.bio,
@@ -639,6 +656,7 @@ export const getSellerStorefront = createServerFn({ method: "GET" })
       contact_phone: s.contact_phone, social_links: s.social_links ?? {}, is_published: s.is_published,
       featured_product_ids: (s as any).featured_product_ids ?? [],
       business_hours: (s as any).business_hours ?? {},
+      theme: (s as any).theme ?? {},
       products,
     };
   });
@@ -662,6 +680,15 @@ const StorefrontInput = z.object({
       closed: z.boolean().optional(),
     }),
   ).optional().nullable(),
+  theme: z.object({
+    primary: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    accent: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    bg: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    text: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+    font: z.enum(["Inter", "Playfair Display", "Space Grotesk", "System"]).optional().nullable(),
+    radius: z.enum(["none", "sm", "md", "lg", "xl"]).optional().nullable(),
+    layout: z.enum(["grid", "masonry", "list"]).optional().nullable(),
+  }).partial().optional().nullable(),
 });
 
 export const updateSellerStorefront = createServerFn({ method: "POST" })
@@ -689,6 +716,7 @@ export const updateSellerStorefront = createServerFn({ method: "POST" })
       is_published: data.is_published,
       featured_product_ids: featured,
       business_hours: data.business_hours ?? {},
+      theme: data.theme ?? {},
     }).eq("id", s.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -739,6 +767,8 @@ export const getSellerSettings = createServerFn({ method: "GET" })
       accepted_payment_methods: (s as any).accepted_payment_methods ?? ["card"],
       notify_review: (s as any).notify_review ?? true,
       notify_return: (s as any).notify_return ?? true,
+      payout_schedule: (s as any).payout_schedule ?? "manual",
+      min_payout_aed: Number((s as any).min_payout_aed ?? 0),
     };
   });
 
@@ -772,6 +802,8 @@ const SettingsInput = z.object({
   accepted_payment_methods: z.array(z.enum(["card", "apple_pay", "google_pay", "cod", "bank_transfer"])).default(["card"]),
   notify_review: z.boolean().default(true),
   notify_return: z.boolean().default(true),
+  payout_schedule: z.enum(["manual", "weekly", "biweekly", "monthly"]).default("manual"),
+  min_payout_aed: z.number().min(0).max(1_000_000).default(0),
 });
 
 export const updateSellerSettings = createServerFn({ method: "POST" })
@@ -786,4 +818,206 @@ export const updateSellerSettings = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("sellers").update(payload).eq("id", s.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+// ===== Detailed commissions periods + refunds =====
+function periodKey(d: Date, gran: "week" | "month" | "quarter"): { key: string; label: string; sortKey: string } {
+  if (gran === "week") {
+    const start = new Date(d);
+    const day = start.getUTCDay(); // 0=Sun
+    const diff = (day + 6) % 7; // back to Monday
+    start.setUTCDate(start.getUTCDate() - diff);
+    const k = start.toISOString().slice(0, 10);
+    return { key: k, label: `Week of ${k}`, sortKey: k };
+  }
+  if (gran === "quarter") {
+    const q = Math.floor(d.getUTCMonth() / 3) + 1;
+    const k = `${d.getUTCFullYear()}-Q${q}`;
+    return { key: k, label: k, sortKey: `${d.getUTCFullYear()}-${String((q - 1) * 3 + 1).padStart(2, "0")}` };
+  }
+  const y = d.getUTCFullYear(); const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const k = `${y}-${m}`;
+  return { key: k, label: d.toLocaleString("en", { month: "short", year: "numeric", timeZone: "UTC" }), sortKey: k };
+}
+
+export const getSellerCommissionPeriods = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { granularity?: string; from?: string; to?: string }) =>
+    z.object({
+      granularity: z.enum(["week", "month", "quarter"]).default("month"),
+      from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    }).parse(input ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const fromIso = data.from ? `${data.from}T00:00:00Z` : new Date(Date.now() - 365 * 86400000).toISOString();
+    const toIso = data.to ? `${data.to}T23:59:59Z` : new Date().toISOString();
+
+    const { data: items } = await supabaseAdmin
+      .from("order_items")
+      .select(`id, qty, line_total_aed, commission_aed, order:orders!inner(id, created_at)`)
+      .eq("seller_id", seller.id)
+      .gte("order.created_at", fromIso)
+      .lte("order.created_at", toIso);
+
+    const { data: refunds } = await supabaseAdmin
+      .from("returns")
+      .select(`refund_aed, resolved_at, status, seller_id`)
+      .eq("seller_id", seller.id)
+      .eq("status", "refunded")
+      .gte("resolved_at", fromIso)
+      .lte("resolved_at", toIso);
+
+    const list = (items ?? []) as any[];
+    const ret = (refunds ?? []) as any[];
+
+    const buckets = new Map<string, { sortKey: string; label: string; orders: Set<string>; units: number; gross: number; commission: number; refunds: number }>();
+    const ensure = (k: string, sortKey: string, label: string) => {
+      let b = buckets.get(k);
+      if (!b) { b = { sortKey, label, orders: new Set(), units: 0, gross: 0, commission: 0, refunds: 0 }; buckets.set(k, b); }
+      return b;
+    };
+
+    for (const it of list) {
+      if (!it.order?.created_at) continue;
+      const d = new Date(it.order.created_at);
+      const pk = periodKey(d, data.granularity);
+      const b = ensure(pk.key, pk.sortKey, pk.label);
+      b.orders.add(it.order.id);
+      b.units += Number(it.qty ?? 0);
+      b.gross += Number(it.line_total_aed ?? 0);
+      b.commission += Number(it.commission_aed ?? 0);
+    }
+    for (const r of ret) {
+      if (!r.resolved_at) continue;
+      const d = new Date(r.resolved_at);
+      const pk = periodKey(d, data.granularity);
+      const b = ensure(pk.key, pk.sortKey, pk.label);
+      b.refunds += Number(r.refund_aed ?? 0);
+    }
+
+    const periods = Array.from(buckets.entries())
+      .map(([key, v]) => {
+        const netGmv = +(v.gross - v.refunds).toFixed(2);
+        const commission = +v.commission.toFixed(2);
+        const rate = v.gross > 0 ? +((commission / v.gross) * 100).toFixed(2) : 0;
+        return {
+          key, label: v.label, sortKey: v.sortKey,
+          orders: v.orders.size, units: v.units,
+          gross: +v.gross.toFixed(2),
+          refunds: +v.refunds.toFixed(2),
+          netGmv,
+          commission,
+          rate,
+          earnings: +(netGmv - commission).toFixed(2),
+        };
+      })
+      .sort((a, b) => a.sortKey < b.sortKey ? -1 : 1);
+
+    const totals = periods.reduce(
+      (a, p) => ({ orders: a.orders + p.orders, units: a.units + p.units, gross: a.gross + p.gross, refunds: a.refunds + p.refunds, commission: a.commission + p.commission, earnings: a.earnings + p.earnings }),
+      { orders: 0, units: 0, gross: 0, refunds: 0, commission: 0, earnings: 0 },
+    );
+    return { periods, totals };
+  });
+
+// ===== KYC =====
+const KYC_BUCKET = "seller-kyc";
+
+export const getKycStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const s: any = await getSellerForUser(context.userId);
+    const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
+    const docsWithUrl = await Promise.all(docs.map(async (d: any) => {
+      const signed = await supabaseAdmin.storage.from(KYC_BUCKET).createSignedUrl(d.path, 60 * 60);
+      return { ...d, url: signed.data?.signedUrl ?? null };
+    }));
+    return {
+      status: s.kyc_status ?? "unverified",
+      submitted_at: s.kyc_submitted_at,
+      reviewed_at: s.kyc_reviewed_at,
+      rejection_reason: s.kyc_rejection_reason,
+      documents: docsWithUrl,
+    };
+  });
+
+export const uploadKycDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { kind: string; filename: string; contentType: string; dataBase64: string }) =>
+    z.object({
+      kind: z.enum(["trade_license", "emirates_id", "passport", "other"]),
+      filename: z.string().min(1).max(200),
+      contentType: z.string().min(3).max(120),
+      dataBase64: z.string().min(10).max(8_000_000),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const s: any = await getSellerForUser(context.userId);
+    const ext = (data.filename.split(".").pop() ?? "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+    const path = `${s.id}/${data.kind}-${crypto.randomUUID()}.${ext}`;
+    const buf = Buffer.from(data.dataBase64, "base64");
+    const up = await supabaseAdmin.storage.from(KYC_BUCKET).upload(path, buf, { contentType: data.contentType, upsert: false });
+    if (up.error) throw new Error(up.error.message);
+    const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
+    // Replace existing doc of same kind
+    const filtered = docs.filter((d: any) => d.kind !== data.kind);
+    filtered.push({ kind: data.kind, path, uploaded_at: new Date().toISOString() });
+    const { error } = await supabaseAdmin.from("sellers").update({ kyc_documents: filtered }).eq("id", s.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const removeKycDocument = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { kind: string }) =>
+    z.object({ kind: z.enum(["trade_license", "emirates_id", "passport", "other"]) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const s: any = await getSellerForUser(context.userId);
+    const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
+    const toRemove = docs.find((d) => d.kind === data.kind);
+    if (toRemove?.path) await supabaseAdmin.storage.from(KYC_BUCKET).remove([toRemove.path]);
+    const filtered = docs.filter((d: any) => d.kind !== data.kind);
+    await supabaseAdmin.from("sellers").update({ kyc_documents: filtered }).eq("id", s.id);
+    return { ok: true };
+  });
+
+export const submitKycForReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const s: any = await getSellerForUser(context.userId);
+    const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
+    if (!docs.some((d: any) => d.kind === "trade_license")) {
+      throw new Error("Please upload your trade license before submitting.");
+    }
+    await supabaseAdmin.from("sellers").update({
+      kyc_status: "pending",
+      kyc_submitted_at: new Date().toISOString(),
+      kyc_rejection_reason: null,
+    }).eq("id", s.id);
+    // notify admins
+    const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+    if (admins?.length) {
+      await supabaseAdmin.from("notifications").insert(admins.map((a: any) => ({
+        user_id: a.user_id,
+        kind: "kyc_submitted",
+        title: "KYC verification submitted",
+        body: `${s.store_name} submitted documents for review.`,
+        link: "/admin/sellers/kyc",
+      })));
+    }
+    return { ok: true };
+  });
+
+// ===== Currency rates =====
+export const getCurrencyRates = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data } = await supabaseAdmin.from("currency_rates").select("base, quote, rate, fetched_at");
+    const rates: Record<string, number> = { AED: 1 };
+    for (const r of (data ?? []) as any[]) {
+      if (r.base === "AED") rates[r.quote] = Number(r.rate);
+    }
+    return { base: "AED", rates, fetched_at: (data ?? [])[0]?.fetched_at ?? null };
   });

@@ -212,12 +212,17 @@ export const adminListPayouts = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select(`id, seller_id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at,
+      .select(`id, seller_id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at, requested_at, reviewed_at, review_note, receipt_path,
         seller:sellers(store_name, slug, contact_email)`)
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const rows = await Promise.all((data ?? []).map(async (r: any) => {
+      if (!r.receipt_path) return r;
+      const signed = await supabaseAdmin.storage.from("payout-receipts").createSignedUrl(r.receipt_path, 60 * 60);
+      return { ...r, receipt_url: signed.data?.signedUrl ?? null };
+    }));
+    return rows;
   });
 
 export const adminPayoutPreview = createServerFn({ method: "POST" })
@@ -543,4 +548,140 @@ export const adminUpsertProduct = createServerFn({ method: "POST" })
     await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
     if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
     return { productId };
+  });
+// ============= KYC =============
+
+export const adminListKycSubmissions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { data, error } = await supabaseAdmin
+      .from("sellers")
+      .select("id, store_name, slug, contact_email, kyc_status, kyc_submitted_at, kyc_reviewed_at, kyc_rejection_reason, kyc_documents")
+      .in("kyc_status", ["pending", "verified", "rejected"])
+      .order("kyc_submitted_at", { ascending: false, nullsFirst: false });
+    if (error) throw new Error(error.message);
+    // sign URLs for documents
+    const out = await Promise.all((data ?? []).map(async (s: any) => {
+      const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
+      const signed = await Promise.all(docs.map(async (d: any) => {
+        const u = await supabaseAdmin.storage.from("seller-kyc").createSignedUrl(d.path, 60 * 60);
+        return { ...d, url: u.data?.signedUrl ?? null };
+      }));
+      return { ...s, kyc_documents: signed };
+    }));
+    return out;
+  });
+
+export const adminReviewKyc = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { sellerId: string; decision: "approve" | "reject"; reason?: string }) =>
+    z.object({
+      sellerId: z.string().uuid(),
+      decision: z.enum(["approve", "reject"]),
+      reason: z.string().max(500).optional(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: s } = await supabaseAdmin.from("sellers").select("id, user_id, store_name").eq("id", data.sellerId).maybeSingle();
+    if (!s) throw new Error("Seller not found");
+    const patch: any = {
+      kyc_status: data.decision === "approve" ? "verified" : "rejected",
+      kyc_reviewed_at: new Date().toISOString(),
+      kyc_rejection_reason: data.decision === "reject" ? (data.reason ?? null) : null,
+    };
+    const { error } = await supabaseAdmin.from("sellers").update(patch).eq("id", data.sellerId);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("notifications").insert({
+      user_id: s.user_id,
+      kind: data.decision === "approve" ? "kyc_approved" : "kyc_rejected",
+      title: data.decision === "approve" ? "Verification approved" : "Verification rejected",
+      body: data.decision === "approve" ? "Your KYC verification was approved." : (data.reason ?? "Your KYC was rejected. Please review and resubmit."),
+      link: "/seller/settings",
+    });
+    return { ok: true };
+  });
+
+// ============= Payout approval =============
+
+export const adminUploadPayoutReceipt = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { payoutId: string; filename: string; contentType: string; dataBase64: string }) =>
+    z.object({
+      payoutId: z.string().uuid(),
+      filename: z.string().min(1).max(200),
+      contentType: z.string().min(3).max(120),
+      dataBase64: z.string().min(10).max(8_000_000),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const ext = (data.filename.split(".").pop() ?? "pdf").toLowerCase().replace(/[^a-z0-9]/g, "") || "pdf";
+    const path = `${data.payoutId}/${crypto.randomUUID()}.${ext}`;
+    const buf = Buffer.from(data.dataBase64, "base64");
+    const up = await supabaseAdmin.storage.from("payout-receipts").upload(path, buf, { contentType: data.contentType, upsert: false });
+    if (up.error) throw new Error(up.error.message);
+    return { path };
+  });
+
+async function notifyPayoutSeller(payoutId: string, kind: string, title: string, body: string) {
+  const { data: p } = await supabaseAdmin
+    .from("seller_payouts").select("id, net_aed, seller:sellers(user_id, store_name)")
+    .eq("id", payoutId).maybeSingle();
+  const userId = (p as any)?.seller?.user_id;
+  if (userId) {
+    await supabaseAdmin.from("notifications").insert({
+      user_id: userId, kind, title, body, link: "/seller/payouts",
+    });
+  }
+}
+
+export const adminApprovePayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { payoutId: string; note?: string; receipt_path?: string }) =>
+    z.object({
+      payoutId: z.string().uuid(),
+      note: z.string().max(1000).optional(),
+      receipt_path: z.string().max(500).optional(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const patch: any = {
+      status: "paid",
+      paid_at: new Date().toISOString(),
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: context.userId,
+      review_note: data.note ?? null,
+    };
+    if (data.receipt_path) patch.receipt_path = data.receipt_path;
+    const { error } = await supabaseAdmin.from("seller_payouts").update(patch).eq("id", data.payoutId);
+    if (error) throw new Error(error.message);
+    await notifyPayoutSeller(data.payoutId, "payout_paid", "Payout paid", "Your payout has been marked as paid. Check the dashboard for details.");
+    return { ok: true };
+  });
+
+export const adminRejectPayout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { payoutId: string; note: string; receipt_path?: string }) =>
+    z.object({
+      payoutId: z.string().uuid(),
+      note: z.string().min(1).max(1000),
+      receipt_path: z.string().max(500).optional(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const patch: any = {
+      status: "cancelled",
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: context.userId,
+      review_note: data.note,
+    };
+    if (data.receipt_path) patch.receipt_path = data.receipt_path;
+    const { error } = await supabaseAdmin.from("seller_payouts").update(patch).eq("id", data.payoutId);
+    if (error) throw new Error(error.message);
+    await notifyPayoutSeller(data.payoutId, "payout_rejected", "Payout rejected", data.note);
+    return { ok: true };
   });

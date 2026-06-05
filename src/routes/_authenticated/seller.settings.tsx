@@ -12,8 +12,11 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { getSellerSettings, updateSellerSettings } from "@/lib/seller.functions";
+import { useRef } from "react";
+import { getSellerSettings, updateSellerSettings, getKycStatus, uploadKycDocument, removeKycDocument, submitKycForReview } from "@/lib/seller.functions";
+import { ShieldCheck, ShieldAlert, ShieldX, Clock, Upload as UploadIcon, Trash2, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/seller/settings")({
   head: () => ({ meta: [{ title: "Settings — Seller Studio" }] }),
@@ -47,6 +50,8 @@ function SellerSettings() {
       tax_rate: Number(f.tax_rate) || 0,
       accepted_payment_methods: (f.accepted_payment_methods?.length ? f.accepted_payment_methods : ["card"]) as any,
       notify_review: !!f.notify_review, notify_return: !!f.notify_return,
+      payout_schedule: (f.payout_schedule ?? "manual") as any,
+      min_payout_aed: Number(f.min_payout_aed) || 0,
     }}),
     onSuccess: () => { toast.success("Settings saved"); qc.invalidateQueries({ queryKey: ["seller-settings"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
@@ -79,6 +84,7 @@ function SellerSettings() {
           <TabsTrigger value="ops">Operations</TabsTrigger>
           <TabsTrigger value="tax">Tax</TabsTrigger>
           <TabsTrigger value="payout">Payout</TabsTrigger>
+          <TabsTrigger value="verification">Verification</TabsTrigger>
           <TabsTrigger value="notif">Notifications</TabsTrigger>
         </TabsList>
 
@@ -173,6 +179,26 @@ function SellerSettings() {
           <Card><CardHeader><CardTitle>Payout details</CardTitle></CardHeader><CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
+                <Label>Payout schedule</Label>
+                <Select value={f.payout_schedule ?? "manual"} onValueChange={(v) => set("payout_schedule", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">Manual (request anytime)</SelectItem>
+                    <SelectItem value="weekly">Weekly (auto)</SelectItem>
+                    <SelectItem value="biweekly">Every 2 weeks (auto)</SelectItem>
+                    <SelectItem value="monthly">Monthly (auto)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Automatic payouts run nightly and require KYC verification.</p>
+              </div>
+              <div>
+                <Label>Minimum payout (AED)</Label>
+                <Input type="number" min={0} step="1" value={f.min_payout_aed ?? 0} onChange={(e) => set("min_payout_aed", Number(e.target.value))} />
+                <p className="text-xs text-muted-foreground mt-1">Auto payouts are skipped if available balance is below this threshold.</p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
                 <Label>Payout method</Label>
                 <Select value={f.payout_method ?? "bank"} onValueChange={(v) => set("payout_method", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -215,6 +241,10 @@ function SellerSettings() {
           </CardContent></Card>
         </TabsContent>
 
+        <TabsContent value="verification">
+          <KycSection />
+        </TabsContent>
+
         <TabsContent value="notif">
           <Card><CardHeader><CardTitle>Email notifications</CardTitle></CardHeader><CardContent className="space-y-4">
             {[
@@ -232,6 +262,112 @@ function SellerSettings() {
           </CardContent></Card>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function KycSection() {
+  const qc = useQueryClient();
+  const getFn = useServerFn(getKycStatus);
+  const upFn = useServerFn(uploadKycDocument);
+  const rmFn = useServerFn(removeKycDocument);
+  const submitFn = useServerFn(submitKycForReview);
+  const q = useQuery({ queryKey: ["seller-kyc"], queryFn: () => getFn({}) });
+  const KINDS: { k: "trade_license" | "emirates_id" | "passport" | "other"; label: string; required?: boolean }[] = [
+    { k: "trade_license", label: "Trade License", required: true },
+    { k: "emirates_id", label: "Emirates ID" },
+    { k: "passport", label: "Passport" },
+    { k: "other", label: "Other supporting doc" },
+  ];
+  const status = q.data?.status ?? "unverified";
+  const docs = q.data?.documents ?? [];
+  const hasTL = docs.some((d: any) => d.kind === "trade_license");
+
+  const submitMut = useMutation({
+    mutationFn: () => submitFn({}),
+    onSuccess: () => { toast.success("Submitted for review"); qc.invalidateQueries({ queryKey: ["seller-kyc"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const rmMut = useMutation({
+    mutationFn: (kind: string) => rmFn({ data: { kind: kind as any } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["seller-kyc"] }),
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const handleFile = async (kind: string, file: File) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const b64 = String(reader.result).split(",")[1];
+        await upFn({ data: { kind: kind as any, filename: file.name, contentType: file.type || "application/octet-stream", dataBase64: b64 } });
+        toast.success("Uploaded");
+        qc.invalidateQueries({ queryKey: ["seller-kyc"] });
+      } catch (e: any) { toast.error(e.message); }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const tone: Record<string, { icon: any; label: string; cls: string }> = {
+    unverified: { icon: ShieldAlert, label: "Not verified", cls: "border-amber-500/40 bg-amber-500/10 text-amber-700" },
+    pending: { icon: Clock, label: "Under review", cls: "border-blue-500/40 bg-blue-500/10 text-blue-700" },
+    verified: { icon: ShieldCheck, label: "Verified", cls: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700" },
+    rejected: { icon: ShieldX, label: "Rejected", cls: "border-destructive/40 bg-destructive/10 text-destructive" },
+  };
+  const T = tone[status] ?? tone.unverified;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>KYC Verification</CardTitle>
+        <p className="text-sm text-muted-foreground">Verify your business to enable payouts. Documents are private and only visible to our admin team.</p>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <div className={`flex items-center gap-3 rounded-lg border p-3 ${T.cls}`}>
+          <T.icon className="h-5 w-5" />
+          <div className="flex-1">
+            <div className="text-sm font-medium">{T.label}</div>
+            {status === "rejected" && q.data?.rejection_reason && (
+              <div className="text-xs">{q.data.rejection_reason}</div>
+            )}
+            {status === "pending" && q.data?.submitted_at && (
+              <div className="text-xs">Submitted {new Date(q.data.submitted_at).toLocaleString()}</div>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {KINDS.map((k) => {
+            const doc = docs.find((d: any) => d.kind === k.k);
+            return <KycDocRow key={k.k} doc={doc} kind={k.k} label={k.label} required={k.required} onFile={handleFile} onRemove={(kk: string) => rmMut.mutate(kk)} />;
+          })}
+        </div>
+
+        <div className="flex justify-end">
+          <Button onClick={() => submitMut.mutate()} disabled={!hasTL || status === "pending" || submitMut.isPending}>
+            {status === "pending" ? "Under review" : status === "verified" ? "Re-submit" : "Submit for review"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function KycDocRow({ doc, kind, label, required, onFile, onRemove }: any) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div className="flex items-center gap-3 rounded-lg border p-3">
+      <FileText className="h-4 w-4 text-muted-foreground" />
+      <div className="flex-1">
+        <div className="text-sm font-medium flex items-center gap-2">{label}{required && <Badge variant="outline" className="text-[10px]">Required</Badge>}</div>
+        {doc ? (
+          <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">View uploaded ({new Date(doc.uploaded_at).toLocaleDateString()})</a>
+        ) : (
+          <div className="text-xs text-muted-foreground">No file uploaded</div>
+        )}
+      </div>
+      <input ref={ref} type="file" hidden accept="image/*,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(kind, f); e.target.value = ""; }} />
+      <Button size="sm" variant="outline" onClick={() => ref.current?.click()}><UploadIcon className="h-3 w-3 mr-1" />{doc ? "Replace" : "Upload"}</Button>
+      {doc && <Button size="icon" variant="ghost" onClick={() => onRemove(kind)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>}
     </div>
   );
 }

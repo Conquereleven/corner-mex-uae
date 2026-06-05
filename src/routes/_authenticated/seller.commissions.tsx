@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Wallet } from "lucide-react";
-import { getSellerCommissions, requestSellerPayout } from "@/lib/seller.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Download } from "lucide-react";
+import { getSellerCommissions, requestSellerPayout, getSellerCommissionPeriods } from "@/lib/seller.functions";
 
 export const Route = createFileRoute("/_authenticated/seller/commissions")({
   head: () => ({ meta: [{ title: "Commissions — Seller Studio" }] }),
@@ -24,9 +26,17 @@ function fmt(n: number) {
 function SellerCommissions() {
   const fn = useServerFn(getSellerCommissions);
   const reqFn = useServerFn(requestSellerPayout);
+  const periodsFn = useServerFn(getSellerCommissionPeriods);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["seller-commissions"], queryFn: () => fn({}) });
   const d = q.data;
+  const [granularity, setGranularity] = useState<"week" | "month" | "quarter">("month");
+  const [from, setFrom] = useState<string>(() => new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10));
+  const [to, setTo] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const periodsQ = useQuery({
+    queryKey: ["seller-commissions-periods", granularity, from, to],
+    queryFn: () => periodsFn({ data: { granularity, from, to } }),
+  });
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState<string>("");
   const m = useMutation({
@@ -171,6 +181,86 @@ function SellerCommissions() {
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>Commission is calculated per line item at the time of sale at your current rate of <strong>{d?.rate ?? "—"}%</strong> on the line subtotal (excluding shipping and tax).</p>
           <p>Your <strong>net</strong> earnings (GMV minus commission) are aggregated into payouts according to your store payout schedule. Refunds and cancellations reverse the commission proportionally.</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
+          <div>
+            <CardTitle>Detailed breakdown</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">Sales, refunds, commission and final earnings per period.</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={granularity} onValueChange={(v) => setGranularity(v as any)}>
+              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Weekly</SelectItem>
+                <SelectItem value="month">Monthly</SelectItem>
+                <SelectItem value="quarter">Quarterly</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input type="date" className="w-40" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="date" className="w-40" value={to} onChange={(e) => setTo(e.target.value)} />
+            <Button variant="outline" size="sm" onClick={() => {
+              const rows = periodsQ.data?.periods ?? [];
+              const header = ["Period","Orders","Units","Gross","Refunds","Net GMV","Commission","Effective rate %","Earnings"];
+              const csv = [header, ...rows.map((r: any) => [r.label, r.orders, r.units, r.gross, r.refunds, r.netGmv, r.commission, r.rate, r.earnings])]
+                .map(r => r.map((c: any) => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+              const blob = new Blob([csv], { type: "text/csv" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a"); a.href = url; a.download = `commissions-${from}-${to}.csv`; a.click(); URL.revokeObjectURL(url);
+            }}>
+              <Download className="h-3 w-3 mr-1" />Export CSV
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Period</TableHead>
+                <TableHead className="text-right">Orders</TableHead>
+                <TableHead className="text-right">Units</TableHead>
+                <TableHead className="text-right">Gross</TableHead>
+                <TableHead className="text-right">Refunds</TableHead>
+                <TableHead className="text-right">Net GMV</TableHead>
+                <TableHead className="text-right">Commission</TableHead>
+                <TableHead className="text-right">Rate</TableHead>
+                <TableHead className="text-right">Earnings</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(periodsQ.data?.periods ?? []).map((p: any) => (
+                <TableRow key={p.key}>
+                  <TableCell className="text-sm">{p.label}</TableCell>
+                  <TableCell className="text-right">{p.orders}</TableCell>
+                  <TableCell className="text-right">{p.units}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{fmt(p.gross)}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">−{fmt(p.refunds)}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{fmt(p.netGmv)}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">−{fmt(p.commission)}</TableCell>
+                  <TableCell className="text-right text-xs">{p.rate}%</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums font-semibold">{fmt(p.earnings)}</TableCell>
+                </TableRow>
+              ))}
+              {(periodsQ.data?.periods ?? []).length === 0 && (
+                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-6">No data for this range.</TableCell></TableRow>
+              )}
+              {periodsQ.data?.totals && (periodsQ.data?.periods ?? []).length > 0 && (
+                <TableRow className="bg-muted/40 font-medium">
+                  <TableCell>Total</TableCell>
+                  <TableCell className="text-right">{periodsQ.data.totals.orders}</TableCell>
+                  <TableCell className="text-right">{periodsQ.data.totals.units}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{fmt(periodsQ.data.totals.gross)}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">−{fmt(periodsQ.data.totals.refunds)}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{fmt(periodsQ.data.totals.gross - periodsQ.data.totals.refunds)}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums text-muted-foreground">−{fmt(periodsQ.data.totals.commission)}</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell className="text-right font-mono tabular-nums font-semibold">{fmt(periodsQ.data.totals.earnings)}</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

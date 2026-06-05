@@ -1,79 +1,96 @@
-# Fase 7c — Pulido final del Seller/Admin Studio
+# Fase 7d — Cierre de pendientes Seller/Admin
 
-Cinco bloques. Todos los archivos clave ya existen; ampliamos lo que falta sin refactor mayor.
+Ocho bloques. Reutilizamos el patrón actual (`createServerFn` + Tanstack Query + shadcn). Migraciones agrupadas en un solo archivo.
 
-## 1. Comisiones + Solicitar Payout
+## 1. Cron automático de payouts (semanal)
 
-**Backend** (`src/lib/seller.functions.ts`):
-- `getSellerCommissions` se amplía para devolver `availableBalance` (neto lifetime − suma de payouts en estado `pending|processing|paid`) y `lastPayoutRequestAt`.
-- Nueva `requestSellerPayout({ amount? })`:
-  - Valida con zod (`amount > 0` y ≤ `availableBalance`, opcional → toma todo el saldo).
-  - Bloquea si hay un payout `pending` o `processing` reciente (<24h) → toast informativo.
-  - Inserta en `seller_payouts` con `status='pending'`, `period_start/end` = ventana desde el último payout pagado hasta hoy, `gross_aed`, `commission_aed`, `net_aed`, `requested_at = now()`.
-  - Crea una notificación interna para admins (`notifications` con `type='payout_requested'`).
+- **Migración**: nueva columna `sellers.payout_schedule text default 'manual'` (`manual|weekly|biweekly|monthly`) + `sellers.min_payout_aed numeric default 0`.
+- **Server route** `src/routes/api/public/hooks/auto-payouts.ts` (POST, valida `apikey` header = anon key):
+  - Itera sellers con `payout_schedule != 'manual'` cuya última solicitud/payout sea anterior a la ventana.
+  - Calcula `availableBalance` (reusa lógica de `getSellerCommissions`) y, si ≥ `min_payout_aed`, inserta `seller_payouts` con `status='pending'`, `requested_at=now()`, `period_*` correspondiente.
+  - Crea notificación admin (`type='payout_auto_requested'`) y seller (`type='payout_requested'`).
+- **pg_cron** (vía `supabase--insert`): job diario 02:00 que llama al endpoint con anon key.
+- **UI**: en `/seller/settings` pestaña "Payout" añadir Select `payout_schedule` y Input `min_payout_aed`. La solicitud manual sigue funcionando (sin tocar).
 
-**Migración** (`supabase/migrations/...`): añadir columna `requested_at timestamptz` a `seller_payouts` si no existe.
+## 2. Editor de temas/colores del storefront
 
-**UI** (`src/routes/_authenticated/seller.commissions.tsx`):
-- KPI nueva: "Available to withdraw" (`availableBalance`).
-- Card con título "Request payout": Input AED + botón `Request payout` (deshabilitado si saldo = 0 o hay solicitud pendiente). Dialog de confirmación. Toast + invalidate.
-- Link "Ver historial" → `/seller/payouts`.
+- **Migración**: `sellers.theme jsonb default '{}'` con shape `{ primary, accent, bg, text, font, radius, layout }`.
+- **Backend** (`seller.functions.ts`): `getSellerStorefront`/`updateSellerStorefront` incluyen `theme` (zod). Validar colores hex y `radius` ∈ `none|sm|md|lg|xl`, `layout` ∈ `grid|masonry|list`.
+- **UI** `/seller/storefront`: nueva tarjeta **Theme** con 4 color pickers (input type=color + hex), Select font (`Inter|Playfair|Space Grotesk|System`), Select radius, Select layout. Preview en vivo con `style={{ '--store-primary': ... }}`.
+- **Público** `sellers.$slug.tsx`: aplica el tema vía `style` inline en el wrapper raíz (CSS vars), sin sobreescribir el theme global del sitio.
 
-**UI** (`src/routes/_authenticated/seller.payouts.tsx`):
-- Mostrar columna `Requested at` cuando exista.
-- Mismo botón `Request payout` arriba (reutiliza dialog).
+## 3. Multi-divisa real (conversión)
 
-## 2. Storefront — showcase de productos
+- **Migración**: tabla `currency_rates` (`base text default 'AED'`, `quote text`, `rate numeric`, `fetched_at timestamptz`), índice único `(base, quote)`. GRANT select a `anon,authenticated`, all a `service_role`. RLS read-public.
+- **Server route** `src/routes/api/public/hooks/refresh-rates.ts` (POST, anon-key gated): fetch a API pública (exchangerate.host, no key) para `AED→USD,EUR,SAR,MXN,GBP`. Upsert.
+- **pg_cron**: job diario 03:00.
+- **Helper isomorphic** `src/lib/currency.ts`: `convert(amount, from, to, rates)` + `formatMoney(amount, currency)`.
+- **Backend**: `getCurrencyRates` server fn (cached por request) + lo expone en `getMyAccount` / loaders relevantes.
+- **UI**: 
+  - Header: Select de moneda (persistido en `localStorage`, default seller currency o AED).
+  - `ProductCard`, página de producto, cart, checkout: muestran precio convertido + sufijo de moneda. El **cobro** sigue en AED (nota visible en checkout: "Charged in AED at current rate").
+  - `/seller/settings` Business currency ahora se usa como display default del seller.
 
-**Migración**: `ALTER TABLE sellers ADD COLUMN IF NOT EXISTS featured_product_ids uuid[] DEFAULT '{}'::uuid[]; ADD COLUMN IF NOT EXISTS business_hours jsonb DEFAULT '{}'::jsonb;`
+## 4. Verificación KYC del trade license
 
-**Backend** (`src/lib/seller.functions.ts`):
-- `getSellerStorefront` ahora también devuelve `featured_product_ids`, `business_hours` y la lista de productos activos del seller (`id`, `name`, `image`, `status`) para poder elegir.
-- `updateSellerStorefront` acepta `featured_product_ids: string[]` (máx 8, todos deben pertenecer al seller y estar `active`) y `business_hours` (`{ mon: {open, close, closed}, … }` con zod).
+- **Migración**: `sellers.kyc_status text default 'unverified'` (`unverified|pending|verified|rejected`), `kyc_submitted_at`, `kyc_reviewed_at`, `kyc_rejection_reason text`, `kyc_documents jsonb default '[]'` (`[{ kind, path, uploaded_at }]`). Bucket existente `product-images` no sirve por privacidad → nuevo **bucket privado `seller-kyc`**.
+- **Storage policies** (migración): solo el seller dueño puede insertar/leer su carpeta `{seller_id}/...`; admins (`has_role('admin')`) leen todo.
+- **Backend** (`seller.functions.ts`): `uploadKycDocument` (kind: `trade_license|emirates_id|passport|other`), `submitKycForReview` (cambia a `pending`), `getKycStatus`. (`admin.functions.ts`): `adminListKycSubmissions`, `adminReviewKyc({ seller_id, decision, reason? })` con notificación al seller.
+- **UI seller** `/seller/settings` nueva pestaña **Verification**: estado actual, uploader por documento (signed URLs), botón "Submit for review" deshabilitado hasta tener al menos `trade_license`. Banner en dashboard si `unverified|rejected`.
+- **UI admin** nueva ruta `/admin/sellers/kyc` (lista pendientes, modal con preview de docs + aprobar/rechazar + razón).
+- **Gating**: solo bloquea **payouts** (no ventas) si `kyc_status != 'verified'`. `requestSellerPayout` y cron lo verifican.
 
-**UI** (`src/routes/_authenticated/seller.storefront.tsx`):
-- Nueva sección **"Productos destacados"**: grid de los productos activos con checkbox/toggle (máx 8). Vista previa lateral muestra los seleccionados.
-- Nueva sección **"Horario"**: 7 filas (Lun–Dom) con `open`/`close` y switch "Cerrado".
-- Preview en vivo del storefront público.
+## 5. Historial de solicitudes de payout (seller)
 
-**Storefront público** (`src/routes/sellers.$slug.tsx`):
-- Si `featured_product_ids.length > 0`, mostrar primero una sección "Featured" con esos productos en el orden elegido; el resto del catálogo queda debajo.
-- Renderizar el bloque de horario debajo de la bio si tiene datos.
+`seller.payouts.tsx` ya tiene tabla; ampliamos:
+- Toggle/tabs **Todas | Pendientes | Pagadas | Rechazadas**.
+- Columnas añadidas: `Requested at`, `Reviewed at`, `Reviewer note` (collapsible), `Receipt` (link a archivo si existe).
+- KPI extra: "Tiempo promedio de procesamiento" (días entre `requested_at` y `paid_at` de payouts pagados).
+- Reuso del estado `cancelled` como **rechazado** (ya existe en STATUS_TONE) + label "Rejected" cuando `review_note` exista.
 
-## 3. Settings — completar perfil + preferencias
+## 6. Tabla detallada de comisiones por periodo
 
-**Migración**: añadir a `sellers` (`IF NOT EXISTS` para cada columna): `address_line1 text`, `address_line2 text`, `city text`, `country text`, `postal_code text`, `currency text DEFAULT 'AED'`, `tax_inclusive_pricing bool DEFAULT false`, `tax_rate numeric DEFAULT 0`, `accepted_payment_methods text[] DEFAULT ARRAY['card']`, `notify_review bool DEFAULT true`, `notify_return bool DEFAULT true`.
+`seller.commissions.tsx`:
+- Nueva sección **"Detalle por periodo"** con Select de granularidad (Semana | Mes | Trimestre) + rango de fechas (DateRangePicker).
+- Tabla columnas: Periodo · Pedidos · Unidades · GMV bruto · Reembolsos · GMV neto · % comisión efectiva · Comisión · **Ganancia neta** · Acción "Export CSV".
+- Backend: ampliar `getSellerCommissions({ granularity, from, to })` para devolver `periods[]` con esos campos. Reembolsos se obtienen de `returns` con `status='refunded'` cruzando `order_items`.
+- Botón global "Export CSV" genera blob client-side desde los datos cargados.
 
-**Backend** (`src/lib/seller.functions.ts`):
-- Ampliar `getSellerSettings`/`updateSellerSettings` schema con los campos arriba.
+## 7. Storefront: categorías + drag-and-drop de destacados
 
-**UI** (`src/routes/_authenticated/seller.settings.tsx`):
-- Nueva pestaña **"Address"** (líneas, ciudad, país via Select, CP).
-- Pestaña **"Business"** añade Select de `currency` (AED/USD/EUR/MXN/SAR).
-- Nueva pestaña **"Tax"**: switch `tax_inclusive_pricing` + input `tax_rate` (%).
-- Pestaña **"Payout"** añade checkboxes `Accepted payment methods` (`card`, `apple_pay`, `google_pay`, `cod`, `bank_transfer`).
-- Pestaña **"Notifications"** añade `notify_review` y `notify_return`.
+`seller.storefront.tsx`:
+- Selector de productos destacados ahora muestra **filtro por categoría** (Select cargado desde `categories` activas que tiene el seller).
+- Lista de seleccionados con drag-and-drop usando `@dnd-kit/core` + `@dnd-kit/sortable` (ya disponible en el proyecto; si no, `bun add`). Reordenar actualiza `featured_product_ids` antes de guardar.
+- Backend ya guarda el orden — solo respetar el array.
 
-## 4. Auditar y eliminar "SOON"
+## 8. Admin: aprobación/rechazo de payouts
 
-- `src/routes/_authenticated/admin.tsx`: el único item con `soon: true` (Settings → grupo Config) se elimina o se reemplaza por un placeholder real `/admin/settings`. **Decisión**: crear ruta mínima `/_authenticated/admin.settings.tsx` con tarjetas link a las páginas ya existentes (Categories, Coupons, Banners, Newsletter, Shipping) + nota "Más opciones próximamente con cambio reciente". Esto cumple "mensaje de estado con próximos pasos".
-- Quitar la condición `item.soon` del sidebar (`DashboardShell.tsx`) o dejarla pero sin usos.
-- `grep` final para confirmar 0 ocurrencias de `soon:` y `SOON` en `src/routes` y `src/components`.
+Nueva ruta `/admin/payouts` se amplía (o se reescribe `admin.payouts.tsx`):
+- Tabla pendientes con KPIs (pending count, monto pendiente).
+- Acción por fila: **Approve & mark paid** y **Reject**.
+- Dialog: Textarea `note` obligatoria + uploader opcional `receipt` (PDF/imagen) → bucket privado nuevo **`payout-receipts`** (RLS: insert/select admin, select seller dueño del payout).
+- **Migración**: `seller_payouts.review_note text`, `seller_payouts.receipt_path text`, `seller_payouts.reviewed_by uuid`, `reviewed_at timestamptz`.
+- **Backend** (`admin.functions.ts`): `adminApprovePayout({ id, note?, receipt_path? })` → `status='paid'`, `paid_at=now()`. `adminRejectPayout({ id, note, receipt_path? })` → `status='cancelled'`. Ambos crean notificación al seller (`payout_paid` | `payout_rejected`).
+- Link visible desde `/admin/commissions`/sidebar Finance.
 
-## 5. Botón "Nuevo Producto" en Admin
+## Detalles técnicos comunes
 
-Actualmente Admin solo tiene **Import CSV**. Añadir:
-
-- **Backend** (`src/lib/admin.functions.ts`): nueva `adminUpsertProduct` que reutiliza la misma lógica que `upsertSellerProduct` pero recibe `seller_id` y usa `supabaseAdmin` (sin RLS de seller).
-- **Ruta** `src/routes/_authenticated/admin.products.new.tsx`:
-  - Header "New product (admin)" con Select de seller (de `adminListSellers` activos).
-  - Reutiliza `<ProductForm>` (se le añade prop opcional `sellerId` que cuando viene fuerza el uso de `adminUpsertProduct` en vez de `upsertSellerProduct`).
-- **Sidebar admin**: añadir item `New product` con icon `Plus` → `/admin/products/new` en el grupo Catalog (al lado de Import).
-- **Seller**: el botón "New product" en `seller.products.tsx` ya enlaza a `/seller/products/new` — verificar visualmente que el `<Link>` envuelve correctamente y el click navega (es el patrón Shopify: lista + botón superior derecho → editor de página completa con tabs Images / Variants / Pricing / SEO / Status, todo eso ya vive en `ProductForm`).
+- Una sola migración cubre §1, §2, §3, §4, §5(none), §8 + buckets.
+- Buckets nuevos: `seller-kyc` (privado), `payout-receipts` (privado). Se crean con `supabase--storage_create_bucket` + policies en la migración.
+- Notificaciones nuevas: `payout_auto_requested`, `payout_paid`, `payout_rejected`, `kyc_submitted`, `kyc_approved`, `kyc_rejected`.
+- Cron jobs registrados vía `supabase--insert` (no migración) con `apikey` header.
+- `requestSellerPayout` bloquea si KYC no verificado (toast claro).
 
 ## Fuera de alcance
 
-- Cálculo automático de payouts por cron (sigue manual + solicitud).
-- Editor de temas/colores custom del storefront.
-- Conversión multi-divisa real (`currency` solo se guarda como preferencia).
-- Verificación KYC del trade license.
+- Pasarela real de transferencia bancaria (los pagos siguen marcados manualmente por admin).
+- Sub-rates de comisión por categoría.
+- Multi-currency en el cobro (sólo display + tasa informativa).
+- OCR automático del trade license (revisión humana).
+
+## Orden de implementación sugerido
+
+1. Migración única + buckets.
+2. Backend (`seller.functions.ts`, `admin.functions.ts`, `currency.ts`).
+3. Cron routes + registro de jobs.
+4. UIs en este orden: payouts (admin + seller history) → comisiones detalladas → storefront (tema + dnd) → KYC → multi-divisa.

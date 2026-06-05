@@ -2,12 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Wallet, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
+import { Wallet, TrendingUp, Clock, CheckCircle2, FileText, Timer } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useState } from "react";
 import { getMyPayouts } from "@/lib/seller.functions";
 
 export const Route = createFileRoute("/_authenticated/seller/payouts")({
@@ -39,6 +41,14 @@ function SellerPayouts() {
   }
 
   const { payouts, totals } = q.data as any;
+  const [tab, setTab] = useState<string>("all");
+  const filtered = (payouts ?? []).filter((p: any) => {
+    if (tab === "all") return true;
+    if (tab === "pending") return p.status === "pending" || p.status === "processing";
+    if (tab === "paid") return p.status === "paid";
+    if (tab === "rejected") return p.status === "cancelled";
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -50,22 +60,33 @@ function SellerPayouts() {
         <Link to="/seller/commissions"><Button className="rounded-full">Request payout</Button></Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <SellerKpi icon={CheckCircle2} label={t("dash.payouts.kpi.paid")} value={AED(totals.paid.net)} hint={`${totals.paid.count} ${t("dash.payouts.kpi.payouts")}`} tone="ok" />
         <SellerKpi icon={Clock} label={t("dash.payouts.kpi.pending")} value={AED(totals.pending.net)} hint={`${totals.pending.count} ${t("dash.payouts.kpi.payouts")}`} tone="warn" />
         <SellerKpi icon={TrendingUp} label={t("dash.payouts.kpi.lifetimeNet")} value={AED(totals.all.net)} hint={`${t("dash.kpi.gross")} ${AED(totals.all.gross)}`} />
+        <SellerKpi icon={Timer} label="Avg processing" value={totals.avgProcessingDays != null ? `${totals.avgProcessingDays} days` : "—"} hint="Request → paid" />
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("dash.payouts.history")}</CardTitle>
-          <CardDescription>{t("dash.payouts.historySub")}</CardDescription>
+        <CardHeader className="space-y-3">
+          <div>
+            <CardTitle className="text-base">{t("dash.payouts.history")}</CardTitle>
+            <CardDescription>{t("dash.payouts.historySub")}</CardDescription>
+          </div>
+          <Tabs value={tab} onValueChange={setTab}>
+            <TabsList>
+              <TabsTrigger value="all">All ({payouts.length})</TabsTrigger>
+              <TabsTrigger value="pending">Pending</TabsTrigger>
+              <TabsTrigger value="paid">Paid</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent className="p-0">
-          {payouts.length === 0 ? (
+          {filtered.length === 0 ? (
             <div className="p-10 text-center">
               <Wallet className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">{t("dash.payouts.emptySeller")}</p>
+              <p className="text-sm text-muted-foreground">No payouts in this view.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -78,11 +99,12 @@ function SellerPayouts() {
                     <TableHead className="text-right">{t("dash.payouts.col.net")}</TableHead>
                     <TableHead>{t("dash.payouts.col.status")}</TableHead>
                     <TableHead className="text-right">Requested</TableHead>
-                    <TableHead className="text-right">{t("dash.payouts.col.paidAt")}</TableHead>
+                    <TableHead className="text-right">Reviewed</TableHead>
+                    <TableHead>Note / Receipt</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payouts.map((p: any) => (
+                  {filtered.map((p: any) => (
                     <TableRow key={p.id}>
                       <TableCell className="text-xs text-muted-foreground">{p.period_start} → {p.period_end}</TableCell>
                       <TableCell className="text-right font-mono tabular-nums">{AED(p.gross_aed)}</TableCell>
@@ -90,14 +112,22 @@ function SellerPayouts() {
                       <TableCell className="text-right font-mono tabular-nums font-semibold">{AED(p.net_aed)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={STATUS_TONE[p.status] ?? ""}>
-                          {t(`dash.payouts.status.${p.status}`)}
+                          {p.status === "cancelled" && p.review_note ? "Rejected" : t(`dash.payouts.status.${p.status}`)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right text-xs text-muted-foreground">
                         {p.requested_at ? new Date(p.requested_at).toLocaleDateString() : "—"}
                       </TableCell>
                       <TableCell className="text-right text-xs text-muted-foreground">
-                        {p.paid_at ? new Date(p.paid_at).toLocaleDateString() : "—"}
+                        {p.reviewed_at ? new Date(p.reviewed_at).toLocaleDateString() : p.paid_at ? new Date(p.paid_at).toLocaleDateString() : "—"}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {p.review_note && <div className="max-w-sm whitespace-normal text-muted-foreground">{p.review_note}</div>}
+                        {p.receipt_url && (
+                          <a href={p.receipt_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-primary hover:underline">
+                            <FileText className="h-3 w-3" /> Receipt
+                          </a>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

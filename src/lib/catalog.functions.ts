@@ -241,7 +241,7 @@ export const getSeller = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<SellerSummary | null> => {
     const { data: row, error } = await supabaseAdmin
       .from("sellers")
-      .select("id, slug, store_name, tagline, bio, logo_url, cover_url, featured_product_ids, business_hours, social_links, contact_email, contact_phone")
+      .select("id, slug, store_name, tagline, bio, logo_url, cover_url, featured_product_ids, business_hours, social_links, contact_email, contact_phone, theme")
       .eq("slug", data.slug).eq("status", "active").maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) return null;
@@ -254,6 +254,7 @@ export const getSeller = createServerFn({ method: "GET" })
       social_links: ((row as any).social_links ?? {}) as Record<string, string>,
       contact_email: (row as any).contact_email ?? null,
       contact_phone: (row as any).contact_phone ?? null,
+      theme: ((row as any).theme ?? {}) as Record<string, any>,
     } as any;
   });
 

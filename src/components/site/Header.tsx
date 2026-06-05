@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { ShoppingBag, User, Globe } from "lucide-react";
+import { ShoppingBag, User, Globe, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,12 +12,14 @@ import { LANGS } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
 import { useSession } from "@/lib/use-session";
 import { NotificationsBell } from "@/components/site/NotificationsBell";
+import { useCurrency, CURRENCIES } from "@/lib/use-currency";
 
 export function Header() {
   const { t, i18n } = useTranslation();
   const change = (code: string) => i18n.changeLanguage(code);
   const cartCount = useCart((s) => s.items.reduce((a, i) => a + i.qty, 0));
   const { user } = useSession();
+  const cur = useCurrency();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -47,6 +49,18 @@ export function Header() {
                 <DropdownMenuItem key={l.code} onClick={() => change(l.code)}>
                   {l.label}
                 </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" aria-label="Currency" className="gap-1 px-2 text-xs">
+                <DollarSign className="h-3.5 w-3.5" />{cur.code}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {CURRENCIES.map((c) => (
+                <DropdownMenuItem key={c} onClick={() => cur.setCode(c)}>{c}</DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>

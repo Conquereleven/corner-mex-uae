@@ -199,6 +199,30 @@ export type Database = {
         }
         Relationships: []
       }
+      currency_rates: {
+        Row: {
+          base: string
+          fetched_at: string
+          id: string
+          quote: string
+          rate: number
+        }
+        Insert: {
+          base?: string
+          fetched_at?: string
+          id?: string
+          quote: string
+          rate: number
+        }
+        Update: {
+          base?: string
+          fetched_at?: string
+          id?: string
+          quote?: string
+          rate?: number
+        }
+        Relationships: []
+      }
       loyalty_accounts: {
         Row: {
           created_at: string
@@ -993,7 +1017,11 @@ export type Database = {
           paid_at: string | null
           period_end: string
           period_start: string
+          receipt_path: string | null
           requested_at: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           seller_id: string
           status: string
         }
@@ -1006,7 +1034,11 @@ export type Database = {
           paid_at?: string | null
           period_end: string
           period_start: string
+          receipt_path?: string | null
           requested_at?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           seller_id: string
           status?: string
         }
@@ -1019,7 +1051,11 @@ export type Database = {
           paid_at?: string | null
           period_end?: string
           period_start?: string
+          receipt_path?: string | null
           requested_at?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           seller_id?: string
           status?: string
         }
@@ -1057,14 +1093,22 @@ export type Database = {
           featured_product_ids: string[] | null
           id: string
           is_published: boolean
+          kyc_documents: Json
+          kyc_rejection_reason: string | null
+          kyc_reviewed_at: string | null
+          kyc_status: string
+          kyc_submitted_at: string | null
+          last_auto_payout_at: string | null
           legal_name: string | null
           logo_url: string | null
+          min_payout_aed: number
           notify_low_stock: boolean
           notify_new_order: boolean
           notify_payout: boolean
           notify_return: boolean | null
           notify_review: boolean | null
           payout_method: string
+          payout_schedule: string
           postal_code: string | null
           processing_days: number
           slug: string
@@ -1076,6 +1120,7 @@ export type Database = {
           tagline: string | null
           tax_inclusive_pricing: boolean | null
           tax_rate: number | null
+          theme: Json
           trn: string | null
           updated_at: string
           user_id: string
@@ -1106,14 +1151,22 @@ export type Database = {
           featured_product_ids?: string[] | null
           id?: string
           is_published?: boolean
+          kyc_documents?: Json
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_status?: string
+          kyc_submitted_at?: string | null
+          last_auto_payout_at?: string | null
           legal_name?: string | null
           logo_url?: string | null
+          min_payout_aed?: number
           notify_low_stock?: boolean
           notify_new_order?: boolean
           notify_payout?: boolean
           notify_return?: boolean | null
           notify_review?: boolean | null
           payout_method?: string
+          payout_schedule?: string
           postal_code?: string | null
           processing_days?: number
           slug: string
@@ -1125,6 +1178,7 @@ export type Database = {
           tagline?: string | null
           tax_inclusive_pricing?: boolean | null
           tax_rate?: number | null
+          theme?: Json
           trn?: string | null
           updated_at?: string
           user_id: string
@@ -1155,14 +1209,22 @@ export type Database = {
           featured_product_ids?: string[] | null
           id?: string
           is_published?: boolean
+          kyc_documents?: Json
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_status?: string
+          kyc_submitted_at?: string | null
+          last_auto_payout_at?: string | null
           legal_name?: string | null
           logo_url?: string | null
+          min_payout_aed?: number
           notify_low_stock?: boolean
           notify_new_order?: boolean
           notify_payout?: boolean
           notify_return?: boolean | null
           notify_review?: boolean | null
           payout_method?: string
+          payout_schedule?: string
           postal_code?: string | null
           processing_days?: number
           slug?: string
@@ -1174,6 +1236,7 @@ export type Database = {
           tagline?: string | null
           tax_inclusive_pricing?: boolean | null
           tax_rate?: number | null
+          theme?: Json
           trn?: string | null
           updated_at?: string
           user_id?: string
