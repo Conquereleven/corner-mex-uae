@@ -1,16 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ExternalLink, Copy, Upload } from "lucide-react";
+import { ExternalLink, Copy, Upload, GripVertical, X } from "lucide-react";
 import { getSellerStorefront, updateSellerStorefront, uploadSellerAsset } from "@/lib/seller.functions";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const Route = createFileRoute("/_authenticated/seller/storefront")({
   head: () => ({ meta: [{ title: "Storefront — Seller Studio" }] }),
@@ -31,6 +35,7 @@ function SellerStorefront() {
       social_links: q.data.social_links ?? {},
       featured_product_ids: q.data.featured_product_ids ?? [],
       business_hours: q.data.business_hours ?? {},
+      theme: (q.data as any).theme ?? {},
     });
   }, [q.data]);
 
@@ -42,6 +47,7 @@ function SellerStorefront() {
       social_links: f.social_links || {}, is_published: !!f.is_published,
       featured_product_ids: f.featured_product_ids ?? [],
       business_hours: f.business_hours ?? {},
+      theme: f.theme ?? {},
     }}),
     onSuccess: () => { toast.success("Storefront saved"); qc.invalidateQueries({ queryKey: ["seller-storefront"] }); },
     onError: (e: any) => toast.error(e.message ?? "Failed to save"),
@@ -63,8 +69,16 @@ function SellerStorefront() {
   };
 
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/sellers/${f.slug}` : `/sellers/${f.slug}`;
-  const activeProducts = (f.products ?? []).filter((p: any) => p.status === "active");
   const featuredIds: string[] = f.featured_product_ids ?? [];
+  const allActive = (f.products ?? []).filter((p: any) => p.status === "active");
+  const categories = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of allActive) if (p.category_id) map.set(p.category_id, p.category_name ?? p.category_slug ?? "—");
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [allActive]);
+  const [catFilter, setCatFilter] = useState<string>("all");
+  const filteredActive = catFilter === "all" ? allActive : allActive.filter((p: any) => p.category_id === catFilter);
+  const featuredProducts = featuredIds.map((id) => allActive.find((p: any) => p.id === id)).filter(Boolean) as any[];
   const DAYS: { k: "mon"|"tue"|"wed"|"thu"|"fri"|"sat"|"sun"; label: string }[] = [
     { k: "mon", label: "Monday" }, { k: "tue", label: "Tuesday" }, { k: "wed", label: "Wednesday" },
     { k: "thu", label: "Thursday" }, { k: "fri", label: "Friday" }, { k: "sat", label: "Saturday" }, { k: "sun", label: "Sunday" },
@@ -79,6 +93,17 @@ function SellerStorefront() {
     const bh = { ...(f.business_hours ?? {}) };
     bh[day] = { ...(bh[day] ?? {}), [key]: val };
     setF({ ...f, business_hours: bh });
+  };
+  const setTheme = (k: string, v: any) => setF({ ...f, theme: { ...(f.theme ?? {}), [k]: v } });
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const onDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const ids = featuredIds;
+    const oldIdx = ids.indexOf(String(active.id));
+    const newIdx = ids.indexOf(String(over.id));
+    if (oldIdx < 0 || newIdx < 0) return;
+    setF({ ...f, featured_product_ids: arrayMove(ids, oldIdx, newIdx) });
   };
 
   return (
@@ -167,14 +192,38 @@ function SellerStorefront() {
       <Card>
         <CardHeader>
           <CardTitle>Featured products</CardTitle>
-          <p className="text-sm text-muted-foreground">Pick up to 8 active products to highlight at the top of your public store. {featuredIds.length}/8 selected.</p>
+          <p className="text-sm text-muted-foreground">Pick up to 8 active products. Drag to reorder. {featuredIds.length}/8 selected.</p>
         </CardHeader>
-        <CardContent>
-          {activeProducts.length === 0 ? (
+        <CardContent className="space-y-6">
+          {featuredProducts.length > 0 && (
+            <div>
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Selected (drag to reorder)</Label>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                <SortableContext items={featuredIds} strategy={horizontalListSortingStrategy}>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {featuredProducts.map((p, i) => (
+                      <SortableFeaturedItem key={p.id} id={p.id} idx={i + 1} name={p.name} image={p.image} onRemove={() => toggleFeatured(p.id)} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          )}
+          <div className="flex items-center gap-3 flex-wrap">
+            <Label>Filter by category</Label>
+            <Select value={catFilter} onValueChange={setCatFilter}>
+              <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          {filteredActive.length === 0 ? (
             <p className="text-sm text-muted-foreground">You have no active products yet.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {activeProducts.map((p: any) => {
+              {filteredActive.map((p: any) => {
                 const on = featuredIds.includes(p.id);
                 return (
                   <button key={p.id} type="button" onClick={() => toggleFeatured(p.id)}
@@ -195,6 +244,62 @@ function SellerStorefront() {
               })}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Theme</CardTitle>
+          <p className="text-sm text-muted-foreground">Customize how your public storefront looks. Changes apply to <code>/sellers/{f.slug}</code>.</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {(["primary","accent","bg","text"] as const).map((k) => (
+              <div key={k}>
+                <Label className="capitalize">{k === "bg" ? "Background" : k}</Label>
+                <div className="mt-1 flex items-center gap-2">
+                  <Input type="color" className="h-10 w-14 p-1" value={f.theme?.[k] ?? "#000000"} onChange={(e) => setTheme(k, e.target.value)} />
+                  <Input value={f.theme?.[k] ?? ""} placeholder="#000000" onChange={(e) => setTheme(k, e.target.value)} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <Label>Heading font</Label>
+              <Select value={f.theme?.font ?? "System"} onValueChange={(v) => setTheme("font", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["System","Inter","Playfair Display","Space Grotesk"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Corner radius</Label>
+              <Select value={f.theme?.radius ?? "md"} onValueChange={(v) => setTheme("radius", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["none","sm","md","lg","xl"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Product layout</Label>
+              <Select value={f.theme?.layout ?? "grid"} onValueChange={(v) => setTheme("layout", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["grid","masonry","list"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="rounded-lg border p-4" style={{ background: f.theme?.bg || undefined, color: f.theme?.text || undefined, fontFamily: f.theme?.font && f.theme.font !== "System" ? `'${f.theme.font}', sans-serif` : undefined }}>
+            <h3 className="text-2xl font-semibold" style={{ color: f.theme?.primary || undefined }}>{f.store_name || "Your store"}</h3>
+            <p className="text-sm opacity-80">Live preview of your storefront theme.</p>
+            <button className="mt-3 inline-flex items-center px-4 py-2 text-sm font-medium" style={{ background: f.theme?.primary || "#111", color: "#fff", borderRadius: ({ none:"0", sm:"0.25rem", md:"0.5rem", lg:"0.75rem", xl:"1rem" } as any)[f.theme?.radius ?? "md"] }}>
+              Sample button
+            </button>
+          </div>
         </CardContent>
       </Card>
 
