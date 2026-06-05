@@ -309,11 +309,21 @@ export const getMyPayouts = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, created_at")
+      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, reviewed_at, review_note, receipt_path, created_at")
       .eq("seller_id", seller.id)
       .order("period_end", { ascending: false });
     if (error) throw new Error(error.message);
-    const list = data ?? [];
+    let list = (data ?? []) as any[];
+    // Attach signed receipt URLs for the seller (RLS allows them via the policy)
+    list = await Promise.all(list.map(async (r) => {
+      if (!r.receipt_path) return r;
+      const signed = await supabaseAdmin.storage.from("payout-receipts").createSignedUrl(r.receipt_path, 60 * 60 * 24 * 7);
+      return { ...r, receipt_url: signed.data?.signedUrl ?? null };
+    }));
+    const paidList = list.filter((p: any) => p.status === "paid" && p.requested_at && p.paid_at);
+    const avgDays = paidList.length
+      ? +(paidList.reduce((a: number, p: any) => a + (new Date(p.paid_at).getTime() - new Date(p.requested_at).getTime()) / 86400000, 0) / paidList.length).toFixed(1)
+      : null;
     const sum = (k: string) => +list.reduce((a, r: any) => a + Number(r[k] ?? 0), 0).toFixed(2);
     const paid = list.filter((r: any) => r.status === "paid");
     return {
@@ -330,6 +340,7 @@ export const getMyPayouts = createServerFn({ method: "GET" })
             .reduce((a, r: any) => a + Number(r.net_aed ?? 0), 0).toFixed(2),
           count: list.filter((r: any) => r.status !== "paid" && r.status !== "cancelled").length,
         },
+        avgProcessingDays: avgDays,
       },
     };
   });
