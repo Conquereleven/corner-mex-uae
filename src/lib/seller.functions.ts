@@ -368,6 +368,9 @@ export const requestSellerPayout = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const seller = await getSellerForUser(context.userId);
+    if ((seller as any).kyc_status !== "verified") {
+      throw new Error("Your account must be KYC-verified before requesting payouts. Submit your trade license in Settings → Verification.");
+    }
     const balance = await computeAvailableBalance(seller.id);
     if (balance.hasOpenRequest) throw new Error("You already have a pending payout request.");
     if (balance.availableBalance <= 0) throw new Error("No funds available for payout.");
