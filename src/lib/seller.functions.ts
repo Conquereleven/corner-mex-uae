@@ -756,6 +756,8 @@ export const getSellerSettings = createServerFn({ method: "GET" })
       accepted_payment_methods: (s as any).accepted_payment_methods ?? ["card"],
       notify_review: (s as any).notify_review ?? true,
       notify_return: (s as any).notify_return ?? true,
+      payout_schedule: (s as any).payout_schedule ?? "manual",
+      min_payout_aed: Number((s as any).min_payout_aed ?? 0),
     };
   });
 
