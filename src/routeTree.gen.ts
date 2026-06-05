@@ -64,6 +64,8 @@ import { Route as AuthenticatedAccountQuotesRouteImport } from './routes/_authen
 import { Route as AuthenticatedAccountNotificationsRouteImport } from './routes/_authenticated/account.notifications'
 import { Route as AuthenticatedAccountLoyaltyRouteImport } from './routes/_authenticated/account.loyalty'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
+import { Route as ApiPublicHooksRefreshRatesRouteImport } from './routes/api/public/hooks/refresh-rates'
+import { Route as ApiPublicHooksAutoPayoutsRouteImport } from './routes/api/public/hooks/auto-payouts'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
 import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
@@ -378,6 +380,18 @@ const CheckoutBnplProviderOrderIdRoute =
     path: '/bnpl/$provider/$orderId',
     getParentRoute: () => CheckoutRoute,
   } as any)
+const ApiPublicHooksRefreshRatesRoute =
+  ApiPublicHooksRefreshRatesRouteImport.update({
+    id: '/api/public/hooks/refresh-rates',
+    path: '/api/public/hooks/refresh-rates',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksAutoPayoutsRoute =
+  ApiPublicHooksAutoPayoutsRouteImport.update({
+    id: '/api/public/hooks/auto-payouts',
+    path: '/api/public/hooks/auto-payouts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedSellerProductsNewRoute =
   AuthenticatedSellerProductsNewRouteImport.update({
     id: '/new',
@@ -475,6 +489,8 @@ export interface FileRoutesByFullPath {
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
 export interface FileRoutesByTo {
@@ -535,6 +551,8 @@ export interface FileRoutesByTo {
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
 export interface FileRoutesById {
@@ -599,6 +617,8 @@ export interface FileRoutesById {
   '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/_authenticated/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
 }
 export interface FileRouteTypes {
@@ -663,6 +683,8 @@ export interface FileRouteTypes {
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
+    | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -723,6 +745,8 @@ export interface FileRouteTypes {
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
+    | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
   id:
     | '__root__'
@@ -786,6 +810,8 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/products/$id'
     | '/_authenticated/seller/products/import'
     | '/_authenticated/seller/products/new'
+    | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
   fileRoutesById: FileRoutesById
 }
@@ -806,6 +832,8 @@ export interface RootRouteChildren {
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
+  ApiPublicHooksAutoPayoutsRoute: typeof ApiPublicHooksAutoPayoutsRoute
+  ApiPublicHooksRefreshRatesRoute: typeof ApiPublicHooksRefreshRatesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1195,6 +1223,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutBnplProviderOrderIdRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/api/public/hooks/refresh-rates': {
+      id: '/api/public/hooks/refresh-rates'
+      path: '/api/public/hooks/refresh-rates'
+      fullPath: '/api/public/hooks/refresh-rates'
+      preLoaderRoute: typeof ApiPublicHooksRefreshRatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/auto-payouts': {
+      id: '/api/public/hooks/auto-payouts'
+      path: '/api/public/hooks/auto-payouts'
+      fullPath: '/api/public/hooks/auto-payouts'
+      preLoaderRoute: typeof ApiPublicHooksAutoPayoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/seller/products/new': {
       id: '/_authenticated/seller/products/new'
       path: '/new'
@@ -1439,6 +1481,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
+  ApiPublicHooksAutoPayoutsRoute: ApiPublicHooksAutoPayoutsRoute,
+  ApiPublicHooksRefreshRatesRoute: ApiPublicHooksRefreshRatesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
