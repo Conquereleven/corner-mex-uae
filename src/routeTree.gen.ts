@@ -69,6 +69,7 @@ import { Route as ApiPublicHooksAutoPayoutsRouteImport } from './routes/api/publ
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
 import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
+import { Route as AuthenticatedAdminSellersKycRouteImport } from './routes/_authenticated/admin.sellers.kyc'
 import { Route as AuthenticatedAdminProductsNewRouteImport } from './routes/_authenticated/admin.products.new'
 import { Route as AuthenticatedAdminProductsImportRouteImport } from './routes/_authenticated/admin.products.import'
 import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
@@ -410,6 +411,12 @@ const AuthenticatedSellerProductsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedSellerProductsRoute,
   } as any)
+const AuthenticatedAdminSellersKycRoute =
+  AuthenticatedAdminSellersKycRouteImport.update({
+    id: '/kyc',
+    path: '/kyc',
+    getParentRoute: () => AuthenticatedAdminSellersRoute,
+  } as any)
 const AuthenticatedAdminProductsNewRoute =
   AuthenticatedAdminProductsNewRouteImport.update({
     id: '/products/new',
@@ -464,7 +471,7 @@ export interface FileRoutesByFullPath {
   '/admin/quotes': typeof AuthenticatedAdminQuotesRoute
   '/admin/returns': typeof AuthenticatedAdminReturnsRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
-  '/admin/sellers': typeof AuthenticatedAdminSellersRoute
+  '/admin/sellers': typeof AuthenticatedAdminSellersRouteWithChildren
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
@@ -486,6 +493,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
+  '/admin/sellers/kyc': typeof AuthenticatedAdminSellersKycRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
@@ -526,7 +534,7 @@ export interface FileRoutesByTo {
   '/admin/quotes': typeof AuthenticatedAdminQuotesRoute
   '/admin/returns': typeof AuthenticatedAdminReturnsRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
-  '/admin/sellers': typeof AuthenticatedAdminSellersRoute
+  '/admin/sellers': typeof AuthenticatedAdminSellersRouteWithChildren
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/admin/shipping': typeof AuthenticatedAdminShippingRoute
@@ -548,6 +556,7 @@ export interface FileRoutesByTo {
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
+  '/admin/sellers/kyc': typeof AuthenticatedAdminSellersKycRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
@@ -592,7 +601,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/quotes': typeof AuthenticatedAdminQuotesRoute
   '/_authenticated/admin/returns': typeof AuthenticatedAdminReturnsRoute
   '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
-  '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRoute
+  '/_authenticated/admin/sellers': typeof AuthenticatedAdminSellersRouteWithChildren
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/shipments': typeof AuthenticatedAdminShipmentsRoute
   '/_authenticated/admin/shipping': typeof AuthenticatedAdminShippingRoute
@@ -614,6 +623,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
   '/_authenticated/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/_authenticated/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
+  '/_authenticated/admin/sellers/kyc': typeof AuthenticatedAdminSellersKycRoute
   '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/_authenticated/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
@@ -680,6 +690,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$id'
     | '/admin/products/import'
     | '/admin/products/new'
+    | '/admin/sellers/kyc'
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
@@ -742,6 +753,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$id'
     | '/admin/products/import'
     | '/admin/products/new'
+    | '/admin/sellers/kyc'
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
@@ -807,6 +819,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/customers/$id'
     | '/_authenticated/admin/products/import'
     | '/_authenticated/admin/products/new'
+    | '/_authenticated/admin/sellers/kyc'
     | '/_authenticated/seller/products/$id'
     | '/_authenticated/seller/products/import'
     | '/_authenticated/seller/products/new'
@@ -1258,6 +1271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerProductsIdRouteImport
       parentRoute: typeof AuthenticatedSellerProductsRoute
     }
+    '/_authenticated/admin/sellers/kyc': {
+      id: '/_authenticated/admin/sellers/kyc'
+      path: '/kyc'
+      fullPath: '/admin/sellers/kyc'
+      preLoaderRoute: typeof AuthenticatedAdminSellersKycRouteImport
+      parentRoute: typeof AuthenticatedAdminSellersRoute
+    }
     '/_authenticated/admin/products/new': {
       id: '/_authenticated/admin/products/new'
       path: '/products/new'
@@ -1316,6 +1336,20 @@ const AuthenticatedAdminCustomersRouteWithChildren =
     AuthenticatedAdminCustomersRouteChildren,
   )
 
+interface AuthenticatedAdminSellersRouteChildren {
+  AuthenticatedAdminSellersKycRoute: typeof AuthenticatedAdminSellersKycRoute
+}
+
+const AuthenticatedAdminSellersRouteChildren: AuthenticatedAdminSellersRouteChildren =
+  {
+    AuthenticatedAdminSellersKycRoute: AuthenticatedAdminSellersKycRoute,
+  }
+
+const AuthenticatedAdminSellersRouteWithChildren =
+  AuthenticatedAdminSellersRoute._addFileChildren(
+    AuthenticatedAdminSellersRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminBannersRoute: typeof AuthenticatedAdminBannersRoute
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
@@ -1328,7 +1362,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminQuotesRoute: typeof AuthenticatedAdminQuotesRoute
   AuthenticatedAdminReturnsRoute: typeof AuthenticatedAdminReturnsRoute
   AuthenticatedAdminReviewsRoute: typeof AuthenticatedAdminReviewsRoute
-  AuthenticatedAdminSellersRoute: typeof AuthenticatedAdminSellersRoute
+  AuthenticatedAdminSellersRoute: typeof AuthenticatedAdminSellersRouteWithChildren
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminShipmentsRoute: typeof AuthenticatedAdminShipmentsRoute
   AuthenticatedAdminShippingRoute: typeof AuthenticatedAdminShippingRoute
@@ -1350,7 +1384,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminQuotesRoute: AuthenticatedAdminQuotesRoute,
   AuthenticatedAdminReturnsRoute: AuthenticatedAdminReturnsRoute,
   AuthenticatedAdminReviewsRoute: AuthenticatedAdminReviewsRoute,
-  AuthenticatedAdminSellersRoute: AuthenticatedAdminSellersRoute,
+  AuthenticatedAdminSellersRoute: AuthenticatedAdminSellersRouteWithChildren,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminShipmentsRoute: AuthenticatedAdminShipmentsRoute,
   AuthenticatedAdminShippingRoute: AuthenticatedAdminShippingRoute,
