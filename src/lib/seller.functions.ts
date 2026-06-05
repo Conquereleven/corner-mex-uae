@@ -863,11 +863,11 @@ export const getSellerCommissionPeriods = createServerFn({ method: "POST" })
 
     const { data: refunds } = await supabaseAdmin
       .from("returns")
-      .select(`refund_aed, refunded_at, status, order_item:order_items!inner(seller_id)`)
-      .eq("order_item.seller_id", seller.id)
+      .select(`refund_aed, resolved_at, status, seller_id`)
+      .eq("seller_id", seller.id)
       .eq("status", "refunded")
-      .gte("refunded_at", fromIso)
-      .lte("refunded_at", toIso);
+      .gte("resolved_at", fromIso)
+      .lte("resolved_at", toIso);
 
     const list = (items ?? []) as any[];
     const ret = (refunds ?? []) as any[];
@@ -890,8 +890,8 @@ export const getSellerCommissionPeriods = createServerFn({ method: "POST" })
       b.commission += Number(it.commission_aed ?? 0);
     }
     for (const r of ret) {
-      if (!r.refunded_at) continue;
-      const d = new Date(r.refunded_at);
+      if (!r.resolved_at) continue;
+      const d = new Date(r.resolved_at);
       const pk = periodKey(d, data.granularity);
       const b = ensure(pk.key, pk.sortKey, pk.label);
       b.refunds += Number(r.refund_aed ?? 0);
