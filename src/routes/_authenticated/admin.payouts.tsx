@@ -365,3 +365,85 @@ function Row({ label, value, muted, strong }: { label: string; value: string; mu
     </div>
   );
 }
+
+function ReviewPayoutDialog({ payout }: { payout: any }) {
+  const qc = useQueryClient();
+  const approveFn = useServerFn(adminApprovePayout);
+  const rejectFn = useServerFn(adminRejectPayout);
+  const uploadFn = useServerFn(adminUploadPayoutReceipt);
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"approve" | "reject">("approve");
+  const [note, setNote] = useState("");
+  const [receiptPath, setReceiptPath] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const reset = () => { setMode("approve"); setNote(""); setReceiptPath(null); };
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      const b64: string = await new Promise((res) => { reader.onload = () => res(String(reader.result).split(",")[1]); reader.readAsDataURL(file); });
+      const r = await uploadFn({ data: { payoutId: payout.id, filename: file.name, contentType: file.type || "application/pdf", dataBase64: b64 } });
+      setReceiptPath(r.path);
+      toast.success("Receipt uploaded");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setUploading(false); }
+  };
+
+  const submit = async () => {
+    if (mode === "reject" && !note.trim()) { toast.error("A reason is required for rejection."); return; }
+    try {
+      if (mode === "approve") {
+        await approveFn({ data: { payoutId: payout.id, note: note || undefined, receipt_path: receiptPath || undefined } });
+        toast.success("Payout approved and marked as paid");
+      } else {
+        await rejectFn({ data: { payoutId: payout.id, note, receipt_path: receiptPath || undefined } });
+        toast.success("Payout rejected");
+      }
+      qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+      setOpen(false); reset();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="h-8">Review</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Review payout</DialogTitle>
+          <DialogDescription>
+            {payout.seller?.store_name} · {AED(payout.net_aed)} net ({payout.period_start} → {payout.period_end})
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Button type="button" variant={mode === "approve" ? "default" : "outline"} size="sm" onClick={() => setMode("approve")} className="gap-1"><Check className="h-3 w-3" />Approve & pay</Button>
+            <Button type="button" variant={mode === "reject" ? "default" : "outline"} size="sm" onClick={() => setMode("reject")} className="gap-1"><X className="h-3 w-3" />Reject</Button>
+          </div>
+          <div>
+            <Label>{mode === "reject" ? "Reason (required)" : "Note (optional)"}</Label>
+            <Textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder={mode === "reject" ? "Why is this being rejected?" : "Internal note (sent to seller)"} />
+          </div>
+          <div>
+            <Label>Receipt (optional)</Label>
+            <div className="flex items-center gap-2 mt-1">
+              <input ref={fileRef} type="file" hidden accept="application/pdf,image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ""; }} />
+              <Button type="button" size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                <UploadIcon className="h-3 w-3 mr-1" />{uploading ? "Uploading…" : receiptPath ? "Replace" : "Upload"}
+              </Button>
+              {receiptPath && <span className="text-xs text-muted-foreground">Uploaded ✓</span>}
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit}>{mode === "approve" ? "Approve & mark paid" : "Reject"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
