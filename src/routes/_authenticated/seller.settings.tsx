@@ -338,7 +338,7 @@ function KycSection() {
         <div className="space-y-3">
           {KINDS.map((k) => {
             const doc = docs.find((d: any) => d.kind === k.k);
-            return <KycDocRow key={k.k} doc={doc} kind={k.k} label={k.label} required={k.required} onFile={handleFile} onRemove={(kk) => rmMut.mutate(kk)} />;
+            return <KycDocRow key={k.k} doc={doc} kind={k.k} label={k.label} required={k.required} onFile={handleFile} onRemove={(kk: string) => rmMut.mutate(kk)} />;
           })}
         </div>
 
