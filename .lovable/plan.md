@@ -1,96 +1,68 @@
-# Fase 7d — Cierre de pendientes Seller/Admin
+# Plan — Notificaciones por email + cambio manual de pagos
 
-Ocho bloques. Reutilizamos el patrón actual (`createServerFn` + Tanstack Query + shadcn). Migraciones agrupadas en un solo archivo.
+## 1. Infraestructura de email (prerrequisito)
 
-## 1. Cron automático de payouts (semanal)
+Hoy el proyecto **no tiene dominio de email** configurado, así que las notificaciones por email no pueden salir aún. Antes de implementar las plantillas necesitamos:
 
-- **Migración**: nueva columna `sellers.payout_schedule text default 'manual'` (`manual|weekly|biweekly|monthly`) + `sellers.min_payout_aed numeric default 0`.
-- **Server route** `src/routes/api/public/hooks/auto-payouts.ts` (POST, valida `apikey` header = anon key):
-  - Itera sellers con `payout_schedule != 'manual'` cuya última solicitud/payout sea anterior a la ventana.
-  - Calcula `availableBalance` (reusa lógica de `getSellerCommissions`) y, si ≥ `min_payout_aed`, inserta `seller_payouts` con `status='pending'`, `requested_at=now()`, `period_*` correspondiente.
-  - Crea notificación admin (`type='payout_auto_requested'`) y seller (`type='payout_requested'`).
-- **pg_cron** (vía `supabase--insert`): job diario 02:00 que llama al endpoint con anon key.
-- **UI**: en `/seller/settings` pestaña "Payout" añadir Select `payout_schedule` y Input `min_payout_aed`. La solicitud manual sigue funcionando (sin tocar).
+1. Configurar un dominio de envío (subdominio tipo `notify.tudominio.com`) desde el diálogo de configuración de Lovable Emails.
+2. Levantar la infraestructura compartida (cola de envío, suppression list, cron de procesamiento).
+3. Generar el andamiaje de "app emails" (rutas `/lovable/email/transactional/send`, preview, unsubscribe).
 
-## 2. Editor de temas/colores del storefront
+> Para empezar necesito que abras el diálogo de configuración de dominio. Te lo voy a mostrar en cuanto pasemos a build. Mientras DNS propaga, todo el código y las plantillas quedan listas; los correos empezarán a salir en cuanto el dominio verifique.
 
-- **Migración**: `sellers.theme jsonb default '{}'` con shape `{ primary, accent, bg, text, font, radius, layout }`.
-- **Backend** (`seller.functions.ts`): `getSellerStorefront`/`updateSellerStorefront` incluyen `theme` (zod). Validar colores hex y `radius` ∈ `none|sm|md|lg|xl`, `layout` ∈ `grid|masonry|list`.
-- **UI** `/seller/storefront`: nueva tarjeta **Theme** con 4 color pickers (input type=color + hex), Select font (`Inter|Playfair|Space Grotesk|System`), Select radius, Select layout. Preview en vivo con `style={{ '--store-primary': ... }}`.
-- **Público** `sellers.$slug.tsx`: aplica el tema vía `style` inline en el wrapper raíz (CSS vars), sin sobreescribir el theme global del sitio.
+## 2. Plantillas de email (React Email)
 
-## 3. Multi-divisa real (conversión)
+Crear en `src/lib/email-templates/` y registrar en `registry.ts`:
 
-- **Migración**: tabla `currency_rates` (`base text default 'AED'`, `quote text`, `rate numeric`, `fetched_at timestamptz`), índice único `(base, quote)`. GRANT select a `anon,authenticated`, all a `service_role`. RLS read-public.
-- **Server route** `src/routes/api/public/hooks/refresh-rates.ts` (POST, anon-key gated): fetch a API pública (exchangerate.host, no key) para `AED→USD,EUR,SAR,MXN,GBP`. Upsert.
-- **pg_cron**: job diario 03:00.
-- **Helper isomorphic** `src/lib/currency.ts`: `convert(amount, from, to, rates)` + `formatMoney(amount, currency)`.
-- **Backend**: `getCurrencyRates` server fn (cached por request) + lo expone en `getMyAccount` / loaders relevantes.
-- **UI**: 
-  - Header: Select de moneda (persistido en `localStorage`, default seller currency o AED).
-  - `ProductCard`, página de producto, cart, checkout: muestran precio convertido + sufijo de moneda. El **cobro** sigue en AED (nota visible en checkout: "Charged in AED at current rate").
-  - `/seller/settings` Business currency ahora se usa como display default del seller.
+- `kyc-submitted.tsx` — al seller: "Recibimos tus documentos, están en revisión".
+- `kyc-approved.tsx` — al seller: cuenta verificada, ya puede solicitar payouts.
+- `kyc-rejected.tsx` — al seller: motivo + CTA para volver a subir.
+- `kyc-admin-new.tsx` — a admins: nuevo KYC pendiente con link a `/admin/sellers/kyc`.
+- `payout-requested.tsx` — al seller: confirmación de solicitud + monto.
+- `payout-admin-new.tsx` — a admins: nueva solicitud pendiente con link a `/admin/payouts`.
+- `payout-approved.tsx` — al seller: payout aprobado (en proceso de transferencia).
+- `payout-paid.tsx` — al seller: payout pagado, con monto, fecha y link al recibo si existe.
+- `payout-rejected.tsx` — al seller: motivo de rechazo.
 
-## 4. Verificación KYC del trade license
+Todas con branding del marketplace (colores y tipografía leídos de `src/index.css`), fondo `#ffffff`, footer de unsubscribe lo agrega el sistema.
 
-- **Migración**: `sellers.kyc_status text default 'unverified'` (`unverified|pending|verified|rejected`), `kyc_submitted_at`, `kyc_reviewed_at`, `kyc_rejection_reason text`, `kyc_documents jsonb default '[]'` (`[{ kind, path, uploaded_at }]`). Bucket existente `product-images` no sirve por privacidad → nuevo **bucket privado `seller-kyc`**.
-- **Storage policies** (migración): solo el seller dueño puede insertar/leer su carpeta `{seller_id}/...`; admins (`has_role('admin')`) leen todo.
-- **Backend** (`seller.functions.ts`): `uploadKycDocument` (kind: `trade_license|emirates_id|passport|other`), `submitKycForReview` (cambia a `pending`), `getKycStatus`. (`admin.functions.ts`): `adminListKycSubmissions`, `adminReviewKyc({ seller_id, decision, reason? })` con notificación al seller.
-- **UI seller** `/seller/settings` nueva pestaña **Verification**: estado actual, uploader por documento (signed URLs), botón "Submit for review" deshabilitado hasta tener al menos `trade_license`. Banner en dashboard si `unverified|rejected`.
-- **UI admin** nueva ruta `/admin/sellers/kyc` (lista pendientes, modal con preview de docs + aprobar/rechazar + razón).
-- **Gating**: solo bloquea **payouts** (no ventas) si `kyc_status != 'verified'`. `requestSellerPayout` y cron lo verifican.
+## 3. Disparadores en server functions
 
-## 5. Historial de solicitudes de payout (seller)
+Crear helper `src/lib/email/send.ts` (POST a `/lovable/email/transactional/send` con JWT). Para envíos disparados desde server functions, helper server-only `src/lib/email/send.server.ts` que llame internamente con service role. `idempotencyKey` derivado del evento.
 
-`seller.payouts.tsx` ya tiene tabla; ampliamos:
-- Toggle/tabs **Todas | Pendientes | Pagadas | Rechazadas**.
-- Columnas añadidas: `Requested at`, `Reviewed at`, `Reviewer note` (collapsible), `Receipt` (link a archivo si existe).
-- KPI extra: "Tiempo promedio de procesamiento" (días entre `requested_at` y `paid_at` de payouts pagados).
-- Reuso del estado `cancelled` como **rechazado** (ya existe en STATUS_TONE) + label "Rejected" cuando `review_note` exista.
+Cablear en:
 
-## 6. Tabla detallada de comisiones por periodo
+- `seller.functions.ts`:
+  - `submitKycForReview` → `kyc-submitted` (seller) + `kyc-admin-new` (a todos los admins).
+  - `requestSellerPayout` → `payout-requested` (seller) + `payout-admin-new` (admins).
+- `admin.functions.ts`:
+  - `adminReviewKyc` → `kyc-approved` o `kyc-rejected` según decisión.
+  - `adminApprovePayout` → `payout-paid` (mantiene el comportamiento actual que marca como `paid`).
+  - `adminRejectPayout` → `payout-rejected`.
+  - Nueva `adminMarkPayoutApproved` (status `processing`/`approved`) → `payout-approved`, para tener el ciclo `pending → approved → paid`.
 
-`seller.commissions.tsx`:
-- Nueva sección **"Detalle por periodo"** con Select de granularidad (Semana | Mes | Trimestre) + rango de fechas (DateRangePicker).
-- Tabla columnas: Periodo · Pedidos · Unidades · GMV bruto · Reembolsos · GMV neto · % comisión efectiva · Comisión · **Ganancia neta** · Acción "Export CSV".
-- Backend: ampliar `getSellerCommissions({ granularity, from, to })` para devolver `periods[]` con esos campos. Reembolsos se obtienen de `returns` con `status='refunded'` cruzando `order_items`.
-- Botón global "Export CSV" genera blob client-side desde los datos cargados.
+Helper `getAdminEmails()` (consulta `user_roles` + `auth.users` vía `supabaseAdmin`) para los correos a administradores. Cada envío respeta `notify_payout` del seller (ya existe en settings) y para KYC se envía siempre (compliance).
 
-## 7. Storefront: categorías + drag-and-drop de destacados
+## 4. Cambio manual de estado de pago (COD / Bank transfer)
 
-`seller.storefront.tsx`:
-- Selector de productos destacados ahora muestra **filtro por categoría** (Select cargado desde `categories` activas que tiene el seller).
-- Lista de seleccionados con drag-and-drop usando `@dnd-kit/core` + `@dnd-kit/sortable` (ya disponible en el proyecto; si no, `bun add`). Reordenar actualiza `featured_product_ids` antes de guardar.
-- Backend ya guarda el orden — solo respetar el array.
+Hoy `admin.orders.tsx` solo muestra el `payment_status` como badge. Cambios:
 
-## 8. Admin: aprobación/rechazo de payouts
+- Nueva server fn `adminUpdateOrderPaymentStatus({ orderId, payment_status })` en `admin.functions.ts`:
+  - Valida con Zod (`pending | paid | refunded | failed`).
+  - Solo permite cambiar manualmente cuando `payment_method ∈ {cod, bank_transfer}` (los demás los maneja la pasarela/webhook).
+  - Inserta notificación al buyer y registra `paid_at` cuando aplica.
+- En `admin.orders.tsx`: si el método es `cod` o `bank_transfer`, el badge se reemplaza por un `Select` con los estados disponibles + botón "Confirmar". Para los demás métodos sigue read-only.
+- Mismo control en `seller.orders.tsx` (solo para sus propias órdenes, vía nueva `sellerUpdateOrderPaymentStatus` con la misma restricción de método). Útil para que el seller confirme una transferencia recibida.
 
-Nueva ruta `/admin/payouts` se amplía (o se reescribe `admin.payouts.tsx`):
-- Tabla pendientes con KPIs (pending count, monto pendiente).
-- Acción por fila: **Approve & mark paid** y **Reject**.
-- Dialog: Textarea `note` obligatoria + uploader opcional `receipt` (PDF/imagen) → bucket privado nuevo **`payout-receipts`** (RLS: insert/select admin, select seller dueño del payout).
-- **Migración**: `seller_payouts.review_note text`, `seller_payouts.receipt_path text`, `seller_payouts.reviewed_by uuid`, `reviewed_at timestamptz`.
-- **Backend** (`admin.functions.ts`): `adminApprovePayout({ id, note?, receipt_path? })` → `status='paid'`, `paid_at=now()`. `adminRejectPayout({ id, note, receipt_path? })` → `status='cancelled'`. Ambos crean notificación al seller (`payout_paid` | `payout_rejected`).
-- Link visible desde `/admin/commissions`/sidebar Finance.
+## 5. Detalles técnicos
 
-## Detalles técnicos comunes
-
-- Una sola migración cubre §1, §2, §3, §4, §5(none), §8 + buckets.
-- Buckets nuevos: `seller-kyc` (privado), `payout-receipts` (privado). Se crean con `supabase--storage_create_bucket` + policies en la migración.
-- Notificaciones nuevas: `payout_auto_requested`, `payout_paid`, `payout_rejected`, `kyc_submitted`, `kyc_approved`, `kyc_rejected`.
-- Cron jobs registrados vía `supabase--insert` (no migración) con `apikey` header.
-- `requestSellerPayout` bloquea si KYC no verificado (toast claro).
+- Estados de payout: se mantiene el enum actual (`pending | approved | paid | rejected`). El email `payout-approved` corresponde al estado `approved` (intermedio antes de `paid`).
+- Todos los envíos son individuales (no bulk), pasan por la cola pgmq y respetan la suppression list.
+- No se tocan flujos de pago automatizados (tarjeta, Stripe, BNPL).
+- Migración mínima: agregar columna `orders.paid_at timestamptz null` si no existe, para registrar cuándo se confirmó manualmente.
 
 ## Fuera de alcance
 
-- Pasarela real de transferencia bancaria (los pagos siguen marcados manualmente por admin).
-- Sub-rates de comisión por categoría.
-- Multi-currency en el cobro (sólo display + tasa informativa).
-- OCR automático del trade license (revisión humana).
-
-## Orden de implementación sugerido
-
-1. Migración única + buckets.
-2. Backend (`seller.functions.ts`, `admin.functions.ts`, `currency.ts`).
-3. Cron routes + registro de jobs.
-4. UIs en este orden: payouts (admin + seller history) → comisiones detalladas → storefront (tema + dnd) → KYC → multi-divisa.
+- Rediseño de la página de órdenes.
+- Reembolsos parciales o conciliación bancaria automática.
+- Webhooks bancarios reales.
