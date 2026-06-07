@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search } from "lucide-react";
-import { adminListOrders, adminSetOrderStatus } from "@/lib/admin.functions";
+import { adminListOrders, adminSetOrderStatus, adminUpdateOrderPaymentStatus } from "@/lib/admin.functions";
 import { statusColor } from "@/lib/dashboard-tokens";
 import { toast } from "sonner";
 
@@ -19,15 +19,23 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
 });
 
 const STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"];
+const MANUAL_METHODS = new Set(["cod", "bank_transfer"]);
+const PAYMENT_STATUSES = ["pending", "paid", "refunded", "failed"] as const;
 
 function Orders() {
   const fn = useServerFn(adminListOrders);
   const upd = useServerFn(adminSetOrderStatus);
+  const updPay = useServerFn(adminUpdateOrderPaymentStatus);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["admin-orders"], queryFn: () => fn({}) });
   const m = useMutation({
     mutationFn: (input: { orderId: string; status: string }) => upd({ data: input }),
     onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["admin-orders"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const mp = useMutation({
+    mutationFn: (input: { orderId: string; paymentStatus: string }) => updPay({ data: input }),
+    onSuccess: () => { toast.success("Payment updated"); qc.invalidateQueries({ queryKey: ["admin-orders"] }); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -87,8 +95,27 @@ function Orders() {
                       <TableCell className="font-medium">{o.order_number}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(o.payment_status), color: statusColor(o.payment_status) }}>{o.payment_status}</Badge>
-                        <span className="ml-2 text-xs text-muted-foreground capitalize">{(o.payment_method ?? "").replace(/_/g, " ")}</span>
+                        {MANUAL_METHODS.has(o.payment_method) ? (
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={o.payment_status}
+                              onValueChange={(v) => mp.mutate({ orderId: o.id, paymentStatus: v })}
+                            >
+                              <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {PAYMENT_STATUSES.map((s) => (
+                                  <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <span className="text-xs text-muted-foreground capitalize">{(o.payment_method ?? "").replace(/_/g, " ")}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(o.payment_status), color: statusColor(o.payment_status) }}>{o.payment_status}</Badge>
+                            <span className="ml-2 text-xs text-muted-foreground capitalize">{(o.payment_method ?? "").replace(/_/g, " ")}</span>
+                          </>
+                        )}
                       </TableCell>
                       <TableCell className="text-right font-mono tabular-nums">{Number(o.total_aed).toFixed(2)} AED</TableCell>
                       <TableCell>
