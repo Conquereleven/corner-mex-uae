@@ -2,8 +2,6 @@
 @source "../src";
 @import "tw-animate-css";
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -68,6 +66,15 @@
   --color-sand: var(--sand);
   --color-sage: var(--sage);
   --color-obsidian: var(--obsidian);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
 }
 
 :root {
@@ -110,6 +117,15 @@
   --sidebar-accent-foreground: oklch(0.22 0.02 50);
   --sidebar-border: oklch(0.89 0.018 75);
   --sidebar-ring: oklch(0.55 0.14 38);
+  --success: oklch(0.62 0.13 150);
+  --success-foreground: oklch(0.985 0.01 80);
+  --warning: oklch(0.75 0.14 75);
+  --warning-foreground: oklch(0.22 0.02 50);
+  --info: oklch(0.6 0.1 230);
+  --info-foreground: oklch(0.985 0.01 80);
+  --surface-1: oklch(0.995 0.006 80);
+  --surface-2: oklch(0.965 0.014 80);
+  --surface-3: oklch(0.94 0.02 80);
 }
 
 .dark {
@@ -150,6 +166,15 @@
   --sidebar-accent-foreground: oklch(0.96 0.012 80);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.65 0.15 38);
+  --success: oklch(0.68 0.13 150);
+  --success-foreground: oklch(0.15 0.015 50);
+  --warning: oklch(0.78 0.14 75);
+  --warning-foreground: oklch(0.15 0.015 50);
+  --info: oklch(0.68 0.1 230);
+  --info-foreground: oklch(0.15 0.015 50);
+  --surface-1: oklch(0.22 0.018 50);
+  --surface-2: oklch(0.26 0.02 50);
+  --surface-3: oklch(0.3 0.02 50);
 }
 
 @layer base {
