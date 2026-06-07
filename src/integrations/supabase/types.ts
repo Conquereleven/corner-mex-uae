@@ -479,6 +479,7 @@ export type Database = {
           id: string
           notes: string | null
           order_number: string
+          paid_at: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_status: Database["public"]["Enums"]["payment_status"]
           shipping_address: Json
@@ -502,6 +503,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number?: string
+          paid_at?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
           shipping_address: Json
@@ -525,6 +527,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number?: string
+          paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
           payment_status?: Database["public"]["Enums"]["payment_status"]
           shipping_address?: Json
@@ -748,6 +751,7 @@ export type Database = {
       }
       products: {
         Row: {
+          approval_note: string | null
           attrs: Json
           brand: string | null
           category_id: string | null
@@ -763,6 +767,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_note?: string | null
           attrs?: Json
           brand?: string | null
           category_id?: string | null
@@ -778,6 +783,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_note?: string | null
           attrs?: Json
           brand?: string | null
           category_id?: string | null
@@ -897,13 +903,17 @@ export type Database = {
           contact_phone: string | null
           converted_order_id: string | null
           created_at: string
+          estimated_value_aed: number | null
           id: string
+          internal_notes: string | null
           items: Json
           notes: string | null
+          priority: string | null
           quote_number: string
           rejected_at: string | null
           rejection_reason: string | null
           response: Json | null
+          source: string | null
           status: Database["public"]["Enums"]["quote_status"]
           total_estimate_aed: number | null
           updated_at: string
@@ -918,13 +928,17 @@ export type Database = {
           contact_phone?: string | null
           converted_order_id?: string | null
           created_at?: string
+          estimated_value_aed?: number | null
           id?: string
+          internal_notes?: string | null
           items?: Json
           notes?: string | null
+          priority?: string | null
           quote_number?: string
           rejected_at?: string | null
           rejection_reason?: string | null
           response?: Json | null
+          source?: string | null
           status?: Database["public"]["Enums"]["quote_status"]
           total_estimate_aed?: number | null
           updated_at?: string
@@ -939,13 +953,17 @@ export type Database = {
           contact_phone?: string | null
           converted_order_id?: string | null
           created_at?: string
+          estimated_value_aed?: number | null
           id?: string
+          internal_notes?: string | null
           items?: Json
           notes?: string | null
+          priority?: string | null
           quote_number?: string
           rejected_at?: string | null
           rejection_reason?: string | null
           response?: Json | null
+          source?: string | null
           status?: Database["public"]["Enums"]["quote_status"]
           total_estimate_aed?: number | null
           updated_at?: string
@@ -1092,6 +1110,7 @@ export type Database = {
           currency: string | null
           featured_product_ids: string[] | null
           id: string
+          is_house_account: boolean
           is_published: boolean
           kyc_documents: Json
           kyc_rejection_reason: string | null
@@ -1150,6 +1169,7 @@ export type Database = {
           currency?: string | null
           featured_product_ids?: string[] | null
           id?: string
+          is_house_account?: boolean
           is_published?: boolean
           kyc_documents?: Json
           kyc_rejection_reason?: string | null
@@ -1208,6 +1228,7 @@ export type Database = {
           currency?: string | null
           featured_product_ids?: string[] | null
           id?: string
+          is_house_account?: boolean
           is_published?: boolean
           kyc_documents?: Json
           kyc_rejection_reason?: string | null
@@ -1492,8 +1513,17 @@ export type Database = {
         | "tabby"
         | "tamara"
       payment_status: "pending" | "authorized" | "paid" | "failed" | "refunded"
-      product_status: "draft" | "pending" | "active" | "archived"
-      quote_status: "open" | "responded" | "accepted" | "rejected" | "expired"
+      product_status: "draft" | "pending" | "active" | "archived" | "rejected"
+      quote_status:
+        | "open"
+        | "responded"
+        | "accepted"
+        | "rejected"
+        | "expired"
+        | "contacted"
+        | "negotiating"
+        | "won"
+        | "lost"
       return_reason:
         | "damaged"
         | "wrong_item"
@@ -1694,8 +1724,18 @@ export const Constants = {
         "tamara",
       ],
       payment_status: ["pending", "authorized", "paid", "failed", "refunded"],
-      product_status: ["draft", "pending", "active", "archived"],
-      quote_status: ["open", "responded", "accepted", "rejected", "expired"],
+      product_status: ["draft", "pending", "active", "archived", "rejected"],
+      quote_status: [
+        "open",
+        "responded",
+        "accepted",
+        "rejected",
+        "expired",
+        "contacted",
+        "negotiating",
+        "won",
+        "lost",
+      ],
       return_reason: [
         "damaged",
         "wrong_item",

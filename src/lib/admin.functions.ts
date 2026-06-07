@@ -193,6 +193,130 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/**
+ * Manually confirm or update the payment status for COD / bank-transfer orders.
+ * Card / Stripe / BNPL orders are managed by their respective webhooks and are
+ * intentionally not editable from this surface.
+ */
+export const adminUpdateOrderPaymentStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { orderId: string; paymentStatus: string }) =>
+    z.object({
+      orderId: z.string().uuid(),
+      paymentStatus: z.enum(["pending", "paid", "refunded", "failed"]),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: order, error: oerr } = await supabaseAdmin
+      .from("orders")
+      .select("id, buyer_id, order_number, payment_method, payment_status")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (oerr) throw new Error(oerr.message);
+    if (!order) throw new Error("Order not found");
+    if (order.payment_method !== "cod" && order.payment_method !== "bank_transfer") {
+      throw new Error("Only COD and bank-transfer orders support manual payment updates");
+    }
+    const patch: { payment_status: any; paid_at?: string } = { payment_status: data.paymentStatus };
+    if (data.paymentStatus === "paid") patch.paid_at = new Date().toISOString();
+    const { error } = await supabaseAdmin.from("orders").update(patch as any).eq("id", data.orderId);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("notifications").insert({
+      user_id: order.buyer_id,
+      kind: data.paymentStatus === "paid" ? "payment_confirmed" : "payment_updated",
+      title: data.paymentStatus === "paid" ? "Payment confirmed" : "Payment status updated",
+      body: `Order ${order.order_number}: payment is now ${data.paymentStatus}.`,
+    });
+    return { ok: true };
+  });
+
+// ---------- Product approval workflow ----------
+
+export const adminListProducts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { status?: string } | undefined) =>
+    z.object({ status: z.enum(["all", "draft", "pending", "active", "rejected", "archived"]).default("all") }).parse(input ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    let q = supabaseAdmin
+      .from("products")
+      .select(`
+        id, slug, brand, status, approval_note, created_at, is_bulk,
+        seller:sellers(id, store_name, slug),
+        category:categories(slug, name_en),
+        translations:product_translations(lang, name),
+        images:product_images(url, sort_order)
+      `)
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (data.status !== "all") q = q.eq("status", data.status as any);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return (rows ?? []).map((r: any) => {
+      const tr = r.translations?.find((t: any) => t.lang === "en") ?? r.translations?.[0];
+      const img = (r.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.url ?? null;
+      return {
+        id: r.id,
+        slug: r.slug,
+        brand: r.brand,
+        name: tr?.name ?? r.slug,
+        status: r.status as string,
+        approval_note: r.approval_note as string | null,
+        created_at: r.created_at as string,
+        is_bulk: r.is_bulk as boolean,
+        seller: r.seller ? { id: r.seller.id, name: r.seller.store_name, slug: r.seller.slug } : null,
+        category: r.category ? { slug: r.category.slug, name: r.category.name_en } : null,
+        image: img,
+      };
+    });
+  });
+
+export const adminSetProductStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { productId: string; status: string; note?: string }) =>
+    z.object({
+      productId: z.string().uuid(),
+      status: z.enum(["draft", "pending", "active", "rejected", "archived"]),
+      note: z.string().max(1000).optional(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const patch: { status: any; approval_note?: string | null } = { status: data.status };
+    if (data.status === "rejected") patch.approval_note = data.note ?? null;
+    if (data.status === "active") patch.approval_note = null;
+    const { data: prod, error } = await supabaseAdmin
+      .from("products")
+      .update(patch as any)
+      .eq("id", data.productId)
+      .select("id, seller_id, slug")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (prod) {
+      // Notify the seller owner (best-effort)
+      const { data: owner } = await supabaseAdmin
+        .from("sellers").select("user_id, store_name").eq("id", prod.seller_id).maybeSingle();
+      if (owner?.user_id) {
+        const titleMap: Record<string, string> = {
+          active: "Product approved",
+          rejected: "Product needs changes",
+          archived: "Product archived",
+          draft: "Product moved to draft",
+          pending: "Product set to pending review",
+        };
+        await supabaseAdmin.from("notifications").insert({
+          user_id: owner.user_id,
+          kind: `product_${data.status}`,
+          title: titleMap[data.status] ?? "Product status updated",
+          body: data.note ?? `Your product "${prod.slug}" is now ${data.status}.`,
+        });
+      }
+    }
+    return { ok: true };
+  });
+
 export const adminBootstrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

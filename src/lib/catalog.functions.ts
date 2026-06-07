@@ -21,7 +21,7 @@ export type ProductListItem = {
   image: string | null;
   price_aed: number;
   compare_at_price_aed: number | null;
-  seller: { id: string; slug: string; name: string } | null;
+  seller: { id: string; slug: string; name: string; is_house_account: boolean } | null;
   category_slug: string | null;
   origin_region: string | null;
   spice_level: number | null;
@@ -58,7 +58,7 @@ export const listProducts = createServerFn({ method: "GET" })
       .from("products")
       .select(`
         id, slug, brand, origin_region, spice_level, is_bulk,
-        seller:sellers!inner(id, slug, store_name),
+        seller:sellers!inner(id, slug, store_name, is_house_account),
         category:categories(slug),
         translations:product_translations(lang, name, description),
         images:product_images(url, sort_order),
@@ -88,7 +88,9 @@ export const listProducts = createServerFn({ method: "GET" })
         image: sortedImages[0]?.url ?? null,
         price_aed: Number(defaultVariant?.price_aed ?? 0),
         compare_at_price_aed: defaultVariant?.compare_at_price_aed ? Number(defaultVariant.compare_at_price_aed) : null,
-        seller: row.seller ? { id: row.seller.id, slug: row.seller.slug, name: row.seller.store_name } : null,
+        seller: row.seller
+          ? { id: row.seller.id, slug: row.seller.slug, name: row.seller.store_name, is_house_account: !!row.seller.is_house_account }
+          : null,
         category_slug: row.category?.slug ?? null,
         origin_region: row.origin_region,
         spice_level: row.spice_level,
@@ -145,7 +147,7 @@ export const getProduct = createServerFn({ method: "GET" })
       .from("products")
       .select(`
         id, slug, brand, origin_region, spice_level, is_bulk, is_halal,
-        seller:sellers(id, slug, store_name),
+        seller:sellers(id, slug, store_name, is_house_account),
         category:categories(slug, name_en, name_es, name_ar),
         translations:product_translations(lang, name, description),
         images:product_images(url, sort_order),
@@ -194,7 +196,9 @@ export const getProduct = createServerFn({ method: "GET" })
       price_aed: variants[0]?.price_aed ?? 0,
       compare_at_price_aed: variants[0]?.compare_at_price_aed ?? null,
       variants,
-      seller: seller ? { id: seller.id, slug: seller.slug, name: seller.store_name } : null,
+      seller: seller
+        ? { id: seller.id, slug: seller.slug, name: seller.store_name, is_house_account: !!seller.is_house_account }
+        : null,
       category_slug: cat?.slug ?? null,
       category: cat ? { slug: cat.slug, name: categoryName ?? cat.name_en } : null,
       origin_region: row.origin_region,
