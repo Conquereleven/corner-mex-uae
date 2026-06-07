@@ -1,13 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import type { ProductListItem } from "@/lib/catalog.functions";
-import { Flame, Star, BadgeCheck } from "lucide-react";
+import { Flame, Star } from "lucide-react";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCurrency } from "@/lib/use-currency";
 
 export function ProductCard({ p }: { p: ProductListItem }) {
   const hasDiscount = p.compare_at_price_aed && p.compare_at_price_aed > p.price_aed;
   const cur = useCurrency();
-  const soldBy = p.seller?.is_house_account ? "Corner Mex" : p.seller?.name;
   return (
     <Link
       to="/product/$slug"
@@ -22,19 +21,14 @@ export function ProductCard({ p }: { p: ProductListItem }) {
           <span className="absolute start-3 top-3 rounded-full bg-foreground px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-background">Sale</span>
         )}
         {p.is_bulk && (
-          <span className="absolute start-3 bottom-3 rounded-full bg-accent/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">Wholesale</span>
+          <span className="absolute start-3 bottom-3 rounded-full bg-accent/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">HORECA</span>
         )}
         <div className="absolute end-3 top-3">
           <WishlistButton productId={p.id} size="sm" />
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
-        {soldBy && (
-          <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-            {p.seller?.is_house_account && <BadgeCheck className="h-3 w-3 text-primary" />}
-            Sold by {soldBy}
-          </span>
-        )}
+        {p.seller && <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{p.seller.name}</span>}
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         {p.rating_count > 0 && (
           <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
