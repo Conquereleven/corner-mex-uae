@@ -218,9 +218,9 @@ export const adminUpdateOrderPaymentStatus = createServerFn({ method: "POST" })
     if (order.payment_method !== "cod" && order.payment_method !== "bank_transfer") {
       throw new Error("Only COD and bank-transfer orders support manual payment updates");
     }
-    const patch: Record<string, unknown> = { payment_status: data.paymentStatus };
+    const patch: { payment_status: any; paid_at?: string } = { payment_status: data.paymentStatus };
     if (data.paymentStatus === "paid") patch.paid_at = new Date().toISOString();
-    const { error } = await supabaseAdmin.from("orders").update(patch).eq("id", data.orderId);
+    const { error } = await supabaseAdmin.from("orders").update(patch as any).eq("id", data.orderId);
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("notifications").insert({
       user_id: order.buyer_id,
@@ -284,12 +284,12 @@ export const adminSetProductStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const patch: Record<string, unknown> = { status: data.status };
+    const patch: { status: any; approval_note?: string | null } = { status: data.status };
     if (data.status === "rejected") patch.approval_note = data.note ?? null;
     if (data.status === "active") patch.approval_note = null;
     const { data: prod, error } = await supabaseAdmin
       .from("products")
-      .update(patch)
+      .update(patch as any)
       .eq("id", data.productId)
       .select("id, seller_id, slug")
       .maybeSingle();
@@ -297,8 +297,8 @@ export const adminSetProductStatus = createServerFn({ method: "POST" })
     if (prod) {
       // Notify the seller owner (best-effort)
       const { data: owner } = await supabaseAdmin
-        .from("sellers").select("owner_user_id, store_name").eq("id", prod.seller_id).maybeSingle();
-      if (owner?.owner_user_id) {
+        .from("sellers").select("user_id, store_name").eq("id", prod.seller_id).maybeSingle();
+      if (owner?.user_id) {
         const titleMap: Record<string, string> = {
           active: "Product approved",
           rejected: "Product needs changes",
@@ -307,7 +307,7 @@ export const adminSetProductStatus = createServerFn({ method: "POST" })
           pending: "Product set to pending review",
         };
         await supabaseAdmin.from("notifications").insert({
-          user_id: owner.owner_user_id,
+          user_id: owner.user_id,
           kind: `product_${data.status}`,
           title: titleMap[data.status] ?? "Product status updated",
           body: data.note ?? `Your product "${prod.slug}" is now ${data.status}.`,
