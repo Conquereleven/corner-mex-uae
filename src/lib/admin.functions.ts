@@ -284,16 +284,30 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
 
 export const adminSetPaymentStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { orderId: string; status: string }) =>
+  .inputValidator((input: { orderId: string; status: string; manual?: boolean }) =>
     z
       .object({
         orderId: z.string().uuid(),
         status: z.enum(["pending", "authorized", "paid", "failed", "refunded"]),
+        manual: z.boolean().optional(),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
+    // Idempotency: skip if already in target state (avoid duplicate timeline events)
+    const { data: current } = await supabaseAdmin
+      .from("orders")
+      .select("payment_status, payment_method")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!current) throw new Error("Order not found");
+    if (current.payment_status === data.status) return { ok: true, unchanged: true };
+    if (data.manual && data.status === "paid") {
+      if (current.payment_method !== "bank_transfer" && current.payment_method !== "cod") {
+        throw new Error("Manual payment confirmation is only allowed for Bank Transfer or Cash on Delivery");
+      }
+    }
     const { error } = await (context.supabase.rpc as any)("admin_update_order_state", {
       p_order_id: data.orderId,
       p_status: null,
@@ -312,8 +326,11 @@ export const adminSetPaymentStatus = createServerFn({ method: "POST" })
       actor_id: context.userId,
       actor_role: "admin",
       kind: "payment_status_changed",
-      message: `Payment status set to ${data.status}`,
-      payload: { payment_status: data.status },
+      message:
+        data.manual && data.status === "paid"
+          ? "Payment manually marked as paid"
+          : `Payment status set to ${data.status}`,
+      payload: { payment_status: data.status, manual: !!data.manual },
     });
     return { ok: true };
   });
