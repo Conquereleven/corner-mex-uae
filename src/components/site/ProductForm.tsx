@@ -108,6 +108,7 @@ export function ProductForm({
         setProductId(res.productId);
         setForm((f) => ({ ...f, id: res.productId }));
       }
+      if (res?.slug) setProductSlug(res.slug);
       // Notify parent on every successful save. The parent decides where to
       // navigate (edit → list, new → edit page so images/variants can be added).
       if (onSaved) onSaved({ productId: res?.productId, isNew: wasNew });
