@@ -27,6 +27,8 @@ import {
   adminListCategories, adminCreateCategory, adminUpdateCategory,
   adminToggleCategoryActive, adminDeleteCategory,
 } from "@/lib/admin.functions";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/admin/categories")({
   head: () => ({ meta: [{ title: "Admin — Categories" }] }),
@@ -90,15 +92,17 @@ function AdminCategories() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">{t("dash.categories.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("dash.categories.sub")}</p>
-        </div>
-        <Button className="gap-2" onClick={() => setCreating(true)}>
-          <Plus className="h-4 w-4" /> {t("dash.categories.new")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("dash.categories.title")}
+        description={t("dash.categories.sub")}
+        icon={Tags}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: t("dash.categories.title") }]}
+        actions={
+          <Button className="gap-2" onClick={() => setCreating(true)}>
+            <Plus className="h-4 w-4" /> {t("dash.categories.new")}
+          </Button>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label={t("dash.categories.kpi.total")} value={kpis.total} />
@@ -136,10 +140,7 @@ function AdminCategories() {
           {q.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : rows.length === 0 ? (
-            <div className="p-10 text-center">
-              <Tags className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">{t("dash.categories.empty")}</p>
-            </div>
+            <EmptyState icon={Tags} title={t("dash.categories.empty")} />
           ) : (
             <div className="overflow-x-auto">
               <Table>

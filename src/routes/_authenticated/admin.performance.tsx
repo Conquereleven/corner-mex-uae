@@ -16,6 +16,8 @@ import {
   CheckCircle2, XCircle, Repeat, AlertTriangle,
 } from "lucide-react";
 import { getPerformance } from "@/lib/performance.functions";
+import { PageHeader } from "@/components/site/PageHeader";
+import { Activity } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/performance")({
   head: () => ({ meta: [{ title: "Admin — Performance" }] }),
@@ -79,19 +81,21 @@ function AdminPerformance() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">{t("dash.performance.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("dash.performance.adminSub")}</p>
-        </div>
-        <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v) as 7 | 30 | 90)}>
-          <TabsList>
-            <TabsTrigger value="7">{t("dash.performance.range.d7")}</TabsTrigger>
-            <TabsTrigger value="30">{t("dash.performance.range.d30")}</TabsTrigger>
-            <TabsTrigger value="90">{t("dash.performance.range.d90")}</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+      <PageHeader
+        title={t("dash.performance.title")}
+        description={t("dash.performance.adminSub")}
+        icon={Activity}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: t("dash.performance.title") }]}
+        actions={
+          <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v) as 7 | 30 | 90)}>
+            <TabsList>
+              <TabsTrigger value="7">{t("dash.performance.range.d7")}</TabsTrigger>
+              <TabsTrigger value="30">{t("dash.performance.range.d30")}</TabsTrigger>
+              <TabsTrigger value="90">{t("dash.performance.range.d90")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        }
+      />
 
       {q.isLoading || !d ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

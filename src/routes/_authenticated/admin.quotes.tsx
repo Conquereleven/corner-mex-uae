@@ -13,6 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { adminListQuotes, getQuote, adminRespondQuote, adminCancelQuote } from "@/lib/quotes.functions";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
+import { FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/quotes")({
   head: () => ({ meta: [{ title: "Admin — Quotes" }] }),
@@ -35,12 +38,12 @@ function AdminQuotes() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">Quotes</h1>
-          <p className="mt-1 text-sm text-muted-foreground">B2B quote pipeline — respond, track and convert to orders.</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Wholesale quotes"
+        description="B2B quote pipeline — respond, track and convert to orders."
+        icon={FileText}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Quotes" }]}
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label="Open" value={q.data?.kpi.open ?? 0} />
@@ -68,7 +71,7 @@ function AdminQuotes() {
         </CardHeader>
         <CardContent className="p-0">
           {q.isLoading ? <p className="p-6 text-sm text-muted-foreground">Loading…</p> :
-            (q.data?.rows ?? []).length === 0 ? <p className="p-6 text-sm text-muted-foreground">No quotes match your filters.</p> : (
+            (q.data?.rows ?? []).length === 0 ? <EmptyState icon={FileText} title="No quotes found" description="Wholesale enquiries will appear here." /> : (
               <div className="overflow-auto">
                 <table className="w-full text-sm">
                   <thead className="text-left text-xs uppercase text-muted-foreground">

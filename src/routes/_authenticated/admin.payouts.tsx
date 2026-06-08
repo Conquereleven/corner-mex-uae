@@ -31,6 +31,8 @@ import {
   adminApprovePayout, adminRejectPayout, adminUploadPayoutReceipt,
 } from "@/lib/admin.functions";
 import { useRef } from "react";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/admin/payouts")({
   head: () => ({ meta: [{ title: "Admin — Payouts" }] }),
@@ -98,13 +100,13 @@ function AdminPayouts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">{t("dash.payouts.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("dash.payouts.adminSub")}</p>
-        </div>
-        <GeneratePayoutDialog sellers={(sellersQ.data ?? []) as any[]} />
-      </div>
+      <PageHeader
+        title={t("dash.payouts.title")}
+        description={t("dash.payouts.adminSub")}
+        icon={Wallet}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: t("dash.payouts.title") }]}
+        actions={<GeneratePayoutDialog sellers={(sellersQ.data ?? []) as any[]} />}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label={t("dash.payouts.kpi.lifetimeNet")} value={AED(totals.lifetimeNet)} />
@@ -140,10 +142,7 @@ function AdminPayouts() {
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
             </div>
           ) : rows.length === 0 ? (
-            <div className="p-10 text-center">
-              <Wallet className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">{t("dash.payouts.empty")}</p>
-            </div>
+            <EmptyState icon={Wallet} title={t("dash.payouts.empty")} />
           ) : (
             <div className="overflow-x-auto">
               <Table>
