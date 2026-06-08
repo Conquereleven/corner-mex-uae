@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
-  async ({ next, request }) => {
+  async ({ next, context }) => {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
@@ -18,7 +18,7 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
       throw new Error(message);
     }
 
-    const authHeader = request.headers.get("authorization");
+    const authHeader = (context as { authorization?: string | null } | undefined)?.authorization;
 
     if (!authHeader) {
       throw new Error("Unauthorized: No authorization header provided");
