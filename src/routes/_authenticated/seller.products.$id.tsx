@@ -3,6 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getSellerProduct } from "@/lib/seller.functions";
 import { ProductForm } from "@/components/site/ProductForm";
+import { PageHeader } from "@/components/site/PageHeader";
+import { Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/seller/products/$id")({
   head: () => ({ meta: [{ title: "Edit product" }] }),
@@ -38,12 +40,22 @@ function EditProduct() {
   }));
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="font-display text-3xl tracking-tight">Edit product</h1>
-      <div className="mt-8">
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title={en?.name ?? "Edit product"}
+        description="Update details, pricing, stock and media for this product."
+        icon={Pencil}
+        breadcrumbs={[
+          { label: "Seller Studio", to: "/seller" },
+          { label: "Products", to: "/seller/products" },
+          { label: "Edit" },
+        ]}
+      />
+      <div>
         <ProductForm
           initial={{
             id: p.id,
+            slug: p.slug,
             name_en: en?.name ?? "",
             name_es: es?.name ?? "",
             name_ar: ar?.name ?? "",
@@ -60,8 +72,10 @@ function EditProduct() {
             attrs: (p.attrs ?? {}) as Record<string, any>,
             images,
             variants,
-          }}
+          } as any}
           onSaved={() => nav({ to: "/seller/products" })}
+          onCancel={() => nav({ to: "/seller/products" })}
+          onDeleted={() => nav({ to: "/seller/products" })}
         />
       </div>
     </div>
