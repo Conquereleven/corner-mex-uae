@@ -1,0 +1,17 @@
+# Corner Mex UAE
+
+> Corner Mex is a curated marketplace bringing authentic Mexican pantry — chiles, moles, masa, snacks and drinks — to restaurants, hotels, caterings, supermarkets and homes across the United Arab Emirates.
+
+## Pages
+
+- [Home](/): Overview of the Corner Mex marketplace.
+- [Shop](/shop): Browse authentic Mexican chiles, salsas, masa, snacks and pantry staples delivered across the UAE.
+- [B2B](/b2b): Wholesale and bulk pricing for restaurants, hotels, caterers and supermarkets.
+- [Request a Quote](/b2b/quote): Submit a B2B quote request.
+- [Sellers](/sellers): Verified Mexican producers and brands on the marketplace.
+- [About](/about): The story behind Corner Mex and our mission in the UAE.
+
+## Optional
+
+- [Privacy](/privacy): Privacy policy.
+- [Terms](/terms): Terms of service.
