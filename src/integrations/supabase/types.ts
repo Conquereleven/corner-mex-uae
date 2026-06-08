@@ -355,6 +355,47 @@ export type Database = {
         }
         Relationships: []
       }
+      order_events: {
+        Row: {
+          actor_id: string | null
+          actor_role: string
+          created_at: string
+          id: string
+          kind: string
+          message: string | null
+          order_id: string
+          payload: Json
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          id?: string
+          kind: string
+          message?: string | null
+          order_id: string
+          payload?: Json
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string | null
+          order_id?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           commission_aed: number
@@ -435,6 +476,41 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_notes: {
+        Row: {
+          author_id: string
+          author_role: string
+          body: string
+          created_at: string
+          id: string
+          order_id: string
+        }
+        Insert: {
+          author_id: string
+          author_role?: string
+          body: string
+          created_at?: string
+          id?: string
+          order_id: string
+        }
+        Update: {
+          author_id?: string
+          author_role?: string
+          body?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_notes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -1097,6 +1173,7 @@ export type Database = {
           bank_iban: string | null
           bank_name: string | null
           bank_swift: string | null
+          banner_url: string | null
           bio: string | null
           business_hours: Json | null
           city: string | null
@@ -1156,6 +1233,7 @@ export type Database = {
           bank_iban?: string | null
           bank_name?: string | null
           bank_swift?: string | null
+          banner_url?: string | null
           bio?: string | null
           business_hours?: Json | null
           city?: string | null
@@ -1215,6 +1293,7 @@ export type Database = {
           bank_iban?: string | null
           bank_name?: string | null
           bank_swift?: string | null
+          banner_url?: string | null
           bio?: string | null
           business_hours?: Json | null
           city?: string | null

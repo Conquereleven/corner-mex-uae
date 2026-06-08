@@ -215,6 +215,60 @@ export const setOrderItemStatus = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const sellerGetOrderDetail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const seller = await getSellerForUser(context.userId);
+    // Only allow if seller has items in this order
+    const { data: own } = await supabaseAdmin.from("order_items")
+      .select("id").eq("order_id", data.id).eq("seller_id", seller.id).limit(1);
+    if (!own || own.length === 0) throw new Error("Order not found");
+
+    const { data: order, error } = await supabaseAdmin.from("orders").select("*").eq("id", data.id).maybeSingle();
+    if (error || !order) throw new Error("Order not found");
+
+    const [itemsRes, notesRes, eventsRes, shipmentsRes] = await Promise.all([
+      supabaseAdmin.from("order_items").select(`
+        id, product_id, product_name, variant_label, qty, unit_price_aed, line_total_aed,
+        fulfillment_status, seller_id,
+        product:products(slug, images:product_images(url, sort_order))
+      `).eq("order_id", data.id).eq("seller_id", seller.id),
+      supabaseAdmin.from("order_notes").select("*").eq("order_id", data.id).order("created_at", { ascending: false }),
+      supabaseAdmin.from("order_events").select("*").eq("order_id", data.id).order("created_at", { ascending: false }).limit(100),
+      supabaseAdmin.from("shipments").select("*").eq("order_id", data.id).eq("seller_id", seller.id),
+    ]);
+    return {
+      order,
+      items: itemsRes.data ?? [],
+      notes: notesRes.data ?? [],
+      events: eventsRes.data ?? [],
+      shipments: shipmentsRes.data ?? [],
+      sellerId: seller.id,
+    };
+  });
+
+export const sellerAddOrderNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { orderId: string; body: string }) =>
+    z.object({ orderId: z.string().uuid(), body: z.string().min(1).max(2000) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const { data: own } = await supabaseAdmin.from("order_items")
+      .select("id").eq("order_id", data.orderId).eq("seller_id", seller.id).limit(1);
+    if (!own || own.length === 0) throw new Error("Forbidden");
+    const { error } = await supabaseAdmin.from("order_notes").insert({
+      order_id: data.orderId, author_id: context.userId, author_role: "seller", body: data.body,
+    });
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("order_events").insert({
+      order_id: data.orderId, actor_id: context.userId, actor_role: "seller",
+      kind: "note_added", message: "Seller note added", payload: {},
+    });
+    return { ok: true };
+  });
+
 const ProductInput = z.object({
   id: z.string().uuid().optional(),
   name_en: z.string().min(1).max(160),

@@ -70,9 +70,11 @@ import { Route as ApiPublicHooksAutoPayoutsRouteImport } from './routes/api/publ
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
 import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
+import { Route as AuthenticatedSellerOrdersIdRouteImport } from './routes/_authenticated/seller.orders.$id'
 import { Route as AuthenticatedAdminSellersKycRouteImport } from './routes/_authenticated/admin.sellers.kyc'
 import { Route as AuthenticatedAdminProductsNewRouteImport } from './routes/_authenticated/admin.products.new'
 import { Route as AuthenticatedAdminProductsImportRouteImport } from './routes/_authenticated/admin.products.import'
+import { Route as AuthenticatedAdminOrdersIdRouteImport } from './routes/_authenticated/admin.orders.$id'
 import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -418,6 +420,12 @@ const AuthenticatedSellerProductsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedSellerProductsRoute,
   } as any)
+const AuthenticatedSellerOrdersIdRoute =
+  AuthenticatedSellerOrdersIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedSellerOrdersRoute,
+  } as any)
 const AuthenticatedAdminSellersKycRoute =
   AuthenticatedAdminSellersKycRouteImport.update({
     id: '/kyc',
@@ -435,6 +443,12 @@ const AuthenticatedAdminProductsImportRoute =
     id: '/products/import',
     path: '/products/import',
     getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOrdersIdRoute =
+  AuthenticatedAdminOrdersIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminOrdersRoute,
   } as any)
 const AuthenticatedAdminCustomersIdRoute =
   AuthenticatedAdminCustomersIdRouteImport.update({
@@ -472,7 +486,7 @@ export interface FileRoutesByFullPath {
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
-  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
   '/admin/quotes': typeof AuthenticatedAdminQuotesRoute
@@ -485,7 +499,7 @@ export interface FileRoutesByFullPath {
   '/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
-  '/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/seller/orders': typeof AuthenticatedSellerOrdersRouteWithChildren
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
@@ -498,9 +512,11 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
   '/admin/sellers/kyc': typeof AuthenticatedAdminSellersKycRoute
+  '/seller/orders/$id': typeof AuthenticatedSellerOrdersIdRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
@@ -536,7 +552,7 @@ export interface FileRoutesByTo {
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
-  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
   '/admin/quotes': typeof AuthenticatedAdminQuotesRoute
@@ -549,7 +565,7 @@ export interface FileRoutesByTo {
   '/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
-  '/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/seller/orders': typeof AuthenticatedSellerOrdersRouteWithChildren
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
@@ -561,9 +577,11 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
   '/admin/sellers/kyc': typeof AuthenticatedAdminSellersKycRoute
+  '/seller/orders/$id': typeof AuthenticatedSellerOrdersIdRoute
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
@@ -603,7 +621,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/_authenticated/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
-  '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/_authenticated/admin/performance': typeof AuthenticatedAdminPerformanceRoute
   '/_authenticated/admin/quotes': typeof AuthenticatedAdminQuotesRoute
@@ -616,7 +634,7 @@ export interface FileRoutesById {
   '/_authenticated/seller/commissions': typeof AuthenticatedSellerCommissionsRoute
   '/_authenticated/seller/coupons': typeof AuthenticatedSellerCouponsRoute
   '/_authenticated/seller/notifications': typeof AuthenticatedSellerNotificationsRoute
-  '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRoute
+  '/_authenticated/seller/orders': typeof AuthenticatedSellerOrdersRouteWithChildren
   '/_authenticated/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/_authenticated/seller/performance': typeof AuthenticatedSellerPerformanceRoute
   '/_authenticated/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
@@ -629,9 +647,11 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
   '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/_authenticated/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/_authenticated/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/_authenticated/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
   '/_authenticated/admin/sellers/kyc': typeof AuthenticatedAdminSellersKycRoute
+  '/_authenticated/seller/orders/$id': typeof AuthenticatedSellerOrdersIdRoute
   '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/_authenticated/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
@@ -697,9 +717,11 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/seller/'
     | '/admin/customers/$id'
+    | '/admin/orders/$id'
     | '/admin/products/import'
     | '/admin/products/new'
     | '/admin/sellers/kyc'
+    | '/seller/orders/$id'
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
@@ -760,9 +782,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/seller'
     | '/admin/customers/$id'
+    | '/admin/orders/$id'
     | '/admin/products/import'
     | '/admin/products/new'
     | '/admin/sellers/kyc'
+    | '/seller/orders/$id'
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
@@ -827,9 +851,11 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
     | '/_authenticated/admin/customers/$id'
+    | '/_authenticated/admin/orders/$id'
     | '/_authenticated/admin/products/import'
     | '/_authenticated/admin/products/new'
     | '/_authenticated/admin/sellers/kyc'
+    | '/_authenticated/seller/orders/$id'
     | '/_authenticated/seller/products/$id'
     | '/_authenticated/seller/products/import'
     | '/_authenticated/seller/products/new'
@@ -1289,6 +1315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSellerProductsIdRouteImport
       parentRoute: typeof AuthenticatedSellerProductsRoute
     }
+    '/_authenticated/seller/orders/$id': {
+      id: '/_authenticated/seller/orders/$id'
+      path: '/$id'
+      fullPath: '/seller/orders/$id'
+      preLoaderRoute: typeof AuthenticatedSellerOrdersIdRouteImport
+      parentRoute: typeof AuthenticatedSellerOrdersRoute
+    }
     '/_authenticated/admin/sellers/kyc': {
       id: '/_authenticated/admin/sellers/kyc'
       path: '/kyc'
@@ -1309,6 +1342,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/products/import'
       preLoaderRoute: typeof AuthenticatedAdminProductsImportRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/orders/$id': {
+      id: '/_authenticated/admin/orders/$id'
+      path: '/$id'
+      fullPath: '/admin/orders/$id'
+      preLoaderRoute: typeof AuthenticatedAdminOrdersIdRouteImport
+      parentRoute: typeof AuthenticatedAdminOrdersRoute
     }
     '/_authenticated/admin/customers/$id': {
       id: '/_authenticated/admin/customers/$id'
@@ -1354,6 +1394,20 @@ const AuthenticatedAdminCustomersRouteWithChildren =
     AuthenticatedAdminCustomersRouteChildren,
   )
 
+interface AuthenticatedAdminOrdersRouteChildren {
+  AuthenticatedAdminOrdersIdRoute: typeof AuthenticatedAdminOrdersIdRoute
+}
+
+const AuthenticatedAdminOrdersRouteChildren: AuthenticatedAdminOrdersRouteChildren =
+  {
+    AuthenticatedAdminOrdersIdRoute: AuthenticatedAdminOrdersIdRoute,
+  }
+
+const AuthenticatedAdminOrdersRouteWithChildren =
+  AuthenticatedAdminOrdersRoute._addFileChildren(
+    AuthenticatedAdminOrdersRouteChildren,
+  )
+
 interface AuthenticatedAdminSellersRouteChildren {
   AuthenticatedAdminSellersKycRoute: typeof AuthenticatedAdminSellersKycRoute
 }
@@ -1374,7 +1428,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRouteWithChildren
   AuthenticatedAdminNewsletterRoute: typeof AuthenticatedAdminNewsletterRoute
-  AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRouteWithChildren
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminPerformanceRoute: typeof AuthenticatedAdminPerformanceRoute
   AuthenticatedAdminQuotesRoute: typeof AuthenticatedAdminQuotesRoute
@@ -1396,7 +1450,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCustomersRoute:
     AuthenticatedAdminCustomersRouteWithChildren,
   AuthenticatedAdminNewsletterRoute: AuthenticatedAdminNewsletterRoute,
-  AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRouteWithChildren,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminPerformanceRoute: AuthenticatedAdminPerformanceRoute,
   AuthenticatedAdminQuotesRoute: AuthenticatedAdminQuotesRoute,
@@ -1413,6 +1467,20 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedSellerOrdersRouteChildren {
+  AuthenticatedSellerOrdersIdRoute: typeof AuthenticatedSellerOrdersIdRoute
+}
+
+const AuthenticatedSellerOrdersRouteChildren: AuthenticatedSellerOrdersRouteChildren =
+  {
+    AuthenticatedSellerOrdersIdRoute: AuthenticatedSellerOrdersIdRoute,
+  }
+
+const AuthenticatedSellerOrdersRouteWithChildren =
+  AuthenticatedSellerOrdersRoute._addFileChildren(
+    AuthenticatedSellerOrdersRouteChildren,
+  )
 
 interface AuthenticatedSellerProductsRouteChildren {
   AuthenticatedSellerProductsIdRoute: typeof AuthenticatedSellerProductsIdRoute
@@ -1440,7 +1508,7 @@ interface AuthenticatedSellerRouteChildren {
   AuthenticatedSellerCommissionsRoute: typeof AuthenticatedSellerCommissionsRoute
   AuthenticatedSellerCouponsRoute: typeof AuthenticatedSellerCouponsRoute
   AuthenticatedSellerNotificationsRoute: typeof AuthenticatedSellerNotificationsRoute
-  AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRoute
+  AuthenticatedSellerOrdersRoute: typeof AuthenticatedSellerOrdersRouteWithChildren
   AuthenticatedSellerPayoutsRoute: typeof AuthenticatedSellerPayoutsRoute
   AuthenticatedSellerPerformanceRoute: typeof AuthenticatedSellerPerformanceRoute
   AuthenticatedSellerProductsRoute: typeof AuthenticatedSellerProductsRouteWithChildren
@@ -1455,7 +1523,7 @@ const AuthenticatedSellerRouteChildren: AuthenticatedSellerRouteChildren = {
   AuthenticatedSellerCommissionsRoute: AuthenticatedSellerCommissionsRoute,
   AuthenticatedSellerCouponsRoute: AuthenticatedSellerCouponsRoute,
   AuthenticatedSellerNotificationsRoute: AuthenticatedSellerNotificationsRoute,
-  AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRoute,
+  AuthenticatedSellerOrdersRoute: AuthenticatedSellerOrdersRouteWithChildren,
   AuthenticatedSellerPayoutsRoute: AuthenticatedSellerPayoutsRoute,
   AuthenticatedSellerPerformanceRoute: AuthenticatedSellerPerformanceRoute,
   AuthenticatedSellerProductsRoute:
@@ -1542,13 +1610,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

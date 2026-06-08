@@ -201,6 +201,87 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("orders").update({ status: data.status as any }).eq("id", data.orderId);
     if (error) throw new Error(error.message);
+    await supabaseAdmin.from("order_events").insert({
+      order_id: data.orderId, actor_id: context.userId, actor_role: "admin",
+      kind: "status_changed", message: `Order status set to ${data.status}`,
+      payload: { status: data.status },
+    });
+    return { ok: true };
+  });
+
+export const adminSetPaymentStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { orderId: string; status: string }) =>
+    z.object({
+      orderId: z.string().uuid(),
+      status: z.enum(["pending", "paid", "partially_paid", "refunded", "failed", "cancelled"]),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("orders").update({ payment_status: data.status as any }).eq("id", data.orderId);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("order_events").insert({
+      order_id: data.orderId, actor_id: context.userId, actor_role: "admin",
+      kind: "payment_status_changed", message: `Payment status set to ${data.status}`,
+      payload: { payment_status: data.status },
+    });
+    return { ok: true };
+  });
+
+export const adminGetOrderDetail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!order) throw new Error("Order not found");
+    const [itemsRes, notesRes, eventsRes, shipmentsRes, paymentsRes, profileRes] = await Promise.all([
+      supabaseAdmin.from("order_items").select(`
+        id, product_id, product_name, variant_label, qty, unit_price_aed, line_total_aed,
+        fulfillment_status, seller_id,
+        product:products(slug, images:product_images(url, sort_order)),
+        seller:sellers(store_name, slug)
+      `).eq("order_id", data.id),
+      supabaseAdmin.from("order_notes").select("*").eq("order_id", data.id).order("created_at", { ascending: false }),
+      supabaseAdmin.from("order_events").select("*").eq("order_id", data.id).order("created_at", { ascending: false }).limit(100),
+      supabaseAdmin.from("shipments").select("*").eq("order_id", data.id),
+      supabaseAdmin.from("payments").select("*").eq("order_id", data.id),
+      order.buyer_id
+        ? supabaseAdmin.from("profiles").select("id, full_name, email, phone, company_name, preferred_lang").eq("id", order.buyer_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    return {
+      order,
+      items: itemsRes.data ?? [],
+      notes: notesRes.data ?? [],
+      events: eventsRes.data ?? [],
+      shipments: shipmentsRes.data ?? [],
+      payments: paymentsRes.data ?? [],
+      buyer: profileRes.data ?? null,
+    };
+  });
+
+export const adminAddOrderNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { orderId: string; body: string }) =>
+    z.object({ orderId: z.string().uuid(), body: z.string().min(1).max(2000) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("order_notes").insert({
+      order_id: data.orderId, author_id: context.userId, author_role: "admin", body: data.body,
+    });
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("order_events").insert({
+      order_id: data.orderId, actor_id: context.userId, actor_role: "admin",
+      kind: "note_added", message: "Internal note added", payload: {},
+    });
     return { ok: true };
   });
 

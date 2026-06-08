@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ShoppingCart } from "lucide-react";
+import { Search, ShoppingCart, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { adminListOrders, adminSetOrderStatus } from "@/lib/admin.functions";
 import { statusColor } from "@/lib/dashboard-tokens";
 import { toast } from "sonner";
@@ -87,8 +88,10 @@ function Orders() {
                 </TableHeader>
                 <TableBody>
                   {rows.map((o: any) => (
-                    <TableRow key={o.id}>
-                      <TableCell className="font-medium">{o.order_number}</TableCell>
+                    <TableRow key={o.id} className="hover:bg-muted/40">
+                      <TableCell className="font-medium">
+                        <Link to="/admin/orders/$id" params={{ id: o.id }} className="hover:underline">{o.order_number}</Link>
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(o.payment_status), color: statusColor(o.payment_status) }}>{o.payment_status}</Badge>
@@ -100,6 +103,11 @@ function Orders() {
                           <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}</SelectContent>
                         </Select>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button asChild size="sm" variant="ghost">
+                          <Link to="/admin/orders/$id" params={{ id: o.id }}>View<ChevronRight className="ms-1 h-4 w-4" /></Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
