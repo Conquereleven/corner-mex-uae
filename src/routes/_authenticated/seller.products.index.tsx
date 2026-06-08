@@ -6,12 +6,33 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Package, Search, Eye, Pencil } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/site/PageHeader";
 import { EmptyState } from "@/components/site/EmptyState";
 import { listSellerProducts, deleteSellerProduct } from "@/lib/seller.functions";
 import { toast } from "sonner";
+
+type SellerProductListItem = {
+  id: string;
+  slug: string | null;
+  brand: string | null;
+  status: "active" | "draft" | "archived";
+  created_at: string;
+  name: string;
+  price_aed: number;
+  stock: number;
+  image: string | null;
+  category_slug: string | null;
+  category_name: string | null;
+};
 
 export const Route = createFileRoute("/_authenticated/seller/products/")({
   head: () => ({ meta: [{ title: "Seller — Products" }] }),
@@ -25,8 +46,12 @@ function Products() {
   const q = useQuery({ queryKey: ["seller-products"], queryFn: () => fn({}) });
   const m = useMutation({
     mutationFn: (id: string) => del({ data: { id } }),
-    onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["seller-products"] }); },
-    onError: (e: any) => toast.error(e.message),
+    onSuccess: () => {
+      toast.success("Deleted");
+      qc.invalidateQueries({ queryKey: ["seller-products"] });
+    },
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Could not delete product"),
   });
 
   const [search, setSearch] = useState("");
@@ -34,10 +59,11 @@ function Products() {
   const [stockFilter, setStockFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-  const all = (q.data ?? []) as any[];
+  const all = useMemo(() => (q.data ?? []) as SellerProductListItem[], [q.data]);
   const categories = useMemo(() => {
     const map = new Map<string, string>();
-    for (const p of all) if (p.category_slug) map.set(p.category_slug, p.category_name ?? p.category_slug);
+    for (const p of all)
+      if (p.category_slug) map.set(p.category_slug, p.category_name ?? p.category_slug);
     return Array.from(map.entries());
   }, [all]);
 
@@ -66,7 +92,9 @@ function Products() {
         breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Products" }]}
         actions={
           <Button asChild className="rounded-full">
-            <Link to="/seller/products/new" preload="intent"><Plus className="me-2 h-4 w-4" /> New product</Link>
+            <Link to="/seller/products/new" preload="intent">
+              <Plus className="me-2 h-4 w-4" /> New product
+            </Link>
           </Button>
         }
       />
@@ -83,7 +111,9 @@ function Products() {
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="active">Active</SelectItem>
@@ -92,7 +122,9 @@ function Products() {
             </SelectContent>
           </Select>
           <Select value={stockFilter} onValueChange={setStockFilter}>
-            <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All stock</SelectItem>
               <SelectItem value="in">In stock</SelectItem>
@@ -102,11 +134,15 @@ function Products() {
           </Select>
           {categories.length > 0 && (
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All categories</SelectItem>
                 {categories.map(([slug, name]) => (
-                  <SelectItem key={slug} value={slug}>{name}</SelectItem>
+                  <SelectItem key={slug} value={slug}>
+                    {name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -116,40 +152,57 @@ function Products() {
 
       <Card>
         <CardContent className="p-0">
-          {q.isLoading ? <p className="p-6 text-sm text-muted-foreground">Loading…</p> :
-            q.isError ? (
-              <EmptyState
-                icon={Package}
-                title="Products could not load"
-                description={(q.error as Error)?.message ?? "Please try again."}
-                action={<Button variant="outline" className="rounded-full" onClick={() => q.refetch()}>Retry</Button>}
-              />
-            ) :
-            all.length === 0 ? (
-              <EmptyState
-                icon={Package}
-                title="No products yet"
-                description="Create your first product to start selling on CornerMex."
-                action={
-                  <Button asChild className="rounded-full">
-                    <Link to="/seller/products/new" preload="intent"><Plus className="me-2 h-4 w-4" /> New product</Link>
-                  </Button>
-                }
-              />
-            ) : filtered.length === 0 ? (
-              <EmptyState
-                icon={Search}
-                title="No products match these filters"
-                description="Try clearing search or changing filters above."
-              />
-            ) : (
+          {q.isLoading ? (
+            <div className="space-y-1 p-4" aria-label="Loading products">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="flex items-center gap-4 py-2">
+                  <Skeleton className="h-14 w-14 shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-4 w-2/3 max-w-64" />
+                    <Skeleton className="h-3 w-1/2 max-w-48" />
+                  </div>
+                  <Skeleton className="hidden h-8 w-24 sm:block" />
+                </div>
+              ))}
+            </div>
+          ) : q.isError ? (
+            <EmptyState
+              icon={Package}
+              title="Products could not load"
+              description={(q.error as Error)?.message ?? "Please try again."}
+              action={
+                <Button variant="outline" className="rounded-full" onClick={() => q.refetch()}>
+                  Retry
+                </Button>
+              }
+            />
+          ) : all.length === 0 ? (
+            <EmptyState
+              icon={Package}
+              title="No products yet"
+              description="Create your first product to start selling on CornerMex."
+              action={
+                <Button asChild className="rounded-full">
+                  <Link to="/seller/products/new" preload="intent">
+                    <Plus className="me-2 h-4 w-4" /> New product
+                  </Link>
+                </Button>
+              }
+            />
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              icon={Search}
+              title="No products match these filters"
+              description="Try clearing search or changing filters above."
+            />
+          ) : (
             <ul className="divide-y divide-border">
               {filtered.map((p) => (
-                <li key={p.id} className="flex items-center gap-4 p-4">
+                <li key={p.id} className="flex flex-wrap items-center gap-3 p-4 sm:gap-4">
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
                     {p.image && <img src={p.image} alt="" className="h-full w-full object-cover" />}
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 basis-[calc(100%-5rem)] sm:basis-auto">
                     <p className="truncate font-medium">{p.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {p.brand ?? "—"}
@@ -158,25 +211,46 @@ function Products() {
                     </p>
                   </div>
                   <div className="hidden tabular-nums sm:block">{p.price_aed.toFixed(2)} AED</div>
-                  <Badge variant={p.status === "active" ? "default" : p.status === "draft" ? "secondary" : "outline"}>
+                  <Badge
+                    variant={
+                      p.status === "active"
+                        ? "default"
+                        : p.status === "draft"
+                          ? "secondary"
+                          : "outline"
+                    }
+                  >
                     {p.status}
                   </Badge>
-                  {p.slug && (
-                    <Button asChild variant="ghost" size="icon" title="Preview">
-                      <Link to="/product/$slug" params={{ slug: p.slug }} target="_blank">
-                        <Eye className="h-4 w-4" />
+                  <div className="ms-auto flex items-center gap-1">
+                    {p.slug && (
+                      <Button asChild variant="ghost" size="icon">
+                        <Link
+                          to="/product/$slug"
+                          params={{ slug: p.slug }}
+                          target="_blank"
+                          aria-label={`Preview ${p.name}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    )}
+                    <Button asChild variant="outline" size="sm" className="rounded-full">
+                      <Link to="/seller/products/$id" params={{ id: p.id }} preload="intent">
+                        <Pencil className="me-1.5 h-3.5 w-3.5" /> Edit
                       </Link>
                     </Button>
-                  )}
-                  <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link to="/seller/products/$id" params={{ id: p.id }} preload="intent">
-                      <Pencil className="me-1.5 h-3.5 w-3.5" /> Edit
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="icon" title="Delete"
-                    onClick={() => { if (confirm("Delete this product? This cannot be undone.")) m.mutate(p.id); }}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Delete ${p.name}`}
+                      onClick={() => {
+                        if (confirm("Delete this product? This cannot be undone.")) m.mutate(p.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
