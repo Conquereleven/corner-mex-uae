@@ -66,7 +66,7 @@ function Products() {
         breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Products" }]}
         actions={
           <Button asChild className="rounded-full">
-            <Link to="/seller/products/new"><Plus className="me-2 h-4 w-4" /> New product</Link>
+            <Link to="/seller/products/new" preload="intent"><Plus className="me-2 h-4 w-4" /> New product</Link>
           </Button>
         }
       />
@@ -117,6 +117,14 @@ function Products() {
       <Card>
         <CardContent className="p-0">
           {q.isLoading ? <p className="p-6 text-sm text-muted-foreground">Loading…</p> :
+            q.isError ? (
+              <EmptyState
+                icon={Package}
+                title="Products could not load"
+                description={(q.error as Error)?.message ?? "Please try again."}
+                action={<Button variant="outline" className="rounded-full" onClick={() => q.refetch()}>Retry</Button>}
+              />
+            ) :
             all.length === 0 ? (
               <EmptyState
                 icon={Package}
@@ -124,7 +132,7 @@ function Products() {
                 description="Create your first product to start selling on CornerMex."
                 action={
                   <Button asChild className="rounded-full">
-                    <Link to="/seller/products/new"><Plus className="me-2 h-4 w-4" /> New product</Link>
+                    <Link to="/seller/products/new" preload="intent"><Plus className="me-2 h-4 w-4" /> New product</Link>
                   </Button>
                 }
               />
@@ -161,7 +169,7 @@ function Products() {
                     </Button>
                   )}
                   <Button asChild variant="outline" size="sm" className="rounded-full">
-                    <Link to="/seller/products/$id" params={{ id: p.id }}>
+                    <Link to="/seller/products/$id" params={{ id: p.id }} preload="intent">
                       <Pencil className="me-1.5 h-3.5 w-3.5" /> Edit
                     </Link>
                   </Button>
