@@ -8,4 +8,4 @@ Disallow: /cart
 Disallow: /login
 Disallow: /signup
 
-Sitemap: https://corner-mex-uae.lovable.app/api/public/sitemap.xml
+Sitemap: https://corner-mex-uae.lovable.app/sitemap.xml
