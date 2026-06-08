@@ -228,7 +228,7 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
     const { data: order, error } = await supabaseAdmin.from("orders").select("*").eq("id", data.id).maybeSingle();
     if (error || !order) throw new Error("Order not found");
 
-    const [itemsRes, notesRes, eventsRes, shipmentsRes] = await Promise.all([
+    const [itemsRes, notesRes, eventsRes, shipmentsRes, profileRes, authUser] = await Promise.all([
       supabaseAdmin.from("order_items").select(`
         id, product_id, product_name, variant_label, qty, unit_price_aed, line_total_aed,
         fulfillment_status, seller_id,
@@ -237,6 +237,12 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
       supabaseAdmin.from("order_notes").select("*").eq("order_id", data.id).order("created_at", { ascending: false }),
       supabaseAdmin.from("order_events").select("*").eq("order_id", data.id).order("created_at", { ascending: false }).limit(100),
       supabaseAdmin.from("shipments").select("*").eq("order_id", data.id).eq("seller_id", seller.id),
+      order.buyer_id
+        ? supabaseAdmin.from("profiles").select("id, full_name, phone, company_name, preferred_lang").eq("id", order.buyer_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      order.buyer_id
+        ? supabaseAdmin.auth.admin.getUserById(order.buyer_id)
+        : Promise.resolve({ data: null }),
     ]);
     return {
       order,
@@ -244,6 +250,7 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
       notes: notesRes.data ?? [],
       events: eventsRes.data ?? [],
       shipments: shipmentsRes.data ?? [],
+      buyer: profileRes?.data ? { ...profileRes.data, email: (authUser as any)?.data?.user?.email ?? null } : null,
       sellerId: seller.id,
     };
   });
