@@ -47,6 +47,28 @@ function SellerOverview() {
 
   return (
     <div className="space-y-6">
+      {(seller?.banner_url || seller?.cover_url) && (
+        <div className="relative overflow-hidden rounded-xl border bg-muted">
+          <img
+            src={seller.banner_url ?? seller.cover_url}
+            alt={`${seller.store_name} banner`}
+            className="h-32 w-full object-cover sm:h-44"
+            loading="lazy"
+            onError={(e) => { (e.currentTarget.parentElement as HTMLElement).classList.add("bg-gradient-to-r","from-primary/20","to-primary/5"); e.currentTarget.style.display = "none"; }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-background/0 to-background/0" />
+          <div className="absolute bottom-3 left-4 flex items-center gap-3">
+            {seller?.logo_url && (
+              <img src={seller.logo_url} alt="" className="h-10 w-10 rounded-md border-2 border-background bg-background object-cover shadow-sm" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+            )}
+            <div>
+              <p className="font-display text-base font-semibold leading-tight text-foreground">{seller.store_name}</p>
+              {seller?.tagline && <p className="text-xs text-muted-foreground">{seller.tagline}</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl tracking-tight">{seller?.store_name}</h1>
