@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Percent } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 import { listCoupons, upsertCoupon, deleteCoupon } from "@/lib/coupons.functions";
 import { toast } from "sonner";
 
@@ -53,7 +56,14 @@ function SellerCoupons() {
   });
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
+    <div className="space-y-6">
+      <PageHeader
+        title="Coupons"
+        description="Create discount codes that apply only to items from your store."
+        icon={Percent}
+        breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Coupons" }]}
+      />
+      <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
       <Card>
         <CardHeader>
           <CardTitle>New coupon</CardTitle>
@@ -91,7 +101,13 @@ function SellerCoupons() {
         <CardHeader><CardTitle>My coupons</CardTitle></CardHeader>
         <CardContent>
           {q.isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> :
-           (q.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No coupons yet — create one to start promoting.</p> : (
+           (q.data ?? []).length === 0 ? (
+            <EmptyState
+              icon={Percent}
+              title="No coupons yet"
+              description="Create your first coupon to start promoting your products."
+            />
+           ) : (
             <ul className="divide-y divide-border">
               {(q.data as any[]).map((c) => (
                 <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-3">
@@ -114,6 +130,7 @@ function SellerCoupons() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

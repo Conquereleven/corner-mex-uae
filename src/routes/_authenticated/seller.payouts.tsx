@@ -3,6 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Wallet, TrendingUp, Clock, CheckCircle2, FileText, Timer } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,13 +54,17 @@ function SellerPayouts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl tracking-tight">{t("dash.payouts.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("dash.payouts.sellerSub")}</p>
-        </div>
-        <Link to="/seller/commissions"><Button className="rounded-full">Request payout</Button></Link>
-      </div>
+      <PageHeader
+        title={t("dash.payouts.title")}
+        description={t("dash.payouts.sellerSub")}
+        icon={Wallet}
+        breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Payouts" }]}
+        actions={
+          <Button asChild className="rounded-full">
+            <Link to="/seller/commissions">Request payout</Link>
+          </Button>
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <SellerKpi icon={CheckCircle2} label={t("dash.payouts.kpi.paid")} value={AED(totals.paid.net)} hint={`${totals.paid.count} ${t("dash.payouts.kpi.payouts")}`} tone="ok" />
@@ -84,10 +90,11 @@ function SellerPayouts() {
         </CardHeader>
         <CardContent className="p-0">
           {filtered.length === 0 ? (
-            <div className="p-10 text-center">
-              <Wallet className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">No payouts in this view.</p>
-            </div>
+            <EmptyState
+              icon={Wallet}
+              title="No payouts in this view"
+              description="Once you have eligible sales, request a payout from the Commissions screen."
+            />
           ) : (
             <div className="overflow-x-auto">
               <Table>

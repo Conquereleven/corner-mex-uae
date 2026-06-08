@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { RotateCcw } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 import { sellerListReturns, sellerUpdateReturn } from "@/lib/returns.functions";
 import { toast } from "sonner";
 
@@ -25,10 +28,21 @@ function SellerReturns() {
   const q = useQuery({ queryKey: ["seller-returns"], queryFn: () => fn({}) });
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl tracking-tight">Returns</h1>
+      <PageHeader
+        title="Returns"
+        description="Review return requests from buyers and issue refunds."
+        icon={RotateCcw}
+        breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Returns" }]}
+      />
       <Card><CardContent className="p-0">
         {q.isLoading ? <p className="p-6 text-sm text-muted-foreground">Loading…</p> :
-         (q.data ?? []).length === 0 ? <p className="p-6 text-sm text-muted-foreground">No return requests.</p> : (
+         (q.data ?? []).length === 0 ? (
+          <EmptyState
+            icon={RotateCcw}
+            title="No return requests"
+            description="When buyers open a return on one of your orders, it'll appear here for review."
+          />
+         ) : (
           <ul className="divide-y divide-border">
             {(q.data as any[]).map((r) => (
               <li key={r.id} className="p-4">

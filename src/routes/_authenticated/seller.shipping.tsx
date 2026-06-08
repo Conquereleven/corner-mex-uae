@@ -3,6 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Truck, Pencil, Trash2 } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,12 +71,12 @@ function SellerShipping() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl tracking-tight">Shipping rates</h1>
-        <p className="text-sm text-muted-foreground">
-          Override the marketplace default per zone. If you don't set an override, the platform default applies.
-        </p>
-      </div>
+      <PageHeader
+        title="Shipping rates"
+        description="Override the marketplace default per zone. If you don't set an override, the platform default applies."
+        icon={Truck}
+        breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Shipping" }]}
+      />
 
       <Card>
         <CardHeader className="flex flex-row items-center gap-2">
@@ -130,7 +132,15 @@ function SellerShipping() {
                 );
               })}
               {zones.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground">No zones configured by the marketplace yet.</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={8} className="p-0">
+                    <EmptyState
+                      icon={Truck}
+                      title="No shipping zones yet"
+                      description="The marketplace hasn't configured any shipping zones. Once available, you can override rates per zone."
+                    />
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>

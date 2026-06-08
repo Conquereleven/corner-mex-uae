@@ -57,9 +57,9 @@ function SellerOverview() {
         <div className="flex items-center gap-2">
           <Badge variant={seller?.status === "active" ? "default" : "secondary"} className="capitalize">{seller?.status}</Badge>
           {seller?.status === "active" && (
-            <Link to="/sellers/$slug" params={{ slug: seller.slug }}>
-              <Button variant="outline" size="sm" className="rounded-full">View public page</Button>
-            </Link>
+            <Button asChild variant="outline" size="sm" className="rounded-full">
+              <Link to="/sellers/$slug" params={{ slug: seller.slug }}>View public page</Link>
+            </Button>
           )}
         </div>
       </div>
@@ -194,7 +194,9 @@ function SellerOverview() {
             <CardTitle className="text-base flex items-center gap-2"><Activity className="h-4 w-4" /> {t("dash.sections.recentOrders")}</CardTitle>
             <CardDescription>{t("dash.sections.recentOrdersSub")}</CardDescription>
           </div>
-          <Link to="/seller/orders"><Button variant="outline" size="sm">{t("dash.nav.orders")} →</Button></Link>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/seller/orders">{t("dash.nav.orders")} →</Link>
+          </Button>
         </CardHeader>
         <CardContent className="p-0">
           {d.recentItems.length === 0 ? (

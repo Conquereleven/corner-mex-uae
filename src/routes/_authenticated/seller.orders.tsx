@@ -14,7 +14,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { listSellerOrders, setOrderItemStatus } from "@/lib/seller.functions";
 import { sellerListShipments, sellerCreateShipment, sellerMarkDelivered } from "@/lib/shipments.functions";
 import { toast } from "sonner";
-import { Truck } from "lucide-react";
+import { Truck, ShoppingCart } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/seller/orders")({
   head: () => ({ meta: [{ title: "Seller — Orders" }] }),
@@ -51,11 +53,22 @@ function Orders() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl tracking-tight">Orders</h1>
+      <PageHeader
+        title="Orders"
+        description="Fulfil and track orders for items from your store."
+        icon={ShoppingCart}
+        breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Orders" }]}
+      />
       <Card>
         <CardContent className="p-0">
           {q.isLoading ? <p className="p-6 text-sm text-muted-foreground">Loading…</p> :
-            grouped.length === 0 ? <p className="p-6 text-sm text-muted-foreground">No orders yet.</p> : (
+            grouped.length === 0 ? (
+              <EmptyState
+                icon={ShoppingCart}
+                title="No orders yet"
+                description="Orders containing your products will show up here as buyers check out."
+              />
+            ) : (
             <ul className="divide-y divide-border">
               {grouped.map((g) => (
                 <li key={g.order.id} className="p-4">
