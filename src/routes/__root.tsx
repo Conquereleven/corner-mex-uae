@@ -12,6 +12,8 @@ import appCss from "../styles.css?url";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AppErrorBoundary } from "@/components/site/AppErrorBoundary";
+import { installRuntimeErrorLogger } from "@/lib/runtime-error-logger";
 
 function NotFoundComponent() {
   return (
@@ -130,11 +132,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => { installRuntimeErrorLogger(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSync />
-      <Outlet />
+      <AppErrorBoundary>
+        <Outlet />
+      </AppErrorBoundary>
     </QueryClientProvider>
   );
 }
