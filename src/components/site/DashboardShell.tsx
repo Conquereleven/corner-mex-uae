@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type DashNavItem = {
   to?: string;
+  search?: Record<string, string | undefined>;
   label: string;
   icon: LucideIcon;
   soon?: boolean;
@@ -54,9 +55,15 @@ export function DashboardShell({
 }
 
 function DashSidebar({ title, subtitle, nav }: { title: string; subtitle?: string; nav: DashNavGroup[] }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const location = useRouterState({ select: (s) => s.location });
   const { t } = useTranslation();
-  const isActive = (to?: string) => !!to && (pathname === to || pathname.startsWith(to + "/"));
+  const isActive = (item: DashNavItem) => {
+    if (!item.to) return false;
+    const pathMatches = location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+    if (!pathMatches) return false;
+    if (!item.search) return true;
+    return Object.entries(item.search).every(([key, value]) => (location.search as Record<string, unknown>)[key] === value);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -84,8 +91,8 @@ function DashSidebar({ title, subtitle, nav }: { title: string; subtitle?: strin
                         <Badge variant="outline" className="ml-auto h-4 px-1 text-[9px] font-normal uppercase tracking-wider group-data-[collapsible=icon]:hidden">soon</Badge>
                       </SidebarMenuButton>
                     ) : (
-                      <SidebarMenuButton asChild isActive={isActive(item.to)} tooltip={item.label}>
-                        <Link to={item.to}>
+                      <SidebarMenuButton asChild isActive={isActive(item)} tooltip={item.label}>
+                        <Link to={item.to} search={item.search as never}>
                           <item.icon />
                           <span>{item.label}</span>
                         </Link>
@@ -118,11 +125,17 @@ function TopBar({ title, nav }: { title: string; nav: DashNavGroup[] }) {
   const { i18n } = useTranslation();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const location = useRouterState({ select: (s) => s.location });
 
   const current = nav
     .flatMap((g) => g.items)
-    .find((i) => i.to && (pathname === i.to || pathname.startsWith(i.to + "/")));
+    .find((i) => {
+      if (!i.to) return false;
+      const pathMatches = location.pathname === i.to || location.pathname.startsWith(i.to + "/");
+      if (!pathMatches) return false;
+      if (!i.search) return true;
+      return Object.entries(i.search).every(([key, value]) => (location.search as Record<string, unknown>)[key] === value);
+    });
 
   const signOut = async () => {
     await supabase.auth.signOut();
