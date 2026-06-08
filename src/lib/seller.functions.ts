@@ -172,6 +172,7 @@ export const listSellerProducts = createServerFn({ method: "GET" })
 export const listProductCategories = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
+    await ensureSupabaseAdmin();
     const { data, error } = await supabaseAdmin
       .from("categories")
       .select("slug, name_en, is_active, sort_order")
@@ -1042,6 +1043,7 @@ export const submitKycForReview = createServerFn({ method: "POST" })
 // ===== Currency rates =====
 export const getCurrencyRates = createServerFn({ method: "GET" })
   .handler(async () => {
+    await ensureSupabaseAdmin();
     const { data } = await supabaseAdmin.from("currency_rates").select("base, quote, rate, fetched_at");
     const rates: Record<string, number> = { AED: 1 };
     for (const r of (data ?? []) as any[]) {
