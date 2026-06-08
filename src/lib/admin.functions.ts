@@ -47,8 +47,8 @@ export const adminOverview = createServerFn({ method: "GET" })
       supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
     ]);
 
-    const allOrders = orders.data ?? [];
-    const sum = (xs: any[], k: string) => xs.reduce((a, o) => a + Number(o[k] ?? 0), 0);
+    const allOrders = (orders.data ?? []) as any[];
+    const sum = (xs: any[], k: string) => xs.reduce((a: number, o: any) => a + Number(o[k] ?? 0), 0);
     const inWindow = (iso: string, fromIso: string) => iso >= fromIso;
 
     const o30 = allOrders.filter((o) => inWindow(o.created_at, since30));
@@ -65,18 +65,18 @@ export const adminOverview = createServerFn({ method: "GET" })
     for (let i = 29; i >= 0; i--) {
       const d = new Date(now.getTime() - i * day);
       const key = d.toISOString().slice(0, 10);
-      const dayOrders = o30.filter((o) => o.created_at.slice(0, 10) === key);
+      const dayOrders = o30.filter((o: any) => o.created_at.slice(0, 10) === key);
       series.push({ date: key, gmv: +sum(dayOrders, "total_aed").toFixed(2), orders: dayOrders.length });
     }
 
     // Status / payment breakdowns
     const statusBreakdown = ["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"].map((s) => ({
       status: s,
-      count: allOrders.filter((o) => o.status === s).length,
+      count: allOrders.filter((o: any) => o.status === s).length,
     }));
     const paymentBreakdown = ["paid", "pending", "failed", "refunded"].map((s) => ({
       status: s,
-      count: allOrders.filter((o) => o.payment_status === s).length,
+      count: allOrders.filter((o: any) => o.payment_status === s).length,
     }));
     const methodBreakdown = Object.entries(
       allOrders.reduce((acc: Record<string, number>, o: any) => {
@@ -102,7 +102,7 @@ export const adminOverview = createServerFn({ method: "GET" })
       productAgg.set(it.product_id, p);
     }
     const topSellers = Array.from(sellerAgg.entries())
-      .map(([id, v]) => ({ id, name: sellerMap.get(id) ?? "—", gmv: +v.gmv.toFixed(2), units: v.units, commission: +v.commission.toFixed(2) }))
+      .map(([id, v]) => ({ id, name: String(sellerMap.get(id) ?? "—"), gmv: +v.gmv.toFixed(2), units: v.units, commission: +v.commission.toFixed(2) }))
       .sort((a, b) => b.gmv - a.gmv)
       .slice(0, 5);
     const topProducts = Array.from(productAgg.entries())
@@ -112,7 +112,7 @@ export const adminOverview = createServerFn({ method: "GET" })
 
     const allSellers = sellers.data ?? [];
     const allProducts = products.data ?? [];
-    const uniqueBuyers30 = new Set(o30.map((o) => o.buyer_id)).size;
+    const uniqueBuyers30 = new Set(o30.map((o: any) => o.buyer_id)).size;
     const totalCommission = +(items.data ?? []).reduce((a: number, it: any) => a + Number(it.commission_aed ?? 0), 0).toFixed(2);
 
     return {
@@ -137,7 +137,7 @@ export const adminOverview = createServerFn({ method: "GET" })
       activeProducts: allProducts.filter((p: any) => p.status === "active").length,
       draftProducts: allProducts.filter((p: any) => p.status === "draft").length,
       lowStockCount: (lowStock.data ?? []).length,
-      pendingFulfillment: allOrders.filter((o) => ["pending", "confirmed"].includes(o.status)).length,
+      pendingFulfillment: allOrders.filter((o: any) => ["pending", "confirmed"].includes(o.status)).length,
       // Series & breakdowns
       series,
       statusBreakdown,
