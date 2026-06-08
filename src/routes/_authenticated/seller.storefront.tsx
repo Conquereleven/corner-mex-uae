@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ExternalLink, Copy, Upload, GripVertical, X } from "lucide-react";
+import { ExternalLink, Copy, Upload, GripVertical, X, Store } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
 import { getSellerStorefront, updateSellerStorefront, uploadSellerAsset } from "@/lib/seller.functions";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
@@ -109,21 +110,23 @@ function SellerStorefront() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Storefront</h1>
-          <p className="text-sm text-muted-foreground">Your public store profile at <code>/sellers/{f.slug}</code>.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copied"); }}>
-            <Copy className="h-4 w-4 mr-2" /> Copy link
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/sellers/$slug" params={{ slug: f.slug }} target="_blank"><ExternalLink className="h-4 w-4 mr-2" />Preview</Link>
-          </Button>
-          <Button onClick={() => m.mutate()} disabled={m.isPending}>{m.isPending ? "Saving…" : "Save"}</Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Storefront"
+        description={<>Your public store profile at <code>/sellers/{f.slug}</code>.</>}
+        icon={Store}
+        breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Storefront" }]}
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copied"); }}>
+              <Copy className="h-4 w-4 mr-2" /> Copy link
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/sellers/$slug" params={{ slug: f.slug }} target="_blank"><ExternalLink className="h-4 w-4 mr-2" />Preview</Link>
+            </Button>
+            <Button onClick={() => m.mutate()} disabled={m.isPending}>{m.isPending ? "Saving…" : "Save"}</Button>
+          </>
+        }
+      />
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
