@@ -24,7 +24,15 @@ function NewProduct() {
       />
       <div>
         <ProductForm
-          onSaved={() => nav({ to: "/seller/products" })}
+          onSaved={(res) => {
+            // After creating a new product, jump to its edit page so the
+            // seller can upload images and add variants.
+            if (res?.productId) {
+              nav({ to: "/seller/products/$id", params: { id: res.productId } });
+            } else {
+              nav({ to: "/seller/products" });
+            }
+          }}
           onCancel={() => nav({ to: "/seller/products" })}
         />
       </div>

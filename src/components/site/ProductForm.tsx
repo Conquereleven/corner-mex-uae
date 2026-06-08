@@ -51,7 +51,7 @@ export function ProductForm({
   initial, onSaved, onCancel, onDeleted, adminSellerId,
 }: {
   initial?: ProductFormValues;
-  onSaved?: () => void;
+  onSaved?: (result?: { productId?: string; isNew?: boolean }) => void;
   onCancel?: () => void;
   onDeleted?: () => void;
   adminSellerId?: string;
@@ -96,13 +96,14 @@ export function ProductForm({
     onSuccess: (res: any) => {
       toast.success(form.status === "draft" ? "Saved as draft" : "Saved");
       qc.invalidateQueries({ queryKey: ["seller-products"] });
+      const wasNew = !initial?.id;
       if (res?.productId) {
         setProductId(res.productId);
         setForm((f) => ({ ...f, id: res.productId }));
       }
-      // On edit, return to list automatically. On create, stay so the user can
-      // upload images and add variants before navigating away.
-      if (onSaved && initial?.id) onSaved();
+      // Notify parent on every successful save. The parent decides where to
+      // navigate (edit → list, new → edit page so images/variants can be added).
+      if (onSaved) onSaved({ productId: res?.productId, isNew: wasNew });
     },
     onError: (e: any) => toast.error(e.message),
   });
