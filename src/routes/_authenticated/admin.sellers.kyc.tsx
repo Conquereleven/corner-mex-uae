@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ShieldCheck, ShieldX, FileText } from "lucide-react";
 import { adminListKycSubmissions, adminReviewKyc } from "@/lib/admin.functions";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/admin/sellers/kyc")({
   head: () => ({ meta: [{ title: "KYC Verification — Admin" }] }),
@@ -37,13 +39,31 @@ function AdminKyc() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">KYC Verification</h1>
-        <p className="text-sm text-muted-foreground">Review trade licenses and supporting documents.</p>
-      </div>
+      <PageHeader
+        title="KYC Verification"
+        description="Review trade licenses and supporting documents."
+        icon={ShieldCheck}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "KYC Verification" }]}
+      />
       <Card>
         <CardHeader><CardTitle>Submissions</CardTitle></CardHeader>
         <CardContent className="p-0">
+          {q.isLoading ? (
+            <p className="p-6 text-sm text-muted-foreground">Loading submissions…</p>
+          ) : q.isError ? (
+            <EmptyState
+              icon={ShieldX}
+              title="KYC submissions could not load"
+              description={(q.error as Error)?.message ?? "Please try again."}
+              action={<Button variant="outline" className="rounded-full" onClick={() => q.refetch()}>Retry</Button>}
+            />
+          ) : (q.data ?? []).length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="No KYC submissions yet"
+              description="Seller verification requests will appear here after they submit documents."
+            />
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -79,23 +99,21 @@ function AdminKyc() {
                   <TableCell className="text-right">
                     {s.kyc_status === "pending" && (
                       <div className="flex gap-1 justify-end">
-                        <Button size="sm" variant="outline" className="gap-1" onClick={() => reviewMut.mutate({ sellerId: s.id, decision: "approve" })}>
+                        <Button size="sm" variant="outline" className="gap-1" disabled={reviewMut.isPending} onClick={() => reviewMut.mutate({ sellerId: s.id, decision: "approve" })}>
                           <ShieldCheck className="h-3 w-3" />Approve
                         </Button>
                         <RejectDialog sellerId={s.id} onReject={(reason) => reviewMut.mutate({ sellerId: s.id, decision: "reject", reason })} />
                       </div>
                     )}
                     {s.kyc_status === "rejected" && (
-                      <Button size="sm" variant="outline" onClick={() => reviewMut.mutate({ sellerId: s.id, decision: "approve" })}>Approve</Button>
+                      <Button size="sm" variant="outline" disabled={reviewMut.isPending} onClick={() => reviewMut.mutate({ sellerId: s.id, decision: "approve" })}>Approve</Button>
                     )}
                   </TableCell>
                 </TableRow>
               ))}
-              {(q.data ?? []).length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No submissions yet.</TableCell></TableRow>
-              )}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
     </div>
