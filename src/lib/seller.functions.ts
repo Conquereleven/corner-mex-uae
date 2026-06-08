@@ -374,16 +374,17 @@ export const getMyPayouts = createServerFn({ method: "GET" })
 
 // ===== Request payout =====
 async function computeAvailableBalance(sellerId: string) {
+  await ensureSupabaseAdmin();
   const [{ data: items }, { data: payouts }] = await Promise.all([
     supabaseAdmin.from("order_items").select("line_total_aed, commission_aed").eq("seller_id", sellerId),
     supabaseAdmin.from("seller_payouts").select("net_aed, status, requested_at, created_at").eq("seller_id", sellerId),
   ]);
-  const gross = (items ?? []).reduce((a, x: any) => a + Number(x.line_total_aed ?? 0), 0);
-  const commission = (items ?? []).reduce((a, x: any) => a + Number(x.commission_aed ?? 0), 0);
+  const gross = (items ?? []).reduce((a: number, x: any) => a + Number(x.line_total_aed ?? 0), 0);
+  const commission = (items ?? []).reduce((a: number, x: any) => a + Number(x.commission_aed ?? 0), 0);
   const netLifetime = gross - commission;
   const reserved = (payouts ?? [])
     .filter((p: any) => p.status !== "cancelled")
-    .reduce((a, p: any) => a + Number(p.net_aed ?? 0), 0);
+    .reduce((a: number, p: any) => a + Number(p.net_aed ?? 0), 0);
   const open = (payouts ?? []).find((p: any) => p.status === "pending" || p.status === "processing");
   const lastRequest = (payouts ?? [])
     .map((p: any) => p.requested_at ?? p.created_at)
@@ -588,7 +589,7 @@ export const deleteVariant = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("product_variants").delete().eq("id", data.variantId);
     if (error) throw new Error(error.message);
     if (v.is_default) {
-      const next = (siblings ?? []).find((s) => s.id !== data.variantId);
+      const next = (siblings ?? []).find((s: any) => s.id !== data.variantId);
       if (next) await supabaseAdmin.from("product_variants").update({ is_default: true }).eq("id", next.id);
     }
     return { ok: true };
