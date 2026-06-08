@@ -228,7 +228,7 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
     const { data: order, error } = await supabaseAdmin.from("orders").select("*").eq("id", data.id).maybeSingle();
     if (error || !order) throw new Error("Order not found");
 
-    const [itemsRes, notesRes, eventsRes, shipmentsRes] = await Promise.all([
+    const [itemsRes, notesRes, eventsRes, shipmentsRes, profileRes, authUser] = await Promise.all([
       supabaseAdmin.from("order_items").select(`
         id, product_id, product_name, variant_label, qty, unit_price_aed, line_total_aed,
         fulfillment_status, seller_id,
@@ -237,6 +237,12 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
       supabaseAdmin.from("order_notes").select("*").eq("order_id", data.id).order("created_at", { ascending: false }),
       supabaseAdmin.from("order_events").select("*").eq("order_id", data.id).order("created_at", { ascending: false }).limit(100),
       supabaseAdmin.from("shipments").select("*").eq("order_id", data.id).eq("seller_id", seller.id),
+      order.buyer_id
+        ? supabaseAdmin.from("profiles").select("id, full_name, phone, company_name, preferred_lang").eq("id", order.buyer_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      order.buyer_id
+        ? supabaseAdmin.auth.admin.getUserById(order.buyer_id)
+        : Promise.resolve({ data: null }),
     ]);
     return {
       order,
@@ -244,6 +250,7 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
       notes: notesRes.data ?? [],
       events: eventsRes.data ?? [],
       shipments: shipmentsRes.data ?? [],
+      buyer: profileRes?.data ? { ...profileRes.data, email: (authUser as any)?.data?.user?.email ?? null } : null,
       sellerId: seller.id,
     };
   });
@@ -1104,4 +1111,102 @@ export const getCurrencyRates = createServerFn({ method: "GET" })
       if (r.base === "AED") rates[r.quote] = Number(r.rate);
     }
     return { base: "AED", rates, fetched_at: (data ?? [])[0]?.fetched_at ?? null };
+  });
+
+// ============= Seller Customers =============
+
+export const sellerListCustomers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const { data: items, error } = await supabaseAdmin
+      .from("order_items")
+      .select(`qty, line_total_aed,
+        order:orders!inner(id, buyer_id, created_at, shipping_address)`)
+      .eq("seller_id", seller.id);
+    if (error) throw new Error(error.message);
+    const agg = new Map<string, { buyer_id: string; orders: Set<string>; gmv: number; last: string | null; addr: any }>();
+    for (const it of (items ?? []) as any[]) {
+      const o = it.order;
+      if (!o?.buyer_id) continue;
+      const cur = agg.get(o.buyer_id) ?? { buyer_id: o.buyer_id, orders: new Set<string>(), gmv: 0, last: null, addr: o.shipping_address };
+      cur.orders.add(o.id);
+      cur.gmv += Number(it.line_total_aed ?? 0);
+      if (!cur.last || o.created_at > cur.last) { cur.last = o.created_at; cur.addr = o.shipping_address; }
+      agg.set(o.buyer_id, cur);
+    }
+    const buyerIds = Array.from(agg.keys());
+    if (buyerIds.length === 0) return [];
+    const [profilesRes, authList] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name, phone, company_name, preferred_lang").in("id", buyerIds),
+      supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
+    ]);
+    const profileMap = new Map<string, any>();
+    for (const p of (profilesRes.data ?? []) as any[]) profileMap.set(p.id, p);
+    const emailMap = new Map<string, string>();
+    for (const u of (authList.data?.users ?? []) as any[]) emailMap.set(u.id, u.email ?? "");
+    return buyerIds.map((id) => {
+      const a = agg.get(id)!;
+      const p = profileMap.get(id) ?? {};
+      return {
+        id,
+        full_name: p.full_name ?? a.addr?.recipient_name ?? "—",
+        email: emailMap.get(id) ?? null,
+        phone: p.phone ?? a.addr?.phone ?? null,
+        company_name: p.company_name ?? null,
+        order_count: a.orders.size,
+        gmv: +a.gmv.toFixed(2),
+        last_order_at: a.last,
+      };
+    }).sort((a, b) => (b.last_order_at ?? "").localeCompare(a.last_order_at ?? ""));
+  });
+
+export const sellerGetCustomerDetail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const seller = await getSellerForUser(context.userId);
+    const { data: items, error } = await supabaseAdmin
+      .from("order_items")
+      .select(`qty, line_total_aed, fulfillment_status,
+        order:orders!inner(id, order_number, status, payment_status, total_aed, created_at, buyer_id, shipping_address)`)
+      .eq("seller_id", seller.id)
+      .eq("order.buyer_id", data.id);
+    if (error) throw new Error(error.message);
+    const rows = (items ?? []) as any[];
+    if (rows.length === 0) throw new Error("Customer not found");
+    const orderMap = new Map<string, any>();
+    let gmv = 0;
+    for (const it of rows) {
+      gmv += Number(it.line_total_aed ?? 0);
+      const o = it.order;
+      orderMap.set(o.id, o);
+    }
+    const orders = Array.from(orderMap.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const [profileRes, authUser] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name, phone, company_name, preferred_lang, created_at").eq("id", data.id).maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(data.id),
+    ]);
+    const profile = profileRes.data ?? {};
+    const lastAddr = orders[0]?.shipping_address ?? {};
+    return {
+      profile: {
+        id: data.id,
+        full_name: (profile as any).full_name ?? lastAddr.recipient_name ?? "—",
+        email: authUser.data?.user?.email ?? null,
+        phone: (profile as any).phone ?? lastAddr.phone ?? null,
+        company_name: (profile as any).company_name ?? null,
+        preferred_lang: (profile as any).preferred_lang ?? "en",
+        created_at: (profile as any).created_at ?? null,
+      },
+      orders,
+      lastAddress: lastAddr,
+      stats: {
+        orders: orders.length,
+        gmv: +gmv.toFixed(2),
+        aov: orders.length ? +(gmv / orders.length).toFixed(2) : 0,
+        last_order: orders[0]?.created_at ?? null,
+        first_order: orders[orders.length - 1]?.created_at ?? null,
+      },
+    };
   });

@@ -26,6 +26,7 @@ function SellerOrderDetail() {
       data={q.data}
       invalidateKey={["seller-order", id]}
       backHref="/seller/orders"
+      customerHref="/seller/customers/$id"
     />
   );
 }
