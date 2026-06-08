@@ -100,7 +100,9 @@ export function ProductForm({
         setProductId(res.productId);
         setForm((f) => ({ ...f, id: res.productId }));
       }
-      if (onSaved) onSaved();
+      // On edit, return to list automatically. On create, stay so the user can
+      // upload images and add variants before navigating away.
+      if (onSaved && initial?.id) onSaved();
     },
     onError: (e: any) => toast.error(e.message),
   });
