@@ -63,6 +63,7 @@ import { Route as AuthenticatedAccountReturnsRouteImport } from './routes/_authe
 import { Route as AuthenticatedAccountQuotesRouteImport } from './routes/_authenticated/account.quotes'
 import { Route as AuthenticatedAccountNotificationsRouteImport } from './routes/_authenticated/account.notifications'
 import { Route as AuthenticatedAccountLoyaltyRouteImport } from './routes/_authenticated/account.loyalty'
+import { Route as AuthenticatedSellerProductsIndexRouteImport } from './routes/_authenticated/seller.products.index'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as ApiPublicHooksRefreshRatesRouteImport } from './routes/api/public/hooks/refresh-rates'
 import { Route as ApiPublicHooksAutoPayoutsRouteImport } from './routes/api/public/hooks/auto-payouts'
@@ -375,6 +376,12 @@ const AuthenticatedAccountLoyaltyRoute =
     path: '/loyalty',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
+const AuthenticatedSellerProductsIndexRoute =
+  AuthenticatedSellerProductsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSellerProductsRoute,
+  } as any)
 const CheckoutBnplProviderOrderIdRoute =
   CheckoutBnplProviderOrderIdRouteImport.update({
     id: '/bnpl/$provider/$orderId',
@@ -500,6 +507,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
+  '/seller/products/': typeof AuthenticatedSellerProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -544,7 +552,6 @@ export interface FileRoutesByTo {
   '/seller/orders': typeof AuthenticatedSellerOrdersRoute
   '/seller/payouts': typeof AuthenticatedSellerPayoutsRoute
   '/seller/performance': typeof AuthenticatedSellerPerformanceRoute
-  '/seller/products': typeof AuthenticatedSellerProductsRouteWithChildren
   '/seller/returns': typeof AuthenticatedSellerReturnsRoute
   '/seller/settings': typeof AuthenticatedSellerSettingsRoute
   '/seller/shipping': typeof AuthenticatedSellerShippingRoute
@@ -563,6 +570,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
+  '/seller/products': typeof AuthenticatedSellerProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -630,6 +638,7 @@ export interface FileRoutesById {
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
+  '/_authenticated/seller/products/': typeof AuthenticatedSellerProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -697,6 +706,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-payouts'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
+    | '/seller/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -741,7 +751,6 @@ export interface FileRouteTypes {
     | '/seller/orders'
     | '/seller/payouts'
     | '/seller/performance'
-    | '/seller/products'
     | '/seller/returns'
     | '/seller/settings'
     | '/seller/shipping'
@@ -760,6 +769,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-payouts'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
+    | '/seller/products'
   id:
     | '__root__'
     | '/'
@@ -826,6 +836,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-payouts'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
+    | '/_authenticated/seller/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1229,6 +1240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountLoyaltyRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
+    '/_authenticated/seller/products/': {
+      id: '/_authenticated/seller/products/'
+      path: '/'
+      fullPath: '/seller/products/'
+      preLoaderRoute: typeof AuthenticatedSellerProductsIndexRouteImport
+      parentRoute: typeof AuthenticatedSellerProductsRoute
+    }
     '/checkout/bnpl/$provider/$orderId': {
       id: '/checkout/bnpl/$provider/$orderId'
       path: '/bnpl/$provider/$orderId'
@@ -1400,6 +1418,7 @@ interface AuthenticatedSellerProductsRouteChildren {
   AuthenticatedSellerProductsIdRoute: typeof AuthenticatedSellerProductsIdRoute
   AuthenticatedSellerProductsImportRoute: typeof AuthenticatedSellerProductsImportRoute
   AuthenticatedSellerProductsNewRoute: typeof AuthenticatedSellerProductsNewRoute
+  AuthenticatedSellerProductsIndexRoute: typeof AuthenticatedSellerProductsIndexRoute
 }
 
 const AuthenticatedSellerProductsRouteChildren: AuthenticatedSellerProductsRouteChildren =
@@ -1408,6 +1427,8 @@ const AuthenticatedSellerProductsRouteChildren: AuthenticatedSellerProductsRoute
     AuthenticatedSellerProductsImportRoute:
       AuthenticatedSellerProductsImportRoute,
     AuthenticatedSellerProductsNewRoute: AuthenticatedSellerProductsNewRoute,
+    AuthenticatedSellerProductsIndexRoute:
+      AuthenticatedSellerProductsIndexRoute,
   }
 
 const AuthenticatedSellerProductsRouteWithChildren =
@@ -1521,3 +1542,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
