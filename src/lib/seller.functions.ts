@@ -253,7 +253,7 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         status: data.status,
         category_id: categoryId,
         attrs: data.attrs ?? {},
-      }).select("id").single();
+      }).select("id, slug").single();
       if (error) throw new Error(error.message);
       productId = created.id;
       // Seed a default placeholder variant so the row is usable
@@ -290,7 +290,8 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
     await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
     if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
 
-    return { productId };
+    const { data: saved } = await supabaseAdmin.from("products").select("slug").eq("id", productId).maybeSingle();
+    return { productId, slug: saved?.slug ?? null };
   });
 
 export const getSellerProduct = createServerFn({ method: "GET" })
