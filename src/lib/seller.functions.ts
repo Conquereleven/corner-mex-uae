@@ -159,6 +159,19 @@ export const listSellerProducts = createServerFn({ method: "GET" })
     });
   });
 
+export const listProductCategories = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { data, error } = await supabaseAdmin
+      .from("categories")
+      .select("slug, name_en, is_active, sort_order")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("name_en", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((c: any) => ({ slug: c.slug, name: c.name_en ?? c.slug }));
+  });
+
 export const listSellerOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
