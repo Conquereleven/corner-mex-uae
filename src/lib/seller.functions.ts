@@ -137,7 +137,8 @@ export const listSellerProducts = createServerFn({ method: "GET" })
       .select(`id, slug, brand, status, created_at,
         translations:product_translations(lang, name),
         variants:product_variants(price_aed, stock, is_default),
-        images:product_images(url, sort_order)`)
+        images:product_images(url, sort_order),
+        category:categories(slug, name_en)`)
       .eq("seller_id", seller.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -152,6 +153,8 @@ export const listSellerProducts = createServerFn({ method: "GET" })
         price_aed: def ? Number(def.price_aed) : 0,
         stock: variants.reduce((a: number, v: any) => a + (v.stock ?? 0), 0),
         image: img?.url ?? null,
+        category_slug: p.category?.slug ?? null,
+        category_name: p.category?.name_en ?? null,
       };
     });
   });

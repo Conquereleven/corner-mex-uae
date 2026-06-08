@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { upsertSellerProduct } from "@/lib/seller.functions";
+import { upsertSellerProduct, deleteSellerProduct } from "@/lib/seller.functions";
 import { adminUpsertProduct } from "@/lib/admin.functions";
 import { ProductImagesEditor, type ProductImage } from "@/components/site/ProductImagesEditor";
 import { ProductVariantsEditor, type Variant } from "@/components/site/ProductVariantsEditor";
+import { Link } from "@tanstack/react-router";
+import { Eye, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export type ProductFormValues = {
@@ -45,9 +47,19 @@ const defaults: ProductFormValues = {
 
 const CATEGORIES = ["chiles", "salsas", "masa", "snacks", "drinks", "pantry"];
 
-export function ProductForm({ initial, onSaved, adminSellerId }: { initial?: ProductFormValues; onSaved?: () => void; adminSellerId?: string }) {
+export function ProductForm({
+  initial, onSaved, onCancel, onDeleted, adminSellerId,
+}: {
+  initial?: ProductFormValues;
+  onSaved?: () => void;
+  onCancel?: () => void;
+  onDeleted?: () => void;
+  adminSellerId?: string;
+}) {
   const [form, setForm] = useState<ProductFormValues>({ ...defaults, ...(initial ?? {}) });
   const [productId, setProductId] = useState<string | undefined>(initial?.id);
+  const [productSlug, setProductSlug] = useState<string | undefined>((initial as any)?.slug);
+  const [submitMode, setSubmitMode] = useState<"save" | "draft">("save");
   const [images, setImages] = useState<ProductImage[]>(initial?.images ?? []);
   const [variants, setVariants] = useState<Variant[]>(initial?.variants ?? []);
   const [attrsText, setAttrsText] = useState<string>(
@@ -56,6 +68,7 @@ export function ProductForm({ initial, onSaved, adminSellerId }: { initial?: Pro
   const [attrsError, setAttrsError] = useState<string | null>(null);
   const sellerFn = useServerFn(upsertSellerProduct);
   const adminFn = useServerFn(adminUpsertProduct);
+  const delFn = useServerFn(deleteSellerProduct);
   const qc = useQueryClient();
   const m = useMutation({
     mutationFn: (input: ProductFormValues) => {
@@ -81,12 +94,22 @@ export function ProductForm({ initial, onSaved, adminSellerId }: { initial?: Pro
         : sellerFn({ data: payload as any });
     },
     onSuccess: (res: any) => {
-      toast.success("Saved");
+      toast.success(form.status === "draft" ? "Saved as draft" : "Saved");
       qc.invalidateQueries({ queryKey: ["seller-products"] });
       if (res?.productId) {
         setProductId(res.productId);
         setForm((f) => ({ ...f, id: res.productId }));
       }
+      if (onSaved) onSaved();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const removeM = useMutation({
+    mutationFn: () => delFn({ data: { id: productId! } }),
+    onSuccess: () => {
+      toast.success("Product deleted");
+      qc.invalidateQueries({ queryKey: ["seller-products"] });
+      if (onDeleted) onDeleted();
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -108,7 +131,8 @@ export function ProductForm({ initial, onSaved, adminSellerId }: { initial?: Pro
         return;
       }
     }
-    m.mutate({ ...form, attrs: parsed });
+    const status = submitMode === "draft" ? "draft" : form.status;
+    m.mutate({ ...form, status, attrs: parsed });
   }
 
   return (
@@ -188,13 +212,50 @@ export function ProductForm({ initial, onSaved, adminSellerId }: { initial?: Pro
         {attrsError && <p className="mt-1 text-xs text-destructive">{attrsError}</p>}
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <Button type="submit" disabled={m.isPending} className="rounded-full">
-          {m.isPending ? "Saving…" : productId ? "Save changes" : "Create product"}
+      <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center gap-2 border-t border-border/60 bg-background/95 px-1 py-3 backdrop-blur">
+        <Button
+          type="submit"
+          disabled={m.isPending}
+          className="rounded-full"
+          onClick={() => setSubmitMode("save")}
+        >
+          {m.isPending && submitMode === "save"
+            ? "Saving…"
+            : productId ? "Save changes" : "Publish product"}
         </Button>
-        {productId && onSaved && (
-          <Button type="button" variant="outline" className="rounded-full" onClick={() => onSaved()}>
-            Done
+        <Button
+          type="submit"
+          variant="secondary"
+          className="rounded-full"
+          disabled={m.isPending}
+          onClick={() => setSubmitMode("draft")}
+        >
+          {m.isPending && submitMode === "draft" ? "Saving…" : "Save as draft"}
+        </Button>
+        {productSlug && (
+          <Button asChild type="button" variant="outline" className="rounded-full">
+            <Link to="/product/$slug" params={{ slug: productSlug }} target="_blank">
+              <Eye className="me-2 h-4 w-4" /> Preview
+            </Link>
+          </Button>
+        )}
+        {onCancel && (
+          <Button type="button" variant="ghost" className="rounded-full" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+        {productId && onDeleted && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="ms-auto rounded-full text-destructive hover:text-destructive"
+            disabled={removeM.isPending}
+            onClick={() => {
+              if (confirm("Delete this product? This cannot be undone.")) removeM.mutate();
+            }}
+          >
+            <Trash2 className="me-2 h-4 w-4" />
+            {removeM.isPending ? "Deleting…" : "Delete product"}
           </Button>
         )}
       </div>
