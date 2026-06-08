@@ -1,9 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+let supabaseAdmin: any;
+
+async function ensureSupabaseAdmin() {
+  if (!supabaseAdmin) {
+    const mod = await import("@/integrations/supabase/client.server");
+    supabaseAdmin = mod.supabaseAdmin;
+  }
+  return supabaseAdmin;
+}
 
 async function getSellerForUser(userId: string) {
+  await ensureSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("sellers").select("*").eq("user_id", userId).maybeSingle();
   if (error) throw new Error(error.message);
@@ -159,6 +169,20 @@ export const listSellerProducts = createServerFn({ method: "GET" })
     });
   });
 
+export const listProductCategories = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    await ensureSupabaseAdmin();
+    const { data, error } = await supabaseAdmin
+      .from("categories")
+      .select("slug, name_en, is_active, sort_order")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("name_en", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((c: any) => ({ slug: c.slug, name: c.name_en ?? c.slug }));
+  });
+
 export const listSellerOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -240,7 +264,7 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
         status: data.status,
         category_id: categoryId,
         attrs: data.attrs ?? {},
-      }).select("id").single();
+      }).select("id, slug").single();
       if (error) throw new Error(error.message);
       productId = created.id;
       // Seed a default placeholder variant so the row is usable
@@ -277,7 +301,8 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
     await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
     if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
 
-    return { productId };
+    const { data: saved } = await supabaseAdmin.from("products").select("slug").eq("id", productId).maybeSingle();
+    return { productId, slug: saved?.slug ?? null };
   });
 
 export const getSellerProduct = createServerFn({ method: "GET" })
@@ -350,16 +375,17 @@ export const getMyPayouts = createServerFn({ method: "GET" })
 
 // ===== Request payout =====
 async function computeAvailableBalance(sellerId: string) {
+  await ensureSupabaseAdmin();
   const [{ data: items }, { data: payouts }] = await Promise.all([
     supabaseAdmin.from("order_items").select("line_total_aed, commission_aed").eq("seller_id", sellerId),
     supabaseAdmin.from("seller_payouts").select("net_aed, status, requested_at, created_at").eq("seller_id", sellerId),
   ]);
-  const gross = (items ?? []).reduce((a, x: any) => a + Number(x.line_total_aed ?? 0), 0);
-  const commission = (items ?? []).reduce((a, x: any) => a + Number(x.commission_aed ?? 0), 0);
+  const gross = (items ?? []).reduce((a: number, x: any) => a + Number(x.line_total_aed ?? 0), 0);
+  const commission = (items ?? []).reduce((a: number, x: any) => a + Number(x.commission_aed ?? 0), 0);
   const netLifetime = gross - commission;
   const reserved = (payouts ?? [])
     .filter((p: any) => p.status !== "cancelled")
-    .reduce((a, p: any) => a + Number(p.net_aed ?? 0), 0);
+    .reduce((a: number, p: any) => a + Number(p.net_aed ?? 0), 0);
   const open = (payouts ?? []).find((p: any) => p.status === "pending" || p.status === "processing");
   const lastRequest = (payouts ?? [])
     .map((p: any) => p.requested_at ?? p.created_at)
@@ -564,7 +590,7 @@ export const deleteVariant = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("product_variants").delete().eq("id", data.variantId);
     if (error) throw new Error(error.message);
     if (v.is_default) {
-      const next = (siblings ?? []).find((s) => s.id !== data.variantId);
+      const next = (siblings ?? []).find((s: any) => s.id !== data.variantId);
       if (next) await supabaseAdmin.from("product_variants").update({ is_default: true }).eq("id", next.id);
     }
     return { ok: true };
@@ -1017,6 +1043,7 @@ export const submitKycForReview = createServerFn({ method: "POST" })
 // ===== Currency rates =====
 export const getCurrencyRates = createServerFn({ method: "GET" })
   .handler(async () => {
+    await ensureSupabaseAdmin();
     const { data } = await supabaseAdmin.from("currency_rates").select("base, quote, rate, fetched_at");
     const rates: Record<string, number> = { AED: 1 };
     for (const r of (data ?? []) as any[]) {

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { upsertSellerProduct, deleteSellerProduct } from "@/lib/seller.functions";
+import { upsertSellerProduct, deleteSellerProduct, listProductCategories } from "@/lib/seller.functions";
 import { adminUpsertProduct } from "@/lib/admin.functions";
 import { ProductImagesEditor, type ProductImage } from "@/components/site/ProductImagesEditor";
 import { ProductVariantsEditor, type Variant } from "@/components/site/ProductVariantsEditor";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 export type ProductFormValues = {
   id?: string;
+  slug?: string;
   name_en: string;
   name_es?: string;
   name_ar?: string;
@@ -45,7 +46,7 @@ const defaults: ProductFormValues = {
   variants: [],
 };
 
-const CATEGORIES = ["chiles", "salsas", "masa", "snacks", "drinks", "pantry"];
+type ProductCategoryOption = { slug: string; name: string };
 
 export function ProductForm({
   initial, onSaved, onCancel, onDeleted, adminSellerId,
@@ -69,7 +70,13 @@ export function ProductForm({
   const sellerFn = useServerFn(upsertSellerProduct);
   const adminFn = useServerFn(adminUpsertProduct);
   const delFn = useServerFn(deleteSellerProduct);
+  const categoriesFn = useServerFn(listProductCategories);
   const qc = useQueryClient();
+  const categoriesQuery = useQuery({
+    queryKey: ["product-categories"],
+    queryFn: () => categoriesFn({}),
+  });
+  const categories = (categoriesQuery.data ?? []) as ProductCategoryOption[];
   const m = useMutation({
     mutationFn: (input: ProductFormValues) => {
       const payload = {
@@ -101,6 +108,7 @@ export function ProductForm({
         setProductId(res.productId);
         setForm((f) => ({ ...f, id: res.productId }));
       }
+      if (res?.slug) setProductSlug(res.slug);
       // Notify parent on every successful save. The parent decides where to
       // navigate (edit → list, new → edit page so images/variants can be added).
       if (onSaved) onSaved({ productId: res?.productId, isNew: wasNew });
@@ -171,10 +179,11 @@ export function ProductForm({
         <div><Label>Origin region</Label><Input value={form.origin_region ?? ""} onChange={(e) => set("origin_region", e.target.value)} /></div>
         <div>
           <Label>Category</Label>
-          <Select value={form.category_slug ?? ""} onValueChange={(v) => set("category_slug", v)}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+          <Select value={form.category_slug ?? "uncategorized"} onValueChange={(v) => set("category_slug", v === "uncategorized" ? undefined : v)}>
+            <SelectTrigger><SelectValue placeholder={categoriesQuery.isLoading ? "Loading categories…" : "Select"} /></SelectTrigger>
             <SelectContent>
-              {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              <SelectItem value="uncategorized">Uncategorized</SelectItem>
+              {categories.map((c) => <SelectItem key={c.slug} value={c.slug}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

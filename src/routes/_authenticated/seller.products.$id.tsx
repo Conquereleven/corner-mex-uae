@@ -73,7 +73,7 @@ function EditProduct() {
             images,
             variants,
           } as any}
-          onSaved={() => nav({ to: "/seller/products" })}
+          onSaved={() => undefined}
           onCancel={() => nav({ to: "/seller/products" })}
           onDeleted={() => nav({ to: "/seller/products" })}
         />
