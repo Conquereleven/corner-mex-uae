@@ -108,7 +108,12 @@ export function OrderDetailView({
     onError: (e: any) => toast.error(e.message),
   });
   const payM = useMutation({
-    mutationFn: (s: string) => adminPayment({ data: { orderId: order.id, status: s } }),
+    mutationFn: (v: string | { status: string; manual?: boolean }) =>
+      adminPayment({
+        data: typeof v === "string"
+          ? { orderId: order.id, status: v }
+          : { orderId: order.id, status: v.status, manual: v.manual },
+      }),
     onSuccess: () => {
       toast.success("Payment status updated");
       setPendingChange(null);
