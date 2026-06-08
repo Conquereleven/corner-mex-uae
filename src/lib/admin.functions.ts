@@ -21,6 +21,7 @@ async function assertAdmin(userId: string) {
 export const isAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    await ensureSupabaseAdmin();
     const { data } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId).eq("role", "admin").maybeSingle();
     return { admin: !!data };
   });
@@ -206,6 +207,7 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
 export const adminBootstrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    await ensureSupabaseAdmin();
     // Allow first user to claim admin if there are no admins yet.
     const { count } = await supabaseAdmin.from("user_roles").select("id", { count: "exact", head: true }).eq("role", "admin");
     if ((count ?? 0) > 0) throw new Error("Admin already exists. Ask an admin to grant access.");
@@ -636,6 +638,7 @@ export const adminUploadPayoutReceipt = createServerFn({ method: "POST" })
   });
 
 async function notifyPayoutSeller(payoutId: string, kind: string, title: string, body: string) {
+  await ensureSupabaseAdmin();
   const { data: p } = await supabaseAdmin
     .from("seller_payouts").select("id, net_aed, seller:sellers(user_id, store_name)")
     .eq("id", payoutId).maybeSingle();
