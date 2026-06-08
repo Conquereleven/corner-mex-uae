@@ -57,7 +57,7 @@ function SellerLayout() {
           label: t("dash.groups.store"),
           items: [
             { to: "/seller/storefront", label: t("dash.nav.storefront"), icon: Store },
-            { to: "/seller/settings", label: "KYC Verification", icon: ShieldCheck },
+            { to: "/seller/settings", search: { tab: "verification" }, label: "KYC Verification", icon: ShieldCheck },
             { to: "/seller/settings", label: t("dash.nav.settings"), icon: Settings },
           ],
         },
