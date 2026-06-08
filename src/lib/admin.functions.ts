@@ -300,6 +300,13 @@ export const adminSetPaymentStatus = createServerFn({ method: "POST" })
       p_payment_status: data.status,
     });
     if (error) throw new Error(error.message);
+    if (data.status === "paid") {
+      await supabaseAdmin
+        .from("orders")
+        .update({ paid_at: new Date().toISOString() })
+        .eq("id", data.orderId)
+        .is("paid_at", null);
+    }
     await supabaseAdmin.from("order_events").insert({
       order_id: data.orderId,
       actor_id: context.userId,

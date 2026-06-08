@@ -178,6 +178,31 @@ export function OrderDetailView({
         </div>
         {role === "admin" && (
           <div className="flex flex-wrap items-center gap-2">
+            {order.payment_status !== "paid" &&
+              order.payment_status !== "refunded" &&
+              (order.payment_method === "bank_transfer" || order.payment_method === "cod") && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" disabled={payM.isPending}>
+                      {payM.isPending ? "Marking…" : "Mark as paid"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Mark this order as paid?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Confirm you've received the {order.payment_method === "cod" ? "cash on delivery" : "bank transfer"} payment for this order. This action will update the payment status to paid.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => payM.mutate("paid")}>
+                        Yes, mark as paid
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             {order.status !== "cancelled" && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
