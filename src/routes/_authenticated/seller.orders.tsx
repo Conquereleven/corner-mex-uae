@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listSellerOrders, setOrderItemStatus } from "@/lib/seller.functions";
+import { listSellerOrders } from "@/lib/seller.functions";
 import { sellerCreateShipment } from "@/lib/shipments.functions";
 import { toast } from "sonner";
 import { Truck, ShoppingCart, Search, ChevronRight } from "lucide-react";
@@ -27,7 +27,6 @@ export const Route = createFileRoute("/_authenticated/seller/orders")({
   component: Orders,
 });
 
-const STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"];
 const CARRIERS = ["aramex", "dhl", "fedex", "talabat", "local_courier", "pickup", "other"];
 const TABS: Array<{ key: string; label: string; match: (o: any) => boolean }> = [
   { key: "all", label: "All", match: () => true },
