@@ -1,9 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+let supabaseAdmin: any;
+
+async function ensureSupabaseAdmin() {
+  if (!supabaseAdmin) {
+    const mod = await import("@/integrations/supabase/client.server");
+    supabaseAdmin = mod.supabaseAdmin;
+  }
+  return supabaseAdmin;
+}
 
 async function getSellerForUser(userId: string) {
+  await ensureSupabaseAdmin();
   const { data, error } = await supabaseAdmin
     .from("sellers").select("*").eq("user_id", userId).maybeSingle();
   if (error) throw new Error(error.message);
