@@ -1537,12 +1537,76 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_order_state: {
+        Args: {
+          p_order_id: string
+          p_payment_status?: Database["public"]["Enums"]["payment_status"]
+          p_status?: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: {
+          buyer_id: string
+          coupon_code: string | null
+          coupon_id: string | null
+          created_at: string
+          discount_aed: number
+          id: string
+          notes: string | null
+          order_number: string
+          paid_at: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status: Database["public"]["Enums"]["payment_status"]
+          shipping_address: Json
+          shipping_aed: number
+          shipping_zone_id: string | null
+          sla_max_days: number | null
+          sla_min_days: number | null
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal_aed: number
+          tax_aed: number
+          total_aed: number
+          updated_at: string
+          weight_grams_total: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      seller_update_order_item_fulfillment: {
+        Args: {
+          p_item_id: string
+          p_status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: {
+          commission_aed: number
+          fulfillment_status: Database["public"]["Enums"]["order_status"]
+          id: string
+          line_total_aed: number
+          order_id: string
+          product_id: string
+          product_name: string
+          qty: number
+          seller_id: string
+          shipment_id: string | null
+          unit_price_aed: number
+          variant_id: string
+          variant_label: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "order_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
