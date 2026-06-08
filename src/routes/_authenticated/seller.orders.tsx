@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
@@ -74,12 +74,15 @@ function Orders() {
                 <li key={g.order.id} className="p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="font-medium">{g.order.order_number}</p>
+                      <Link to="/seller/orders/$id" params={{ id: g.order.id }} className="font-medium hover:underline">{g.order.order_number}</Link>
                       <p className="text-xs text-muted-foreground">{new Date(g.order.created_at).toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{g.order.payment_status}</Badge>
                       <Badge>{g.order.status}</Badge>
+                      <Button asChild size="sm" variant="outline">
+                        <Link to="/seller/orders/$id" params={{ id: g.order.id }}>View order</Link>
+                      </Button>
                       <ShipmentDialog order={g.order} items={g.items} />
                     </div>
                   </div>

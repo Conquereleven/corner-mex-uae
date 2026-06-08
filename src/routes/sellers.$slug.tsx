@@ -51,9 +51,14 @@ function SellerPage() {
   return (
     <SiteLayout>
       <div style={{ ...themeStyle, fontFamily, background: theme.bg, color: theme.text }}>
-      {s.cover_url && (
+      {(s.banner_url || s.cover_url) && (
         <div className="relative h-64 w-full overflow-hidden md:h-80">
-          <img src={s.cover_url} alt="" className="h-full w-full object-cover" />
+          <img
+            src={s.banner_url ?? s.cover_url}
+            alt=""
+            className="h-full w-full object-cover"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         </div>
       )}
