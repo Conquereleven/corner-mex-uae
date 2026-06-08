@@ -285,7 +285,7 @@ export function OrderDetailView({
               {(buyer?.phone || addr.phone) && <p className="text-muted-foreground">{buyer?.phone ?? addr.phone}</p>}
               {customerHref && buyer?.id && (
                 <Button asChild variant="outline" size="sm" className="mt-3 rounded-full">
-                  <Link to={customerHref} params={{ id: buyer.id } as any}>View customer</Link>
+                  <Link to={customerHref as any} params={{ id: buyer.id } as any}>View customer</Link>
                 </Button>
               )}
             </CardContent>
