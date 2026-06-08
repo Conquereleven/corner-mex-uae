@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import { adminListOrders, adminSetOrderStatus } from "@/lib/admin.functions";
 import { statusColor } from "@/lib/dashboard-tokens";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
   head: () => ({ meta: [{ title: "Admin — Orders" }] }),
@@ -45,10 +47,12 @@ function Orders() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl tracking-tight">Orders</h1>
-        <p className="text-sm text-muted-foreground">{rows.length} of {(q.data ?? []).length} orders</p>
-      </div>
+      <PageHeader
+        title="Orders"
+        description={`${rows.length} of ${(q.data ?? []).length} orders across the marketplace.`}
+        icon={ShoppingCart}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Orders" }]}
+      />
 
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center gap-3 space-y-0">
@@ -68,7 +72,7 @@ function Orders() {
           {q.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : rows.length === 0 ? (
-            <p className="p-8 text-center text-sm text-muted-foreground">No orders match your filters.</p>
+            <EmptyState icon={ShoppingCart} title="No orders found" description="Try clearing filters or wait for new orders to come in." />
           ) : (
             <div className="overflow-x-auto">
               <Table>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tags, Ticket, Megaphone, Mail, Truck, Package, Settings as SettingsIcon } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   head: () => ({ meta: [{ title: "Admin — Settings" }] }),
@@ -19,17 +20,19 @@ const HUBS = [
 function AdminSettings() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl tracking-tight flex items-center gap-2">
-          <SettingsIcon className="h-7 w-7" /> Marketplace settings
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configure how the marketplace runs. More options (taxes, payments, locales) are coming soon.
-        </p>
-      </div>
+      <PageHeader
+        title="Marketplace settings"
+        description="Configure how the marketplace runs. More options (taxes, payments, locales) are coming soon."
+        icon={SettingsIcon}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Settings" }]}
+      />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {HUBS.map((h) => (
-          <Link key={h.to} to={h.to}>
+          <Link
+            key={h.to}
+            to={h.to}
+            className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             <Card className="h-full transition hover:border-primary/40 hover:shadow-md">
               <CardHeader>
                 <div className="flex items-center gap-3">

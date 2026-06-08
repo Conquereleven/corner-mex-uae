@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { adminListCustomers } from "@/lib/admin.functions";
+import { PageHeader } from "@/components/site/PageHeader";
+import { EmptyState } from "@/components/site/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
   head: () => ({ meta: [{ title: "Admin — Customers" }] }),
@@ -47,10 +49,12 @@ function AdminCustomers() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl tracking-tight">{t("dash.customers.title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("dash.customers.sub")}</p>
-      </div>
+      <PageHeader
+        title={t("dash.customers.title")}
+        description={t("dash.customers.sub")}
+        icon={Users}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: t("dash.customers.title") }]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label={t("dash.customers.kpi.total")} value={String(kpis.total)} />
@@ -70,10 +74,7 @@ function AdminCustomers() {
           {q.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : rows.length === 0 ? (
-            <div className="p-10 text-center">
-              <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">{t("dash.customers.empty")}</p>
-            </div>
+            <EmptyState icon={Users} title={t("dash.customers.empty")} />
           ) : (
             <div className="overflow-x-auto">
               <Table>
