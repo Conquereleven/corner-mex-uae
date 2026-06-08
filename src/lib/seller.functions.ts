@@ -15,7 +15,10 @@ async function ensureSupabaseAdmin() {
 async function getSellerForUser(userId: string) {
   await ensureSupabaseAdmin();
   const { data, error } = await supabaseAdmin
-    .from("sellers").select("*").eq("user_id", userId).maybeSingle();
+    .from("sellers")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Seller account not found");
   return data;
@@ -35,8 +38,10 @@ export const getSellerOverview = createServerFn({ method: "GET" })
     const [items60, productsAll, lowStock, recent] = await Promise.all([
       supabaseAdmin
         .from("order_items")
-        .select(`id, qty, line_total_aed, commission_aed, fulfillment_status, product_id, product_name,
-          order:orders!inner(id, order_number, status, payment_status, total_aed, buyer_id, created_at)`)
+        .select(
+          `id, qty, line_total_aed, commission_aed, fulfillment_status, product_id, product_name,
+          order:orders!inner(id, order_number, status, payment_status, total_aed, buyer_id, created_at)`,
+        )
         .eq("seller_id", seller.id)
         .gte("order.created_at", since60),
       supabaseAdmin.from("products").select("id, status").eq("seller_id", seller.id),
@@ -47,8 +52,10 @@ export const getSellerOverview = createServerFn({ method: "GET" })
         .lte("stock", 5),
       supabaseAdmin
         .from("order_items")
-        .select(`id, product_name, variant_label, qty, line_total_aed, fulfillment_status,
-          order:orders!inner(order_number, created_at, payment_status)`)
+        .select(
+          `id, product_name, variant_label, qty, line_total_aed, fulfillment_status,
+          order:orders!inner(order_number, created_at, payment_status)`,
+        )
         .eq("seller_id", seller.id)
         .order("id", { ascending: false })
         .limit(8),
@@ -80,11 +87,22 @@ export const getSellerOverview = createServerFn({ method: "GET" })
       const key = d.toISOString().slice(0, 10);
       const dayItems = it30.filter((x) => x.order.created_at.slice(0, 10) === key);
       const orderIds = new Set(dayItems.map((x) => x.order.id));
-      series.push({ date: key, gmv: +sum(dayItems, "line_total_aed").toFixed(2), orders: orderIds.size });
+      series.push({
+        date: key,
+        gmv: +sum(dayItems, "line_total_aed").toFixed(2),
+        orders: orderIds.size,
+      });
     }
 
     // Status breakdown (fulfillment, 60d)
-    const statusBreakdown = ["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"].map((s) => ({
+    const statusBreakdown = [
+      "pending",
+      "preparing",
+      "shipped",
+      "delivered",
+      "cancelled",
+      "refunded",
+    ].map((s) => ({
       status: s,
       count: items.filter((i) => i.fulfillment_status === s).length,
     }));
@@ -122,14 +140,16 @@ export const getSellerOverview = createServerFn({ method: "GET" })
         buyers30: buyerIds30.size,
         grossLifetime: +sum(lifetime, "line_total_aed").toFixed(2),
         commissionLifetime: +sum(lifetime, "commission_aed").toFixed(2),
-        netLifetime: +(sum(lifetime, "line_total_aed") - sum(lifetime, "commission_aed")).toFixed(2),
+        netLifetime: +(sum(lifetime, "line_total_aed") - sum(lifetime, "commission_aed")).toFixed(
+          2,
+        ),
         // counts
         productCount: products.length,
         activeProducts: products.filter((p: any) => p.status === "active").length,
         draftProducts: products.filter((p: any) => p.status === "draft").length,
         lowStockCount: (lowStock.data ?? []).length,
         pendingItems: items.filter((i) => i.fulfillment_status === "pending").length,
-        confirmedItems: items.filter((i) => i.fulfillment_status === "confirmed").length,
+        confirmedItems: items.filter((i) => i.fulfillment_status === "preparing").length,
       },
       series,
       statusBreakdown,
@@ -144,11 +164,13 @@ export const listSellerProducts = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data, error } = await supabaseAdmin
       .from("products")
-      .select(`id, slug, brand, status, created_at,
+      .select(
+        `id, slug, brand, status, created_at,
         translations:product_translations(lang, name),
         variants:product_variants(price_aed, stock, is_default),
         images:product_images(url, sort_order),
-        category:categories(slug, name_en)`)
+        category:categories(slug, name_en)`,
+      )
       .eq("seller_id", seller.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -158,7 +180,11 @@ export const listSellerProducts = createServerFn({ method: "GET" })
       const def = variants.find((v: any) => v.is_default) ?? variants[0];
       const img = (p.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
       return {
-        id: p.id, slug: p.slug, brand: p.brand, status: p.status, created_at: p.created_at,
+        id: p.id,
+        slug: p.slug,
+        brand: p.brand,
+        status: p.status,
+        created_at: p.created_at,
         name: tr?.name ?? "(untitled)",
         price_aed: def ? Number(def.price_aed) : 0,
         stock: variants.reduce((a: number, v: any) => a + (v.stock ?? 0), 0),
@@ -189,8 +215,10 @@ export const listSellerOrders = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data, error } = await supabaseAdmin
       .from("order_items")
-      .select(`id, product_name, variant_label, qty, unit_price_aed, line_total_aed, commission_aed, fulfillment_status,
-        order:orders!inner(id, order_number, status, payment_status, created_at, shipping_address)`)
+      .select(
+        `id, product_name, variant_label, qty, unit_price_aed, line_total_aed, commission_aed, fulfillment_status,
+        order:orders!inner(id, order_number, status, payment_status, created_at, shipping_address)`,
+      )
       .eq("seller_id", seller.id)
       .order("id", { ascending: false })
       .limit(200);
@@ -201,16 +229,18 @@ export const listSellerOrders = createServerFn({ method: "GET" })
 export const setOrderItemStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { itemId: string; status: string }) =>
-    z.object({
-      itemId: z.string().uuid(),
-      status: z.enum(["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"]),
-    }).parse(input),
+    z
+      .object({
+        itemId: z.string().uuid(),
+        status: z.enum(["pending", "preparing", "shipped", "delivered", "cancelled"]),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const seller = await getSellerForUser(context.userId);
-    const { error } = await supabaseAdmin.from("order_items")
-      .update({ fulfillment_status: data.status as any })
-      .eq("id", data.itemId).eq("seller_id", seller.id);
+    const { error } = await (context.supabase.rpc as any)("seller_update_order_item_fulfillment", {
+      p_item_id: data.itemId,
+      p_status: data.status,
+    });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -221,24 +251,55 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const seller = await getSellerForUser(context.userId);
     // Only allow if seller has items in this order
-    const { data: own } = await supabaseAdmin.from("order_items")
-      .select("id").eq("order_id", data.id).eq("seller_id", seller.id).limit(1);
+    const { data: own } = await supabaseAdmin
+      .from("order_items")
+      .select("id")
+      .eq("order_id", data.id)
+      .eq("seller_id", seller.id)
+      .limit(1);
     if (!own || own.length === 0) throw new Error("Order not found");
 
-    const { data: order, error } = await supabaseAdmin.from("orders").select("*").eq("id", data.id).maybeSingle();
+    const { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
     if (error || !order) throw new Error("Order not found");
 
     const [itemsRes, notesRes, eventsRes, shipmentsRes, profileRes, authUser] = await Promise.all([
-      supabaseAdmin.from("order_items").select(`
+      supabaseAdmin
+        .from("order_items")
+        .select(
+          `
         id, product_id, product_name, variant_label, qty, unit_price_aed, line_total_aed,
         fulfillment_status, seller_id,
         product:products(slug, images:product_images(url, sort_order))
-      `).eq("order_id", data.id).eq("seller_id", seller.id),
-      supabaseAdmin.from("order_notes").select("*").eq("order_id", data.id).order("created_at", { ascending: false }),
-      supabaseAdmin.from("order_events").select("*").eq("order_id", data.id).order("created_at", { ascending: false }).limit(100),
-      supabaseAdmin.from("shipments").select("*").eq("order_id", data.id).eq("seller_id", seller.id),
+      `,
+        )
+        .eq("order_id", data.id)
+        .eq("seller_id", seller.id),
+      supabaseAdmin
+        .from("order_notes")
+        .select("*")
+        .eq("order_id", data.id)
+        .order("created_at", { ascending: false }),
+      supabaseAdmin
+        .from("order_events")
+        .select("*")
+        .eq("order_id", data.id)
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabaseAdmin
+        .from("shipments")
+        .select("*")
+        .eq("order_id", data.id)
+        .eq("seller_id", seller.id),
       order.buyer_id
-        ? supabaseAdmin.from("profiles").select("id, full_name, phone, company_name, preferred_lang").eq("id", order.buyer_id).maybeSingle()
+        ? supabaseAdmin
+            .from("profiles")
+            .select("id, full_name, phone, company_name, preferred_lang")
+            .eq("id", order.buyer_id)
+            .maybeSingle()
         : Promise.resolve({ data: null }),
       order.buyer_id
         ? supabaseAdmin.auth.admin.getUserById(order.buyer_id)
@@ -250,7 +311,9 @@ export const sellerGetOrderDetail = createServerFn({ method: "GET" })
       notes: notesRes.data ?? [],
       events: eventsRes.data ?? [],
       shipments: shipmentsRes.data ?? [],
-      buyer: profileRes?.data ? { ...profileRes.data, email: (authUser as any)?.data?.user?.email ?? null } : null,
+      buyer: profileRes?.data
+        ? { ...profileRes.data, email: (authUser as any)?.data?.user?.email ?? null }
+        : null,
       sellerId: seller.id,
     };
   });
@@ -262,16 +325,27 @@ export const sellerAddOrderNote = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const seller = await getSellerForUser(context.userId);
-    const { data: own } = await supabaseAdmin.from("order_items")
-      .select("id").eq("order_id", data.orderId).eq("seller_id", seller.id).limit(1);
+    const { data: own } = await supabaseAdmin
+      .from("order_items")
+      .select("id")
+      .eq("order_id", data.orderId)
+      .eq("seller_id", seller.id)
+      .limit(1);
     if (!own || own.length === 0) throw new Error("Forbidden");
     const { error } = await supabaseAdmin.from("order_notes").insert({
-      order_id: data.orderId, author_id: context.userId, author_role: "seller", body: data.body,
+      order_id: data.orderId,
+      author_id: context.userId,
+      author_role: "seller",
+      body: data.body,
     });
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("order_events").insert({
-      order_id: data.orderId, actor_id: context.userId, actor_role: "seller",
-      kind: "note_added", message: "Seller note added", payload: {},
+      order_id: data.orderId,
+      actor_id: context.userId,
+      actor_role: "seller",
+      kind: "note_added",
+      message: "Seller note added",
+      payload: {},
     });
     return { ok: true };
   });
@@ -301,31 +375,48 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
     const seller = await getSellerForUser(context.userId);
     let categoryId: string | null = null;
     if (data.category_slug) {
-      const { data: cat } = await supabaseAdmin.from("categories").select("id").eq("slug", data.category_slug).maybeSingle();
+      const { data: cat } = await supabaseAdmin
+        .from("categories")
+        .select("id")
+        .eq("slug", data.category_slug)
+        .maybeSingle();
       categoryId = cat?.id ?? null;
     }
-    const baseSlug = data.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "product";
+    const baseSlug =
+      data.name_en
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 60) || "product";
 
     let productId = data.id;
     if (!productId) {
       let slug = baseSlug;
       for (let i = 1; i < 30; i++) {
-        const { data: hit } = await supabaseAdmin.from("products").select("id").eq("slug", slug).maybeSingle();
+        const { data: hit } = await supabaseAdmin
+          .from("products")
+          .select("id")
+          .eq("slug", slug)
+          .maybeSingle();
         if (!hit) break;
         slug = `${baseSlug}-${i}`;
       }
-      const { data: created, error } = await supabaseAdmin.from("products").insert({
-        seller_id: seller.id,
-        slug,
-        brand: data.brand || null,
-        origin_region: data.origin_region || null,
-        spice_level: data.spice_level ?? null,
-        is_bulk: data.is_bulk,
-        is_halal: data.is_halal,
-        status: data.status,
-        category_id: categoryId,
-        attrs: data.attrs ?? {},
-      }).select("id, slug").single();
+      const { data: created, error } = await supabaseAdmin
+        .from("products")
+        .insert({
+          seller_id: seller.id,
+          slug,
+          brand: data.brand || null,
+          origin_region: data.origin_region || null,
+          spice_level: data.spice_level ?? null,
+          is_bulk: data.is_bulk,
+          is_halal: data.is_halal,
+          status: data.status,
+          category_id: categoryId,
+          attrs: data.attrs ?? {},
+        })
+        .select("id, slug")
+        .single();
       if (error) throw new Error(error.message);
       productId = created.id;
       // Seed a default placeholder variant so the row is usable
@@ -338,31 +429,66 @@ export const upsertSellerProduct = createServerFn({ method: "POST" })
       });
     } else {
       // verify ownership
-      const { data: own } = await supabaseAdmin.from("products").select("id").eq("id", productId).eq("seller_id", seller.id).maybeSingle();
+      const { data: own } = await supabaseAdmin
+        .from("products")
+        .select("id")
+        .eq("id", productId)
+        .eq("seller_id", seller.id)
+        .maybeSingle();
       if (!own) throw new Error("Not allowed");
-      const { error } = await supabaseAdmin.from("products").update({
-        brand: data.brand || null,
-        origin_region: data.origin_region || null,
-        spice_level: data.spice_level ?? null,
-        is_bulk: data.is_bulk,
-        is_halal: data.is_halal,
-        status: data.status,
-        category_id: categoryId,
-        attrs: data.attrs ?? {},
-      }).eq("id", productId);
+      const { error } = await supabaseAdmin
+        .from("products")
+        .update({
+          brand: data.brand || null,
+          origin_region: data.origin_region || null,
+          spice_level: data.spice_level ?? null,
+          is_bulk: data.is_bulk,
+          is_halal: data.is_halal,
+          status: data.status,
+          category_id: categoryId,
+          attrs: data.attrs ?? {},
+        })
+        .eq("id", productId);
       if (error) throw new Error(error.message);
     }
 
     // Upsert translations
     const trRows = [
-      { product_id: productId, lang: "en" as const, name: data.name_en, description: data.description_en ?? null },
-      ...(data.name_es ? [{ product_id: productId, lang: "es" as const, name: data.name_es, description: data.description_es ?? null }] : []),
-      ...(data.name_ar ? [{ product_id: productId, lang: "ar" as const, name: data.name_ar, description: data.description_ar ?? null }] : []),
+      {
+        product_id: productId,
+        lang: "en" as const,
+        name: data.name_en,
+        description: data.description_en ?? null,
+      },
+      ...(data.name_es
+        ? [
+            {
+              product_id: productId,
+              lang: "es" as const,
+              name: data.name_es,
+              description: data.description_es ?? null,
+            },
+          ]
+        : []),
+      ...(data.name_ar
+        ? [
+            {
+              product_id: productId,
+              lang: "ar" as const,
+              name: data.name_ar,
+              description: data.description_ar ?? null,
+            },
+          ]
+        : []),
     ];
     await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
     if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
 
-    const { data: saved } = await supabaseAdmin.from("products").select("slug").eq("id", productId).maybeSingle();
+    const { data: saved } = await supabaseAdmin
+      .from("products")
+      .select("slug")
+      .eq("id", productId)
+      .maybeSingle();
     return { productId, slug: saved?.slug ?? null };
   });
 
@@ -373,11 +499,15 @@ export const getSellerProduct = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data: p, error } = await supabaseAdmin
       .from("products")
-      .select(`id, slug, brand, origin_region, spice_level, is_bulk, is_halal, status, attrs, category:categories(slug),
+      .select(
+        `id, slug, brand, origin_region, spice_level, is_bulk, is_halal, status, attrs, category:categories(slug),
         translations:product_translations(lang, name, description),
         images:product_images(id, url, sort_order),
-        variants:product_variants(id, format_label, sku, price_aed, compare_at_price_aed, stock, weight_grams, is_default)`)
-      .eq("id", data.id).eq("seller_id", seller.id).maybeSingle();
+        variants:product_variants(id, format_label, sku, price_aed, compare_at_price_aed, stock, weight_grams, is_default)`,
+      )
+      .eq("id", data.id)
+      .eq("seller_id", seller.id)
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return p;
   });
@@ -387,7 +517,11 @@ export const deleteSellerProduct = createServerFn({ method: "POST" })
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const seller = await getSellerForUser(context.userId);
-    const { error } = await supabaseAdmin.from("products").delete().eq("id", data.id).eq("seller_id", seller.id);
+    const { error } = await supabaseAdmin
+      .from("products")
+      .delete()
+      .eq("id", data.id)
+      .eq("seller_id", seller.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -398,35 +532,54 @@ export const getMyPayouts = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select("id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, reviewed_at, review_note, receipt_path, created_at")
+      .select(
+        "id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, requested_at, reviewed_at, review_note, receipt_path, created_at",
+      )
       .eq("seller_id", seller.id)
       .order("period_end", { ascending: false });
     if (error) throw new Error(error.message);
     let list = (data ?? []) as any[];
     // Attach signed receipt URLs for the seller (RLS allows them via the policy)
-    list = await Promise.all(list.map(async (r) => {
-      if (!r.receipt_path) return r;
-      const signed = await supabaseAdmin.storage.from("payout-receipts").createSignedUrl(r.receipt_path, 60 * 60 * 24 * 7);
-      return { ...r, receipt_url: signed.data?.signedUrl ?? null };
-    }));
+    list = await Promise.all(
+      list.map(async (r) => {
+        if (!r.receipt_path) return r;
+        const signed = await supabaseAdmin.storage
+          .from("payout-receipts")
+          .createSignedUrl(r.receipt_path, 60 * 60 * 24 * 7);
+        return { ...r, receipt_url: signed.data?.signedUrl ?? null };
+      }),
+    );
     const paidList = list.filter((p: any) => p.status === "paid" && p.requested_at && p.paid_at);
     const avgDays = paidList.length
-      ? +(paidList.reduce((a: number, p: any) => a + (new Date(p.paid_at).getTime() - new Date(p.requested_at).getTime()) / 86400000, 0) / paidList.length).toFixed(1)
+      ? +(
+          paidList.reduce(
+            (a: number, p: any) =>
+              a + (new Date(p.paid_at).getTime() - new Date(p.requested_at).getTime()) / 86400000,
+            0,
+          ) / paidList.length
+        ).toFixed(1)
       : null;
     const sum = (k: string) => +list.reduce((a, r: any) => a + Number(r[k] ?? 0), 0).toFixed(2);
     const paid = list.filter((r: any) => r.status === "paid");
     return {
       payouts: list,
       totals: {
-        all: { gross: sum("gross_aed"), commission: sum("commission_aed"), net: sum("net_aed"), count: list.length },
+        all: {
+          gross: sum("gross_aed"),
+          commission: sum("commission_aed"),
+          net: sum("net_aed"),
+          count: list.length,
+        },
         paid: {
           gross: +paid.reduce((a, r: any) => a + Number(r.gross_aed ?? 0), 0).toFixed(2),
           net: +paid.reduce((a, r: any) => a + Number(r.net_aed ?? 0), 0).toFixed(2),
           count: paid.length,
         },
         pending: {
-          net: +list.filter((r: any) => r.status !== "paid" && r.status !== "cancelled")
-            .reduce((a, r: any) => a + Number(r.net_aed ?? 0), 0).toFixed(2),
+          net: +list
+            .filter((r: any) => r.status !== "paid" && r.status !== "cancelled")
+            .reduce((a, r: any) => a + Number(r.net_aed ?? 0), 0)
+            .toFixed(2),
           count: list.filter((r: any) => r.status !== "paid" && r.status !== "cancelled").length,
         },
         avgProcessingDays: avgDays,
@@ -438,21 +591,33 @@ export const getMyPayouts = createServerFn({ method: "GET" })
 async function computeAvailableBalance(sellerId: string) {
   await ensureSupabaseAdmin();
   const [{ data: items }, { data: payouts }] = await Promise.all([
-    supabaseAdmin.from("order_items").select("line_total_aed, commission_aed").eq("seller_id", sellerId),
-    supabaseAdmin.from("seller_payouts").select("net_aed, status, requested_at, created_at").eq("seller_id", sellerId),
+    supabaseAdmin
+      .from("order_items")
+      .select("line_total_aed, commission_aed")
+      .eq("seller_id", sellerId),
+    supabaseAdmin
+      .from("seller_payouts")
+      .select("net_aed, status, requested_at, created_at")
+      .eq("seller_id", sellerId),
   ]);
   const gross = (items ?? []).reduce((a: number, x: any) => a + Number(x.line_total_aed ?? 0), 0);
-  const commission = (items ?? []).reduce((a: number, x: any) => a + Number(x.commission_aed ?? 0), 0);
+  const commission = (items ?? []).reduce(
+    (a: number, x: any) => a + Number(x.commission_aed ?? 0),
+    0,
+  );
   const netLifetime = gross - commission;
   const reserved = (payouts ?? [])
     .filter((p: any) => p.status !== "cancelled")
     .reduce((a: number, p: any) => a + Number(p.net_aed ?? 0), 0);
-  const open = (payouts ?? []).find((p: any) => p.status === "pending" || p.status === "processing");
-  const lastRequest = (payouts ?? [])
-    .map((p: any) => p.requested_at ?? p.created_at)
-    .filter(Boolean)
-    .sort()
-    .pop() ?? null;
+  const open = (payouts ?? []).find(
+    (p: any) => p.status === "pending" || p.status === "processing",
+  );
+  const lastRequest =
+    (payouts ?? [])
+      .map((p: any) => p.requested_at ?? p.created_at)
+      .filter(Boolean)
+      .sort()
+      .pop() ?? null;
   return {
     availableBalance: Math.max(0, +(netLifetime - reserved).toFixed(2)),
     hasOpenRequest: !!open,
@@ -470,12 +635,16 @@ export const requestSellerPayout = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const seller = await getSellerForUser(context.userId);
     if ((seller as any).kyc_status !== "verified") {
-      throw new Error("Your account must be KYC-verified before requesting payouts. Submit your trade license in Settings → Verification.");
+      throw new Error(
+        "Your account must be KYC-verified before requesting payouts. Submit your trade license in Settings → Verification.",
+      );
     }
     const balance = await computeAvailableBalance(seller.id);
     if (balance.hasOpenRequest) throw new Error("You already have a pending payout request.");
     if (balance.availableBalance <= 0) throw new Error("No funds available for payout.");
-    const amount = data.amount ? Math.min(data.amount, balance.availableBalance) : balance.availableBalance;
+    const amount = data.amount
+      ? Math.min(data.amount, balance.availableBalance)
+      : balance.availableBalance;
     if (amount <= 0) throw new Error("Invalid amount.");
 
     const rate = Number(seller.commission_rate ?? 0) / 100;
@@ -486,27 +655,37 @@ export const requestSellerPayout = createServerFn({ method: "POST" })
     const { data: lastPaid } = await supabaseAdmin
       .from("seller_payouts")
       .select("period_end")
-      .eq("seller_id", seller.id).eq("status", "paid")
-      .order("period_end", { ascending: false }).limit(1).maybeSingle();
+      .eq("seller_id", seller.id)
+      .eq("status", "paid")
+      .order("period_end", { ascending: false })
+      .limit(1)
+      .maybeSingle();
     const periodStart = lastPaid?.period_end
       ? new Date(new Date(lastPaid.period_end).getTime() + 86400000).toISOString().slice(0, 10)
       : new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().slice(0, 10);
     const periodEnd = today.toISOString().slice(0, 10);
 
-    const { data: created, error } = await supabaseAdmin.from("seller_payouts").insert({
-      seller_id: seller.id,
-      period_start: periodStart,
-      period_end: periodEnd,
-      gross_aed: gross,
-      commission_aed: commission,
-      net_aed: amount,
-      status: "pending",
-      requested_at: new Date().toISOString(),
-    }).select("id").single();
+    const { data: created, error } = await supabaseAdmin
+      .from("seller_payouts")
+      .insert({
+        seller_id: seller.id,
+        period_start: periodStart,
+        period_end: periodEnd,
+        gross_aed: gross,
+        commission_aed: commission,
+        net_aed: amount,
+        status: "pending",
+        requested_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
 
     // Notify admins
-    const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+    const { data: admins } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
     if (admins && admins.length) {
       await supabaseAdmin.from("notifications").insert(
         admins.map((a: any) => ({
@@ -527,54 +706,78 @@ const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // ~10 years
 async function assertOwnsProduct(productId: string, userId: string) {
   const seller = await getSellerForUser(userId);
   const { data: own } = await supabaseAdmin
-    .from("products").select("id").eq("id", productId).eq("seller_id", seller.id).maybeSingle();
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("seller_id", seller.id)
+    .maybeSingle();
   if (!own) throw new Error("Not allowed");
   return seller;
 }
 
 export const uploadProductImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { productId: string; filename: string; contentType: string; dataBase64: string }) =>
-    z.object({
-      productId: z.string().uuid(),
-      filename: z.string().min(1).max(200),
-      contentType: z.string().min(3).max(120),
-      dataBase64: z.string().min(10).max(8_000_000),
-    }).parse(input),
+  .inputValidator(
+    (input: { productId: string; filename: string; contentType: string; dataBase64: string }) =>
+      z
+        .object({
+          productId: z.string().uuid(),
+          filename: z.string().min(1).max(200),
+          contentType: z.string().min(3).max(120),
+          dataBase64: z.string().min(10).max(8_000_000),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOwnsProduct(data.productId, context.userId);
-    const ext = (data.filename.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const ext =
+      (data.filename.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
     const path = `${data.productId}/${crypto.randomUUID()}.${ext}`;
     const buffer = Buffer.from(data.dataBase64, "base64");
     const up = await supabaseAdmin.storage.from(BUCKET).upload(path, buffer, {
-      contentType: data.contentType, upsert: false,
+      contentType: data.contentType,
+      upsert: false,
     });
     if (up.error) throw new Error(up.error.message);
     const signed = await supabaseAdmin.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL);
     if (signed.error || !signed.data) throw new Error(signed.error?.message ?? "Sign failed");
     const { data: existing } = await supabaseAdmin
-      .from("product_images").select("id").eq("product_id", data.productId);
+      .from("product_images")
+      .select("id")
+      .eq("product_id", data.productId);
     const nextOrder = (existing ?? []).length;
-    const { data: row, error } = await supabaseAdmin.from("product_images").insert({
-      product_id: data.productId, url: signed.data.signedUrl, sort_order: nextOrder, alt_text: data.filename,
-    }).select("id, url, sort_order").single();
+    const { data: row, error } = await supabaseAdmin
+      .from("product_images")
+      .insert({
+        product_id: data.productId,
+        url: signed.data.signedUrl,
+        sort_order: nextOrder,
+        alt_text: data.filename,
+      })
+      .select("id, url, sort_order")
+      .single();
     if (error) throw new Error(error.message);
     return row;
   });
 
 export const removeProductImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { imageId: string }) => z.object({ imageId: z.string().uuid() }).parse(input))
+  .inputValidator((input: { imageId: string }) =>
+    z.object({ imageId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { data: img } = await supabaseAdmin
-      .from("product_images").select("id, url, product_id").eq("id", data.imageId).maybeSingle();
+      .from("product_images")
+      .select("id, url, product_id")
+      .eq("id", data.imageId)
+      .maybeSingle();
     if (!img) throw new Error("Not found");
     await assertOwnsProduct(img.product_id, context.userId);
     // Best-effort delete from storage (parse path from URL)
     try {
       const match = img.url.match(/product-images\/([^?]+)/);
-      if (match?.[1]) await supabaseAdmin.storage.from(BUCKET).remove([decodeURIComponent(match[1])]);
+      if (match?.[1])
+        await supabaseAdmin.storage.from(BUCKET).remove([decodeURIComponent(match[1])]);
     } catch {}
     const { error } = await supabaseAdmin.from("product_images").delete().eq("id", data.imageId);
     if (error) throw new Error(error.message);
@@ -584,13 +787,18 @@ export const removeProductImage = createServerFn({ method: "POST" })
 export const reorderProductImages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { productId: string; orderedIds: string[] }) =>
-    z.object({ productId: z.string().uuid(), orderedIds: z.array(z.string().uuid()).max(30) }).parse(input),
+    z
+      .object({ productId: z.string().uuid(), orderedIds: z.array(z.string().uuid()).max(30) })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOwnsProduct(data.productId, context.userId);
     for (let i = 0; i < data.orderedIds.length; i++) {
-      await supabaseAdmin.from("product_images")
-        .update({ sort_order: i }).eq("id", data.orderedIds[i]).eq("product_id", data.productId);
+      await supabaseAdmin
+        .from("product_images")
+        .update({ sort_order: i })
+        .eq("id", data.orderedIds[i])
+        .eq("product_id", data.productId);
     }
     return { ok: true };
   });
@@ -624,14 +832,21 @@ export const upsertVariant = createServerFn({ method: "POST" })
       is_default: !!data.is_default,
     };
     if (data.is_default) {
-      await supabaseAdmin.from("product_variants").update({ is_default: false }).eq("product_id", data.productId);
+      await supabaseAdmin
+        .from("product_variants")
+        .update({ is_default: false })
+        .eq("product_id", data.productId);
     }
     if (data.id) {
       const { error } = await supabaseAdmin.from("product_variants").update(row).eq("id", data.id);
       if (error) throw new Error(error.message);
       return { id: data.id };
     } else {
-      const { data: created, error } = await supabaseAdmin.from("product_variants").insert(row).select("id").single();
+      const { data: created, error } = await supabaseAdmin
+        .from("product_variants")
+        .insert(row)
+        .select("id")
+        .single();
       if (error) throw new Error(error.message);
       return { id: created.id };
     }
@@ -639,20 +854,31 @@ export const upsertVariant = createServerFn({ method: "POST" })
 
 export const deleteVariant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { variantId: string }) => z.object({ variantId: z.string().uuid() }).parse(input))
+  .inputValidator((input: { variantId: string }) =>
+    z.object({ variantId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { data: v } = await supabaseAdmin
-      .from("product_variants").select("id, product_id, is_default").eq("id", data.variantId).maybeSingle();
+      .from("product_variants")
+      .select("id, product_id, is_default")
+      .eq("id", data.variantId)
+      .maybeSingle();
     if (!v) throw new Error("Not found");
     await assertOwnsProduct(v.product_id, context.userId);
     const { data: siblings } = await supabaseAdmin
-      .from("product_variants").select("id").eq("product_id", v.product_id);
+      .from("product_variants")
+      .select("id")
+      .eq("product_id", v.product_id);
     if ((siblings ?? []).length <= 1) throw new Error("A product needs at least one variant");
-    const { error } = await supabaseAdmin.from("product_variants").delete().eq("id", data.variantId);
+    const { error } = await supabaseAdmin
+      .from("product_variants")
+      .delete()
+      .eq("id", data.variantId);
     if (error) throw new Error(error.message);
     if (v.is_default) {
       const next = (siblings ?? []).find((s: any) => s.id !== data.variantId);
-      if (next) await supabaseAdmin.from("product_variants").update({ is_default: true }).eq("id", next.id);
+      if (next)
+        await supabaseAdmin.from("product_variants").update({ is_default: true }).eq("id", next.id);
     }
     return { ok: true };
   });
@@ -664,8 +890,10 @@ export const getSellerCommissions = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data: items } = await supabaseAdmin
       .from("order_items")
-      .select(`id, qty, line_total_aed, commission_aed, product_id, product_name,
-        order:orders!inner(id, created_at, payment_status)`)
+      .select(
+        `id, qty, line_total_aed, commission_aed, product_id, product_name,
+        order:orders!inner(id, created_at, payment_status)`,
+      )
       .eq("seller_id", seller.id);
     const list = (items ?? []) as any[];
     const now = new Date();
@@ -674,7 +902,15 @@ export const getSellerCommissions = createServerFn({ method: "GET" })
     const sum = (xs: any[], k: string) => +xs.reduce((a, x) => a + Number(x[k] ?? 0), 0).toFixed(2);
 
     // Monthly buckets (last 12 months)
-    const months: { key: string; label: string; gmv: number; commission: number; net: number; orders: number; rate: number }[] = [];
+    const months: {
+      key: string;
+      label: string;
+      gmv: number;
+      commission: number;
+      net: number;
+      orders: number;
+      rate: number;
+    }[] = [];
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -682,8 +918,11 @@ export const getSellerCommissions = createServerFn({ method: "GET" })
       const gmv = sum(inMonth, "line_total_aed");
       const commission = sum(inMonth, "commission_aed");
       months.push({
-        key, label: d.toLocaleString("en", { month: "short", year: "numeric" }),
-        gmv, commission, net: +(gmv - commission).toFixed(2),
+        key,
+        label: d.toLocaleString("en", { month: "short", year: "numeric" }),
+        gmv,
+        commission,
+        net: +(gmv - commission).toFixed(2),
         orders: new Set(inMonth.map((x) => x.order.id)).size,
         rate: gmv > 0 ? +((commission / gmv) * 100).toFixed(2) : 0,
       });
@@ -692,14 +931,25 @@ export const getSellerCommissions = createServerFn({ method: "GET" })
     // Top products by commission
     const agg = new Map<string, { name: string; units: number; gmv: number; commission: number }>();
     for (const it of list) {
-      const cur = agg.get(it.product_id) ?? { name: it.product_name, units: 0, gmv: 0, commission: 0 };
+      const cur = agg.get(it.product_id) ?? {
+        name: it.product_name,
+        units: 0,
+        gmv: 0,
+        commission: 0,
+      };
       cur.units += Number(it.qty ?? 0);
       cur.gmv += Number(it.line_total_aed ?? 0);
       cur.commission += Number(it.commission_aed ?? 0);
       agg.set(it.product_id, cur);
     }
     const topProducts = Array.from(agg.entries())
-      .map(([id, v]) => ({ id, name: v.name, units: v.units, gmv: +v.gmv.toFixed(2), commission: +v.commission.toFixed(2) }))
+      .map(([id, v]) => ({
+        id,
+        name: v.name,
+        units: v.units,
+        gmv: +v.gmv.toFixed(2),
+        commission: +v.commission.toFixed(2),
+      }))
       .sort((a, b) => b.commission - a.commission)
       .slice(0, 5);
 
@@ -730,20 +980,35 @@ export const getSellerStorefront = createServerFn({ method: "GET" })
     const s = await getSellerForUser(context.userId);
     const { data: prods } = await supabaseAdmin
       .from("products")
-      .select(`id, status, category_id, translations:product_translations(lang, name), images:product_images(url, sort_order), category:categories(slug, name_en)`)
+      .select(
+        `id, status, category_id, translations:product_translations(lang, name), images:product_images(url, sort_order), category:categories(slug, name_en)`,
+      )
       .eq("seller_id", s.id);
     const products = (prods ?? []).map((p: any) => {
       const tr = (p.translations ?? []).find((t: any) => t.lang === "en") ?? p.translations?.[0];
       const img = (p.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order)[0];
       return {
-        id: p.id, name: tr?.name ?? "(untitled)", image: img?.url ?? null, status: p.status,
-        category_id: p.category_id, category_name: p.category?.name_en ?? null, category_slug: p.category?.slug ?? null,
+        id: p.id,
+        name: tr?.name ?? "(untitled)",
+        image: img?.url ?? null,
+        status: p.status,
+        category_id: p.category_id,
+        category_name: p.category?.name_en ?? null,
+        category_slug: p.category?.slug ?? null,
       };
     });
     return {
-      id: s.id, slug: s.slug, store_name: s.store_name, tagline: s.tagline, bio: s.bio,
-      logo_url: s.logo_url, cover_url: s.cover_url, contact_email: s.contact_email,
-      contact_phone: s.contact_phone, social_links: s.social_links ?? {}, is_published: s.is_published,
+      id: s.id,
+      slug: s.slug,
+      store_name: s.store_name,
+      tagline: s.tagline,
+      bio: s.bio,
+      logo_url: s.logo_url,
+      cover_url: s.cover_url,
+      contact_email: s.contact_email,
+      contact_phone: s.contact_phone,
+      social_links: s.social_links ?? {},
+      is_published: s.is_published,
       featured_product_ids: (s as any).featured_product_ids ?? [],
       business_hours: (s as any).business_hours ?? {},
       theme: (s as any).theme ?? {},
@@ -762,23 +1027,46 @@ const StorefrontInput = z.object({
   social_links: z.record(z.string().max(40), z.string().max(300)).optional().nullable(),
   is_published: z.boolean().default(true),
   featured_product_ids: z.array(z.string().uuid()).max(8).optional().nullable(),
-  business_hours: z.record(
-    z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
-    z.object({
-      open: z.string().max(5).optional().nullable(),
-      close: z.string().max(5).optional().nullable(),
-      closed: z.boolean().optional(),
-    }),
-  ).optional().nullable(),
-  theme: z.object({
-    primary: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
-    accent: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
-    bg: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
-    text: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
-    font: z.enum(["Inter", "Playfair Display", "Space Grotesk", "System"]).optional().nullable(),
-    radius: z.enum(["none", "sm", "md", "lg", "xl"]).optional().nullable(),
-    layout: z.enum(["grid", "masonry", "list"]).optional().nullable(),
-  }).partial().optional().nullable(),
+  business_hours: z
+    .record(
+      z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+      z.object({
+        open: z.string().max(5).optional().nullable(),
+        close: z.string().max(5).optional().nullable(),
+        closed: z.boolean().optional(),
+      }),
+    )
+    .optional()
+    .nullable(),
+  theme: z
+    .object({
+      primary: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/)
+        .optional()
+        .nullable(),
+      accent: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/)
+        .optional()
+        .nullable(),
+      bg: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/)
+        .optional()
+        .nullable(),
+      text: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/)
+        .optional()
+        .nullable(),
+      font: z.enum(["Inter", "Playfair Display", "Space Grotesk", "System"]).optional().nullable(),
+      radius: z.enum(["none", "sm", "md", "lg", "xl"]).optional().nullable(),
+      layout: z.enum(["grid", "masonry", "list"]).optional().nullable(),
+    })
+    .partial()
+    .optional()
+    .nullable(),
 });
 
 export const updateSellerStorefront = createServerFn({ method: "POST" })
@@ -789,46 +1077,62 @@ export const updateSellerStorefront = createServerFn({ method: "POST" })
     // validate featured product ownership
     let featured: string[] = [];
     if (data.featured_product_ids?.length) {
-      const { data: owned } = await supabaseAdmin.from("products")
-        .select("id").eq("seller_id", s.id).in("id", data.featured_product_ids);
+      const { data: owned } = await supabaseAdmin
+        .from("products")
+        .select("id")
+        .eq("seller_id", s.id)
+        .in("id", data.featured_product_ids);
       const ownedSet = new Set((owned ?? []).map((p: any) => p.id));
       featured = data.featured_product_ids.filter((id) => ownedSet.has(id));
     }
-    const { error } = await supabaseAdmin.from("sellers").update({
-      store_name: data.store_name,
-      tagline: data.tagline ?? null,
-      bio: data.bio ?? null,
-      logo_url: data.logo_url ?? null,
-      cover_url: data.cover_url ?? null,
-      contact_email: data.contact_email ?? null,
-      contact_phone: data.contact_phone ?? null,
-      social_links: data.social_links ?? {},
-      is_published: data.is_published,
-      featured_product_ids: featured,
-      business_hours: data.business_hours ?? {},
-      theme: data.theme ?? {},
-    }).eq("id", s.id);
+    const { error } = await supabaseAdmin
+      .from("sellers")
+      .update({
+        store_name: data.store_name,
+        tagline: data.tagline ?? null,
+        bio: data.bio ?? null,
+        logo_url: data.logo_url ?? null,
+        cover_url: data.cover_url ?? null,
+        contact_email: data.contact_email ?? null,
+        contact_phone: data.contact_phone ?? null,
+        social_links: data.social_links ?? {},
+        is_published: data.is_published,
+        featured_product_ids: featured,
+        business_hours: data.business_hours ?? {},
+        theme: data.theme ?? {},
+      })
+      .eq("id", s.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const uploadSellerAsset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { kind: "logo" | "cover"; filename: string; contentType: string; dataBase64: string }) =>
-    z.object({
-      kind: z.enum(["logo", "cover"]),
-      filename: z.string().min(1).max(200),
-      contentType: z.string().min(3).max(120),
-      dataBase64: z.string().min(10).max(8_000_000),
-    }).parse(input),
+  .inputValidator(
+    (input: {
+      kind: "logo" | "cover";
+      filename: string;
+      contentType: string;
+      dataBase64: string;
+    }) =>
+      z
+        .object({
+          kind: z.enum(["logo", "cover"]),
+          filename: z.string().min(1).max(200),
+          contentType: z.string().min(3).max(120),
+          dataBase64: z.string().min(10).max(8_000_000),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const s = await getSellerForUser(context.userId);
-    const ext = (data.filename.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const ext =
+      (data.filename.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
     const path = `sellers/${s.id}/${data.kind}-${crypto.randomUUID()}.${ext}`;
     const buffer = Buffer.from(data.dataBase64, "base64");
     const up = await supabaseAdmin.storage.from(BUCKET).upload(path, buffer, {
-      contentType: data.contentType, upsert: false,
+      contentType: data.contentType,
+      upsert: false,
     });
     if (up.error) throw new Error(up.error.message);
     const signed = await supabaseAdmin.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL);
@@ -842,15 +1146,29 @@ export const getSellerSettings = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const s = await getSellerForUser(context.userId);
     return {
-      legal_name: s.legal_name, trn: s.trn, vat_number: s.vat_number,
-      support_email: s.support_email, support_phone: s.support_phone, contact_address: s.contact_address,
-      processing_days: s.processing_days, auto_accept_orders: s.auto_accept_orders,
-      vacation_mode: s.vacation_mode, vacation_message: s.vacation_message,
-      payout_method: s.payout_method, bank_name: s.bank_name, bank_iban: s.bank_iban,
-      bank_swift: s.bank_swift, bank_account_holder: s.bank_account_holder,
-      notify_new_order: s.notify_new_order, notify_low_stock: s.notify_low_stock, notify_payout: s.notify_payout,
-      address_line1: (s as any).address_line1, address_line2: (s as any).address_line2,
-      city: (s as any).city, country: (s as any).country, postal_code: (s as any).postal_code,
+      legal_name: s.legal_name,
+      trn: s.trn,
+      vat_number: s.vat_number,
+      support_email: s.support_email,
+      support_phone: s.support_phone,
+      contact_address: s.contact_address,
+      processing_days: s.processing_days,
+      auto_accept_orders: s.auto_accept_orders,
+      vacation_mode: s.vacation_mode,
+      vacation_message: s.vacation_message,
+      payout_method: s.payout_method,
+      bank_name: s.bank_name,
+      bank_iban: s.bank_iban,
+      bank_swift: s.bank_swift,
+      bank_account_holder: s.bank_account_holder,
+      notify_new_order: s.notify_new_order,
+      notify_low_stock: s.notify_low_stock,
+      notify_payout: s.notify_payout,
+      address_line1: (s as any).address_line1,
+      address_line2: (s as any).address_line2,
+      city: (s as any).city,
+      country: (s as any).country,
+      postal_code: (s as any).postal_code,
       currency: (s as any).currency ?? "AED",
       tax_inclusive_pricing: (s as any).tax_inclusive_pricing ?? false,
       tax_rate: (s as any).tax_rate ?? 0,
@@ -889,7 +1207,9 @@ const SettingsInput = z.object({
   currency: z.enum(["AED", "USD", "EUR", "MXN", "SAR"]).default("AED"),
   tax_inclusive_pricing: z.boolean().default(false),
   tax_rate: z.number().min(0).max(100).default(0),
-  accepted_payment_methods: z.array(z.enum(["card", "apple_pay", "google_pay", "cod", "bank_transfer"])).default(["card"]),
+  accepted_payment_methods: z
+    .array(z.enum(["card", "apple_pay", "google_pay", "cod", "bank_transfer"]))
+    .default(["card"]),
   notify_review: z.boolean().default(true),
   notify_return: z.boolean().default(true),
   payout_schedule: z.enum(["manual", "weekly", "biweekly", "monthly"]).default("manual"),
@@ -911,7 +1231,10 @@ export const updateSellerSettings = createServerFn({ method: "POST" })
   });
 
 // ===== Detailed commissions periods + refunds =====
-function periodKey(d: Date, gran: "week" | "month" | "quarter"): { key: string; label: string; sortKey: string } {
+function periodKey(
+  d: Date,
+  gran: "week" | "month" | "quarter",
+): { key: string; label: string; sortKey: string } {
   if (gran === "week") {
     const start = new Date(d);
     const day = start.getUTCDay(); // 0=Sun
@@ -923,25 +1246,44 @@ function periodKey(d: Date, gran: "week" | "month" | "quarter"): { key: string; 
   if (gran === "quarter") {
     const q = Math.floor(d.getUTCMonth() / 3) + 1;
     const k = `${d.getUTCFullYear()}-Q${q}`;
-    return { key: k, label: k, sortKey: `${d.getUTCFullYear()}-${String((q - 1) * 3 + 1).padStart(2, "0")}` };
+    return {
+      key: k,
+      label: k,
+      sortKey: `${d.getUTCFullYear()}-${String((q - 1) * 3 + 1).padStart(2, "0")}`,
+    };
   }
-  const y = d.getUTCFullYear(); const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
   const k = `${y}-${m}`;
-  return { key: k, label: d.toLocaleString("en", { month: "short", year: "numeric", timeZone: "UTC" }), sortKey: k };
+  return {
+    key: k,
+    label: d.toLocaleString("en", { month: "short", year: "numeric", timeZone: "UTC" }),
+    sortKey: k,
+  };
 }
 
 export const getSellerCommissionPeriods = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { granularity?: string; from?: string; to?: string }) =>
-    z.object({
-      granularity: z.enum(["week", "month", "quarter"]).default("month"),
-      from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-      to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    }).parse(input ?? {}),
+    z
+      .object({
+        granularity: z.enum(["week", "month", "quarter"]).default("month"),
+        from: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+        to: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .optional(),
+      })
+      .parse(input ?? {}),
   )
   .handler(async ({ data, context }) => {
     const seller = await getSellerForUser(context.userId);
-    const fromIso = data.from ? `${data.from}T00:00:00Z` : new Date(Date.now() - 365 * 86400000).toISOString();
+    const fromIso = data.from
+      ? `${data.from}T00:00:00Z`
+      : new Date(Date.now() - 365 * 86400000).toISOString();
     const toIso = data.to ? `${data.to}T23:59:59Z` : new Date().toISOString();
 
     const { data: items } = await supabaseAdmin
@@ -962,10 +1304,24 @@ export const getSellerCommissionPeriods = createServerFn({ method: "POST" })
     const list = (items ?? []) as any[];
     const ret = (refunds ?? []) as any[];
 
-    const buckets = new Map<string, { sortKey: string; label: string; orders: Set<string>; units: number; gross: number; commission: number; refunds: number }>();
+    const buckets = new Map<
+      string,
+      {
+        sortKey: string;
+        label: string;
+        orders: Set<string>;
+        units: number;
+        gross: number;
+        commission: number;
+        refunds: number;
+      }
+    >();
     const ensure = (k: string, sortKey: string, label: string) => {
       let b = buckets.get(k);
-      if (!b) { b = { sortKey, label, orders: new Set(), units: 0, gross: 0, commission: 0, refunds: 0 }; buckets.set(k, b); }
+      if (!b) {
+        b = { sortKey, label, orders: new Set(), units: 0, gross: 0, commission: 0, refunds: 0 };
+        buckets.set(k, b);
+      }
       return b;
     };
 
@@ -993,8 +1349,11 @@ export const getSellerCommissionPeriods = createServerFn({ method: "POST" })
         const commission = +v.commission.toFixed(2);
         const rate = v.gross > 0 ? +((commission / v.gross) * 100).toFixed(2) : 0;
         return {
-          key, label: v.label, sortKey: v.sortKey,
-          orders: v.orders.size, units: v.units,
+          key,
+          label: v.label,
+          sortKey: v.sortKey,
+          orders: v.orders.size,
+          units: v.units,
           gross: +v.gross.toFixed(2),
           refunds: +v.refunds.toFixed(2),
           netGmv,
@@ -1003,10 +1362,17 @@ export const getSellerCommissionPeriods = createServerFn({ method: "POST" })
           earnings: +(netGmv - commission).toFixed(2),
         };
       })
-      .sort((a, b) => a.sortKey < b.sortKey ? -1 : 1);
+      .sort((a, b) => (a.sortKey < b.sortKey ? -1 : 1));
 
     const totals = periods.reduce(
-      (a, p) => ({ orders: a.orders + p.orders, units: a.units + p.units, gross: a.gross + p.gross, refunds: a.refunds + p.refunds, commission: a.commission + p.commission, earnings: a.earnings + p.earnings }),
+      (a, p) => ({
+        orders: a.orders + p.orders,
+        units: a.units + p.units,
+        gross: a.gross + p.gross,
+        refunds: a.refunds + p.refunds,
+        commission: a.commission + p.commission,
+        earnings: a.earnings + p.earnings,
+      }),
       { orders: 0, units: 0, gross: 0, refunds: 0, commission: 0, earnings: 0 },
     );
     return { periods, totals };
@@ -1020,10 +1386,14 @@ export const getKycStatus = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const s: any = await getSellerForUser(context.userId);
     const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
-    const docsWithUrl = await Promise.all(docs.map(async (d: any) => {
-      const signed = await supabaseAdmin.storage.from(KYC_BUCKET).createSignedUrl(d.path, 60 * 60);
-      return { ...d, url: signed.data?.signedUrl ?? null };
-    }));
+    const docsWithUrl = await Promise.all(
+      docs.map(async (d: any) => {
+        const signed = await supabaseAdmin.storage
+          .from(KYC_BUCKET)
+          .createSignedUrl(d.path, 60 * 60);
+        return { ...d, url: signed.data?.signedUrl ?? null };
+      }),
+    );
     return {
       status: s.kyc_status ?? "unverified",
       submitted_at: s.kyc_submitted_at,
@@ -1035,26 +1405,35 @@ export const getKycStatus = createServerFn({ method: "GET" })
 
 export const uploadKycDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { kind: string; filename: string; contentType: string; dataBase64: string }) =>
-    z.object({
-      kind: z.enum(["trade_license", "emirates_id", "passport", "other"]),
-      filename: z.string().min(1).max(200),
-      contentType: z.string().min(3).max(120),
-      dataBase64: z.string().min(10).max(8_000_000),
-    }).parse(input),
+  .inputValidator(
+    (input: { kind: string; filename: string; contentType: string; dataBase64: string }) =>
+      z
+        .object({
+          kind: z.enum(["trade_license", "emirates_id", "passport", "other"]),
+          filename: z.string().min(1).max(200),
+          contentType: z.string().min(3).max(120),
+          dataBase64: z.string().min(10).max(8_000_000),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const s: any = await getSellerForUser(context.userId);
-    const ext = (data.filename.split(".").pop() ?? "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+    const ext =
+      (data.filename.split(".").pop() ?? "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
     const path = `${s.id}/${data.kind}-${crypto.randomUUID()}.${ext}`;
     const buf = Buffer.from(data.dataBase64, "base64");
-    const up = await supabaseAdmin.storage.from(KYC_BUCKET).upload(path, buf, { contentType: data.contentType, upsert: false });
+    const up = await supabaseAdmin.storage
+      .from(KYC_BUCKET)
+      .upload(path, buf, { contentType: data.contentType, upsert: false });
     if (up.error) throw new Error(up.error.message);
     const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
     // Replace existing doc of same kind
     const filtered = docs.filter((d: any) => d.kind !== data.kind);
     filtered.push({ kind: data.kind, path, uploaded_at: new Date().toISOString() });
-    const { error } = await supabaseAdmin.from("sellers").update({ kyc_documents: filtered }).eq("id", s.id);
+    const { error } = await supabaseAdmin
+      .from("sellers")
+      .update({ kyc_documents: filtered })
+      .eq("id", s.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -1082,36 +1461,45 @@ export const submitKycForReview = createServerFn({ method: "POST" })
     if (!docs.some((d: any) => d.kind === "trade_license")) {
       throw new Error("Please upload your trade license before submitting.");
     }
-    await supabaseAdmin.from("sellers").update({
-      kyc_status: "pending",
-      kyc_submitted_at: new Date().toISOString(),
-      kyc_rejection_reason: null,
-    }).eq("id", s.id);
+    await supabaseAdmin
+      .from("sellers")
+      .update({
+        kyc_status: "pending",
+        kyc_submitted_at: new Date().toISOString(),
+        kyc_rejection_reason: null,
+      })
+      .eq("id", s.id);
     // notify admins
-    const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+    const { data: admins } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
     if (admins?.length) {
-      await supabaseAdmin.from("notifications").insert(admins.map((a: any) => ({
-        user_id: a.user_id,
-        kind: "kyc_submitted",
-        title: "KYC verification submitted",
-        body: `${s.store_name} submitted documents for review.`,
-        link: "/admin/sellers/kyc",
-      })));
+      await supabaseAdmin.from("notifications").insert(
+        admins.map((a: any) => ({
+          user_id: a.user_id,
+          kind: "kyc_submitted",
+          title: "KYC verification submitted",
+          body: `${s.store_name} submitted documents for review.`,
+          link: "/admin/sellers/kyc",
+        })),
+      );
     }
     return { ok: true };
   });
 
 // ===== Currency rates =====
-export const getCurrencyRates = createServerFn({ method: "GET" })
-  .handler(async () => {
-    await ensureSupabaseAdmin();
-    const { data } = await supabaseAdmin.from("currency_rates").select("base, quote, rate, fetched_at");
-    const rates: Record<string, number> = { AED: 1 };
-    for (const r of (data ?? []) as any[]) {
-      if (r.base === "AED") rates[r.quote] = Number(r.rate);
-    }
-    return { base: "AED", rates, fetched_at: (data ?? [])[0]?.fetched_at ?? null };
-  });
+export const getCurrencyRates = createServerFn({ method: "GET" }).handler(async () => {
+  await ensureSupabaseAdmin();
+  const { data } = await supabaseAdmin
+    .from("currency_rates")
+    .select("base, quote, rate, fetched_at");
+  const rates: Record<string, number> = { AED: 1 };
+  for (const r of (data ?? []) as any[]) {
+    if (r.base === "AED") rates[r.quote] = Number(r.rate);
+  }
+  return { base: "AED", rates, fetched_at: (data ?? [])[0]?.fetched_at ?? null };
+});
 
 // ============= Seller Customers =============
 
@@ -1121,44 +1509,63 @@ export const sellerListCustomers = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data: items, error } = await supabaseAdmin
       .from("order_items")
-      .select(`qty, line_total_aed,
-        order:orders!inner(id, buyer_id, created_at, shipping_address)`)
+      .select(
+        `qty, line_total_aed,
+        order:orders!inner(id, buyer_id, created_at, shipping_address)`,
+      )
       .eq("seller_id", seller.id);
     if (error) throw new Error(error.message);
-    const agg = new Map<string, { buyer_id: string; orders: Set<string>; gmv: number; last: string | null; addr: any }>();
+    const agg = new Map<
+      string,
+      { buyer_id: string; orders: Set<string>; gmv: number; last: string | null; addr: any }
+    >();
     for (const it of (items ?? []) as any[]) {
       const o = it.order;
       if (!o?.buyer_id) continue;
-      const cur = agg.get(o.buyer_id) ?? { buyer_id: o.buyer_id, orders: new Set<string>(), gmv: 0, last: null, addr: o.shipping_address };
+      const cur = agg.get(o.buyer_id) ?? {
+        buyer_id: o.buyer_id,
+        orders: new Set<string>(),
+        gmv: 0,
+        last: null,
+        addr: o.shipping_address,
+      };
       cur.orders.add(o.id);
       cur.gmv += Number(it.line_total_aed ?? 0);
-      if (!cur.last || o.created_at > cur.last) { cur.last = o.created_at; cur.addr = o.shipping_address; }
+      if (!cur.last || o.created_at > cur.last) {
+        cur.last = o.created_at;
+        cur.addr = o.shipping_address;
+      }
       agg.set(o.buyer_id, cur);
     }
     const buyerIds = Array.from(agg.keys());
     if (buyerIds.length === 0) return [];
     const [profilesRes, authList] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, phone, company_name, preferred_lang").in("id", buyerIds),
+      supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, phone, company_name, preferred_lang")
+        .in("id", buyerIds),
       supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
     ]);
     const profileMap = new Map<string, any>();
     for (const p of (profilesRes.data ?? []) as any[]) profileMap.set(p.id, p);
     const emailMap = new Map<string, string>();
     for (const u of (authList.data?.users ?? []) as any[]) emailMap.set(u.id, u.email ?? "");
-    return buyerIds.map((id) => {
-      const a = agg.get(id)!;
-      const p = profileMap.get(id) ?? {};
-      return {
-        id,
-        full_name: p.full_name ?? a.addr?.recipient_name ?? "—",
-        email: emailMap.get(id) ?? null,
-        phone: p.phone ?? a.addr?.phone ?? null,
-        company_name: p.company_name ?? null,
-        order_count: a.orders.size,
-        gmv: +a.gmv.toFixed(2),
-        last_order_at: a.last,
-      };
-    }).sort((a, b) => (b.last_order_at ?? "").localeCompare(a.last_order_at ?? ""));
+    return buyerIds
+      .map((id) => {
+        const a = agg.get(id)!;
+        const p = profileMap.get(id) ?? {};
+        return {
+          id,
+          full_name: p.full_name ?? a.addr?.recipient_name ?? "—",
+          email: emailMap.get(id) ?? null,
+          phone: p.phone ?? a.addr?.phone ?? null,
+          company_name: p.company_name ?? null,
+          order_count: a.orders.size,
+          gmv: +a.gmv.toFixed(2),
+          last_order_at: a.last,
+        };
+      })
+      .sort((a, b) => (b.last_order_at ?? "").localeCompare(a.last_order_at ?? ""));
   });
 
 export const sellerGetCustomerDetail = createServerFn({ method: "GET" })
@@ -1168,8 +1575,10 @@ export const sellerGetCustomerDetail = createServerFn({ method: "GET" })
     const seller = await getSellerForUser(context.userId);
     const { data: items, error } = await supabaseAdmin
       .from("order_items")
-      .select(`qty, line_total_aed, fulfillment_status,
-        order:orders!inner(id, order_number, status, payment_status, total_aed, created_at, buyer_id, shipping_address)`)
+      .select(
+        `qty, line_total_aed, fulfillment_status,
+        order:orders!inner(id, order_number, status, payment_status, total_aed, created_at, buyer_id, shipping_address)`,
+      )
       .eq("seller_id", seller.id)
       .eq("order.buyer_id", data.id);
     if (error) throw new Error(error.message);
@@ -1182,9 +1591,15 @@ export const sellerGetCustomerDetail = createServerFn({ method: "GET" })
       const o = it.order;
       orderMap.set(o.id, o);
     }
-    const orders = Array.from(orderMap.values()).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const orders = Array.from(orderMap.values()).sort((a, b) =>
+      b.created_at.localeCompare(a.created_at),
+    );
     const [profileRes, authUser] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, phone, company_name, preferred_lang, created_at").eq("id", data.id).maybeSingle(),
+      supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, phone, company_name, preferred_lang, created_at")
+        .eq("id", data.id)
+        .maybeSingle(),
       supabaseAdmin.auth.admin.getUserById(data.id),
     ]);
     const profile = profileRes.data ?? {};

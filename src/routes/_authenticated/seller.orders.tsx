@@ -4,14 +4,33 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listSellerOrders } from "@/lib/seller.functions";
@@ -30,10 +49,26 @@ export const Route = createFileRoute("/_authenticated/seller/orders")({
 const CARRIERS = ["aramex", "dhl", "fedex", "talabat", "local_courier", "pickup", "other"];
 const TABS: Array<{ key: string; label: string; match: (o: any) => boolean }> = [
   { key: "all", label: "All", match: () => true },
-  { key: "unfulfilled", label: "Unfulfilled", match: (o) => ["pending", "confirmed"].includes(o.status) },
-  { key: "unpaid", label: "Unpaid", match: (o) => o.payment_status !== "paid" && o.payment_status !== "refunded" },
-  { key: "open", label: "Open", match: (o) => !["delivered", "cancelled", "refunded"].includes(o.status) },
-  { key: "closed", label: "Closed", match: (o) => ["delivered", "cancelled", "refunded"].includes(o.status) },
+  {
+    key: "unfulfilled",
+    label: "Unfulfilled",
+    match: (o) => ["pending", "preparing"].includes(o.status),
+  },
+  {
+    key: "unpaid",
+    label: "Unpaid",
+    match: (o) => o.payment_status !== "paid" && o.payment_status !== "refunded",
+  },
+  {
+    key: "open",
+    label: "Open",
+    match: (o) => !["delivered", "cancelled", "refunded"].includes(o.status),
+  },
+  {
+    key: "closed",
+    label: "Closed",
+    match: (o) => ["delivered", "cancelled", "refunded"].includes(o.status),
+  },
 ];
 
 function Orders() {
@@ -54,8 +89,9 @@ function Orders() {
       g.items.push(it);
       map.set(oid, g);
     }
-    return Array.from(map.values()).sort((a, b) =>
-      new Date(b.order.created_at).getTime() - new Date(a.order.created_at).getTime());
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.order.created_at).getTime() - new Date(a.order.created_at).getTime(),
+    );
   }, [q.data]);
 
   const filtered = useMemo(() => {
@@ -92,19 +128,34 @@ function Orders() {
         <CardHeader className="flex flex-row flex-wrap items-center gap-3 space-y-0">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search order number…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input
+              placeholder="Search order number…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
         </CardHeader>
         <CardContent className="p-0">
           {q.isLoading ? (
-            <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12" />
+              ))}
+            </div>
+          ) : q.isError ? (
+            <EmptyState
+              icon={ShoppingCart}
+              title="Orders could not be loaded"
+              description={(q.error as Error).message}
+            />
           ) : filtered.length === 0 ? (
-              <EmptyState
-                icon={ShoppingCart}
-                title="No orders yet"
-                description="Orders containing your products will show up here as buyers check out."
-              />
-            ) : (
+            <EmptyState
+              icon={ShoppingCart}
+              title="No orders yet"
+              description="Orders containing your products will show up here as buyers check out."
+            />
+          ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -120,27 +171,63 @@ function Orders() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((g) => {
-                    const subtotal = g.items.reduce((s, it: any) => s + Number(it.line_total_aed ?? 0), 0);
+                    const subtotal = g.items.reduce(
+                      (s, it: any) => s + Number(it.line_total_aed ?? 0),
+                      0,
+                    );
                     const qty = g.items.reduce((s, it: any) => s + Number(it.qty ?? 0), 0);
                     return (
                       <TableRow key={g.order.id} className="hover:bg-muted/40">
                         <TableCell className="font-medium">
-                          <Link to="/seller/orders/$id" params={{ id: g.order.id }} className="hover:underline">{g.order.order_number}</Link>
+                          <Link
+                            to="/seller/orders/$id"
+                            params={{ id: g.order.id }}
+                            className="hover:underline"
+                          >
+                            {g.order.order_number}
+                          </Link>
                         </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{new Date(g.order.created_at).toLocaleString()}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{qty} item{qty === 1 ? "" : "s"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {new Date(g.order.created_at).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {qty} item{qty === 1 ? "" : "s"}
+                        </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(g.order.payment_status), color: statusColor(g.order.payment_status) }}>{g.order.payment_status}</Badge>
+                          <Badge
+                            variant="outline"
+                            className="capitalize"
+                            style={{
+                              borderColor: statusColor(g.order.payment_status),
+                              color: statusColor(g.order.payment_status),
+                            }}
+                          >
+                            {g.order.payment_status}
+                          </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(g.order.status), color: statusColor(g.order.status) }}>{g.order.status}</Badge>
+                          <Badge
+                            variant="outline"
+                            className="capitalize"
+                            style={{
+                              borderColor: statusColor(g.order.status),
+                              color: statusColor(g.order.status),
+                            }}
+                          >
+                            {g.order.status}
+                          </Badge>
                         </TableCell>
-                        <TableCell className="text-right font-mono tabular-nums">{subtotal.toFixed(2)} AED</TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {subtotal.toFixed(2)} AED
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <ShipmentDialog order={g.order} items={g.items} />
                             <Button asChild size="sm" variant="ghost">
-                              <Link to="/seller/orders/$id" params={{ id: g.order.id }}>View<ChevronRight className="ms-1 h-4 w-4" /></Link>
+                              <Link to="/seller/orders/$id" params={{ id: g.order.id }}>
+                                View
+                                <ChevronRight className="ms-1 h-4 w-4" />
+                              </Link>
                             </Button>
                           </div>
                         </TableCell>
@@ -161,7 +248,12 @@ function ShipmentDialog({ order, items }: { order: any; items: any[] }) {
   const create = useServerFn(sellerCreateShipment);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const pendingItems = items.filter((i) => i.fulfillment_status !== "shipped" && i.fulfillment_status !== "delivered" && i.fulfillment_status !== "cancelled");
+  const pendingItems = items.filter(
+    (i) =>
+      i.fulfillment_status !== "shipped" &&
+      i.fulfillment_status !== "delivered" &&
+      i.fulfillment_status !== "cancelled",
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set(pendingItems.map((i) => i.id)));
   const [carrier, setCarrier] = useState("aramex");
   const [tracking, setTracking] = useState("");
@@ -170,16 +262,19 @@ function ShipmentDialog({ order, items }: { order: any; items: any[] }) {
   const [notes, setNotes] = useState("");
 
   const m = useMutation({
-    mutationFn: () => create({ data: {
-      orderId: order.id,
-      itemIds: Array.from(selected),
-      carrier: carrier as any,
-      trackingNumber: tracking || null,
-      weightGrams: weight ? Number(weight) : null,
-      costAed: cost ? Number(cost) : null,
-      notes: notes || null,
-      labelUrl: null,
-    } }),
+    mutationFn: () =>
+      create({
+        data: {
+          orderId: order.id,
+          itemIds: Array.from(selected),
+          carrier: carrier as any,
+          trackingNumber: tracking || null,
+          weightGrams: weight ? Number(weight) : null,
+          costAed: cost ? Number(cost) : null,
+          notes: notes || null,
+          labelUrl: null,
+        },
+      }),
     onSuccess: () => {
       toast.success("Shipment created — buyer notified");
       setOpen(false);
@@ -197,19 +292,27 @@ function ShipmentDialog({ order, items }: { order: any; items: any[] }) {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Ship {order.order_number}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Ship {order.order_number}</DialogTitle>
+        </DialogHeader>
         <div className="space-y-4">
           <div>
             <Label>Items</Label>
             <ul className="mt-2 space-y-1">
               {pendingItems.map((i) => (
                 <li key={i.id} className="flex items-center gap-2 text-sm">
-                  <Checkbox checked={selected.has(i.id)} onCheckedChange={(v) => {
-                    const n = new Set(selected);
-                    if (v) n.add(i.id); else n.delete(i.id);
-                    setSelected(n);
-                  }} />
-                  <span>{i.product_name} × {i.qty}</span>
+                  <Checkbox
+                    checked={selected.has(i.id)}
+                    onCheckedChange={(v) => {
+                      const n = new Set(selected);
+                      if (v) n.add(i.id);
+                      else n.delete(i.id);
+                      setSelected(n);
+                    }}
+                  />
+                  <span>
+                    {i.product_name} × {i.qty}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -218,16 +321,45 @@ function ShipmentDialog({ order, items }: { order: any; items: any[] }) {
             <div>
               <Label>Carrier</Label>
               <Select value={carrier} onValueChange={setCarrier}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CARRIERS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CARRIERS.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
-            <div><Label>Tracking #</Label><Input value={tracking} onChange={(e) => setTracking(e.target.value)} /></div>
-            <div><Label>Weight (g)</Label><Input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} /></div>
-            <div><Label>Cost (AED)</Label><Input type="number" step="0.01" value={cost} onChange={(e) => setCost(e.target.value)} /></div>
+            <div>
+              <Label>Tracking #</Label>
+              <Input value={tracking} onChange={(e) => setTracking(e.target.value)} />
+            </div>
+            <div>
+              <Label>Weight (g)</Label>
+              <Input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
+            </div>
+            <div>
+              <Label>Cost (AED)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={cost}
+                onChange={(e) => setCost(e.target.value)}
+              />
+            </div>
           </div>
-          <div><Label>Notes</Label><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
-          <Button className="w-full rounded-full" onClick={() => m.mutate()} disabled={m.isPending || selected.size === 0}>
+          <div>
+            <Label>Notes</Label>
+            <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+          <Button
+            className="w-full rounded-full"
+            onClick={() => m.mutate()}
+            disabled={m.isPending || selected.size === 0}
+          >
             {m.isPending ? "Creating…" : "Create shipment & notify buyer"}
           </Button>
         </div>

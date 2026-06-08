@@ -2,14 +2,16 @@
 // Uses oklch values aligned with the project's earthy palette.
 
 export const STATUS_COLOR: Record<string, string> = {
-  pending: "oklch(0.78 0.14 80)",      // amber
-  confirmed: "oklch(0.65 0.12 235)",   // sky
-  shipped: "oklch(0.62 0.16 285)",     // violet
-  delivered: "oklch(0.62 0.13 150)",   // green
-  cancelled: "oklch(0.58 0.20 28)",    // red
-  refunded: "oklch(0.65 0.14 50)",     // orange
-  paid: "oklch(0.62 0.13 150)",        // green
-  failed: "oklch(0.58 0.20 28)",       // red
+  pending: "oklch(0.78 0.14 80)", // amber
+  confirmed: "oklch(0.65 0.12 235)", // sky
+  preparing: "oklch(0.65 0.12 235)", // sky
+  authorized: "oklch(0.65 0.12 235)", // sky
+  shipped: "oklch(0.62 0.16 285)", // violet
+  delivered: "oklch(0.62 0.13 150)", // green
+  cancelled: "oklch(0.58 0.20 28)", // red
+  refunded: "oklch(0.65 0.14 50)", // orange
+  paid: "oklch(0.62 0.13 150)", // green
+  failed: "oklch(0.58 0.20 28)", // red
   active: "oklch(0.62 0.13 150)",
   suspended: "oklch(0.58 0.20 28)",
   rejected: "oklch(0.58 0.20 28)",

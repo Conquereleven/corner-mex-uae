@@ -14,7 +14,12 @@ async function ensureSupabaseAdmin() {
 
 async function assertAdmin(userId: string) {
   await ensureSupabaseAdmin();
-  const { data } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+  const { data } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
   if (!data) throw new Error("Forbidden: admin role required");
 }
 
@@ -22,7 +27,12 @@ export const isAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await ensureSupabaseAdmin();
-    const { data } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId).eq("role", "admin").maybeSingle();
+    const { data } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
     return { admin: !!data };
   });
 
@@ -37,19 +47,34 @@ export const adminOverview = createServerFn({ method: "GET" })
     const since7 = new Date(now.getTime() - 7 * day).toISOString();
     const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
-    const [orders, sellers, products, pendingSellers, items, buyers, recent, lowStock] = await Promise.all([
-      supabaseAdmin.from("orders").select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id").gte("created_at", since60),
-      supabaseAdmin.from("sellers").select("id, status, store_name, created_at"),
-      supabaseAdmin.from("products").select("id, status"),
-      supabaseAdmin.from("sellers").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      supabaseAdmin.from("order_items").select("seller_id, product_id, product_name, qty, line_total_aed, commission_aed").limit(5000),
-      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("orders").select("id, order_number, total_aed, status, payment_status, created_at").order("created_at", { ascending: false }).limit(8),
-      supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
-    ]);
+    const [orders, sellers, products, pendingSellers, items, buyers, recent, lowStock] =
+      await Promise.all([
+        supabaseAdmin
+          .from("orders")
+          .select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id")
+          .gte("created_at", since60),
+        supabaseAdmin.from("sellers").select("id, status, store_name, created_at"),
+        supabaseAdmin.from("products").select("id, status"),
+        supabaseAdmin
+          .from("sellers")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending"),
+        supabaseAdmin
+          .from("order_items")
+          .select("seller_id, product_id, product_name, qty, line_total_aed, commission_aed")
+          .limit(5000),
+        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
+        supabaseAdmin
+          .from("orders")
+          .select("id, order_number, total_aed, status, payment_status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(8),
+        supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
+      ]);
 
     const allOrders = (orders.data ?? []) as any[];
-    const sum = (xs: any[], k: string) => xs.reduce((a: number, o: any) => a + Number(o[k] ?? 0), 0);
+    const sum = (xs: any[], k: string) =>
+      xs.reduce((a: number, o: any) => a + Number(o[k] ?? 0), 0);
     const inWindow = (iso: string, fromIso: string) => iso >= fromIso;
 
     const o30 = allOrders.filter((o) => inWindow(o.created_at, since30));
@@ -67,11 +92,23 @@ export const adminOverview = createServerFn({ method: "GET" })
       const d = new Date(now.getTime() - i * day);
       const key = d.toISOString().slice(0, 10);
       const dayOrders = o30.filter((o: any) => o.created_at.slice(0, 10) === key);
-      series.push({ date: key, gmv: +sum(dayOrders, "total_aed").toFixed(2), orders: dayOrders.length });
+      series.push({
+        date: key,
+        gmv: +sum(dayOrders, "total_aed").toFixed(2),
+        orders: dayOrders.length,
+      });
     }
 
     // Status / payment breakdowns
-    const statusBreakdown = ["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"].map((s) => ({
+    const statusBreakdown = [
+      "pending",
+      "paid",
+      "preparing",
+      "shipped",
+      "delivered",
+      "cancelled",
+      "refunded",
+    ].map((s) => ({
       status: s,
       count: allOrders.filter((o: any) => o.status === s).length,
     }));
@@ -103,7 +140,13 @@ export const adminOverview = createServerFn({ method: "GET" })
       productAgg.set(it.product_id, p);
     }
     const topSellers = Array.from(sellerAgg.entries())
-      .map(([id, v]) => ({ id, name: String(sellerMap.get(id) ?? "—"), gmv: +v.gmv.toFixed(2), units: v.units, commission: +v.commission.toFixed(2) }))
+      .map(([id, v]) => ({
+        id,
+        name: String(sellerMap.get(id) ?? "—"),
+        gmv: +v.gmv.toFixed(2),
+        units: v.units,
+        commission: +v.commission.toFixed(2),
+      }))
       .sort((a, b) => b.gmv - a.gmv)
       .slice(0, 5);
     const topProducts = Array.from(productAgg.entries())
@@ -114,7 +157,9 @@ export const adminOverview = createServerFn({ method: "GET" })
     const allSellers = sellers.data ?? [];
     const allProducts = products.data ?? [];
     const uniqueBuyers30 = new Set(o30.map((o: any) => o.buyer_id)).size;
-    const totalCommission = +(items.data ?? []).reduce((a: number, it: any) => a + Number(it.commission_aed ?? 0), 0).toFixed(2);
+    const totalCommission = +(items.data ?? [])
+      .reduce((a: number, it: any) => a + Number(it.commission_aed ?? 0), 0)
+      .toFixed(2);
 
     return {
       // KPI cards
@@ -138,7 +183,8 @@ export const adminOverview = createServerFn({ method: "GET" })
       activeProducts: allProducts.filter((p: any) => p.status === "active").length,
       draftProducts: allProducts.filter((p: any) => p.status === "draft").length,
       lowStockCount: (lowStock.data ?? []).length,
-      pendingFulfillment: allOrders.filter((o: any) => ["pending", "confirmed"].includes(o.status)).length,
+      pendingFulfillment: allOrders.filter((o: any) => ["pending", "preparing"].includes(o.status))
+        .length,
       // Series & breakdowns
       series,
       statusBreakdown,
@@ -156,7 +202,9 @@ export const adminListSellers = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("sellers")
-      .select("id, slug, store_name, status, contact_email, contact_phone, trn, commission_rate, created_at")
+      .select(
+        "id, slug, store_name, status, contact_email, contact_phone, trn, commission_rate, created_at",
+      )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -165,14 +213,19 @@ export const adminListSellers = createServerFn({ method: "GET" })
 export const adminSetSellerStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { sellerId: string; status: string }) =>
-    z.object({
-      sellerId: z.string().uuid(),
-      status: z.enum(["pending", "active", "suspended", "rejected"]),
-    }).parse(input),
+    z
+      .object({
+        sellerId: z.string().uuid(),
+        status: z.enum(["pending", "active", "suspended", "rejected"]),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { error } = await supabaseAdmin.from("sellers").update({ status: data.status as any }).eq("id", data.sellerId);
+    const { error } = await supabaseAdmin
+      .from("sellers")
+      .update({ status: data.status as any })
+      .eq("id", data.sellerId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -183,8 +236,11 @@ export const adminListOrders = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("orders")
-      .select("id, order_number, status, payment_status, payment_method, total_aed, created_at, buyer_id")
-      .order("created_at", { ascending: false }).limit(200);
+      .select(
+        "id, order_number, status, payment_status, payment_method, total_aed, created_at, buyer_id",
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
     if (error) throw new Error(error.message);
     return data ?? [];
   });
@@ -192,18 +248,35 @@ export const adminListOrders = createServerFn({ method: "GET" })
 export const adminSetOrderStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { orderId: string; status: string }) =>
-    z.object({
-      orderId: z.string().uuid(),
-      status: z.enum(["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"]),
-    }).parse(input),
+    z
+      .object({
+        orderId: z.string().uuid(),
+        status: z.enum([
+          "pending",
+          "paid",
+          "preparing",
+          "shipped",
+          "delivered",
+          "cancelled",
+          "refunded",
+        ]),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { error } = await supabaseAdmin.from("orders").update({ status: data.status as any }).eq("id", data.orderId);
+    const { error } = await (context.supabase.rpc as any)("admin_update_order_state", {
+      p_order_id: data.orderId,
+      p_status: data.status,
+      p_payment_status: null,
+    });
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("order_events").insert({
-      order_id: data.orderId, actor_id: context.userId, actor_role: "admin",
-      kind: "status_changed", message: `Order status set to ${data.status}`,
+      order_id: data.orderId,
+      actor_id: context.userId,
+      actor_role: "admin",
+      kind: "status_changed",
+      message: `Order status set to ${data.status}`,
       payload: { status: data.status },
     });
     return { ok: true };
@@ -212,18 +285,27 @@ export const adminSetOrderStatus = createServerFn({ method: "POST" })
 export const adminSetPaymentStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { orderId: string; status: string }) =>
-    z.object({
-      orderId: z.string().uuid(),
-      status: z.enum(["pending", "paid", "partially_paid", "refunded", "failed", "cancelled"]),
-    }).parse(input),
+    z
+      .object({
+        orderId: z.string().uuid(),
+        status: z.enum(["pending", "authorized", "paid", "failed", "refunded"]),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { error } = await supabaseAdmin.from("orders").update({ payment_status: data.status as any }).eq("id", data.orderId);
+    const { error } = await (context.supabase.rpc as any)("admin_update_order_state", {
+      p_order_id: data.orderId,
+      p_status: null,
+      p_payment_status: data.status,
+    });
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("order_events").insert({
-      order_id: data.orderId, actor_id: context.userId, actor_role: "admin",
-      kind: "payment_status_changed", message: `Payment status set to ${data.status}`,
+      order_id: data.orderId,
+      actor_id: context.userId,
+      actor_role: "admin",
+      kind: "payment_status_changed",
+      message: `Payment status set to ${data.status}`,
       payload: { payment_status: data.status },
     });
     return { ok: true };
@@ -231,31 +313,56 @@ export const adminSetPaymentStatus = createServerFn({ method: "POST" })
 
 export const adminGetOrderDetail = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .inputValidator((input: { id: string }) =>
+    z.object({ id: z.string().min(1).max(120) }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { data: order, error } = await supabaseAdmin
-      .from("orders")
-      .select("*")
-      .eq("id", data.id)
-      .maybeSingle();
+    let orderQuery = supabaseAdmin.from("orders").select("*");
+    if (z.string().uuid().safeParse(data.id).success) {
+      orderQuery = orderQuery.eq("id", data.id);
+    } else {
+      const raw = decodeURIComponent(data.id);
+      const clean = raw.replace(/^#/, "");
+      orderQuery = orderQuery.in("order_number", Array.from(new Set([raw, clean, `#${clean}`])));
+    }
+    const { data: order, error } = await orderQuery.maybeSingle();
     if (error) throw new Error(error.message);
     if (!order) throw new Error("Order not found");
-    const [itemsRes, notesRes, eventsRes, shipmentsRes, paymentsRes, profileRes] = await Promise.all([
-      supabaseAdmin.from("order_items").select(`
+    const [itemsRes, notesRes, eventsRes, shipmentsRes, paymentsRes, profileRes] =
+      await Promise.all([
+        supabaseAdmin
+          .from("order_items")
+          .select(
+            `
         id, product_id, product_name, variant_label, qty, unit_price_aed, line_total_aed,
         fulfillment_status, seller_id,
         product:products(slug, images:product_images(url, sort_order)),
         seller:sellers(store_name, slug)
-      `).eq("order_id", data.id),
-      supabaseAdmin.from("order_notes").select("*").eq("order_id", data.id).order("created_at", { ascending: false }),
-      supabaseAdmin.from("order_events").select("*").eq("order_id", data.id).order("created_at", { ascending: false }).limit(100),
-      supabaseAdmin.from("shipments").select("*").eq("order_id", data.id),
-      supabaseAdmin.from("payments").select("*").eq("order_id", data.id),
-      order.buyer_id
-        ? supabaseAdmin.from("profiles").select("id, full_name, email, phone, company_name, preferred_lang").eq("id", order.buyer_id).maybeSingle()
-        : Promise.resolve({ data: null }),
-    ]);
+      `,
+          )
+          .eq("order_id", order.id),
+        supabaseAdmin
+          .from("order_notes")
+          .select("*")
+          .eq("order_id", order.id)
+          .order("created_at", { ascending: false }),
+        supabaseAdmin
+          .from("order_events")
+          .select("*")
+          .eq("order_id", order.id)
+          .order("created_at", { ascending: false })
+          .limit(100),
+        supabaseAdmin.from("shipments").select("*").eq("order_id", order.id),
+        supabaseAdmin.from("payments").select("*").eq("order_id", order.id),
+        order.buyer_id
+          ? supabaseAdmin
+              .from("profiles")
+              .select("id, full_name, email, phone, company_name, preferred_lang")
+              .eq("id", order.buyer_id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+      ]);
     return {
       order,
       items: itemsRes.data ?? [],
@@ -275,12 +382,19 @@ export const adminAddOrderNote = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("order_notes").insert({
-      order_id: data.orderId, author_id: context.userId, author_role: "admin", body: data.body,
+      order_id: data.orderId,
+      author_id: context.userId,
+      author_role: "admin",
+      body: data.body,
     });
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("order_events").insert({
-      order_id: data.orderId, actor_id: context.userId, actor_role: "admin",
-      kind: "note_added", message: "Internal note added", payload: {},
+      order_id: data.orderId,
+      actor_id: context.userId,
+      actor_role: "admin",
+      kind: "note_added",
+      message: "Internal note added",
+      payload: {},
     });
     return { ok: true };
   });
@@ -290,9 +404,14 @@ export const adminBootstrap = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await ensureSupabaseAdmin();
     // Allow first user to claim admin if there are no admins yet.
-    const { count } = await supabaseAdmin.from("user_roles").select("id", { count: "exact", head: true }).eq("role", "admin");
+    const { count } = await supabaseAdmin
+      .from("user_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "admin");
     if ((count ?? 0) > 0) throw new Error("Admin already exists. Ask an admin to grant access.");
-    const { error } = await supabaseAdmin.from("user_roles").insert({ user_id: context.userId, role: "admin" });
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: context.userId, role: "admin" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -305,27 +424,35 @@ export const adminListPayouts = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("seller_payouts")
-      .select(`id, seller_id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at, requested_at, reviewed_at, review_note, receipt_path,
-        seller:sellers(store_name, slug, contact_email)`)
+      .select(
+        `id, seller_id, period_start, period_end, gross_aed, commission_aed, net_aed, status, paid_at, created_at, requested_at, reviewed_at, review_note, receipt_path,
+        seller:sellers(store_name, slug, contact_email)`,
+      )
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
-    const rows = await Promise.all((data ?? []).map(async (r: any) => {
-      if (!r.receipt_path) return r;
-      const signed = await supabaseAdmin.storage.from("payout-receipts").createSignedUrl(r.receipt_path, 60 * 60);
-      return { ...r, receipt_url: signed.data?.signedUrl ?? null };
-    }));
+    const rows = await Promise.all(
+      (data ?? []).map(async (r: any) => {
+        if (!r.receipt_path) return r;
+        const signed = await supabaseAdmin.storage
+          .from("payout-receipts")
+          .createSignedUrl(r.receipt_path, 60 * 60);
+        return { ...r, receipt_url: signed.data?.signedUrl ?? null };
+      }),
+    );
     return rows;
   });
 
 export const adminPayoutPreview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { sellerId: string; periodStart: string; periodEnd: string }) =>
-    z.object({
-      sellerId: z.string().uuid(),
-      periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    }).parse(input),
+    z
+      .object({
+        sellerId: z.string().uuid(),
+        periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -334,8 +461,10 @@ export const adminPayoutPreview = createServerFn({ method: "POST" })
     const endIso = `${data.periodEnd}T23:59:59.999Z`;
     const { data: items, error } = await supabaseAdmin
       .from("order_items")
-      .select(`qty, line_total_aed, commission_aed,
-        order:orders!inner(id, order_number, created_at, payment_status)`)
+      .select(
+        `qty, line_total_aed, commission_aed,
+        order:orders!inner(id, order_number, created_at, payment_status)`,
+      )
       .eq("seller_id", data.sellerId)
       .eq("order.payment_status", "paid")
       .gte("order.created_at", startIso)
@@ -357,11 +486,13 @@ export const adminPayoutPreview = createServerFn({ method: "POST" })
 export const adminGeneratePayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { sellerId: string; periodStart: string; periodEnd: string }) =>
-    z.object({
-      sellerId: z.string().uuid(),
-      periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    }).parse(input),
+    z
+      .object({
+        sellerId: z.string().uuid(),
+        periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -370,8 +501,10 @@ export const adminGeneratePayout = createServerFn({ method: "POST" })
     const endIso = `${data.periodEnd}T23:59:59.999Z`;
     const { data: items, error } = await supabaseAdmin
       .from("order_items")
-      .select(`line_total_aed, commission_aed,
-        order:orders!inner(id, created_at, payment_status)`)
+      .select(
+        `line_total_aed, commission_aed,
+        order:orders!inner(id, created_at, payment_status)`,
+      )
       .eq("seller_id", data.sellerId)
       .eq("order.payment_status", "paid")
       .gte("order.created_at", startIso)
@@ -382,15 +515,19 @@ export const adminGeneratePayout = createServerFn({ method: "POST" })
     const commission = +rows.reduce((a, x) => a + Number(x.commission_aed ?? 0), 0).toFixed(2);
     const net = +(gross - commission).toFixed(2);
     if (gross <= 0) throw new Error("No paid orders in that period — nothing to pay out");
-    const { data: created, error: insErr } = await supabaseAdmin.from("seller_payouts").insert({
-      seller_id: data.sellerId,
-      period_start: data.periodStart,
-      period_end: data.periodEnd,
-      gross_aed: gross,
-      commission_aed: commission,
-      net_aed: net,
-      status: "pending",
-    }).select("id").single();
+    const { data: created, error: insErr } = await supabaseAdmin
+      .from("seller_payouts")
+      .insert({
+        seller_id: data.sellerId,
+        period_start: data.periodStart,
+        period_end: data.periodEnd,
+        gross_aed: gross,
+        commission_aed: commission,
+        net_aed: net,
+        status: "pending",
+      })
+      .select("id")
+      .single();
     if (insErr) throw new Error(insErr.message);
     return { id: created.id, gross, commission, net };
   });
@@ -398,24 +535,31 @@ export const adminGeneratePayout = createServerFn({ method: "POST" })
 export const adminUpdatePayoutStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { payoutId: string; status: string }) =>
-    z.object({
-      payoutId: z.string().uuid(),
-      status: z.enum(["pending", "processing", "paid", "cancelled"]),
-    }).parse(input),
+    z
+      .object({
+        payoutId: z.string().uuid(),
+        status: z.enum(["pending", "processing", "paid", "cancelled"]),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const patch: any = { status: data.status };
     if (data.status === "paid") patch.paid_at = new Date().toISOString();
     if (data.status !== "paid") patch.paid_at = null;
-    const { error } = await supabaseAdmin.from("seller_payouts").update(patch).eq("id", data.payoutId);
+    const { error } = await supabaseAdmin
+      .from("seller_payouts")
+      .update(patch)
+      .eq("id", data.payoutId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const adminDeletePayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { payoutId: string }) => z.object({ payoutId: z.string().uuid() }).parse(input))
+  .inputValidator((input: { payoutId: string }) =>
+    z.object({ payoutId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin.from("seller_payouts").delete().eq("id", data.payoutId);
@@ -425,7 +569,11 @@ export const adminDeletePayout = createServerFn({ method: "POST" })
 
 // ============= Categories =============
 
-const slugSchema = z.string().min(1).max(80).regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers and dashes");
+const slugSchema = z
+  .string()
+  .min(1)
+  .max(80)
+  .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers and dashes");
 const categoryBaseSchema = {
   slug: slugSchema,
   name_en: z.string().min(1).max(120),
@@ -445,7 +593,13 @@ export const adminListCategories = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
     const [cats, prods] = await Promise.all([
-      supabaseAdmin.from("categories").select("id, slug, name_en, name_es, name_ar, description_en, description_es, description_ar, image_url, parent_id, sort_order, is_active, created_at").order("sort_order").order("name_en"),
+      supabaseAdmin
+        .from("categories")
+        .select(
+          "id, slug, name_en, name_es, name_ar, description_en, description_es, description_ar, image_url, parent_id, sort_order, is_active, created_at",
+        )
+        .order("sort_order")
+        .order("name_en"),
       supabaseAdmin.from("products").select("category_id"),
     ]);
     if (cats.error) throw new Error(cats.error.message);
@@ -465,14 +619,20 @@ export const adminCreateCategory = createServerFn({ method: "POST" })
     const payload: any = { ...data };
     if (!payload.image_url) payload.image_url = null;
     if (!payload.parent_id) payload.parent_id = null;
-    const { data: row, error } = await supabaseAdmin.from("categories").insert(payload).select("id").single();
+    const { data: row, error } = await supabaseAdmin
+      .from("categories")
+      .insert(payload)
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
     return { id: row.id };
   });
 
 export const adminUpdateCategory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: any) => z.object({ id: z.string().uuid(), ...categoryBaseSchema }).parse(input))
+  .inputValidator((input: any) =>
+    z.object({ id: z.string().uuid(), ...categoryBaseSchema }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     if (data.parent_id === data.id) throw new Error("A category cannot be its own parent");
@@ -486,10 +646,15 @@ export const adminUpdateCategory = createServerFn({ method: "POST" })
 
 export const adminToggleCategoryActive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string; is_active: boolean }) => z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(input))
+  .inputValidator((input: { id: string; is_active: boolean }) =>
+    z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { error } = await supabaseAdmin.from("categories").update({ is_active: data.is_active }).eq("id", data.id);
+    const { error } = await supabaseAdmin
+      .from("categories")
+      .update({ is_active: data.is_active })
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -500,11 +665,23 @@ export const adminDeleteCategory = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const [{ count: childCount }, { count: prodCount }] = await Promise.all([
-      supabaseAdmin.from("categories").select("id", { count: "exact", head: true }).eq("parent_id", data.id),
-      supabaseAdmin.from("products").select("id", { count: "exact", head: true }).eq("category_id", data.id),
+      supabaseAdmin
+        .from("categories")
+        .select("id", { count: "exact", head: true })
+        .eq("parent_id", data.id),
+      supabaseAdmin
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .eq("category_id", data.id),
     ]);
-    if ((childCount ?? 0) > 0) throw new Error(`Cannot delete: ${childCount} subcategor${childCount === 1 ? "y" : "ies"} attached`);
-    if ((prodCount ?? 0) > 0) throw new Error(`Cannot delete: ${prodCount} product${prodCount === 1 ? "" : "s"} use this category`);
+    if ((childCount ?? 0) > 0)
+      throw new Error(
+        `Cannot delete: ${childCount} subcategor${childCount === 1 ? "y" : "ies"} attached`,
+      );
+    if ((prodCount ?? 0) > 0)
+      throw new Error(
+        `Cannot delete: ${prodCount} product${prodCount === 1 ? "" : "s"} use this category`,
+      );
     const { error } = await supabaseAdmin.from("categories").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -517,7 +694,10 @@ export const adminListCustomers = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
     const [profiles, orders, authList] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, phone, preferred_lang, company_name, created_at").order("created_at", { ascending: false }),
+      supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, phone, preferred_lang, company_name, created_at")
+        .order("created_at", { ascending: false }),
       supabaseAdmin.from("orders").select("buyer_id, total_aed, created_at, status"),
       supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
     ]);
@@ -551,8 +731,17 @@ export const adminGetCustomer = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const [profileRes, addrs, orders, authUser, roles] = await Promise.all([
       supabaseAdmin.from("profiles").select("*").eq("id", data.id).maybeSingle(),
-      supabaseAdmin.from("addresses").select("*").eq("user_id", data.id).order("is_default", { ascending: false }),
-      supabaseAdmin.from("orders").select("id, order_number, status, payment_status, total_aed, created_at").eq("buyer_id", data.id).order("created_at", { ascending: false }).limit(20),
+      supabaseAdmin
+        .from("addresses")
+        .select("*")
+        .eq("user_id", data.id)
+        .order("is_default", { ascending: false }),
+      supabaseAdmin
+        .from("orders")
+        .select("id, order_number, status, payment_status, total_aed, created_at")
+        .eq("buyer_id", data.id)
+        .order("created_at", { ascending: false })
+        .limit(5000),
       supabaseAdmin.auth.admin.getUserById(data.id),
       supabaseAdmin.from("user_roles").select("role").eq("user_id", data.id),
     ]);
@@ -602,41 +791,99 @@ export const adminUpsertProduct = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     let categoryId: string | null = null;
     if (data.category_slug) {
-      const { data: cat } = await supabaseAdmin.from("categories").select("id").eq("slug", data.category_slug).maybeSingle();
+      const { data: cat } = await supabaseAdmin
+        .from("categories")
+        .select("id")
+        .eq("slug", data.category_slug)
+        .maybeSingle();
       categoryId = cat?.id ?? null;
     }
-    const baseSlug = data.name_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "product";
+    const baseSlug =
+      data.name_en
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 60) || "product";
     let productId = data.id;
     if (!productId) {
       let slug = baseSlug;
       for (let i = 1; i < 30; i++) {
-        const { data: hit } = await supabaseAdmin.from("products").select("id").eq("slug", slug).maybeSingle();
+        const { data: hit } = await supabaseAdmin
+          .from("products")
+          .select("id")
+          .eq("slug", slug)
+          .maybeSingle();
         if (!hit) break;
         slug = `${baseSlug}-${i}`;
       }
-      const { data: created, error } = await supabaseAdmin.from("products").insert({
-        seller_id: data.seller_id, slug, brand: data.brand || null,
-        origin_region: data.origin_region || null, spice_level: data.spice_level ?? null,
-        is_bulk: data.is_bulk, is_halal: data.is_halal, status: data.status,
-        category_id: categoryId, attrs: data.attrs ?? {},
-      }).select("id").single();
+      const { data: created, error } = await supabaseAdmin
+        .from("products")
+        .insert({
+          seller_id: data.seller_id,
+          slug,
+          brand: data.brand || null,
+          origin_region: data.origin_region || null,
+          spice_level: data.spice_level ?? null,
+          is_bulk: data.is_bulk,
+          is_halal: data.is_halal,
+          status: data.status,
+          category_id: categoryId,
+          attrs: data.attrs ?? {},
+        })
+        .select("id")
+        .single();
       if (error) throw new Error(error.message);
       productId = created.id;
       await supabaseAdmin.from("product_variants").insert({
-        product_id: productId, format_label: null, price_aed: 0, stock: 0, is_default: true,
+        product_id: productId,
+        format_label: null,
+        price_aed: 0,
+        stock: 0,
+        is_default: true,
       });
     } else {
-      const { error } = await supabaseAdmin.from("products").update({
-        brand: data.brand || null, origin_region: data.origin_region || null,
-        spice_level: data.spice_level ?? null, is_bulk: data.is_bulk, is_halal: data.is_halal,
-        status: data.status, category_id: categoryId, attrs: data.attrs ?? {},
-      }).eq("id", productId);
+      const { error } = await supabaseAdmin
+        .from("products")
+        .update({
+          brand: data.brand || null,
+          origin_region: data.origin_region || null,
+          spice_level: data.spice_level ?? null,
+          is_bulk: data.is_bulk,
+          is_halal: data.is_halal,
+          status: data.status,
+          category_id: categoryId,
+          attrs: data.attrs ?? {},
+        })
+        .eq("id", productId);
       if (error) throw new Error(error.message);
     }
     const trRows = [
-      { product_id: productId, lang: "en" as const, name: data.name_en, description: data.description_en ?? null },
-      ...(data.name_es ? [{ product_id: productId, lang: "es" as const, name: data.name_es, description: data.description_es ?? null }] : []),
-      ...(data.name_ar ? [{ product_id: productId, lang: "ar" as const, name: data.name_ar, description: data.description_ar ?? null }] : []),
+      {
+        product_id: productId,
+        lang: "en" as const,
+        name: data.name_en,
+        description: data.description_en ?? null,
+      },
+      ...(data.name_es
+        ? [
+            {
+              product_id: productId,
+              lang: "es" as const,
+              name: data.name_es,
+              description: data.description_es ?? null,
+            },
+          ]
+        : []),
+      ...(data.name_ar
+        ? [
+            {
+              product_id: productId,
+              lang: "ar" as const,
+              name: data.name_ar,
+              description: data.description_ar ?? null,
+            },
+          ]
+        : []),
     ];
     await supabaseAdmin.from("product_translations").delete().eq("product_id", productId);
     if (trRows.length) await supabaseAdmin.from("product_translations").insert(trRows);
@@ -650,34 +897,48 @@ export const adminListKycSubmissions = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("sellers")
-      .select("id, store_name, slug, contact_email, kyc_status, kyc_submitted_at, kyc_reviewed_at, kyc_rejection_reason, kyc_documents")
+      .select(
+        "id, store_name, slug, contact_email, kyc_status, kyc_submitted_at, kyc_reviewed_at, kyc_rejection_reason, kyc_documents",
+      )
       .in("kyc_status", ["pending", "verified", "rejected"])
       .order("kyc_submitted_at", { ascending: false, nullsFirst: false });
     if (error) throw new Error(error.message);
     // sign URLs for documents
-    const out = await Promise.all((data ?? []).map(async (s: any) => {
-      const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
-      const signed = await Promise.all(docs.map(async (d: any) => {
-        const u = await supabaseAdmin.storage.from("seller-kyc").createSignedUrl(d.path, 60 * 60);
-        return { ...d, url: u.data?.signedUrl ?? null };
-      }));
-      return { ...s, kyc_documents: signed };
-    }));
+    const out = await Promise.all(
+      (data ?? []).map(async (s: any) => {
+        const docs: any[] = Array.isArray(s.kyc_documents) ? s.kyc_documents : [];
+        const signed = await Promise.all(
+          docs.map(async (d: any) => {
+            const u = await supabaseAdmin.storage
+              .from("seller-kyc")
+              .createSignedUrl(d.path, 60 * 60);
+            return { ...d, url: u.data?.signedUrl ?? null };
+          }),
+        );
+        return { ...s, kyc_documents: signed };
+      }),
+    );
     return out;
   });
 
 export const adminReviewKyc = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { sellerId: string; decision: "approve" | "reject"; reason?: string }) =>
-    z.object({
-      sellerId: z.string().uuid(),
-      decision: z.enum(["approve", "reject"]),
-      reason: z.string().max(500).optional(),
-    }).parse(input),
+    z
+      .object({
+        sellerId: z.string().uuid(),
+        decision: z.enum(["approve", "reject"]),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { data: s } = await supabaseAdmin.from("sellers").select("id, user_id, store_name").eq("id", data.sellerId).maybeSingle();
+    const { data: s } = await supabaseAdmin
+      .from("sellers")
+      .select("id, user_id, store_name")
+      .eq("id", data.sellerId)
+      .maybeSingle();
     if (!s) throw new Error("Seller not found");
     const patch: any = {
       kyc_status: data.decision === "approve" ? "verified" : "rejected",
@@ -690,7 +951,10 @@ export const adminReviewKyc = createServerFn({ method: "POST" })
       user_id: s.user_id,
       kind: data.decision === "approve" ? "kyc_approved" : "kyc_rejected",
       title: data.decision === "approve" ? "Verification approved" : "Verification rejected",
-      body: data.decision === "approve" ? "Your KYC verification was approved." : (data.reason ?? "Your KYC was rejected. Please review and resubmit."),
+      body:
+        data.decision === "approve"
+          ? "Your KYC verification was approved."
+          : (data.reason ?? "Your KYC was rejected. Please review and resubmit."),
       link: "/seller/settings",
     });
     return { ok: true };
@@ -700,20 +964,26 @@ export const adminReviewKyc = createServerFn({ method: "POST" })
 
 export const adminUploadPayoutReceipt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { payoutId: string; filename: string; contentType: string; dataBase64: string }) =>
-    z.object({
-      payoutId: z.string().uuid(),
-      filename: z.string().min(1).max(200),
-      contentType: z.string().min(3).max(120),
-      dataBase64: z.string().min(10).max(8_000_000),
-    }).parse(input),
+  .inputValidator(
+    (input: { payoutId: string; filename: string; contentType: string; dataBase64: string }) =>
+      z
+        .object({
+          payoutId: z.string().uuid(),
+          filename: z.string().min(1).max(200),
+          contentType: z.string().min(3).max(120),
+          dataBase64: z.string().min(10).max(8_000_000),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const ext = (data.filename.split(".").pop() ?? "pdf").toLowerCase().replace(/[^a-z0-9]/g, "") || "pdf";
+    const ext =
+      (data.filename.split(".").pop() ?? "pdf").toLowerCase().replace(/[^a-z0-9]/g, "") || "pdf";
     const path = `${data.payoutId}/${crypto.randomUUID()}.${ext}`;
     const buf = Buffer.from(data.dataBase64, "base64");
-    const up = await supabaseAdmin.storage.from("payout-receipts").upload(path, buf, { contentType: data.contentType, upsert: false });
+    const up = await supabaseAdmin.storage
+      .from("payout-receipts")
+      .upload(path, buf, { contentType: data.contentType, upsert: false });
     if (up.error) throw new Error(up.error.message);
     return { path };
   });
@@ -721,12 +991,18 @@ export const adminUploadPayoutReceipt = createServerFn({ method: "POST" })
 async function notifyPayoutSeller(payoutId: string, kind: string, title: string, body: string) {
   await ensureSupabaseAdmin();
   const { data: p } = await supabaseAdmin
-    .from("seller_payouts").select("id, net_aed, seller:sellers(user_id, store_name)")
-    .eq("id", payoutId).maybeSingle();
+    .from("seller_payouts")
+    .select("id, net_aed, seller:sellers(user_id, store_name)")
+    .eq("id", payoutId)
+    .maybeSingle();
   const userId = (p as any)?.seller?.user_id;
   if (userId) {
     await supabaseAdmin.from("notifications").insert({
-      user_id: userId, kind, title, body, link: "/seller/payouts",
+      user_id: userId,
+      kind,
+      title,
+      body,
+      link: "/seller/payouts",
     });
   }
 }
@@ -734,11 +1010,13 @@ async function notifyPayoutSeller(payoutId: string, kind: string, title: string,
 export const adminApprovePayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { payoutId: string; note?: string; receipt_path?: string }) =>
-    z.object({
-      payoutId: z.string().uuid(),
-      note: z.string().max(1000).optional(),
-      receipt_path: z.string().max(500).optional(),
-    }).parse(input),
+    z
+      .object({
+        payoutId: z.string().uuid(),
+        note: z.string().max(1000).optional(),
+        receipt_path: z.string().max(500).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -750,20 +1028,30 @@ export const adminApprovePayout = createServerFn({ method: "POST" })
       review_note: data.note ?? null,
     };
     if (data.receipt_path) patch.receipt_path = data.receipt_path;
-    const { error } = await supabaseAdmin.from("seller_payouts").update(patch).eq("id", data.payoutId);
+    const { error } = await supabaseAdmin
+      .from("seller_payouts")
+      .update(patch)
+      .eq("id", data.payoutId);
     if (error) throw new Error(error.message);
-    await notifyPayoutSeller(data.payoutId, "payout_paid", "Payout paid", "Your payout has been marked as paid. Check the dashboard for details.");
+    await notifyPayoutSeller(
+      data.payoutId,
+      "payout_paid",
+      "Payout paid",
+      "Your payout has been marked as paid. Check the dashboard for details.",
+    );
     return { ok: true };
   });
 
 export const adminRejectPayout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { payoutId: string; note: string; receipt_path?: string }) =>
-    z.object({
-      payoutId: z.string().uuid(),
-      note: z.string().min(1).max(1000),
-      receipt_path: z.string().max(500).optional(),
-    }).parse(input),
+    z
+      .object({
+        payoutId: z.string().uuid(),
+        note: z.string().min(1).max(1000),
+        receipt_path: z.string().max(500).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
@@ -774,7 +1062,10 @@ export const adminRejectPayout = createServerFn({ method: "POST" })
       review_note: data.note,
     };
     if (data.receipt_path) patch.receipt_path = data.receipt_path;
-    const { error } = await supabaseAdmin.from("seller_payouts").update(patch).eq("id", data.payoutId);
+    const { error } = await supabaseAdmin
+      .from("seller_payouts")
+      .update(patch)
+      .eq("id", data.payoutId);
     if (error) throw new Error(error.message);
     await notifyPayoutSeller(data.payoutId, "payout_rejected", "Payout rejected", data.note);
     return { ok: true };
