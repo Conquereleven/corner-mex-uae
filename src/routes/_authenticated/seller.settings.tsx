@@ -16,7 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useRef } from "react";
 import { getSellerSettings, updateSellerSettings, getKycStatus, uploadKycDocument, removeKycDocument, submitKycForReview } from "@/lib/seller.functions";
-import { ShieldCheck, ShieldAlert, ShieldX, Clock, Upload as UploadIcon, Trash2, FileText } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, Clock, Upload as UploadIcon, Trash2, FileText, Settings as SettingsIcon } from "lucide-react";
+import { PageHeader } from "@/components/site/PageHeader";
 
 export const Route = createFileRoute("/_authenticated/seller/settings")({
   head: () => ({ meta: [{ title: "Settings — Seller Studio" }] }),
@@ -62,13 +63,17 @@ function SellerSettings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-          <p className="text-sm text-muted-foreground">Business, operations, payout, and notification preferences.</p>
-        </div>
-        <Button onClick={() => m.mutate()} disabled={m.isPending}>{m.isPending ? "Saving…" : "Save changes"}</Button>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Business, operations, payout, and notification preferences."
+        icon={SettingsIcon}
+        breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Settings" }]}
+        actions={
+          <Button onClick={() => m.mutate()} disabled={m.isPending}>
+            {m.isPending ? "Saving…" : "Save changes"}
+          </Button>
+        }
+      />
 
       {f.vacation_mode && (
         <Alert>
