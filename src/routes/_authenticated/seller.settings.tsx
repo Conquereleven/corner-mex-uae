@@ -291,6 +291,7 @@ function KycSection() {
   const rmFn = useServerFn(removeKycDocument);
   const submitFn = useServerFn(submitKycForReview);
   const q = useQuery({ queryKey: ["seller-kyc"], queryFn: () => getFn({}) });
+  const [uploadingKind, setUploadingKind] = useState<string | null>(null);
   const KINDS: { k: "trade_license" | "emirates_id" | "passport" | "other"; label: string; required?: boolean }[] = [
     { k: "trade_license", label: "Trade License", required: true },
     { k: "emirates_id", label: "Emirates ID" },
@@ -308,11 +309,12 @@ function KycSection() {
   });
   const rmMut = useMutation({
     mutationFn: (kind: string) => rmFn({ data: { kind: kind as any } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["seller-kyc"] }),
+    onSuccess: () => { toast.success("Document removed"); qc.invalidateQueries({ queryKey: ["seller-kyc"] }); },
     onError: (e: any) => toast.error(e.message),
   });
 
   const handleFile = async (kind: string, file: File) => {
+    setUploadingKind(kind);
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -321,7 +323,9 @@ function KycSection() {
         toast.success("Uploaded");
         qc.invalidateQueries({ queryKey: ["seller-kyc"] });
       } catch (e: any) { toast.error(e.message); }
+      finally { setUploadingKind(null); }
     };
+    reader.onerror = () => { toast.error("Could not read file"); setUploadingKind(null); };
     reader.readAsDataURL(file);
   };
 
@@ -340,6 +344,12 @@ function KycSection() {
         <p className="text-sm text-muted-foreground">Verify your business to enable payouts. Documents are private and only visible to our admin team.</p>
       </CardHeader>
       <CardContent className="space-y-5">
+        {q.isLoading && <p className="text-sm text-muted-foreground">Loading verification status…</p>}
+        {q.isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{(q.error as Error)?.message ?? "Verification status could not load."}</AlertDescription>
+          </Alert>
+        )}
         <div className={`flex items-center gap-3 rounded-lg border p-3 ${T.cls}`}>
           <T.icon className="h-5 w-5" />
           <div className="flex-1">
@@ -356,13 +366,13 @@ function KycSection() {
         <div className="space-y-3">
           {KINDS.map((k) => {
             const doc = docs.find((d: any) => d.kind === k.k);
-            return <KycDocRow key={k.k} doc={doc} kind={k.k} label={k.label} required={k.required} onFile={handleFile} onRemove={(kk: string) => rmMut.mutate(kk)} />;
+             return <KycDocRow key={k.k} doc={doc} kind={k.k} label={k.label} required={k.required} busy={uploadingKind === k.k || rmMut.isPending} onFile={handleFile} onRemove={(kk: string) => rmMut.mutate(kk)} />;
           })}
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={() => submitMut.mutate()} disabled={!hasTL || status === "pending" || submitMut.isPending}>
-            {status === "pending" ? "Under review" : status === "verified" ? "Re-submit" : "Submit for review"}
+          <Button onClick={() => submitMut.mutate()} disabled={!hasTL || status === "pending" || submitMut.isPending || q.isLoading}>
+            {submitMut.isPending ? "Submitting…" : status === "pending" ? "Under review" : status === "verified" ? "Re-submit" : "Submit for review"}
           </Button>
         </div>
       </CardContent>
@@ -370,7 +380,7 @@ function KycSection() {
   );
 }
 
-function KycDocRow({ doc, kind, label, required, onFile, onRemove }: any) {
+function KycDocRow({ doc, kind, label, required, busy, onFile, onRemove }: any) {
   const ref = useRef<HTMLInputElement>(null);
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
@@ -384,8 +394,8 @@ function KycDocRow({ doc, kind, label, required, onFile, onRemove }: any) {
         )}
       </div>
       <input ref={ref} type="file" hidden accept="image/*,application/pdf" onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(kind, f); e.target.value = ""; }} />
-      <Button size="sm" variant="outline" onClick={() => ref.current?.click()}><UploadIcon className="h-3 w-3 mr-1" />{doc ? "Replace" : "Upload"}</Button>
-      {doc && <Button size="icon" variant="ghost" onClick={() => onRemove(kind)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>}
+      <Button size="sm" variant="outline" disabled={busy} onClick={() => ref.current?.click()}><UploadIcon className="h-3 w-3 mr-1" />{busy ? "Working…" : doc ? "Replace" : "Upload"}</Button>
+      {doc && <Button size="icon" variant="ghost" disabled={busy} onClick={() => onRemove(kind)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>}
     </div>
   );
 }
