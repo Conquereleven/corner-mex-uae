@@ -1,98 +1,105 @@
-## Plan: Senior-grade hardening of the marketplace (build, errors, Shopify-style orders/customers, data reset, Intermex banner)
 
-This is a focused, incremental plan. No architecture rewrites. All work stays within the current TanStack Start + Supabase + Tailwind v4 stack.
+# Shopify-style Orders, Customers & Seller Studio polish
 
----
+Focused patch on top of the existing OrderDetailView, admin/seller orders routes, Supabase schema and Intermex seed. No data resets, no auth/RLS rewrites.
 
-### 1. Build, preview & CSS stability
+## 1. Reusable status & layout primitives
 
-- Audit `src/routes/__root.tsx`, `index.html` (if any), and `src/styles.css` to confirm CSS is imported via the Vite entry (it already is through `__root.tsx`). Remove any leftover direct `<link href="/src/styles.css">` references if present.
-- Re-verify Google Fonts are loaded via `<link>` in `__root.tsx` head (not `@import`), per the tailwind4-gotchas rule that already caused the 500.
-- Add a small `src/lib/build-info.ts` exporting `BUILD_VERSION` (timestamp at build time via `import.meta.env`) and log it once in dev.
-- Confirm `bun run build` succeeds; no production code references `/src/...` paths.
+New `src/components/site/orders/` folder:
+- `OrderStatusBadge.tsx` — order lifecycle (pending/confirmed/shipped/delivered/cancelled/refunded).
+- `PaymentStatusBadge.tsx` — pending/paid/partially_paid/refunded/failed/cancelled.
+- `FulfillmentStatusBadge.tsx` — unfulfilled/preparing/fulfilled/shipped/delivered/returned/cancelled (derived from `orders.status` + `shipments`).
+- `ShopifyLikeTable.tsx` — shared table shell (sticky header, hover row, checkbox column slot, responsive horizontal scroll, mobile card fallback).
+- `OrderDetailCard.tsx`, `CustomerSummaryCard.tsx`, `OrderTimeline.tsx` — extracted from current `OrderDetailView.tsx` so admin/seller share them.
 
-### 2. Runtime error visibility
+All badges share one color map in `src/lib/dashboard-tokens.ts` (extend, don't fork).
 
-- Add `src/components/site/AppErrorBoundary.tsx` (React error boundary) and wrap `<Outlet />` in `__root.tsx`.
-- Add `src/lib/runtime-error-logger.ts` registering `window.onerror`, `unhandledrejection`, and a `<link>`/`<script>` error listener. Dev-only floating panel; production shows a clean fallback.
-- Surface Vite 500 transform errors by reading the response body when CSS/asset fetch fails in dev.
+## 2. Admin orders list — Shopify Admin look (`admin.orders.tsx`)
 
-### 3. Shopify-style Order Detail
+Rebuild layout, not the data layer:
+- Page header: title "Orders / Pedidos", secondary "Export CSV" (client-side from current rows), primary "Create order" hidden behind feature flag (not implemented yet — render disabled with tooltip "Coming soon" so no dead CTA).
+- Tabs: All / Unfulfilled / Unpaid / Open / Closed — filter the same query result client-side.
+- Filter row: search (order #, customer name, email), Status dropdown, Payment status dropdown, Sort dropdown (date desc/asc, total desc/asc).
+- Table columns: checkbox, Order #, Date, Customer, Total, Payment, Fulfillment, Items count. Row click → `/admin/orders/$id`.
+- Responsive: <md collapses to stacked card list reusing the same row component.
 
-- New route `src/routes/_authenticated/admin.orders.$id.tsx` (admin, full controls) and `src/routes/_authenticated/seller.orders.$id.tsx` (seller, scoped controls).
-- New component `src/components/site/OrderDetailView.tsx` rendering: header (order #, date, badges), items card (image, qty, price), totals card (subtotal/shipping/tax/total), customer card, shipping address, payment + fulfillment cards with status selectors, internal notes, timeline.
-- New server functions in `src/lib/orders.functions.ts`:
-  - `getOrderDetail({ id })` (admin + seller-scoped variants via role check)
-  - `updateOrderPaymentStatus({ id, status })`
-  - `updateOrderFulfillmentStatus({ id, status })`
-  - `addOrderNote({ id, note })`
-- Wire existing "View" CTAs in `admin.orders.tsx` and `seller.orders.tsx` to `<Link to="/admin/orders/$id" />` / `/seller/orders/$id`.
-- Confirmation dialogs for refund/cancel.
-- Add `order_events` table (id, order_id, actor_id, type, payload jsonb, created_at) for timeline; RLS: admin all, seller own orders only.
-- Add `order_notes` table (id, order_id, author_id, body, created_at) with the same RLS shape.
+Bulk actions: out of scope this pass — checkbox column wired but actions menu shows only "Export selected" (CSV).
 
-### 4. Shopify-style Customer Detail
+## 3. Seller orders list (`seller.orders.tsx`)
 
-- New route `src/routes/_authenticated/admin.customers.$id.tsx` already exists — audit and upgrade to Shopify-style cards (profile, lifetime stats, address book, order history, notes/tags).
-- New route `src/routes/_authenticated/seller.customers.$id.tsx` scoped to customers who ordered from this seller.
-- Fix the dead "Customer info" CTA in order detail and customers list to link to these routes.
-- New server functions: `getCustomerDetail`, `updateCustomerNotes`, `updateCustomerTags` (admin-only writes; seller read-only of own-buyer subset).
-- Add `customer_notes` and optional `customer_tags` columns/tables only if the existing `profiles` schema lacks them; otherwise reuse.
+Same redesign as admin but scoped to seller. Hide payment-status dropdown writes (read-only badge). Fulfillment dropdown writes allowed (uses existing `sellerSetOrderItemStatus` / equivalent).
 
-### 5. Data reset (orders + sellers except Intermex)
+## 4. Order detail page polish (`OrderDetailView.tsx`)
 
-- Single guarded SQL migration that:
-  - Deletes all `orders`, `order_items`, `payments`, `shipments`, `returns`, `order_events`, `order_notifications`.
-  - Deletes all `sellers` and dependent `products`/`product_variants`/`product_images`/`product_translations` **except** rows belonging to the seller whose slug or name matches "Intermex prueba".
-  - Wrapped in a `DO $$ ... $$` block that aborts if the Intermex seller cannot be found (safety guard).
-- No production-data deletion without explicit user approval at migration time (the migration tool already requires approval).
+Keep file, refactor sections to match the Shopify reference:
 
-### 6. Intermex banner & profile polish
+Top bar:
+- Back link → list, order number `#1367`-style, payment + fulfillment badges, date + channel ("Web"), right side: Refund (admin only, opens confirm dialog → `adminRefundOrder` stub call), Edit (disabled tooltip), More actions menu (Cancel order w/ confirm, Mark as delivered w/ confirm), Prev/Next arrows using sibling order ids from list query (best-effort, hidden if not in cache).
 
-- Fetch banner/brand imagery from https://intermexuae.com via `websearch`/`fetch_website`; upload chosen image to the existing `product-images` bucket (or create `seller-banners` bucket if needed) using `supabase--storage_upload`.
-- Update Intermex seller row with `banner_url` (add column if missing via migration) and ensure `sellers.$slug.tsx`, `admin.sellers.tsx`, and seller header in `seller.tsx` render it with a graceful fallback gradient.
+Left column:
+- Fulfillment card: status header, item rows with thumbnail (first `product_images` url, fallback placeholder), name, SKU, qty × price, line total. Primary CTA "Mark as fulfilled / Marcar como preparado" → updates order status to `shipped` (admin) or seller-scoped item status (seller). Confirmation dialog.
+- Payment card: status, Subtotal / Shipping / Tax / Discount / Total / Paid by customer. Admin: payment-status select with confirm on `refunded`/`cancelled`. Seller: read-only.
+- Timeline (`order_events`): chronological list with icons and actor. Empty state with illustration. Internal notes composer (`order_notes`) below.
 
-### 7. UX consistency pass
+Right column:
+- Notes card (customer note from `orders.notes`, editable by admin via `adminUpdateOrderNote`).
+- Customer card: name, "View customer" button → `/admin/customers/$id` (admin) or `/seller/customers/$id` (seller). Shows order count for that buyer (cheap count query in detail server fn). If `buyer_id` null → disabled button with helper text.
+- Contact card: email + phone with copy buttons.
+- Shipping address card: full address with copy button.
 
-- Reuse `PageHeader`, `EmptyState`, `Badge`, sticky action bars across order/customer detail pages.
-- Audit CTAs in admin + seller order/customer lists for dead buttons; convert all `Link>Button` to `<Button asChild><Link/></Button>`.
-- Loading skeletons + error states on every new query.
+## 5. Admin customer detail (`admin.customers.$id.tsx`)
 
-### 8. QA pass
+Route already exists — rebuild content to Shopify style:
+- Header: back, customer name, optional tag badge (VIP if total_spent > threshold — derived, not stored).
+- Contact info card, default address card (latest from `addresses`), order history card (list, links back to `/admin/orders/$id`), stats card (total orders, total spent, last order date), notes card (free text on `profiles.notes` — add column if missing… **scope check below**).
 
-- Manual walk-through: build succeeds, preview loads, CSS hashed, order detail CTA works (admin + seller), customer info CTA works, status updates persist, timeline updates, Intermex banner visible, no other sellers remain, no orders remain.
-- `bunx tsc --noEmit` clean.
+Note: skip adding new `customer_notes` table this pass — store admin note in existing `profiles` if a text column exists; otherwise read-only notes card showing "—". Avoid schema churn.
 
----
+## 6. Seller Studio Customers page (`seller.customers.index.tsx` + `seller.customers.$id.tsx`)
 
-### Files to add
+New routes + sidebar entry in `DashboardShell.tsx` for sellers.
+- Server fn `sellerListCustomers`: aggregate from `orders` joined to `order_items` where `seller_id = current seller`, group by `buyer_id`, return name (from profiles), email (from auth admin lookup), phone (latest shipping_address.phone), order count, last order date, total spent (sum of seller's `line_total_aed` on that buyer's orders).
+- Server fn `sellerGetCustomerDetail`: same but for one buyer, plus order list (only orders containing the seller's items).
+- Detail page mirrors admin customer layout but scoped — no global admin data leakage.
+- Sidebar: add "Customers / Clientes" under existing seller nav.
 
-- `src/components/site/AppErrorBoundary.tsx`
-- `src/components/site/OrderDetailView.tsx`
-- `src/components/site/CustomerDetailView.tsx`
-- `src/lib/runtime-error-logger.ts`
-- `src/lib/build-info.ts`
-- `src/routes/_authenticated/admin.orders.$id.tsx`
-- `src/routes/_authenticated/seller.orders.$id.tsx`
-- `src/routes/_authenticated/seller.customers.$id.tsx`
-- 1 migration: order_events + order_notes + seller banner_url + grants/RLS
-- 1 migration: guarded data reset (orders + non-Intermex sellers)
+## 7. Seller Studio Intermex banner
 
-### Files to edit (minimal, surgical)
+In `DashboardShell.tsx` (or `seller.tsx` layout): if current user owns the Intermex seller, render a slim banner strip at the top of Seller Studio using the same `banner_url` already on `sellers`. Component: `SellerStudioBanner.tsx`. Fallback: gradient with seller name if image fails (`onError` swap).
 
-- `src/routes/__root.tsx` — wrap with `AppErrorBoundary`, register error logger
-- `src/lib/orders.functions.ts` — add detail + status mutation server fns
-- `src/lib/admin.functions.ts` — customer detail/update
-- `src/lib/seller.functions.ts` — seller-scoped order + customer detail
-- `src/routes/_authenticated/admin.orders.tsx` / `seller.orders.tsx` — wire CTAs
-- `src/routes/_authenticated/admin.customers.tsx` / `admin.customers.$id.tsx` — Shopify-style upgrade + CTA wiring
-- `src/routes/_authenticated/seller.tsx` — add Customers link if missing
-- `src/routes/sellers.$slug.tsx` + `admin.sellers.tsx` — render banner
+## 8. Manual status controls
 
-### Out of scope
+- Admin: payment status select (with confirm on refund/cancel) + fulfillment select on detail page. Reuse `adminSetOrderStatus` + new `adminSetPaymentStatus` (already exists per prior pass).
+- Seller: fulfillment-only select. Use existing seller fn or add `sellerSetOrderStatus` constrained to {preparing, shipped, delivered}.
 
-- No payment provider changes, no shipping logic changes, no auth changes, no RLS rewrites beyond the two new tables and `banner_url` column. No marketplace expansion.
+All mutations log to `order_events` via existing helper.
 
-### Open question
+## 9. Backend additions (small, surgical)
 
-The data reset is destructive. I will run it as a Supabase migration so you explicitly approve before it executes. Confirm "Intermex prueba" is matched by `name ILIKE 'Intermex prueba'` — if the slug differs, I'll match by slug instead.
+New server fns in `src/lib/admin.functions.ts` / `src/lib/seller.functions.ts`:
+- `adminGetCustomerDetail({ id })` (if missing).
+- `sellerListCustomers()`, `sellerGetCustomerDetail({ id })`.
+- `adminRefundOrder({ id })` — sets payment_status=refunded + order status=refunded + event log (no Stripe refund call — out of scope; flag in note).
+- `adminCancelOrder({ id })` / `adminMarkDelivered({ id })` — wrappers around existing status setter + event log.
+
+No new tables. No migrations unless `order_events` / `order_notes` not yet present (they are, per prior pass).
+
+## 10. QA
+
+Manual walkthrough on preview:
+- `/admin/orders` → new layout, tabs filter, row click opens detail.
+- `/admin/orders/$id` → all cards render, View customer goes to `/admin/customers/$id`, status changes persist + appear in timeline.
+- `/admin/customers/$id` → loads real data + order history links work.
+- `/seller/orders` + `/seller/orders/$id` → seller-scoped, no admin-only controls.
+- `/seller/customers` + `/seller/customers/$id` → only Intermex buyers visible for Intermex seller.
+- `/seller` → Intermex banner visible at top, fallback when URL broken (test by temporarily wrong src).
+- `bun run build` clean, `bunx tsc --noEmit` clean.
+- Mobile (375px) layout: tables collapse, detail cards stack, no horizontal overflow.
+
+## Out of scope
+
+- Real Stripe refunds, real "Create order" admin flow, bulk-action menu beyond CSV export, prev/next pager queries, customer notes schema, Storage uploads for customer avatars, i18n strings table (use inline ES/EN copy where already mixed).
+
+## Open question
+
+Should the seller-side Intermex banner appear on **every** Seller Studio page (sticky strip), or only on `/seller` dashboard + `/seller/storefront`? Default plan: only on dashboard + storefront to avoid clutter — confirm if you want it sitewide.
