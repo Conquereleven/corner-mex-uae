@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard, Package, Plus, ShoppingCart, Wallet, Percent, Store, Settings, Activity, Upload, Truck, Bell, RotateCcw,
+  LayoutDashboard, Package, Plus, ShoppingCart, Wallet, Percent, Store, Settings, Activity, Upload, Truck, Bell, RotateCcw, ShieldCheck,
 } from "lucide-react";
 import { getMyAccount } from "@/lib/account.functions";
 import { DashboardShell } from "@/components/site/DashboardShell";
@@ -57,6 +57,7 @@ function SellerLayout() {
           label: t("dash.groups.store"),
           items: [
             { to: "/seller/storefront", label: t("dash.nav.storefront"), icon: Store },
+            { to: "/seller/settings", label: "KYC Verification", icon: ShieldCheck },
             { to: "/seller/settings", label: t("dash.nav.settings"), icon: Settings },
           ],
         },
