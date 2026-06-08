@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -11,31 +11,38 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { listSellerOrders, setOrderItemStatus } from "@/lib/seller.functions";
-import { sellerListShipments, sellerCreateShipment, sellerMarkDelivered } from "@/lib/shipments.functions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { listSellerOrders } from "@/lib/seller.functions";
+import { sellerCreateShipment } from "@/lib/shipments.functions";
 import { toast } from "sonner";
-import { Truck, ShoppingCart } from "lucide-react";
+import { Truck, ShoppingCart, Search, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/site/PageHeader";
 import { EmptyState } from "@/components/site/EmptyState";
+import { statusColor } from "@/lib/dashboard-tokens";
 
 export const Route = createFileRoute("/_authenticated/seller/orders")({
   head: () => ({ meta: [{ title: "Seller — Orders" }] }),
   component: Orders,
 });
 
-const STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled", "refunded"];
 const CARRIERS = ["aramex", "dhl", "fedex", "talabat", "local_courier", "pickup", "other"];
+const TABS: Array<{ key: string; label: string; match: (o: any) => boolean }> = [
+  { key: "all", label: "All", match: () => true },
+  { key: "unfulfilled", label: "Unfulfilled", match: (o) => ["pending", "confirmed"].includes(o.status) },
+  { key: "unpaid", label: "Unpaid", match: (o) => o.payment_status !== "paid" && o.payment_status !== "refunded" },
+  { key: "open", label: "Open", match: (o) => !["delivered", "cancelled", "refunded"].includes(o.status) },
+  { key: "closed", label: "Closed", match: (o) => ["delivered", "cancelled", "refunded"].includes(o.status) },
+];
 
 function Orders() {
   const fn = useServerFn(listSellerOrders);
-  const upd = useServerFn(setOrderItemStatus);
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["seller-orders"], queryFn: () => fn({}) });
-  const m = useMutation({
-    mutationFn: (input: { itemId: string; status: string }) => upd({ data: input }),
-    onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["seller-orders"] }); },
-    onError: (e: any) => toast.error(e.message),
-  });
+
+  const [search, setSearch] = useState("");
+  const [tab, setTab] = useState("all");
 
   // Group items by order
   const grouped = useMemo(() => {
@@ -51,6 +58,15 @@ function Orders() {
       new Date(b.order.created_at).getTime() - new Date(a.order.created_at).getTime());
   }, [q.data]);
 
+  const filtered = useMemo(() => {
+    const tabDef = TABS.find((t) => t.key === tab) ?? TABS[0];
+    return grouped.filter((g) => {
+      if (!tabDef.match(g.order)) return false;
+      if (!search) return true;
+      return (g.order.order_number ?? "").toLowerCase().includes(search.toLowerCase());
+    });
+  }, [grouped, search, tab]);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -60,89 +76,83 @@ function Orders() {
         breadcrumbs={[{ label: "Seller Studio", to: "/seller" }, { label: "Orders" }]}
       />
       <Card>
+        <Tabs value={tab} onValueChange={setTab} className="border-b border-border/60 px-4 pt-3">
+          <TabsList className="bg-transparent p-0 h-auto">
+            {TABS.map((t) => (
+              <TabsTrigger
+                key={t.key}
+                value={t.key}
+                className="rounded-none border-b-2 border-transparent bg-transparent px-3 py-2 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+              >
+                {t.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <CardHeader className="flex flex-row flex-wrap items-center gap-3 space-y-0">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input placeholder="Search order number…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
-          {q.isLoading ? <p className="p-6 text-sm text-muted-foreground">Loading…</p> :
-            grouped.length === 0 ? (
+          {q.isLoading ? (
+            <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
+          ) : filtered.length === 0 ? (
               <EmptyState
                 icon={ShoppingCart}
                 title="No orders yet"
                 description="Orders containing your products will show up here as buyers check out."
               />
             ) : (
-            <ul className="divide-y divide-border">
-              {grouped.map((g) => (
-                <li key={g.order.id} className="p-4">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <Link to="/seller/orders/$id" params={{ id: g.order.id }} className="font-medium hover:underline">{g.order.order_number}</Link>
-                      <p className="text-xs text-muted-foreground">{new Date(g.order.created_at).toLocaleString()}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{g.order.payment_status}</Badge>
-                      <Badge>{g.order.status}</Badge>
-                      <Button asChild size="sm" variant="outline">
-                        <Link to="/seller/orders/$id" params={{ id: g.order.id }}>View order</Link>
-                      </Button>
-                      <ShipmentDialog order={g.order} items={g.items} />
-                    </div>
-                  </div>
-                  <ul className="space-y-2">
-                    {g.items.map((i: any) => (
-                      <li key={i.id} className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto] md:items-center">
-                        <div className="text-sm">
-                          {i.product_name}{i.variant_label && <span className="text-muted-foreground"> — {i.variant_label}</span>}
-                        </div>
-                        <div className="text-sm tabular-nums">{i.qty} × {Number(i.unit_price_aed).toFixed(2)}</div>
-                        <Select value={i.fulfillment_status} onValueChange={(v) => m.mutate({ itemId: i.id, status: v })}>
-                          <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
-                          <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                        </Select>
-                      </li>
-                    ))}
-                  </ul>
-                  <OrderShipments orderId={g.order.id} />
-                </li>
-              ))}
-            </ul>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Subtotal</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((g) => {
+                    const subtotal = g.items.reduce((s, it: any) => s + Number(it.line_total_aed ?? 0), 0);
+                    const qty = g.items.reduce((s, it: any) => s + Number(it.qty ?? 0), 0);
+                    return (
+                      <TableRow key={g.order.id} className="hover:bg-muted/40">
+                        <TableCell className="font-medium">
+                          <Link to="/seller/orders/$id" params={{ id: g.order.id }} className="hover:underline">{g.order.order_number}</Link>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{new Date(g.order.created_at).toLocaleString()}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{qty} item{qty === 1 ? "" : "s"}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(g.order.payment_status), color: statusColor(g.order.payment_status) }}>{g.order.payment_status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(g.order.status), color: statusColor(g.order.status) }}>{g.order.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">{subtotal.toFixed(2)} AED</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <ShipmentDialog order={g.order} items={g.items} />
+                            <Button asChild size="sm" variant="ghost">
+                              <Link to="/seller/orders/$id" params={{ id: g.order.id }}>View<ChevronRight className="ms-1 h-4 w-4" /></Link>
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function OrderShipments({ orderId }: { orderId: string }) {
-  const fn = useServerFn(sellerListShipments);
-  const mark = useServerFn(sellerMarkDelivered);
-  const qc = useQueryClient();
-  const q = useQuery({ queryKey: ["shipments", orderId], queryFn: () => fn({ data: { orderId } }) });
-  const m = useMutation({
-    mutationFn: (id: string) => mark({ data: { shipmentId: id } }),
-    onSuccess: () => { toast.success("Marked delivered"); qc.invalidateQueries({ queryKey: ["shipments", orderId] }); qc.invalidateQueries({ queryKey: ["seller-orders"] }); },
-    onError: (e: any) => toast.error(e.message),
-  });
-  const items = (q.data ?? []) as any[];
-  if (items.length === 0) return null;
-  return (
-    <div className="mt-3 rounded-lg border bg-muted/30 p-3">
-      <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Shipments</p>
-      <ul className="space-y-2">
-        {items.map((s) => (
-          <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-            <div>
-              <span className="font-medium uppercase">{s.carrier}</span>
-              {s.tracking_number && <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>}
-              {s.tracking_url && <a className="ml-2 text-xs underline" href={s.tracking_url} target="_blank" rel="noreferrer">track</a>}
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{s.status}</Badge>
-              {s.status !== "delivered" && (
-                <Button size="sm" variant="outline" onClick={() => m.mutate(s.id)} disabled={m.isPending}>Mark delivered</Button>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
