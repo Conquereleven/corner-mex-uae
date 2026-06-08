@@ -196,7 +196,7 @@ export function OrderDetailView({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => payM.mutate("paid")}>
+                      <AlertDialogAction onClick={() => payM.mutate({ status: "paid", manual: true })}>
                         Yes, mark as paid
                       </AlertDialogAction>
                     </AlertDialogFooter>
