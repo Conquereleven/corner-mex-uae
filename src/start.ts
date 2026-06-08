@@ -19,7 +19,15 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+const requestAuthContext = createMiddleware().server(({ request, next }) =>
+  next({
+    context: {
+      authorization: request.headers.get("authorization"),
+    },
+  }),
+);
+
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware],
+  requestMiddleware: [errorMiddleware, requestAuthContext],
   functionMiddleware: [attachSupabaseAuth],
 }));
