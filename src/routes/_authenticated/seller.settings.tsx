@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -21,11 +21,16 @@ import { PageHeader } from "@/components/site/PageHeader";
 
 export const Route = createFileRoute("/_authenticated/seller/settings")({
   head: () => ({ meta: [{ title: "Settings — Seller Studio" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
   component: SellerSettings,
 });
 
 function SellerSettings() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const search = Route.useSearch();
   const get = useServerFn(getSellerSettings);
   const save = useServerFn(updateSellerSettings);
   const q = useQuery({ queryKey: ["seller-settings"], queryFn: () => get({}) });
@@ -60,6 +65,8 @@ function SellerSettings() {
 
   if (!f) return <div className="p-8 text-muted-foreground">Loading…</div>;
   const set = (k: string, v: any) => setF((p: any) => ({ ...p, [k]: v }));
+  const allowedTabs = new Set(["business", "address", "contact", "ops", "tax", "payout", "verification", "notif"]);
+  const activeTab = search.tab && allowedTabs.has(search.tab) ? search.tab : "business";
 
   return (
     <div className="space-y-6">
@@ -81,7 +88,13 @@ function SellerSettings() {
         </Alert>
       )}
 
-      <Tabs defaultValue="business">
+      <Tabs
+        value={activeTab}
+        onValueChange={(tab) => navigate({
+          to: "/seller/settings",
+          search: tab === "business" ? {} : { tab },
+        })}
+      >
         <TabsList>
           <TabsTrigger value="business">Business</TabsTrigger>
           <TabsTrigger value="address">Address</TabsTrigger>
