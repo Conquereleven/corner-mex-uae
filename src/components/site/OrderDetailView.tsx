@@ -283,11 +283,15 @@ export function OrderDetailView({
               <p className="font-medium">{buyer?.full_name ?? addr.recipient_name ?? "—"}</p>
               {buyer?.email && <p className="text-muted-foreground">{buyer.email}</p>}
               {(buyer?.phone || addr.phone) && <p className="text-muted-foreground">{buyer?.phone ?? addr.phone}</p>}
-              {customerHref && buyer?.id && (
+            {customerHref ? (
+              buyer?.id ? (
                 <Button asChild variant="outline" size="sm" className="mt-3 rounded-full">
                   <Link to={customerHref as any} params={{ id: buyer.id } as any}>View customer</Link>
                 </Button>
-              )}
+              ) : (
+                <p className="mt-3 text-xs text-muted-foreground">No customer profile attached to this order.</p>
+              )
+            ) : null}
             </CardContent>
           </Card>
 
