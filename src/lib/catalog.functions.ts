@@ -224,7 +224,7 @@ export const trackProductView = createServerFn({ method: "POST" })
     // Use admin client; the underlying RPC honors auth.uid() = NULL for anon
     const { error } = await supabaseAdmin.rpc("track_product_view", {
       p_product_id: data.productId,
-      p_session_hash: data.sessionHash ?? null,
+      p_session_hash: data.sessionHash,
     });
     if (error) {
       // Tracking must never break the page
@@ -281,11 +281,16 @@ export const listTopViewedProducts = createServerFn({ method: "GET" })
     // Orders per product (delivered+shipped+confirmed) in same window
     const { data: oitems } = await supabaseAdmin
       .from("order_items")
-      .select("product_id, qty:quantity, created_at")
+      .select("product_id")
       .in("product_id", ids)
-      .gte("created_at", since);
+      .in("order_id",
+        ((await supabaseAdmin.from("orders").select("id").gte("created_at", since)).data ?? []).map((o: any) => o.id),
+      );
     const orderCount: Record<string, number> = {};
-    for (const o of oitems ?? []) orderCount[o.product_id] = (orderCount[o.product_id] ?? 0) + 1;
+    for (const o of oitems ?? []) {
+      const pid = (o as any).product_id;
+      if (pid) orderCount[pid] = (orderCount[pid] ?? 0) + 1;
+    }
 
     return top.map(([id, views]) => {
       const r = byId.get(id);
