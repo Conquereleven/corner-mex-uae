@@ -64,7 +64,15 @@ function Hero() {
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-primary/15 via-transparent to-accent/10 blur-2xl" />
           <div className="overflow-hidden rounded-[2rem] border border-border shadow-2xl shadow-primary/10">
-            <img src={heroChiles} alt="Curated dried Mexican chiles" className="aspect-[4/5] w-full object-cover" />
+            <img
+              src={heroChiles}
+              alt="Curated dried Mexican chiles delivered across the UAE"
+              width={960}
+              height={1200}
+              decoding="async"
+              fetchPriority="high"
+              className="aspect-[4/5] w-full object-cover"
+            />
           </div>
           <div className="absolute -bottom-6 -start-6 hidden rounded-2xl border border-border bg-background/95 px-5 py-4 shadow-xl backdrop-blur sm:block">
             <div className="font-display text-3xl font-semibold text-foreground">120+</div>
@@ -121,7 +129,15 @@ function Features() {
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <div className="grid gap-12 md:grid-cols-2 md:items-center">
         <div className="overflow-hidden rounded-[2rem] border border-border">
-          <img src={featureSalsa} alt="Mexican salsa selection" className="aspect-[4/3] w-full object-cover" />
+          <img
+            src={featureSalsa}
+            alt="Selection of authentic Mexican salsas"
+            width={1200}
+            height={900}
+            loading="lazy"
+            decoding="async"
+            className="aspect-[4/3] w-full object-cover"
+          />
         </div>
         <div>
           <h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl md:text-5xl">{t("features.title")}</h2>
@@ -144,7 +160,15 @@ function B2BBlock() {
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="relative overflow-hidden rounded-[2.5rem] border border-border bg-foreground text-background">
-        <img src={b2bKitchen} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+        <img
+          src={b2bKitchen}
+          alt=""
+          width={1600}
+          height={900}
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+        />
         <div className="relative grid gap-8 p-10 md:grid-cols-2 md:items-center md:p-16">
           <div>
             <span className="text-[11px] uppercase tracking-[0.18em] text-background/70">{t("b2b.eyebrow")}</span>

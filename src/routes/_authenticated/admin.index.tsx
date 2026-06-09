@@ -16,6 +16,7 @@ import {
 import { adminOverview } from "@/lib/admin.functions";
 import { listTopViewedProducts } from "@/lib/catalog.functions";
 import { Eye } from "lucide-react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -41,9 +42,10 @@ function AdminHome() {
   const fn = useServerFn(adminOverview);
   const q = useQuery({ queryKey: ["admin-overview"], queryFn: () => fn({}), refetchInterval: 60_000 });
   const topViewedFn = useServerFn(listTopViewedProducts);
+  const [viewedDays, setViewedDays] = useState<number>(30);
   const topViewed = useQuery({
-    queryKey: ["admin-top-viewed", 30],
-    queryFn: () => topViewedFn({ data: { days: 30, limit: 10 } }),
+    queryKey: ["admin-top-viewed", viewedDays],
+    queryFn: () => topViewedFn({ data: { days: viewedDays, limit: 10 } }),
     refetchInterval: 120_000,
   });
   const d = q.data;
@@ -255,9 +257,25 @@ function AdminHome() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base flex items-center gap-2"><Eye className="h-4 w-4" /> Most viewed products</CardTitle>
-            <CardDescription>Top 10 · last 30 days</CardDescription>
+            <CardDescription>Top 10 products by view count</CardDescription>
           </div>
-          <Badge variant="outline">{N((topViewed.data ?? []).reduce((s, p) => s + p.views, 0))} views</Badge>
+          <div className="flex items-center gap-2">
+            {[
+              { label: "Today", v: 1 },
+              { label: "7d", v: 7 },
+              { label: "30d", v: 30 },
+              { label: "All", v: 365 },
+            ].map((p) => (
+              <button
+                key={p.v}
+                onClick={() => setViewedDays(p.v)}
+                className={`rounded-full px-2.5 py-1 text-xs transition ${viewedDays === p.v ? "bg-foreground text-background" : "border border-border text-muted-foreground hover:text-foreground"}`}
+              >
+                {p.label}
+              </button>
+            ))}
+            <Badge variant="outline">{N((topViewed.data ?? []).reduce((s, p) => s + p.views, 0))} views</Badge>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {topViewed.isLoading ? (
