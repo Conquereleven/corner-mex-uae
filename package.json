@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "seo:products": "node scripts/seo-products.mjs"
+    "seo:products": "node scripts/seo-products.mjs",
+    "seo:products:editorial": "node scripts/seo-products-editorial.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
