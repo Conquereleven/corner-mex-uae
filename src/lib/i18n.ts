@@ -364,6 +364,35 @@ const es = {
       nav: "Importación masiva",
     },
   },
+  pages: {
+    b2b: {
+      meta: {
+        title: "Para negocios — Mayoreo mexicano en EAU | Corner Mex",
+        description: "Insumos mexicanos al mayoreo para restaurantes, hoteles, caterings y supermercados en Dubái, Abu Dabi, Sharjah y los 7 Emiratos.",
+      },
+      eyebrow: "Para negocios",
+      title: "Mayoreo mexicano para los Emiratos.",
+      lede: "Abre una cuenta de negocio verificada para acceder a precios de mayoreo, catálogos personalizados, facturación mensual y un gerente de cuenta dedicado en los 7 Emiratos — Dubái, Abu Dabi, Sharjah, Ajman, Ras Al Khaimah, Fujairah y Umm Al Quwain.",
+      ctaQuote: "Solicitar cotización",
+      ctaContact: "Contactar ventas",
+      perks: {
+        catalogues: { title: "Catálogos a medida", body: "Cuéntanos qué necesitas; lo curamos con productores mexicanos de confianza." },
+        emirates: { title: "Los 7 Emiratos", body: "Zonas de envío y SLAs con cobertura en todo EAU." },
+        manager: { title: "Gerente de cuenta", body: "Un único punto de contacto gestiona tus pedidos mensuales." },
+      },
+    },
+    about: {
+      meta: {
+        title: "Nosotros — Corner Mex, marketplace mexicano en EAU",
+        description: "Corner Mex conecta a productores mexicanos de confianza con restaurantes, hoteles y hogares en EAU.",
+      },
+      title: "Un rincón mexicano en los Emiratos.",
+      lede: "Corner Mex es un marketplace curado que lleva la despensa mexicana auténtica — chiles, moles, masa, snacks y bebidas — a restaurantes, hoteles, caterings, supermercados y hogares en EAU.",
+      ctaShop: "Ir a la tienda",
+      ctaB2B: "Para negocios",
+      ctaSellers: "Conoce a los vendedores",
+    },
+  },
 };
 
 const ar = {
