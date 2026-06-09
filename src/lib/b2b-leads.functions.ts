@@ -36,8 +36,77 @@ export const submitB2bLead = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+    // Fire-and-forget confirmation email (never fail the lead on email error)
+    sendLeadConfirmationEmail(data).catch((e) => {
+      console.warn("[b2b-lead] email send failed", e?.message ?? e);
+    });
     return { ok: true as const, id: ins.id, duplicate: false };
   });
+
+async function sendLeadConfirmationEmail(lead: z.infer<typeof LeadInput>) {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!lovableKey || !resendKey) {
+    console.warn("[b2b-lead] Missing LOVABLE_API_KEY or RESEND_API_KEY — skipping email");
+    return;
+  }
+  const safe = (s: string | null | undefined) =>
+    (s ?? "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "amp;" }[c]!));
+  const summaryRows: Array<[string, string | null | undefined]> = [
+    ["Company", lead.company],
+    ["Products of interest", lead.products_interest],
+    ["Estimated volume", lead.estimated_volume],
+    ["Country / city", lead.country_city],
+    ["Business type", lead.business_type],
+    ["Preferred contact", lead.contact_preference],
+    ["Message", lead.message],
+  ].filter(([, v]) => v && String(v).trim().length > 0);
+  const summaryHtml = summaryRows
+    .map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;">${k}</td><td style="padding:6px 0;color:#111;font-size:13px;">${safe(String(v))}</td></tr>`)
+    .join("");
+
+  const html = `<!doctype html>
+<html><body style="margin:0;background:#fafaf9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf9;padding:32px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #eee;">
+        <tr><td style="padding:32px 32px 8px;">
+          <p style="margin:0;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;">Corner Mex</p>
+          <h1 style="margin:8px 0 0;font-size:24px;font-weight:600;letter-spacing:-0.01em;">Thank you, ${safe(lead.full_name)}</h1>
+          <p style="margin:12px 0 0;font-size:15px;line-height:1.55;color:#374151;">We received your wholesale enquiry and our team will get back to you within one business day with availability, pricing and delivery SLAs.</p>
+        </td></tr>
+        <tr><td style="padding:8px 32px 8px;">
+          <h2 style="margin:24px 0 8px;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#9ca3af;">Your request</h2>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-top:1px solid #f3f4f6;">${summaryHtml || `<tr><td style="padding:12px 0;color:#6b7280;font-size:13px;">—</td></tr>`}</table>
+        </td></tr>
+        <tr><td style="padding:24px 32px 32px;">
+          <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">If anything is urgent you can also reach us at <a href="mailto:b2b@cornermex.ae" style="color:#111;text-decoration:underline;">b2b@cornermex.ae</a>.</p>
+          <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">Corner Mex · Authentic Mexican pantry, sourced for the UAE</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  const resp = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": resendKey,
+    },
+    body: JSON.stringify({
+      from: "Corner Mex <onboarding@resend.dev>",
+      to: [lead.email],
+      subject: "We received your wholesale enquiry — Corner Mex",
+      html,
+    }),
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new Error(`Resend ${resp.status}: ${text.slice(0, 200)}`);
+  }
+}
 
 export type B2bLead = {
   id: string;
