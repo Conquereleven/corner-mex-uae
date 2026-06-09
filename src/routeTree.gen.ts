@@ -25,8 +25,8 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as B2bLeadRouteImport } from './routes/b2b_.lead'
 import { Route as B2bQuoteRouteImport } from './routes/b2b.quote'
-import { Route as B2bLeadRouteImport } from './routes/b2b.lead'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -165,14 +165,14 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const B2bLeadRoute = B2bLeadRouteImport.update({
+  id: '/b2b_/lead',
+  path: '/b2b/lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const B2bQuoteRoute = B2bQuoteRouteImport.update({
   id: '/quote',
   path: '/quote',
-  getParentRoute: () => B2bRoute,
-} as any)
-const B2bLeadRoute = B2bLeadRouteImport.update({
-  id: '/lead',
-  path: '/lead',
   getParentRoute: () => B2bRoute,
 } as any)
 const AuthenticatedSellerRoute = AuthenticatedSellerRouteImport.update({
@@ -534,8 +534,8 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
-  '/b2b/lead': typeof B2bLeadRoute
   '/b2b/quote': typeof B2bQuoteRoute
+  '/b2b/lead': typeof B2bLeadRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
@@ -609,8 +609,8 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
-  '/b2b/lead': typeof B2bLeadRoute
   '/b2b/quote': typeof B2bQuoteRoute
+  '/b2b/lead': typeof B2bLeadRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
@@ -683,8 +683,8 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
-  '/b2b/lead': typeof B2bLeadRoute
   '/b2b/quote': typeof B2bQuoteRoute
+  '/b2b_/lead': typeof B2bLeadRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/_authenticated/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
@@ -762,8 +762,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/seller'
-    | '/b2b/lead'
     | '/b2b/quote'
+    | '/b2b/lead'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/account/loyalty'
@@ -837,8 +837,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/account'
-    | '/b2b/lead'
     | '/b2b/quote'
+    | '/b2b/lead'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/account/loyalty'
@@ -910,8 +910,8 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/seller'
-    | '/b2b/lead'
     | '/b2b/quote'
+    | '/b2b_/lead'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/_authenticated/account/loyalty'
@@ -986,6 +986,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  B2bLeadRoute: typeof B2bLeadRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -1107,18 +1108,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/b2b_/lead': {
+      id: '/b2b_/lead'
+      path: '/b2b/lead'
+      fullPath: '/b2b/lead'
+      preLoaderRoute: typeof B2bLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/b2b/quote': {
       id: '/b2b/quote'
       path: '/quote'
       fullPath: '/b2b/quote'
       preLoaderRoute: typeof B2bQuoteRouteImport
-      parentRoute: typeof B2bRoute
-    }
-    '/b2b/lead': {
-      id: '/b2b/lead'
-      path: '/lead'
-      fullPath: '/b2b/lead'
-      preLoaderRoute: typeof B2bLeadRouteImport
       parentRoute: typeof B2bRoute
     }
     '/_authenticated/seller': {
@@ -1754,12 +1755,10 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface B2bRouteChildren {
-  B2bLeadRoute: typeof B2bLeadRoute
   B2bQuoteRoute: typeof B2bQuoteRoute
 }
 
 const B2bRouteChildren: B2bRouteChildren = {
-  B2bLeadRoute: B2bLeadRoute,
   B2bQuoteRoute: B2bQuoteRoute,
 }
 
@@ -1803,6 +1802,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  B2bLeadRoute: B2bLeadRoute,
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
