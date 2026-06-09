@@ -38,7 +38,7 @@ function Shop() {
   useEffect(() => setQInput(search.q ?? ""), [search.q]);
 
   function update(patch: Partial<typeof search>) {
-    navigate({ search: (prev) => ({ ...prev, ...patch }) as any, replace: true });
+    navigate({ search: (prev: any) => ({ ...prev, ...patch }), replace: true });
   }
 
   const cats = useQuery({
