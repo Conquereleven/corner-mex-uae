@@ -141,7 +141,7 @@ function ProductPage() {
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
   const add = useCart((s) => s.add);
 
-  const { data: product, isLoading } = useQuery({
+  const { data: product, isLoading } = useQuery<ProductDetail | null>({
     queryKey: ["product", slug, lang],
     queryFn: () => getProduct({ data: { slug, lang } }),
     initialData: lang === "en" ? initialProduct : undefined,

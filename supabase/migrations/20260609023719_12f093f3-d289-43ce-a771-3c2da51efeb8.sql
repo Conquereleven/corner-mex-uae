@@ -1,0 +1,1 @@
+REVOKE UPDATE, INSERT, DELETE ON public.products, public.product_translations, public.product_images FROM sandbox_exec;
