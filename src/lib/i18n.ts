@@ -167,6 +167,35 @@ const en = {
       nav: "Bulk import",
     },
   },
+  pages: {
+    b2b: {
+      meta: {
+        title: "For Business — Wholesale Mexican supply in the UAE | Corner Mex",
+        description: "Wholesale Mexican food for restaurants, hotels, caterings and supermarkets across Dubai, Abu Dhabi, Sharjah and all 7 Emirates.",
+      },
+      eyebrow: "For business",
+      title: "Wholesale Mexican supply for the UAE.",
+      lede: "Open a verified business account to access wholesale pricing, custom catalogues, monthly invoicing and dedicated account managers across all 7 Emirates — Dubai, Abu Dhabi, Sharjah, Ajman, Ras Al Khaimah, Fujairah and Umm Al Quwain.",
+      ctaQuote: "Request a quote",
+      ctaContact: "Contact sales",
+      perks: {
+        catalogues: { title: "Tailored catalogues", body: "Tell us what you need; we curate from trusted Mexican producers." },
+        emirates: { title: "All 7 Emirates", body: "Shipping zones and SLAs covering UAE-wide delivery." },
+        manager: { title: "Account manager", body: "A single point of contact handles your monthly orders." },
+      },
+    },
+    about: {
+      meta: {
+        title: "About Corner Mex — Authentic Mexican marketplace in the UAE",
+        description: "Corner Mex connects trusted Mexican producers with restaurants, hotels and homes across the UAE.",
+      },
+      title: "A Mexican corner in the Emirates.",
+      lede: "Corner Mex is a curated marketplace bringing authentic Mexican pantry — chiles, moles, masa, snacks and drinks — to the UAE's restaurants, hotels, caterings, supermarkets and homes.",
+      ctaShop: "Shop the marketplace",
+      ctaB2B: "For business",
+      ctaSellers: "Meet the sellers",
+    },
+  },
 };
 
 const es = {
