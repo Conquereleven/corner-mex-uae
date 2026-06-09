@@ -75,6 +75,7 @@ export type Database = {
           estimated_volume: string | null
           full_name: string
           id: string
+          idempotency_key: string | null
           message: string | null
           phone: string | null
           products_interest: string | null
@@ -94,6 +95,7 @@ export type Database = {
           estimated_volume?: string | null
           full_name: string
           id?: string
+          idempotency_key?: string | null
           message?: string | null
           phone?: string | null
           products_interest?: string | null
@@ -113,6 +115,7 @@ export type Database = {
           estimated_volume?: string | null
           full_name?: string
           id?: string
+          idempotency_key?: string | null
           message?: string | null
           phone?: string | null
           products_interest?: string | null

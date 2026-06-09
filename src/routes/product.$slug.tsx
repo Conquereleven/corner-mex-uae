@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { Flame, MapPin, ShieldCheck, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, MapPin, ShieldCheck, Star } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { ProductReviews } from "@/components/site/ProductReviews";
@@ -139,6 +139,7 @@ function ProductPage() {
   const lang = i18n.language as "en" | "es" | "ar";
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
+  const [activeImg, setActiveImg] = useState(0);
   const add = useCart((s) => s.add);
 
   const { data: product, isLoading } = useQuery<ProductDetail | null>({
@@ -174,6 +175,11 @@ function ProductPage() {
     throw notFound();
   }
   const p = product;
+  const gallery = p.images && p.images.length > 0 ? p.images : (p.image ? [p.image] : []);
+  const safeIndex = gallery.length > 0 ? Math.min(activeImg, gallery.length - 1) : 0;
+  const currentImg = gallery[safeIndex];
+  const goPrev = () => gallery.length > 0 && setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
+  const goNext = () => gallery.length > 0 && setActiveImg((i) => (i + 1) % gallery.length);
   const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
   const hasDiscount =
     variant?.compare_at_price_aed && variant.compare_at_price_aed > variant.price_aed;
@@ -216,30 +222,64 @@ function ProductPage() {
 
         <div className="mt-6 grid gap-10 md:grid-cols-2">
           <div className="space-y-3">
-            <div className="overflow-hidden rounded-[2rem] border border-border bg-muted">
-              {product.image && (
+            <div className="relative overflow-hidden rounded-[2rem] border border-border bg-muted">
+              {currentImg && (
                 <img
-                  src={product.image}
-                  alt={product.image_alts[0] || product.name}
+                  key={currentImg}
+                  src={currentImg}
+                  alt={product.image_alts[safeIndex] || product.name}
                   fetchPriority="high"
                   decoding="async"
                   className="aspect-square w-full object-cover"
                 />
               )}
-            </div>
-            {product.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {product.images.slice(0, 4).map((src, i) => (
-                  <div key={i} className="overflow-hidden rounded-xl border border-border bg-muted">
-                    <img
-                      src={src}
-                      alt={product.image_alts[i] || `${product.name}, product image ${i + 1}`}
-                      loading="lazy"
-                      decoding="async"
-                      className="aspect-square w-full object-cover"
-                    />
+              {gallery.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={goPrev}
+                    aria-label="Previous image"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-background"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    aria-label="Next image"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-background"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-background/80 px-2 py-0.5 text-[11px] text-muted-foreground backdrop-blur">
+                    {safeIndex + 1} / {gallery.length}
                   </div>
-                ))}
+                </>
+              )}
+            </div>
+            {gallery.length > 1 && (
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                {gallery.map((src, i) => {
+                  const active = i === safeIndex;
+                  return (
+                    <button
+                      key={`${src}-${i}`}
+                      type="button"
+                      onClick={() => setActiveImg(i)}
+                      aria-label={`Show image ${i + 1}`}
+                      aria-current={active}
+                      className={`overflow-hidden rounded-xl border bg-muted transition ${active ? "border-foreground ring-2 ring-foreground/20" : "border-border hover:border-foreground/40"}`}
+                    >
+                      <img
+                        src={src}
+                        alt={product.image_alts[i] || `${product.name}, image ${i + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                        className="aspect-square w-full object-cover"
+                      />
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

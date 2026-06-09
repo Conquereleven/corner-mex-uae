@@ -14,12 +14,24 @@ const LeadInput = z.object({
   estimated_volume: z.string().trim().max(120).optional().nullable(),
   message: z.string().trim().max(2000).optional().nullable(),
   contact_preference: z.string().trim().max(40).optional().nullable(),
+  idempotency_key: z.string().trim().min(8).max(80).optional().nullable(),
 });
 
 export const submitB2bLead = createServerFn({ method: "POST" })
   .inputValidator((i: z.input<typeof LeadInput>) => LeadInput.parse(i))
   .handler(async ({ data }) => {
-    // De-dupe: same email + same products_interest within 10 minutes
+    // Idempotency: if a key is provided and already exists, return the prior lead.
+    if (data.idempotency_key) {
+      const { data: existing } = await supabaseAdmin
+        .from("b2b_leads")
+        .select("id")
+        .eq("idempotency_key", data.idempotency_key)
+        .maybeSingle();
+      if (existing) {
+        return { ok: true as const, id: existing.id, duplicate: true };
+      }
+    }
+    // Fallback de-dupe: same email within 10 minutes
     const since = new Date(Date.now() - 10 * 60_000).toISOString();
     const { data: dup } = await supabaseAdmin
       .from("b2b_leads")
@@ -32,10 +44,21 @@ export const submitB2bLead = createServerFn({ method: "POST" })
     }
     const { data: ins, error } = await supabaseAdmin
       .from("b2b_leads")
-      .insert(data)
+      .insert(data as any)
       .select("id")
       .single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      // Unique violation on idempotency_key: another in-flight request won the race.
+      if ((error as any).code === "23505" && data.idempotency_key) {
+        const { data: existing } = await supabaseAdmin
+          .from("b2b_leads")
+          .select("id")
+          .eq("idempotency_key", data.idempotency_key)
+          .maybeSingle();
+        if (existing) return { ok: true as const, id: existing.id, duplicate: true };
+      }
+      throw new Error(error.message);
+    }
     // Fire-and-forget confirmation email (never fail the lead on email error)
     sendLeadConfirmationEmail(data).catch((e) => {
       console.warn("[b2b-lead] email send failed", e?.message ?? e);
