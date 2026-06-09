@@ -283,9 +283,7 @@ export const listTopViewedProducts = createServerFn({ method: "GET" })
       .from("order_items")
       .select("product_id")
       .in("product_id", ids)
-      .in("order_id",
-        ((await supabaseAdmin.from("orders").select("id").gte("created_at", since)).data ?? []).map((o: any) => o.id),
-      );
+      .limit(5000);
     const orderCount: Record<string, number> = {};
     for (const o of oitems ?? []) {
       const pid = (o as any).product_id;
