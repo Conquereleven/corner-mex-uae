@@ -45,6 +45,9 @@ export const listProducts = createServerFn({ method: "GET" })
       priceMax?: number;
       origin?: string;
       brand?: string;
+      inStock?: boolean;
+      bulk?: boolean;
+      spice?: number;
       sort?: "newest" | "price_asc" | "price_desc" | "most_viewed";
     }) =>
       z
@@ -58,6 +61,9 @@ export const listProducts = createServerFn({ method: "GET" })
           priceMax: z.number().nonnegative().optional(),
           origin: z.string().max(80).optional(),
           brand: z.string().max(80).optional(),
+          inStock: z.boolean().optional(),
+          bulk: z.boolean().optional(),
+          spice: z.number().int().min(0).max(4).optional(),
           sort: z.enum(["newest", "price_asc", "price_desc", "most_viewed"]).default("newest"),
         })
         .parse(input ?? {}),
@@ -104,6 +110,8 @@ export const listProducts = createServerFn({ method: "GET" })
     if (sellerId) query = query.eq("seller_id", sellerId);
     if (data.origin) query = query.ilike("origin_region", data.origin);
     if (data.brand) query = query.ilike("brand", data.brand);
+    if (data.bulk) query = query.eq("is_bulk", true);
+    if (typeof data.spice === "number") query = query.eq("spice_level", data.spice);
 
     // Server-side price filter on the embedded default variant.
     // We filter the product_variants relation so only matching variants are
@@ -115,6 +123,7 @@ export const listProducts = createServerFn({ method: "GET" })
       typeof data.priceMax === "number" && Number.isFinite(data.priceMax) && data.priceMax >= 0;
     if (priceMinValid) query = query.gte("product_variants.price_aed", data.priceMin!);
     if (priceMaxValid) query = query.lte("product_variants.price_aed", data.priceMax!);
+    if (data.inStock) query = query.gt("product_variants.stock", 0);
 
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
