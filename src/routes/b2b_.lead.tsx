@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { submitB2bLead } from "@/lib/b2b-leads.functions";
 
-export const Route = createFileRoute("/b2b/lead")({
+export const Route = createFileRoute("/b2b_/lead")({
   head: () => ({
     meta: [
       { title: "Request a wholesale quote — Corner Mex" },
