@@ -1,13 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Flame, MapPin, ShieldCheck, Star } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { ProductReviews } from "@/components/site/ProductReviews";
 import { WishlistButton } from "@/components/site/WishlistButton";
-import { getProduct, type ProductDetail } from "@/lib/catalog.functions";
+import { getProduct, trackProductView, type ProductDetail } from "@/lib/catalog.functions";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
 
@@ -147,6 +147,19 @@ function ProductPage() {
     initialData: lang === "en" ? initialProduct : undefined,
     staleTime: 60_000,
   });
+
+  useEffect(() => {
+    if (!product?.id) return;
+    let sessionHash: string | undefined;
+    try {
+      sessionHash = window.localStorage.getItem("cmx-sid") ?? undefined;
+      if (!sessionHash) {
+        sessionHash = crypto.randomUUID();
+        window.localStorage.setItem("cmx-sid", sessionHash);
+      }
+    } catch {}
+    trackProductView({ data: { productId: product.id, sessionHash } }).catch(() => {});
+  }, [product?.id]);
 
   if (isLoading) {
     return (
