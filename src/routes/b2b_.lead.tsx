@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -45,6 +45,12 @@ function LeadForm() {
   const fn = useServerFn(submitB2bLead);
   const [f, setF] = useState<Form>(EMPTY);
   const [done, setDone] = useState(false);
+  // Stable idempotency key per form instance; survives re-renders / double-clicks.
+  const idemRef = useRef<string>(
+    (typeof crypto !== "undefined" && "randomUUID" in crypto)
+      ? crypto.randomUUID()
+      : `lead-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+  );
 
   const m = useMutation({
     mutationFn: () =>
@@ -60,6 +66,7 @@ function LeadForm() {
           estimated_volume: f.estimated_volume.trim() || null,
           message: f.message.trim() || null,
           contact_preference: f.contact_preference || null,
+          idempotency_key: idemRef.current,
         },
       }),
     onSuccess: (r: any) => {
