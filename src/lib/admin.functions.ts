@@ -440,6 +440,54 @@ export const adminBootstrap = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ============= Dashboard counts (sidebar badges) =============
+export type AdminDashCounts = {
+  orders_pending: number;
+  shipments_pending: number;
+  leads_new: number;
+  kyc_pending: number;
+  payouts_pending: number;
+  reviews_pending: number;
+  returns_pending: number;
+  low_stock: number;
+};
+
+export const adminDashboardCounts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminDashCounts> => {
+    await assertAdmin(context.userId);
+    const head = (q: any) => q.then((r: any) => r.count ?? 0).catch(() => 0);
+    const [
+      ordersPending,
+      shipmentsPending,
+      leadsNew,
+      kycPending,
+      payoutsPending,
+      reviewsPending,
+      returnsPending,
+      lowStock,
+    ] = await Promise.all([
+      head(supabaseAdmin.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending", "preparing"])),
+      head(supabaseAdmin.from("orders").select("id", { count: "exact", head: true }).eq("status", "preparing")),
+      head(supabaseAdmin.from("b2b_leads").select("id", { count: "exact", head: true }).eq("status", "new")),
+      head(supabaseAdmin.from("sellers").select("id", { count: "exact", head: true }).eq("kyc_status", "pending")),
+      head(supabaseAdmin.from("seller_payouts").select("id", { count: "exact", head: true }).eq("status", "pending")),
+      head(supabaseAdmin.from("product_reviews").select("id", { count: "exact", head: true }).eq("status", "pending")),
+      head(supabaseAdmin.from("returns").select("id", { count: "exact", head: true }).eq("status", "requested")),
+      head(supabaseAdmin.from("product_variants").select("id", { count: "exact", head: true }).lte("stock", 5)),
+    ]);
+    return {
+      orders_pending: ordersPending,
+      shipments_pending: shipmentsPending,
+      leads_new: leadsNew,
+      kyc_pending: kycPending,
+      payouts_pending: payoutsPending,
+      reviews_pending: reviewsPending,
+      returns_pending: returnsPending,
+      low_stock: lowStock,
+    };
+  });
+
 // ============= Payouts =============
 
 export const adminListPayouts = createServerFn({ method: "GET" })

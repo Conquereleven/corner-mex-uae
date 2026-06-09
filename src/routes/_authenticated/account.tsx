@@ -53,7 +53,6 @@ function Account() {
             {admin.data?.admin && (
               <Link to="/admin"><Button variant="outline" className="rounded-full">Admin</Button></Link>
             )}
-            <Link to="/account/quotes"><Button variant="outline" className="rounded-full">My quotes</Button></Link>
             <Link to="/account/notifications"><Button variant="outline" className="rounded-full">Notifications</Button></Link>
             <Link to="/account/wishlist"><Button variant="outline" className="rounded-full">Wishlist</Button></Link>
             <Link to="/account/loyalty"><Button variant="outline" className="rounded-full">Loyalty</Button></Link>

@@ -23,6 +23,8 @@ export type DashNavItem = {
   label: string;
   icon: LucideIcon;
   soon?: boolean;
+  badge?: number | null;
+  badgeTone?: "default" | "primary" | "warning";
 };
 export type DashNavGroup = {
   label: string;
@@ -95,6 +97,18 @@ function DashSidebar({ title, subtitle, nav }: { title: string; subtitle?: strin
                         <Link to={item.to} search={item.search as never}>
                           <item.icon />
                           <span>{item.label}</span>
+                          {typeof item.badge === "number" && item.badge > 0 && (
+                            <Badge
+                              variant={item.badgeTone === "primary" ? "default" : "secondary"}
+                              className={`ml-auto h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums group-data-[collapsible=icon]:hidden ${
+                                item.badgeTone === "warning"
+                                  ? "bg-amber-500/15 text-amber-700 border-amber-500/30"
+                                  : ""
+                              }`}
+                            >
+                              {item.badge > 99 ? "99+" : item.badge}
+                            </Badge>
+                          )}
                         </Link>
                       </SidebarMenuButton>
                     )}
