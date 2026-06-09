@@ -14,6 +14,9 @@ import {
   CreditCard, DollarSign, Package, ShoppingCart, Store, TrendingUp, Users,
 } from "lucide-react";
 import { adminOverview } from "@/lib/admin.functions";
+import { listTopViewedProducts } from "@/lib/catalog.functions";
+import { Eye } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({ meta: [{ title: "Admin — Overview" }] }),
@@ -37,6 +40,12 @@ const STATUS_COLORS: Record<string, string> = {
 function AdminHome() {
   const fn = useServerFn(adminOverview);
   const q = useQuery({ queryKey: ["admin-overview"], queryFn: () => fn({}), refetchInterval: 60_000 });
+  const topViewedFn = useServerFn(listTopViewedProducts);
+  const topViewed = useQuery({
+    queryKey: ["admin-top-viewed", 30],
+    queryFn: () => topViewedFn({ data: { days: 30, limit: 10 } }),
+    refetchInterval: 120_000,
+  });
   const d = q.data;
 
   if (q.isLoading || !d) {
@@ -240,6 +249,44 @@ function AdminHome() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Most viewed products (last 30 days) */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2"><Eye className="h-4 w-4" /> Most viewed products</CardTitle>
+            <CardDescription>Top 10 · last 30 days</CardDescription>
+          </div>
+          <Badge variant="outline">{N((topViewed.data ?? []).reduce((s, p) => s + p.views, 0))} views</Badge>
+        </CardHeader>
+        <CardContent className="p-0">
+          {topViewed.isLoading ? (
+            <div className="p-6"><Skeleton className="h-32" /></div>
+          ) : (topViewed.data ?? []).length === 0 ? (
+            <div className="p-6"><Empty label="No views tracked yet" /></div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {(topViewed.data ?? []).map((p, i) => {
+                const conv = p.views > 0 ? ((p.orders / p.views) * 100).toFixed(1) : "0.0";
+                return (
+                  <li key={p.product_id} className="grid grid-cols-[28px_56px_1fr_auto_auto] items-center gap-3 px-6 py-3">
+                    <span className="text-xs font-mono text-muted-foreground">#{i + 1}</span>
+                    <div className="h-14 w-14 overflow-hidden rounded-md bg-muted">
+                      {p.image && <img src={p.image} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />}
+                    </div>
+                    <div className="min-w-0">
+                      <Link to="/product/$slug" params={{ slug: p.slug }} className="truncate text-sm font-medium hover:underline">{p.name}</Link>
+                      <p className="text-xs text-muted-foreground">{p.category ?? "—"}</p>
+                    </div>
+                    <Badge variant="secondary" className="font-mono tabular-nums">{N(p.views)} views</Badge>
+                    <Badge variant="outline" className="font-mono tabular-nums">{conv}% conv</Badge>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent activity */}
       <Card>
