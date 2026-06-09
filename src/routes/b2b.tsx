@@ -35,7 +35,7 @@ function B2B() {
         <h1 className="mt-4 font-display text-5xl tracking-tight">{t("pages.b2b.title")}</h1>
         <p className="mt-6 text-lg text-muted-foreground">{t("pages.b2b.lede")}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/b2b/quote"><Button size="lg" className="rounded-full">{t("pages.b2b.ctaQuote")}</Button></Link>
+          <Link to="/b2b/lead"><Button size="lg" className="rounded-full">{t("pages.b2b.ctaQuote")}</Button></Link>
           <a href="mailto:b2b@cornermex.ae"><Button size="lg" variant="outline" className="rounded-full"><Mail className="me-2 h-4 w-4" /> {t("pages.b2b.ctaContact")}</Button></a>
         </div>
 
