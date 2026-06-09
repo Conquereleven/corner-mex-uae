@@ -52,7 +52,7 @@ async function sendLeadConfirmationEmail(lead: z.infer<typeof LeadInput>) {
   }
   const safe = (s: string | null | undefined) =>
     (s ?? "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "amp;" }[c]!));
-  const summaryRows: Array<[string, string | null | undefined]> = [
+  const summaryRows = ([
     ["Company", lead.company],
     ["Products of interest", lead.products_interest],
     ["Estimated volume", lead.estimated_volume],
@@ -60,7 +60,7 @@ async function sendLeadConfirmationEmail(lead: z.infer<typeof LeadInput>) {
     ["Business type", lead.business_type],
     ["Preferred contact", lead.contact_preference],
     ["Message", lead.message],
-  ].filter(([, v]) => v && String(v).trim().length > 0);
+  ] as Array<[string, string | null | undefined]>).filter(([, v]) => v && String(v).trim().length > 0);
   const summaryHtml = summaryRows
     .map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;">${k}</td><td style="padding:6px 0;color:#111;font-size:13px;">${safe(String(v))}</td></tr>`)
     .join("");
