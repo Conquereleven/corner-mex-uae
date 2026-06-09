@@ -106,7 +106,10 @@ export const adminUpdateB2bLead = createServerFn({ method: "POST" })
     }
     if (data.admin_note !== undefined) patch.admin_note = data.admin_note;
     if (Object.keys(patch).length === 0) return { ok: true as const };
-    const { error } = await supabaseAdmin.from("b2b_leads").update(patch).eq("id", data.id);
+    const { error } = await supabaseAdmin
+      .from("b2b_leads")
+      .update(patch as any)
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
