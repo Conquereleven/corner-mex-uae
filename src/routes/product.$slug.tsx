@@ -221,6 +221,8 @@ function ProductPage() {
                 <img
                   src={product.image}
                   alt={product.image_alts[0] || product.name}
+                  fetchPriority="high"
+                  decoding="async"
                   className="aspect-square w-full object-cover"
                 />
               )}
@@ -232,6 +234,8 @@ function ProductPage() {
                     <img
                       src={src}
                       alt={product.image_alts[i] || `${product.name}, product image ${i + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       className="aspect-square w-full object-cover"
                     />
                   </div>
