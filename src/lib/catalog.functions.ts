@@ -222,10 +222,10 @@ export const trackProductView = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ ok: true }> => {
     // Use admin client; the underlying RPC honors auth.uid() = NULL for anon
-    const { error } = await supabaseAdmin.rpc("track_product_view", {
+    const { error } = await supabaseAdmin.rpc("track_product_view" as any, {
       p_product_id: data.productId,
-      p_session_hash: data.sessionHash,
-    });
+      p_session_hash: data.sessionHash ?? null,
+    } as any);
     if (error) {
       // Tracking must never break the page
       console.warn("[trackProductView]", error.message);
