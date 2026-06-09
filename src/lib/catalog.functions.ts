@@ -105,10 +105,23 @@ export const listProducts = createServerFn({ method: "GET" })
     if (data.origin) query = query.ilike("origin_region", data.origin);
     if (data.brand) query = query.ilike("brand", data.brand);
 
+    // Server-side price filter on the embedded default variant.
+    // We filter the product_variants relation so only matching variants are
+    // returned; the JS step below already chooses the default/first variant
+    // and drops products that end up with no in-range variant.
+    const priceMinValid =
+      typeof data.priceMin === "number" && Number.isFinite(data.priceMin) && data.priceMin >= 0;
+    const priceMaxValid =
+      typeof data.priceMax === "number" && Number.isFinite(data.priceMax) && data.priceMax >= 0;
+    if (priceMinValid) query = query.gte("product_variants.price_aed", data.priceMin!);
+    if (priceMaxValid) query = query.lte("product_variants.price_aed", data.priceMax!);
+
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
 
-    let items = (rows ?? []).map((row: any): ProductListItem => {
+    let items = (rows ?? [])
+      .filter((row: any) => (row.variants ?? []).length > 0)
+      .map((row: any): ProductListItem => {
       const tr = pickTranslation(row.translations, data.lang);
       const sortedImages = (row.images ?? [])
         .slice()
@@ -146,8 +159,11 @@ export const listProducts = createServerFn({ method: "GET" })
       );
     }
 
-    if (typeof data.priceMin === "number") items = items.filter((p) => p.price_aed >= data.priceMin!);
-    if (typeof data.priceMax === "number") items = items.filter((p) => p.price_aed <= data.priceMax!);
+    // Final safety net: drop products whose default-variant price falls
+    // outside the range (Supabase filter applies to the embedded rows, not
+    // the chosen default variant).
+    if (priceMinValid) items = items.filter((p) => p.price_aed >= data.priceMin!);
+    if (priceMaxValid) items = items.filter((p) => p.price_aed <= data.priceMax!);
 
     // Batch attach rating summary (approved reviews)
     const productIds = items.map((p) => p.id);
