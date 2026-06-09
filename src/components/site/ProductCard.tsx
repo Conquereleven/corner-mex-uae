@@ -15,7 +15,15 @@ export function ProductCard({ p }: { p: ProductListItem }) {
     >
       <div className="relative aspect-square overflow-hidden bg-muted">
         {p.image && (
-          <img src={p.image} alt={p.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <img
+            src={p.image}
+            alt={p.name}
+            loading="lazy"
+            decoding="async"
+            width={400}
+            height={400}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
         )}
         {hasDiscount && (
           <span className="absolute start-3 top-3 rounded-full bg-foreground px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-background">Sale</span>
