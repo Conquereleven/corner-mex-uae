@@ -172,15 +172,37 @@ function Shop() {
                     resultCount={resultCount}
                   />
                   <div className="sticky bottom-0 -mx-5 mt-6 flex gap-2 border-t border-border bg-background/95 p-4 backdrop-blur">
-                    <Button variant="outline" className="flex-1 rounded-full" onClick={resetAll}>Clear</Button>
-                    <Button className="flex-1 rounded-full" onClick={() => setMobileOpen(false)}>Show {resultCount ?? ""} results</Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 rounded-full"
+                      onClick={() => {
+                        resetAll();
+                        setMobileOpen(false);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      className="flex-1 rounded-full"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        // Wait for the sheet close animation, then scroll to the grid.
+                        setTimeout(() => {
+                          document
+                            .getElementById("shop-results")
+                            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 220);
+                      }}
+                    >
+                      Show {resultCount ?? ""} results
+                    </Button>
                   </div>
                 </SheetContent>
               </Sheet>
               <p className="text-xs text-muted-foreground">{resultCount ?? 0} products</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            <div id="shop-results" className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
               {products.isLoading
                 ? Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-muted" />)
                 : (products.data ?? []).map((p) => <ProductCard key={p.id} p={p} />)}
