@@ -825,6 +825,58 @@ export type Database = {
           },
         ]
       }
+      product_views: {
+        Row: {
+          category_id: string | null
+          id: number
+          product_id: string
+          seller_id: string | null
+          session_hash: string | null
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          id?: number
+          product_id: string
+          seller_id?: string | null
+          session_hash?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          id?: number
+          product_id?: string
+          seller_id?: string | null
+          session_hash?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_views_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_views_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           approval_note: string | null
@@ -1607,6 +1659,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      track_product_view: {
+        Args: { p_product_id: string; p_session_hash?: string }
+        Returns: undefined
       }
     }
     Enums: {
