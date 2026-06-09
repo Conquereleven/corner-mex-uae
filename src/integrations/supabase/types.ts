@@ -62,6 +62,66 @@ export type Database = {
         }
         Relationships: []
       }
+      b2b_leads: {
+        Row: {
+          admin_note: string | null
+          business_type: string | null
+          company: string | null
+          contact_preference: string | null
+          contacted_at: string | null
+          country_city: string | null
+          created_at: string
+          email: string
+          estimated_volume: string | null
+          full_name: string
+          id: string
+          message: string | null
+          phone: string | null
+          products_interest: string | null
+          source: string | null
+          status: Database["public"]["Enums"]["b2b_lead_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          business_type?: string | null
+          company?: string | null
+          contact_preference?: string | null
+          contacted_at?: string | null
+          country_city?: string | null
+          created_at?: string
+          email: string
+          estimated_volume?: string | null
+          full_name: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          products_interest?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["b2b_lead_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          business_type?: string | null
+          company?: string | null
+          contact_preference?: string | null
+          contacted_at?: string | null
+          country_city?: string | null
+          created_at?: string
+          email?: string
+          estimated_volume?: string | null
+          full_name?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          products_interest?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["b2b_lead_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -1667,6 +1727,7 @@ export type Database = {
     }
     Enums: {
       app_role: "buyer" | "seller" | "admin"
+      b2b_lead_status: "new" | "contacted" | "quoting" | "closed" | "lost"
       carrier_code:
         | "aramex"
         | "dhl"
@@ -1873,6 +1934,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["buyer", "seller", "admin"],
+      b2b_lead_status: ["new", "contacted", "quoting", "closed", "lost"],
       carrier_code: [
         "aramex",
         "dhl",
