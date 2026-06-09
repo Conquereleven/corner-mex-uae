@@ -41,6 +41,11 @@ export const listProducts = createServerFn({ method: "GET" })
       sellerSlug?: string;
       q?: string;
       limit?: number;
+      priceMin?: number;
+      priceMax?: number;
+      origin?: string;
+      brand?: string;
+      sort?: "newest" | "price_asc" | "price_desc" | "most_viewed";
     }) =>
       z
         .object({
@@ -49,6 +54,11 @@ export const listProducts = createServerFn({ method: "GET" })
           sellerSlug: z.string().optional(),
           q: z.string().max(120).optional(),
           limit: z.number().int().min(1).max(100).default(60),
+          priceMin: z.number().nonnegative().optional(),
+          priceMax: z.number().nonnegative().optional(),
+          origin: z.string().max(80).optional(),
+          brand: z.string().max(80).optional(),
+          sort: z.enum(["newest", "price_asc", "price_desc", "most_viewed"]).default("newest"),
         })
         .parse(input ?? {}),
   )
@@ -92,6 +102,8 @@ export const listProducts = createServerFn({ method: "GET" })
 
     if (categoryId) query = query.eq("category_id", categoryId);
     if (sellerId) query = query.eq("seller_id", sellerId);
+    if (data.origin) query = query.ilike("origin_region", data.origin);
+    if (data.brand) query = query.ilike("brand", data.brand);
 
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
@@ -134,6 +146,9 @@ export const listProducts = createServerFn({ method: "GET" })
       );
     }
 
+    if (typeof data.priceMin === "number") items = items.filter((p) => p.price_aed >= data.priceMin!);
+    if (typeof data.priceMax === "number") items = items.filter((p) => p.price_aed <= data.priceMax!);
+
     // Batch attach rating summary (approved reviews)
     const productIds = items.map((p) => p.id);
     if (productIds.length) {
@@ -158,7 +173,134 @@ export const listProducts = createServerFn({ method: "GET" })
       }
     }
 
+    // Attach most-viewed sort + ranking when requested
+    if (data.sort === "most_viewed" && productIds.length) {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: views } = await supabaseAdmin
+        .from("product_views")
+        .select("product_id")
+        .in("product_id", productIds)
+        .gte("viewed_at", since);
+      const counts: Record<string, number> = {};
+      for (const v of views ?? []) counts[v.product_id] = (counts[v.product_id] ?? 0) + 1;
+      items.sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0));
+    } else if (data.sort === "price_asc") {
+      items.sort((a, b) => a.price_aed - b.price_aed);
+    } else if (data.sort === "price_desc") {
+      items.sort((a, b) => b.price_aed - a.price_aed);
+    }
+
     return items;
+  });
+
+// ---------------- Filter facets (distinct origins/brands) ----------------
+export const listProductFacets = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ origins: string[]; brands: string[] }> => {
+    const { data, error } = await supabaseAdmin
+      .from("products")
+      .select("origin_region, brand")
+      .eq("status", "active")
+      .limit(2000);
+    if (error) throw new Error(error.message);
+    const origins = new Set<string>();
+    const brands = new Set<string>();
+    for (const r of data ?? []) {
+      if (r.origin_region) origins.add(r.origin_region);
+      if (r.brand) brands.add(r.brand);
+    }
+    return {
+      origins: Array.from(origins).sort(),
+      brands: Array.from(brands).sort(),
+    };
+  },
+);
+
+// ---------------- Product view tracking ----------------
+export const trackProductView = createServerFn({ method: "POST" })
+  .inputValidator((input: { productId: string; sessionHash?: string }) =>
+    z.object({ productId: z.string().uuid(), sessionHash: z.string().max(120).optional() }).parse(input),
+  )
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    // Use admin client; the underlying RPC honors auth.uid() = NULL for anon
+    const { error } = await supabaseAdmin.rpc("track_product_view", {
+      p_product_id: data.productId,
+      p_session_hash: data.sessionHash ?? null,
+    });
+    if (error) {
+      // Tracking must never break the page
+      console.warn("[trackProductView]", error.message);
+    }
+    return { ok: true };
+  });
+
+export type TopViewedProduct = {
+  product_id: string;
+  slug: string;
+  name: string;
+  image: string | null;
+  category: string | null;
+  views: number;
+  orders: number;
+};
+
+export const listTopViewedProducts = createServerFn({ method: "GET" })
+  .inputValidator((input: { days?: number; limit?: number }) =>
+    z
+      .object({
+        days: z.number().int().min(1).max(365).default(30),
+        limit: z.number().int().min(1).max(50).default(10),
+      })
+      .parse(input ?? {}),
+  )
+  .handler(async ({ data }): Promise<TopViewedProduct[]> => {
+    const since = new Date(Date.now() - data.days * 24 * 60 * 60 * 1000).toISOString();
+    const { data: views, error } = await supabaseAdmin
+      .from("product_views")
+      .select("product_id")
+      .gte("viewed_at", since);
+    if (error) throw new Error(error.message);
+    const counts: Record<string, number> = {};
+    for (const v of views ?? []) counts[v.product_id] = (counts[v.product_id] ?? 0) + 1;
+    const top = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, data.limit);
+    if (top.length === 0) return [];
+    const ids = top.map(([id]) => id);
+    const { data: rows } = await supabaseAdmin
+      .from("products")
+      .select(
+        `id, slug,
+         translations:product_translations(lang, name),
+         images:product_images(url, sort_order),
+         category:categories(name_en)`,
+      )
+      .in("id", ids);
+    const byId = new Map<string, any>();
+    for (const r of rows ?? []) byId.set(r.id, r);
+
+    // Orders per product (delivered+shipped+confirmed) in same window
+    const { data: oitems } = await supabaseAdmin
+      .from("order_items")
+      .select("product_id, qty:quantity, created_at")
+      .in("product_id", ids)
+      .gte("created_at", since);
+    const orderCount: Record<string, number> = {};
+    for (const o of oitems ?? []) orderCount[o.product_id] = (orderCount[o.product_id] ?? 0) + 1;
+
+    return top.map(([id, views]) => {
+      const r = byId.get(id);
+      const en = r?.translations?.find((t: any) => t.lang === "en") ?? r?.translations?.[0];
+      const sortedImages = (r?.images ?? []).slice().sort((a: any, b: any) => a.sort_order - b.sort_order);
+      return {
+        product_id: id,
+        slug: r?.slug ?? "",
+        name: en?.name ?? "(unknown)",
+        image: sortedImages[0]?.url ?? null,
+        category: r?.category?.name_en ?? null,
+        views,
+        orders: orderCount[id] ?? 0,
+      };
+    });
   });
 
 export type ProductDetail = ProductListItem & {
