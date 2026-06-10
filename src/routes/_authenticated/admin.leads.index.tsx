@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -109,7 +109,10 @@ function AdminLeads() {
                         >
                           {STATUSES.filter((s) => s !== "all").map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        <Button size="sm" variant="ghost" onClick={() => setOpenId(open ? null : l.id)}>{open ? "Hide" : "View"}</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setOpenId(open ? null : l.id)}>{open ? "Hide" : "Quick"}</Button>
+                        <Link to="/admin/leads/$id" params={{ id: l.id }}>
+                          <Button size="sm" variant="outline">Open</Button>
+                        </Link>
                       </div>
                     </div>
                     {open && (
