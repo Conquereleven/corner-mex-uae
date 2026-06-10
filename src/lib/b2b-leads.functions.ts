@@ -192,6 +192,12 @@ export const adminUpdateB2bLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const patch: Record<string, any> = {};
+    let priorStatus: B2bLead["status"] | null = null;
+    if (data.status !== undefined) {
+      const { data: prior } = await supabaseAdmin
+        .from("b2b_leads").select("status").eq("id", data.id).maybeSingle();
+      priorStatus = (prior?.status ?? null) as B2bLead["status"] | null;
+    }
     if (data.status !== undefined) {
       patch.status = data.status;
       if (data.status === "contacted") patch.contacted_at = new Date().toISOString();
@@ -202,6 +208,87 @@ export const adminUpdateB2bLead = createServerFn({ method: "POST" })
       .from("b2b_leads")
       .update(patch as any)
       .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    if (data.status !== undefined && priorStatus !== data.status) {
+      await (supabaseAdmin.from("lead_status_history" as any) as any).insert({
+        lead_id: data.id,
+        from_status: priorStatus,
+        to_status: data.status,
+        changed_by: context.userId,
+      });
+    }
+    return { ok: true as const };
+  });
+
+// ---------- Lead detail (admin) ----------
+
+export type LeadStatusEvent = {
+  id: string;
+  lead_id: string;
+  from_status: string | null;
+  to_status: string;
+  changed_by: string | null;
+  note: string | null;
+  created_at: string;
+};
+
+export type LeadNote = {
+  id: string;
+  lead_id: string;
+  author_id: string | null;
+  body: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const adminGetB2bLead = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { id: string }) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }): Promise<{ lead: B2bLead; history: LeadStatusEvent[]; notes: LeadNote[] }> => {
+    await assertAdmin(context.userId);
+    const [{ data: lead, error: e1 }, { data: history, error: e2 }, { data: notes, error: e3 }] = await Promise.all([
+      supabaseAdmin.from("b2b_leads").select("*").eq("id", data.id).maybeSingle(),
+      (supabaseAdmin.from("lead_status_history" as any) as any)
+        .select("*").eq("lead_id", data.id).order("created_at", { ascending: false }),
+      (supabaseAdmin.from("lead_notes" as any) as any)
+        .select("*").eq("lead_id", data.id).order("created_at", { ascending: false }),
+    ]);
+    if (e1) throw new Error(e1.message);
+    if (!lead) throw new Error("Lead not found");
+    if (e2) throw new Error(e2.message);
+    if (e3) throw new Error(e3.message);
+    return {
+      lead: lead as B2bLead,
+      history: (history ?? []) as LeadStatusEvent[],
+      notes: (notes ?? []) as LeadNote[],
+    };
+  });
+
+const NoteInput = z.object({
+  lead_id: z.string().uuid(),
+  body: z.string().trim().min(1).max(4000),
+});
+
+export const adminAddLeadNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: z.input<typeof NoteInput>) => NoteInput.parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await (supabaseAdmin.from("lead_notes" as any) as any).insert({
+      lead_id: data.lead_id,
+      author_id: context.userId,
+      body: data.body,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const adminDeleteLeadNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { id: string }) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await (supabaseAdmin.from("lead_notes" as any) as any).delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });

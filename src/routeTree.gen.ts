@@ -68,6 +68,7 @@ import { Route as AuthenticatedSellerProductsIndexRouteImport } from './routes/_
 import { Route as AuthenticatedSellerOrdersIndexRouteImport } from './routes/_authenticated/seller.orders.index'
 import { Route as AuthenticatedSellerCustomersIndexRouteImport } from './routes/_authenticated/seller.customers.index'
 import { Route as AuthenticatedAdminOrdersIndexRouteImport } from './routes/_authenticated/admin.orders.index'
+import { Route as AuthenticatedAdminLeadsIndexRouteImport } from './routes/_authenticated/admin.leads.index'
 import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin.customers.index'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as ApiPublicHooksRefreshRatesRouteImport } from './routes/api/public/hooks/refresh-rates'
@@ -81,6 +82,7 @@ import { Route as AuthenticatedAdminSellersKycRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminProductsNewRouteImport } from './routes/_authenticated/admin.products.new'
 import { Route as AuthenticatedAdminProductsImportRouteImport } from './routes/_authenticated/admin.products.import'
 import { Route as AuthenticatedAdminOrdersIdRouteImport } from './routes/_authenticated/admin.orders.$id'
+import { Route as AuthenticatedAdminLeadsIdRouteImport } from './routes/_authenticated/admin.leads.$id'
 import { Route as AuthenticatedAdminCustomersIdRouteImport } from './routes/_authenticated/admin.customers.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -412,6 +414,12 @@ const AuthenticatedAdminOrdersIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdminOrdersRoute,
   } as any)
+const AuthenticatedAdminLeadsIndexRoute =
+  AuthenticatedAdminLeadsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminLeadsRoute,
+  } as any)
 const AuthenticatedAdminCustomersIndexRoute =
   AuthenticatedAdminCustomersIndexRouteImport.update({
     id: '/',
@@ -490,6 +498,12 @@ const AuthenticatedAdminOrdersIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedAdminOrdersRoute,
   } as any)
+const AuthenticatedAdminLeadsIdRoute =
+  AuthenticatedAdminLeadsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminLeadsRoute,
+  } as any)
 const AuthenticatedAdminCustomersIdRoute =
   AuthenticatedAdminCustomersIdRouteImport.update({
     id: '/$id',
@@ -525,7 +539,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
-  '/admin/leads': typeof AuthenticatedAdminLeadsRoute
+  '/admin/leads': typeof AuthenticatedAdminLeadsRouteWithChildren
   '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -553,6 +567,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/admin/leads/$id': typeof AuthenticatedAdminLeadsIdRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
@@ -566,6 +581,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
+  '/admin/leads/': typeof AuthenticatedAdminLeadsIndexRoute
   '/admin/orders/': typeof AuthenticatedAdminOrdersIndexRoute
   '/seller/customers/': typeof AuthenticatedSellerCustomersIndexRoute
   '/seller/orders/': typeof AuthenticatedSellerOrdersIndexRoute
@@ -596,7 +612,6 @@ export interface FileRoutesByTo {
   '/admin/banners': typeof AuthenticatedAdminBannersRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
-  '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
   '/admin/performance': typeof AuthenticatedAdminPerformanceRoute
@@ -620,6 +635,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
   '/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/admin/leads/$id': typeof AuthenticatedAdminLeadsIdRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
@@ -633,6 +649,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersIndexRoute
+  '/admin/leads': typeof AuthenticatedAdminLeadsIndexRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersIndexRoute
   '/seller/customers': typeof AuthenticatedSellerCustomersIndexRoute
   '/seller/orders': typeof AuthenticatedSellerOrdersIndexRoute
@@ -668,7 +685,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
-  '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
+  '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRouteWithChildren
   '/_authenticated/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -696,6 +713,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
   '/_authenticated/admin/customers/$id': typeof AuthenticatedAdminCustomersIdRoute
+  '/_authenticated/admin/leads/$id': typeof AuthenticatedAdminLeadsIdRoute
   '/_authenticated/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/_authenticated/admin/products/import': typeof AuthenticatedAdminProductsImportRoute
   '/_authenticated/admin/products/new': typeof AuthenticatedAdminProductsNewRoute
@@ -709,6 +727,7 @@ export interface FileRoutesById {
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/_authenticated/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
+  '/_authenticated/admin/leads/': typeof AuthenticatedAdminLeadsIndexRoute
   '/_authenticated/admin/orders/': typeof AuthenticatedAdminOrdersIndexRoute
   '/_authenticated/seller/customers/': typeof AuthenticatedSellerCustomersIndexRoute
   '/_authenticated/seller/orders/': typeof AuthenticatedSellerOrdersIndexRoute
@@ -772,6 +791,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/seller/'
     | '/admin/customers/$id'
+    | '/admin/leads/$id'
     | '/admin/orders/$id'
     | '/admin/products/import'
     | '/admin/products/new'
@@ -785,6 +805,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
     | '/admin/customers/'
+    | '/admin/leads/'
     | '/admin/orders/'
     | '/seller/customers/'
     | '/seller/orders/'
@@ -815,7 +836,6 @@ export interface FileRouteTypes {
     | '/admin/banners'
     | '/admin/categories'
     | '/admin/coupons'
-    | '/admin/leads'
     | '/admin/newsletter'
     | '/admin/payouts'
     | '/admin/performance'
@@ -839,6 +859,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/seller'
     | '/admin/customers/$id'
+    | '/admin/leads/$id'
     | '/admin/orders/$id'
     | '/admin/products/import'
     | '/admin/products/new'
@@ -852,6 +873,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
     | '/admin/customers'
+    | '/admin/leads'
     | '/admin/orders'
     | '/seller/customers'
     | '/seller/orders'
@@ -914,6 +936,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
     | '/_authenticated/admin/customers/$id'
+    | '/_authenticated/admin/leads/$id'
     | '/_authenticated/admin/orders/$id'
     | '/_authenticated/admin/products/import'
     | '/_authenticated/admin/products/new'
@@ -927,6 +950,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
     | '/_authenticated/admin/customers/'
+    | '/_authenticated/admin/leads/'
     | '/_authenticated/admin/orders/'
     | '/_authenticated/seller/customers/'
     | '/_authenticated/seller/orders/'
@@ -1371,6 +1395,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersIndexRouteImport
       parentRoute: typeof AuthenticatedAdminOrdersRoute
     }
+    '/_authenticated/admin/leads/': {
+      id: '/_authenticated/admin/leads/'
+      path: '/'
+      fullPath: '/admin/leads/'
+      preLoaderRoute: typeof AuthenticatedAdminLeadsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminLeadsRoute
+    }
     '/_authenticated/admin/customers/': {
       id: '/_authenticated/admin/customers/'
       path: '/'
@@ -1462,6 +1493,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersIdRouteImport
       parentRoute: typeof AuthenticatedAdminOrdersRoute
     }
+    '/_authenticated/admin/leads/$id': {
+      id: '/_authenticated/admin/leads/$id'
+      path: '/$id'
+      fullPath: '/admin/leads/$id'
+      preLoaderRoute: typeof AuthenticatedAdminLeadsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminLeadsRoute
+    }
     '/_authenticated/admin/customers/$id': {
       id: '/_authenticated/admin/customers/$id'
       path: '/$id'
@@ -1507,6 +1545,22 @@ const AuthenticatedAdminCustomersRouteWithChildren =
     AuthenticatedAdminCustomersRouteChildren,
   )
 
+interface AuthenticatedAdminLeadsRouteChildren {
+  AuthenticatedAdminLeadsIdRoute: typeof AuthenticatedAdminLeadsIdRoute
+  AuthenticatedAdminLeadsIndexRoute: typeof AuthenticatedAdminLeadsIndexRoute
+}
+
+const AuthenticatedAdminLeadsRouteChildren: AuthenticatedAdminLeadsRouteChildren =
+  {
+    AuthenticatedAdminLeadsIdRoute: AuthenticatedAdminLeadsIdRoute,
+    AuthenticatedAdminLeadsIndexRoute: AuthenticatedAdminLeadsIndexRoute,
+  }
+
+const AuthenticatedAdminLeadsRouteWithChildren =
+  AuthenticatedAdminLeadsRoute._addFileChildren(
+    AuthenticatedAdminLeadsRouteChildren,
+  )
+
 interface AuthenticatedAdminOrdersRouteChildren {
   AuthenticatedAdminOrdersIdRoute: typeof AuthenticatedAdminOrdersIdRoute
   AuthenticatedAdminOrdersIndexRoute: typeof AuthenticatedAdminOrdersIndexRoute
@@ -1542,7 +1596,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
   AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRouteWithChildren
-  AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRoute
+  AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRouteWithChildren
   AuthenticatedAdminNewsletterRoute: typeof AuthenticatedAdminNewsletterRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRouteWithChildren
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
@@ -1564,7 +1618,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
   AuthenticatedAdminCustomersRoute:
     AuthenticatedAdminCustomersRouteWithChildren,
-  AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRoute,
+  AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRouteWithChildren,
   AuthenticatedAdminNewsletterRoute: AuthenticatedAdminNewsletterRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRouteWithChildren,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
@@ -1739,13 +1793,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
