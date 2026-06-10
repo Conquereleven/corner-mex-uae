@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -72,7 +72,7 @@ function Shop() {
     queryFn: () => listProductFacets(),
     staleTime: 5 * 60_000,
   });
-  const products = useInfiniteQuery<ProductListPage, Error, ProductListPage, readonly unknown[], string | undefined>({
+  const products = useInfiniteQuery<ProductListPage, Error, InfiniteData<ProductListPage, string | undefined>, readonly unknown[], string | undefined>({
     queryKey: ["products", lang, search],
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
