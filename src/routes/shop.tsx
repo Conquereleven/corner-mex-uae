@@ -8,6 +8,7 @@ import { listProducts, listCategories, listProductFacets } from "@/lib/catalog.f
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { ShopFilters, type ShopFilterState } from "@/components/site/ShopFilters";
+import type { ProductListPage } from "@/lib/catalog.functions";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, Search } from "lucide-react";
@@ -71,7 +72,7 @@ function Shop() {
     queryFn: () => listProductFacets(),
     staleTime: 5 * 60_000,
   });
-  const products = useInfiniteQuery({
+  const products = useInfiniteQuery<ProductListPage, Error, ProductListPage, readonly unknown[], string | undefined>({
     queryKey: ["products", lang, search],
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
