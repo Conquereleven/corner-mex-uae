@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Copy, Mail, Phone, CheckCircle2 } from "lucide-react";
 import { adminListB2bLeads, adminUpdateB2bLead, type B2bLead } from "@/lib/b2b-leads.functions";
 
-export const Route = createFileRoute("/_authenticated/admin/leads")({
+export const Route = createFileRoute("/_authenticated/admin/leads/")({
   head: () => ({ meta: [{ title: "Admin — B2B leads" }] }),
   component: AdminLeads,
 });
