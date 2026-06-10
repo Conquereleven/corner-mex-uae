@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -71,9 +71,11 @@ function Shop() {
     queryFn: () => listProductFacets(),
     staleTime: 5 * 60_000,
   });
-  const products = useQuery({
+  const products = useInfiniteQuery({
     queryKey: ["products", lang, search],
-    queryFn: () =>
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    queryFn: ({ pageParam }) =>
       listProducts({
         data: {
           lang,
@@ -87,9 +89,11 @@ function Shop() {
           bulk: search.bulk,
           spice: search.spice,
           sort: search.sort,
+          cursor: pageParam,
         },
       }),
   });
+  const productItems = (products.data?.pages ?? []).flatMap((p) => p.items);
 
   const filterState: ShopFilterState = {
     category: search.category,
@@ -107,7 +111,7 @@ function Shop() {
   const categories = (cats.data ?? []).map((c) => ({ id: c.id, slug: c.slug, name: c.name }));
   const origins = facets.data?.origins ?? [];
   const brands = facets.data?.brands ?? [];
-  const resultCount = products.data?.length;
+  const resultCount = productItems.length;
 
   return (
     <SiteLayout>
@@ -205,12 +209,24 @@ function Shop() {
             <div id="shop-results" className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
               {products.isLoading
                 ? Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-muted" />)
-                : (products.data ?? []).map((p) => <ProductCard key={p.id} p={p} />)}
+                : productItems.map((p) => <ProductCard key={p.id} p={p} />)}
             </div>
-            {products.data && products.data.length === 0 && (
+            {!products.isLoading && productItems.length === 0 && (
               <div className="mt-16 text-center">
                 <p className="text-sm text-muted-foreground">No products match your filters.</p>
                 <Button variant="outline" className="mt-4 rounded-full" onClick={resetAll}>Clear filters</Button>
+              </div>
+            )}
+            {products.hasNextPage && (
+              <div className="mt-10 flex justify-center">
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  disabled={products.isFetchingNextPage}
+                  onClick={() => products.fetchNextPage()}
+                >
+                  {products.isFetchingNextPage ? "Loading…" : "Load more"}
+                </Button>
               </div>
             )}
           </div>
