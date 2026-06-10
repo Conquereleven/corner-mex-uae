@@ -18,7 +18,7 @@ function SellerPage() {
   const seller = useQuery({ queryKey: ["seller", slug], queryFn: () => getSeller({ data: { slug } }) });
   const products = useQuery({
     queryKey: ["seller-products", slug, lang],
-    queryFn: () => listProducts({ data: { lang, sellerSlug: slug } }),
+    queryFn: () => listProducts({ data: { lang, sellerSlug: slug, limit: 100 } }),
     enabled: !!seller.data,
   });
 
@@ -28,7 +28,7 @@ function SellerPage() {
   if (!seller.data) throw notFound();
 
   const s = seller.data as any;
-  const allProducts = products.data ?? [];
+  const allProducts = products.data?.items ?? [];
   const featuredIds: string[] = s.featured_product_ids ?? [];
   const featured = featuredIds
     .map((id) => allProducts.find((p) => p.id === id))

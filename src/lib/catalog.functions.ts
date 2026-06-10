@@ -33,6 +33,25 @@ export type ProductListItem = {
   rating_count: number;
 };
 
+export type ProductListPage = {
+  items: ProductListItem[];
+  nextCursor: string | null;
+};
+
+function encodeCursor(created_at: string, id: string): string {
+  return Buffer.from(`${created_at}|${id}`, "utf8").toString("base64url");
+}
+function decodeCursor(cursor: string): { created_at: string; id: string } | null {
+  try {
+    const raw = Buffer.from(cursor, "base64url").toString("utf8");
+    const idx = raw.indexOf("|");
+    if (idx <= 0) return null;
+    return { created_at: raw.slice(0, idx), id: raw.slice(idx + 1) };
+  } catch {
+    return null;
+  }
+}
+
 export const listProducts = createServerFn({ method: "GET" })
   .inputValidator(
     (input: {
@@ -49,6 +68,7 @@ export const listProducts = createServerFn({ method: "GET" })
       bulk?: boolean;
       spice?: number;
       sort?: "newest" | "price_asc" | "price_desc" | "most_viewed";
+      cursor?: string;
     }) =>
       z
         .object({
@@ -56,7 +76,7 @@ export const listProducts = createServerFn({ method: "GET" })
           category: z.string().optional(),
           sellerSlug: z.string().optional(),
           q: z.string().max(120).optional(),
-          limit: z.number().int().min(1).max(100).default(60),
+          limit: z.number().int().min(1).max(100).default(24),
           priceMin: z.number().nonnegative().optional(),
           priceMax: z.number().nonnegative().optional(),
           origin: z.string().max(80).optional(),
@@ -65,10 +85,11 @@ export const listProducts = createServerFn({ method: "GET" })
           bulk: z.boolean().optional(),
           spice: z.number().int().min(0).max(4).optional(),
           sort: z.enum(["newest", "price_asc", "price_desc", "most_viewed"]).default("newest"),
+          cursor: z.string().max(200).optional(),
         })
         .parse(input ?? {}),
   )
-  .handler(async ({ data }): Promise<ProductListItem[]> => {
+  .handler(async ({ data }): Promise<ProductListPage> => {
     let categoryId: string | null = null;
     if (data.category) {
       const { data: cat } = await supabaseAdmin
@@ -77,7 +98,7 @@ export const listProducts = createServerFn({ method: "GET" })
         .eq("slug", data.category)
         .maybeSingle();
       categoryId = cat?.id ?? null;
-      if (!categoryId) return [];
+      if (!categoryId) return { items: [], nextCursor: null };
     }
     let sellerId: string | null = null;
     if (data.sellerSlug) {
@@ -87,14 +108,14 @@ export const listProducts = createServerFn({ method: "GET" })
         .eq("slug", data.sellerSlug)
         .maybeSingle();
       sellerId = s?.id ?? null;
-      if (!sellerId) return [];
+      if (!sellerId) return { items: [], nextCursor: null };
     }
 
     let query = supabaseAdmin
       .from("products")
       .select(
         `
-        id, slug, brand, origin_region, spice_level, is_bulk,
+        id, slug, brand, origin_region, spice_level, is_bulk, created_at,
         seller:sellers!inner(id, slug, store_name),
         category:categories(slug),
         translations:product_translations(lang, name, description),
@@ -104,7 +125,25 @@ export const listProducts = createServerFn({ method: "GET" })
       )
       .eq("status", "active")
       .order("created_at", { ascending: false })
-      .limit(data.limit);
+      .order("id", { ascending: false });
+
+    // Keyset pagination is only meaningful when the SQL order matches the
+    // returned order. We only apply the cursor for the default "newest" sort;
+    // price/most_viewed sorts re-rank in JS and return a single page.
+    const useCursor = data.sort === "newest";
+    if (useCursor) {
+      query = query.limit(data.limit + 1);
+      if (data.cursor) {
+        const c = decodeCursor(data.cursor);
+        if (c) {
+          query = query.or(
+            `and(created_at.eq.${c.created_at},id.lt.${c.id}),created_at.lt.${c.created_at}`,
+          );
+        }
+      }
+    } else {
+      query = query.limit(data.limit);
+    }
 
     if (categoryId) query = query.eq("category_id", categoryId);
     if (sellerId) query = query.eq("seller_id", sellerId);
@@ -128,7 +167,12 @@ export const listProducts = createServerFn({ method: "GET" })
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
 
-    let items = (rows ?? [])
+    const rawRows = (rows ?? []) as any[];
+    // Take the extra row for hasMore detection without including it in output
+    const hasMore = useCursor && rawRows.length > data.limit;
+    const pageRows = useCursor ? rawRows.slice(0, data.limit) : rawRows;
+
+    let items = pageRows
       .filter((row: any) => (row.variants ?? []).length > 0)
       .map((row: any): ProductListItem => {
       const tr = pickTranslation(row.translations, data.lang);
@@ -215,7 +259,12 @@ export const listProducts = createServerFn({ method: "GET" })
       items.sort((a, b) => b.price_aed - a.price_aed);
     }
 
-    return items;
+    let nextCursor: string | null = null;
+    if (useCursor && hasMore) {
+      const last = pageRows[pageRows.length - 1];
+      if (last?.created_at && last?.id) nextCursor = encodeCursor(last.created_at, last.id);
+    }
+    return { items, nextCursor };
   });
 
 // ---------------- Filter facets (distinct origins/brands) ----------------
