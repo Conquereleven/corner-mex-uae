@@ -3,23 +3,29 @@ import type { ProductListItem } from "@/lib/catalog.functions";
 import { Flame, Star } from "lucide-react";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCurrency } from "@/lib/use-currency";
+import { imageSrcSet, PRODUCT_CARD_SIZES } from "@/lib/image";
 
-export function ProductCard({ p }: { p: ProductListItem }) {
+export function ProductCard({ p, priority = false }: { p: ProductListItem; priority?: boolean }) {
   const hasDiscount = p.compare_at_price_aed && p.compare_at_price_aed > p.price_aed;
   const cur = useCurrency();
+  const img = imageSrcSet(p.image);
   return (
     <Link
       to="/product/$slug"
       params={{ slug: p.slug }}
+      preload="intent"
       className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-xl"
     >
       <div className="relative aspect-square overflow-hidden bg-muted">
         {p.image && (
           <img
-            src={p.image}
+            src={img.src}
+            srcSet={img.srcSet}
+            sizes={PRODUCT_CARD_SIZES}
             alt={p.name}
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
             decoding="async"
+            fetchPriority={priority ? "high" : "auto"}
             width={400}
             height={400}
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"

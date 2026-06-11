@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { listProducts, listCategories, listProductFacets } from "@/lib/catalog.functions";
@@ -210,7 +210,7 @@ function Shop() {
             <div id="shop-results" className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
               {products.isLoading
                 ? Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-muted" />)
-                : productItems.map((p) => <ProductCard key={p.id} p={p} />)}
+                : productItems.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 4} />)}
             </div>
             {!products.isLoading && productItems.length === 0 && (
               <div className="mt-16 text-center">
@@ -219,16 +219,23 @@ function Shop() {
               </div>
             )}
             {products.hasNextPage && (
-              <div className="mt-10 flex justify-center">
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                  disabled={products.isFetchingNextPage}
-                  onClick={() => products.fetchNextPage()}
-                >
-                  {products.isFetchingNextPage ? "Loading…" : "Load more"}
-                </Button>
-              </div>
+              <>
+                <InfiniteSentinel
+                  onIntersect={() => {
+                    if (!products.isFetchingNextPage) products.fetchNextPage();
+                  }}
+                />
+                <div className="mt-10 flex justify-center">
+                  <Button
+                    variant="outline"
+                    className="rounded-full"
+                    disabled={products.isFetchingNextPage}
+                    onClick={() => products.fetchNextPage()}
+                  >
+                    {products.isFetchingNextPage ? "Loading…" : "Load more"}
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -239,4 +246,19 @@ function Shop() {
       </section>
     </SiteLayout>
   );
+}
+
+function InfiniteSentinel({ onIntersect }: { onIntersect: () => void }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && onIntersect()),
+      { rootMargin: "600px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [onIntersect]);
+  return <div ref={ref} aria-hidden className="h-1 w-full" />;
 }
