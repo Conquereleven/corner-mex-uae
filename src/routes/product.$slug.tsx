@@ -10,6 +10,7 @@ import { WishlistButton } from "@/components/site/WishlistButton";
 import { getProduct, trackProductView, type ProductDetail } from "@/lib/catalog.functions";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/track";
 
 const SITE_ORIGIN = "https://corner-mex-uae.lovable.app";
 
@@ -202,6 +203,7 @@ function ProductPage() {
       },
       qty,
     );
+    trackEvent("add_to_cart", { productId: p.id, source: "product_detail", metadata: { qty } });
     toast.success(`${p.name} added to cart`);
   }
 

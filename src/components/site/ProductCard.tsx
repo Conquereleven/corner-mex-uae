@@ -4,16 +4,39 @@ import { Flame, Star } from "lucide-react";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCurrency } from "@/lib/use-currency";
 import { imageSrcSet, PRODUCT_CARD_SIZES } from "@/lib/image";
+import { trackEvent } from "@/lib/track";
+import { useEffect, useRef } from "react";
 
-export function ProductCard({ p, priority = false }: { p: ProductListItem; priority?: boolean }) {
+export function ProductCard({ p, priority = false, source = "shop" }: { p: ProductListItem; priority?: boolean; source?: string }) {
   const hasDiscount = p.compare_at_price_aed && p.compare_at_price_aed > p.price_aed;
   const cur = useCurrency();
   const img = imageSrcSet(p.image);
+  const rootRef = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+            trackEvent("card_impression", { productId: p.id, source });
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: [0.5] },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [p.id, source]);
   return (
     <Link
+      ref={rootRef as any}
       to="/product/$slug"
       params={{ slug: p.slug }}
       preload="intent"
+      onClick={() => trackEvent("card_click", { productId: p.id, source })}
       className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-xl"
     >
       <div className="relative aspect-square overflow-hidden bg-muted">
