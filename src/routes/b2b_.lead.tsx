@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { submitB2bLead } from "@/lib/b2b-leads.functions";
+import { trackEvent } from "@/lib/track";
 
 export const Route = createFileRoute("/b2b_/lead")({
   head: () => ({
@@ -71,6 +72,7 @@ function LeadForm() {
       }),
     onSuccess: (r: any) => {
       setDone(true);
+      if (!r?.duplicate) trackEvent("b2b_lead_submit", { source: "b2b_lead_form" });
       toast.success(r.duplicate ? "We already received your request" : "Request submitted — we'll be in touch.");
     },
     onError: (e: any) => toast.error(e?.message ?? "Could not submit"),

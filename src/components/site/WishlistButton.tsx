@@ -5,6 +5,7 @@ import { toggleWishlist, wishlistIds } from "@/lib/wishlist.functions";
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/track";
 
 export function WishlistButton({
   productId,
@@ -31,6 +32,7 @@ export function WishlistButton({
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["wishlist-ids"] });
       qc.invalidateQueries({ queryKey: ["my-wishlist"] });
+      if (r.added) trackEvent("wishlist_add", { productId });
       toast.success(r.added ? "Added to wishlist" : "Removed from wishlist");
     },
     onError: (e: any) => toast.error(e.message),
