@@ -161,6 +161,7 @@ function ProductPage() {
       }
     } catch {}
     trackProductView({ data: { productId: product.id, sessionHash } }).catch(() => {});
+    trackEvent("product_view", { productId: product.id, source: "product_detail" });
   }, [product?.id]);
 
   if (isLoading) {
