@@ -125,6 +125,67 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_events: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          event_type: Database["public"]["Enums"]["catalog_event_type"]
+          id: string
+          metadata: Json | null
+          product_id: string | null
+          seller_id: string | null
+          session_hash: string | null
+          source: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          event_type: Database["public"]["Enums"]["catalog_event_type"]
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          seller_id?: string | null
+          session_hash?: string | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["catalog_event_type"]
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          seller_id?: string | null
+          session_hash?: string | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_events_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "sellers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -1734,6 +1795,13 @@ export type Database = {
         | "local_courier"
         | "pickup"
         | "other"
+      catalog_event_type:
+        | "card_impression"
+        | "card_click"
+        | "product_view"
+        | "add_to_cart"
+        | "wishlist_add"
+        | "b2b_lead_submit"
       coupon_kind: "percent" | "fixed"
       emirate:
         | "abu_dhabi"
@@ -1941,6 +2009,14 @@ export const Constants = {
         "local_courier",
         "pickup",
         "other",
+      ],
+      catalog_event_type: [
+        "card_impression",
+        "card_click",
+        "product_view",
+        "add_to_cart",
+        "wishlist_add",
+        "b2b_lead_submit",
       ],
       coupon_kind: ["percent", "fixed"],
       emirate: [
