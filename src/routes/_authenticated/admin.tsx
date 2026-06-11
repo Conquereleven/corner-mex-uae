@@ -55,6 +55,7 @@ function AdminLayout() {
             { to: "/admin/categories", label: t("dash.nav.categories"), icon: Tags },
             { to: "/admin/customers", label: t("dash.nav.customers"), icon: Users },
             { to: "/admin/performance", label: t("dash.nav.performance"), icon: Activity },
+            { to: "/admin/catalog-analytics", label: "Catalog analytics", icon: Activity },
             { to: "/admin/shipping", label: "Shipping", icon: Truck },
             { to: "/admin/shipments", label: "Shipments", icon: Package, badge: c?.shipments_pending },
             { to: "/admin/reviews", label: "Reviews", icon: Star, badge: c?.reviews_pending },
