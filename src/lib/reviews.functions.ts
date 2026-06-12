@@ -37,33 +37,45 @@ export const submitReview = createServerFn({ method: "POST" })
     }).parse(i))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    const { data: prod } = await supabaseAdmin.from("products").select("seller_id").eq("id", data.productId).maybeSingle();
-    if (!prod) throw new Error("Product not found");
-    const { data: hist } = await supabaseAdmin
+    // Find a delivered order_item the user owns for this product, without an existing review.
+    const { data: candidates } = await supabaseAdmin
       .from("order_items")
-      .select("order_id, orders!inner(buyer_id)")
+      .select("id, order_id, orders!inner(buyer_id, status, created_at)")
       .eq("product_id", data.productId)
       .eq("orders.buyer_id", userId)
-      .limit(1);
-    const orderId = (hist?.[0] as any)?.order_id ?? null;
-    // Check if existing review (any order_id) to avoid conflict surprises
+      .eq("orders.status", "delivered")
+      .order("created_at", { ascending: false, referencedTable: "orders" });
+    const items = (candidates ?? []) as Array<{ id: string }>;
+    if (items.length === 0) {
+      throw new Error("Solo puedes reseñar productos que compraste.");
+    }
+    // Reuse the user's existing review for this product if any, else pick the newest delivered item
     const { data: existing } = await supabaseAdmin
-      .from("product_reviews").select("id")
-      .eq("product_id", data.productId).eq("buyer_id", userId).limit(1).maybeSingle();
+      .from("product_reviews")
+      .select("id, order_item_id")
+      .eq("product_id", data.productId)
+      .eq("buyer_id", userId)
+      .limit(1)
+      .maybeSingle();
     if (existing) {
-      const { error } = await supabaseAdmin.from("product_reviews").update({
-        rating: data.rating, title: data.title ?? null, body: data.body ?? null, status: "approved",
-      }).eq("id", existing.id);
-      if (error) throw new Error(error.message);
+      const { error: upErr } = await supabaseAdmin.rpc("update_verified_review", {
+        p_review_id: existing.id,
+        p_rating: data.rating,
+        p_title: data.title ?? null,
+        p_comment: data.body ?? null,
+      });
+      if (upErr) throw new Error(upErr.message);
       return { id: existing.id };
     }
-    const { data: row, error } = await supabaseAdmin.from("product_reviews").insert({
-      product_id: data.productId, buyer_id: userId, seller_id: prod.seller_id,
-      order_id: orderId, rating: data.rating, title: data.title ?? null,
-      body: data.body ?? null, status: "approved",
-    }).select("id").single();
-    if (error) throw new Error(error.message);
-    return { id: row.id };
+    const target = items[0];
+    const { data: created, error: rpcErr } = await supabaseAdmin.rpc("create_verified_review", {
+      p_order_item_id: target.id,
+      p_rating: data.rating,
+      p_title: data.title ?? null,
+      p_comment: data.body ?? null,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    return { id: (created as any)?.id ?? null };
   });
 
 export const myReviewForProduct = createServerFn({ method: "GET" })
