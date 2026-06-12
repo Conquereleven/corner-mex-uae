@@ -907,10 +907,12 @@ export type Database = {
           buyer_id: string
           created_at: string
           id: string
-          order_id: string | null
+          is_verified_purchase: boolean
+          order_id: string
+          order_item_id: string
           product_id: string
           rating: number
-          seller_id: string | null
+          seller_id: string
           status: Database["public"]["Enums"]["review_status"]
           title: string | null
           updated_at: string
@@ -920,10 +922,12 @@ export type Database = {
           buyer_id: string
           created_at?: string
           id?: string
-          order_id?: string | null
+          is_verified_purchase?: boolean
+          order_id: string
+          order_item_id: string
           product_id: string
           rating: number
-          seller_id?: string | null
+          seller_id: string
           status?: Database["public"]["Enums"]["review_status"]
           title?: string | null
           updated_at?: string
@@ -933,15 +937,25 @@ export type Database = {
           buyer_id?: string
           created_at?: string
           id?: string
-          order_id?: string | null
+          is_verified_purchase?: boolean
+          order_id?: string
+          order_item_id?: string
           product_id?: string
           rating?: number
-          seller_id?: string | null
+          seller_id?: string
           status?: Database["public"]["Enums"]["review_status"]
           title?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_translations: {
         Row: {
@@ -1745,6 +1759,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_verified_review: {
+        Args: {
+          p_comment?: string
+          p_order_item_id: string
+          p_rating: number
+          p_title?: string
+        }
+        Returns: {
+          body: string | null
+          buyer_id: string
+          created_at: string
+          id: string
+          is_verified_purchase: boolean
+          order_id: string
+          order_item_id: string
+          product_id: string
+          rating: number
+          seller_id: string
+          status: Database["public"]["Enums"]["review_status"]
+          title: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_reviews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1782,6 +1825,35 @@ export type Database = {
       track_product_view: {
         Args: { p_product_id: string; p_session_hash?: string }
         Returns: undefined
+      }
+      update_verified_review: {
+        Args: {
+          p_comment?: string
+          p_rating: number
+          p_review_id: string
+          p_title?: string
+        }
+        Returns: {
+          body: string | null
+          buyer_id: string
+          created_at: string
+          id: string
+          is_verified_purchase: boolean
+          order_id: string
+          order_item_id: string
+          product_id: string
+          rating: number
+          seller_id: string
+          status: Database["public"]["Enums"]["review_status"]
+          title: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_reviews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
