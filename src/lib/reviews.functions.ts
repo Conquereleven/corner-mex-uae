@@ -61,8 +61,8 @@ export const submitReview = createServerFn({ method: "POST" })
       const { error: upErr } = await supabaseAdmin.rpc("update_verified_review", {
         p_review_id: existing.id,
         p_rating: data.rating,
-        p_title: data.title ?? null,
-        p_comment: data.body ?? null,
+        p_title: data.title ?? undefined,
+        p_comment: data.body ?? undefined,
       });
       if (upErr) throw new Error(upErr.message);
       return { id: existing.id };
@@ -71,8 +71,8 @@ export const submitReview = createServerFn({ method: "POST" })
     const { data: created, error: rpcErr } = await supabaseAdmin.rpc("create_verified_review", {
       p_order_item_id: target.id,
       p_rating: data.rating,
-      p_title: data.title ?? null,
-      p_comment: data.body ?? null,
+      p_title: data.title ?? undefined,
+      p_comment: data.body ?? undefined,
     });
     if (rpcErr) throw new Error(rpcErr.message);
     return { id: (created as any)?.id ?? null };
