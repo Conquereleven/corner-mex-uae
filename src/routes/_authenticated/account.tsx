@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyAccount, getMyOrders, becomeSeller } from "@/lib/account.functions";
+import { getReviewableItems } from "@/lib/reviews.functions";
 import { adminBootstrap, isAdmin } from "@/lib/admin.functions";
 import { buyerListOrderShipments } from "@/lib/shipments.functions";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
@@ -30,6 +31,8 @@ function Account() {
   const orders = useQuery({ queryKey: ["my-orders"], queryFn: () => fetchOrders({}) });
   const admin = useQuery({ queryKey: ["is-admin"], queryFn: () => fetchIsAdmin({}) });
   const loyalty = useQuery({ queryKey: ["my-loyalty"], queryFn: () => fetchLoyalty({}) });
+  const fetchReviewable = useServerFn(getReviewableItems);
+  const reviewable = useQuery({ queryKey: ["my-reviewable"], queryFn: () => fetchReviewable({}) });
 
   return (
     <SiteLayout>
@@ -80,12 +83,39 @@ function Account() {
           </Card>
 
           <div className="space-y-6">
+            {(reviewable.data ?? []).length > 0 && <PendingReviewsCard items={reviewable.data as any[]} />}
             {!account.data?.seller && <BecomeSellerCard />}
             {!admin.data?.admin && <AdminBootstrapCard />}
           </div>
         </div>
       </section>
     </SiteLayout>
+  );
+}
+
+function PendingReviewsCard({ items }: { items: any[] }) {
+  return (
+    <Card>
+      <CardHeader><CardTitle>Pending reviews</CardTitle></CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-sm text-muted-foreground">Share your experience on items you received.</p>
+        <ul className="space-y-2">
+          {items.slice(0, 5).map((it) => (
+            <li key={it.order_item_id} className="flex items-center justify-between gap-2 rounded-md border border-border/60 p-2 text-sm">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{it.product_name}</p>
+                {it.variant_label && <p className="truncate text-xs text-muted-foreground">{it.variant_label}</p>}
+              </div>
+              {it.product_slug && (
+                <Link to="/product/$slug" params={{ slug: it.product_slug }}>
+                  <Button size="sm" variant="outline" className="rounded-full">Review</Button>
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 
