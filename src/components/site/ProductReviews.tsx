@@ -1,12 +1,13 @@
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { listProductReviews, submitReview, myReviewForProduct } from "@/lib/reviews.functions";
+import { Badge } from "@/components/ui/badge";
+import { listProductReviews, submitReview, myReviewForProduct, getReviewEligibility } from "@/lib/reviews.functions";
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 
@@ -34,6 +35,7 @@ export function ProductReviews({ productId }: { productId: string }) {
   const qc = useQueryClient();
   const fetchList = useServerFn(listProductReviews);
   const fetchMine = useServerFn(myReviewForProduct);
+  const fetchEligible = useServerFn(getReviewEligibility);
   const submit = useServerFn(submitReview);
 
   const list = useQuery({
@@ -43,6 +45,11 @@ export function ProductReviews({ productId }: { productId: string }) {
   const mine = useQuery({
     queryKey: ["my-review", productId, user?.id ?? "anon"],
     queryFn: () => fetchMine({ data: { productId } }),
+    enabled: !!user,
+  });
+  const eligibility = useQuery({
+    queryKey: ["review-eligible", productId, user?.id ?? "anon"],
+    queryFn: () => fetchEligible({ data: { productId } }),
     enabled: !!user,
   });
 
@@ -90,10 +97,13 @@ export function ProductReviews({ productId }: { productId: string }) {
             </div>
           )}
         </div>
-        {user && (
+        {user && (mine.data || eligibility.data?.eligible) && (
           <Button variant="outline" className="rounded-full" onClick={openForm}>
             {mine.data ? "Edit your review" : "Write a review"}
           </Button>
+        )}
+        {user && !mine.data && eligibility.data && !eligibility.data.eligible && (
+          <span className="text-xs text-muted-foreground">Only verified buyers can review this product.</span>
         )}
       </div>
 
@@ -122,6 +132,11 @@ export function ProductReviews({ productId }: { productId: string }) {
                 <div className="flex items-center gap-2">
                   <Stars value={r.rating} />
                   <span className="text-sm font-medium">{r.title || "Review"}</span>
+                  {r.is_verified_purchase && (
+                    <Badge variant="secondary" className="gap-1 text-[10px] uppercase tracking-wider">
+                      <ShieldCheck className="h-3 w-3" /> Verified
+                    </Badge>
+                  )}
                 </div>
                 <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
               </div>

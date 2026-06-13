@@ -9,7 +9,7 @@ export const listProductReviews = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { data: rows, error } = await supabaseAdmin
       .from("product_reviews")
-      .select("id, rating, title, body, created_at, buyer_id")
+      .select("id, rating, title, body, created_at, buyer_id, is_verified_purchase")
       .eq("product_id", data.productId)
       .eq("status", "approved")
       .order("created_at", { ascending: false })
@@ -24,6 +24,59 @@ export const listProductReviews = createServerFn({ method: "GET" })
     const reviews = (rows ?? []).map((r) => ({ ...r, author: names[r.buyer_id] ?? "Customer" }));
     const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
     return { reviews, avg: Number(avg.toFixed(2)), count: reviews.length };
+  });
+
+export const getReviewEligibility = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { productId: string }) => z.object({ productId: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const { data: items } = await supabaseAdmin
+      .from("order_items")
+      .select("id, orders!inner(buyer_id, status)")
+      .eq("product_id", data.productId)
+      .eq("orders.buyer_id", context.userId)
+      .eq("orders.status", "delivered")
+      .limit(1);
+    return { eligible: (items ?? []).length > 0 };
+  });
+
+export const getReviewableItems = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: rows } = await supabaseAdmin
+      .from("order_items")
+      .select("id, product_id, product_name, variant_label, orders!inner(id, order_number, buyer_id, status, created_at)")
+      .eq("orders.buyer_id", context.userId)
+      .eq("orders.status", "delivered")
+      .order("created_at", { ascending: false, referencedTable: "orders" })
+      .limit(50);
+    const items = (rows ?? []) as any[];
+    if (items.length === 0) return [];
+    const itemIds = items.map((i) => i.id);
+    const { data: reviewed } = await supabaseAdmin
+      .from("product_reviews")
+      .select("order_item_id")
+      .eq("buyer_id", context.userId)
+      .in("order_item_id", itemIds);
+    const reviewedSet = new Set((reviewed ?? []).map((r: any) => r.order_item_id));
+    const productIds = Array.from(new Set(items.map((i) => i.product_id)));
+    const { data: prods } = await supabaseAdmin
+      .from("products")
+      .select("id, slug")
+      .in("id", productIds);
+    const slugs: Record<string, string> = {};
+    for (const p of prods ?? []) slugs[p.id] = (p as any).slug;
+    return items
+      .filter((i) => !reviewedSet.has(i.id))
+      .map((i) => ({
+        order_item_id: i.id,
+        product_id: i.product_id,
+        product_name: i.product_name,
+        variant_label: i.variant_label,
+        product_slug: slugs[i.product_id] ?? null,
+        order_number: i.orders?.order_number,
+        delivered_at: i.orders?.created_at,
+      }));
   });
 
 export const submitReview = createServerFn({ method: "POST" })
