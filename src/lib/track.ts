@@ -33,7 +33,13 @@ function alreadySent(eventType: CatalogEventType, productId?: string): boolean {
 
 export function trackEvent(
   eventType: CatalogEventType,
-  payload: { productId?: string; source?: string; metadata?: Record<string, unknown> } = {},
+  payload: {
+    productId?: string;
+    source?: string;
+    metadata?: Record<string, unknown>;
+    orderId?: string;
+    revenueAed?: number;
+  } = {},
 ) {
   if (typeof window === "undefined") return;
   if (alreadySent(eventType, payload.productId)) return;
@@ -47,6 +53,8 @@ export function trackEvent(
           productId: payload.productId,
           source: payload.source,
           metadata: payload.metadata,
+          orderId: payload.orderId,
+          revenueAed: payload.revenueAed,
           sessionHash,
         },
       }),

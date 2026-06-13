@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/site/PageHeader";
-import { Activity, MousePointerClick, Eye, ShoppingCart, Mail, Heart } from "lucide-react";
+import { Activity, MousePointerClick, Eye, ShoppingCart, Mail, Heart, CreditCard, BadgeCheck, DollarSign, Repeat } from "lucide-react";
 import { getCatalogAnalytics, type CatalogAnalytics } from "@/lib/catalog-events.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/catalog-analytics")({
@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/admin/catalog-analytics")(
 
 const PCT = (n: number) => `${(n * 100).toFixed(1)}%`;
 const N = (n: number) => (n ?? 0).toLocaleString("en-US");
+const AED = (n: number) =>
+  `AED ${(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const STAGE_LABEL: Record<string, string> = {
   card_impression: "Impressions",
@@ -25,6 +27,8 @@ const STAGE_LABEL: Record<string, string> = {
   add_to_cart: "Add to cart",
   wishlist_add: "Wishlist",
   b2b_lead_submit: "B2B leads",
+  checkout_started: "Checkout",
+  purchase_completed: "Purchases",
 };
 
 const STAGE_ICON: Record<string, any> = {
@@ -34,6 +38,8 @@ const STAGE_ICON: Record<string, any> = {
   add_to_cart: ShoppingCart,
   wishlist_add: Heart,
   b2b_lead_submit: Mail,
+  checkout_started: CreditCard,
+  purchase_completed: BadgeCheck,
 };
 
 function heatColor(rate: number) {
@@ -53,7 +59,14 @@ function AdminCatalogAnalytics() {
   });
   const d = q.data;
 
-  const funnelStages = ["card_impression", "card_click", "product_view", "add_to_cart"] as const;
+  const funnelStages = [
+    "card_impression",
+    "card_click",
+    "product_view",
+    "add_to_cart",
+    "checkout_started",
+    "purchase_completed",
+  ] as const;
   const baseImpressions = d?.funnel.find((f) => f.eventType === "card_impression")?.sessions ?? 0;
 
   return (
@@ -79,8 +92,52 @@ function AdminCatalogAnalytics() {
         </div>
       ) : (
         <>
+          {/* Revenue KPIs */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">Revenue</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold tracking-tight">{AED(d.kpis.revenue)}</div>
+                <div className="mt-1 text-xs text-muted-foreground">Last {d.days} days</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">Orders</CardTitle>
+                <BadgeCheck className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold tracking-tight">{N(d.kpis.orders)}</div>
+                <div className="mt-1 text-xs text-muted-foreground">Paid purchases tracked</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">AOV</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold tracking-tight">{AED(d.kpis.aov)}</div>
+                <div className="mt-1 text-xs text-muted-foreground">Average order value</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">Conversion</CardTitle>
+                <Repeat className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold tracking-tight">{PCT(d.kpis.conversionRate)}</div>
+                <div className="mt-1 text-xs text-muted-foreground">Impression → purchase</div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Funnel */}
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
             {d.funnel.map((stage) => {
               const Icon = STAGE_ICON[stage.eventType] ?? Activity;
               return (
@@ -147,12 +204,14 @@ function AdminCatalogAnalytics() {
                     <TableHead className="text-right">→ Clicked</TableHead>
                     <TableHead className="text-right">→ Viewed</TableHead>
                     <TableHead className="text-right">→ Cart</TableHead>
+                    <TableHead className="text-right">→ Checkout</TableHead>
+                    <TableHead className="text-right">→ Purchased</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {d.cohorts.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center text-sm text-muted-foreground">
                         No catalog activity yet in this window.
                       </TableCell>
                     </TableRow>
@@ -169,6 +228,10 @@ function AdminCatalogAnalytics() {
                       </TableCell>
                       <TableCell className="text-right" style={heatColor(c.cartRate)}>
                         {N(c.addToCart)} <span className="text-muted-foreground">({PCT(c.cartRate)})</span>
+                      </TableCell>
+                      <TableCell className="text-right">{N(c.checkout)}</TableCell>
+                      <TableCell className="text-right" style={heatColor(c.purchaseRate)}>
+                        {N(c.purchases)} <span className="text-muted-foreground">({PCT(c.purchaseRate)})</span>
                       </TableCell>
                     </TableRow>
                   ))}
