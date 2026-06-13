@@ -9,6 +9,8 @@ export const CATALOG_EVENT_TYPES = [
   "add_to_cart",
   "wishlist_add",
   "b2b_lead_submit",
+  "checkout_started",
+  "purchase_completed",
 ] as const;
 export type CatalogEventType = (typeof CATALOG_EVENT_TYPES)[number];
 
@@ -18,6 +20,8 @@ const TrackSchema = z.object({
   source: z.string().max(64).optional(),
   sessionHash: z.string().max(128).optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
+  orderId: z.string().uuid().optional(),
+  revenueAed: z.number().nonnegative().max(10_000_000).optional(),
 });
 
 export const trackCatalogEvent = createServerFn({ method: "POST" })
@@ -45,6 +49,8 @@ export const trackCatalogEvent = createServerFn({ method: "POST" })
       session_hash: data.sessionHash ?? null,
       source: data.source ?? null,
       metadata: (data.metadata as any) ?? null,
+      order_id: data.orderId ?? null,
+      revenue_aed: data.revenueAed ?? null,
     });
     return { ok: true };
   });
@@ -59,6 +65,8 @@ const FUNNEL: CatalogEventType[] = [
   "card_click",
   "product_view",
   "add_to_cart",
+  "checkout_started",
+  "purchase_completed",
 ];
 
 async function assertAdmin(userId: string) {
@@ -68,7 +76,13 @@ async function assertAdmin(userId: string) {
   if (!data) throw new Error("Forbidden");
 }
 
-type EventRow = { event_type: CatalogEventType; session_hash: string | null; created_at: string };
+type EventRow = {
+  event_type: CatalogEventType;
+  session_hash: string | null;
+  created_at: string;
+  revenue_aed: number | null;
+  order_id: string | null;
+};
 
 async function fetchEvents(sinceIso: string): Promise<EventRow[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -79,7 +93,7 @@ async function fetchEvents(sinceIso: string): Promise<EventRow[]> {
   for (let i = 0; i < 50; i++) {
     const { data, error } = await supabaseAdmin
       .from("catalog_events")
-      .select("event_type, session_hash, created_at")
+      .select("event_type, session_hash, created_at, revenue_aed, order_id")
       .gte("created_at", sinceIso)
       .order("created_at", { ascending: true })
       .range(from, from + PAGE - 1);
@@ -125,6 +139,26 @@ export const getCatalogAnalytics = createServerFn({ method: "POST" })
       sessions: totals[t].sessions.size,
     }));
 
+    // ---- Revenue KPIs (dedupe by order_id on purchase_completed) ----
+    const seenOrders = new Set<string>();
+    let revenue = 0;
+    let orders = 0;
+    for (const r of rows) {
+      if (r.event_type !== "purchase_completed") continue;
+      if (r.order_id) {
+        if (seenOrders.has(r.order_id)) continue;
+        seenOrders.add(r.order_id);
+      }
+      orders += 1;
+      revenue += Number(r.revenue_aed ?? 0);
+    }
+    const impressionSessions = totals["card_impression"].sessions.size;
+    const aov = orders ? revenue / orders : 0;
+    const conversionRate = impressionSessions
+      ? totals["purchase_completed"].sessions.size / impressionSessions
+      : 0;
+    const kpis = { revenue, orders, aov, conversionRate };
+
     // ---- Cohorts: weekly cohort of session's first impression ----
     // session_hash -> { cohort, hit: Record<eventType, boolean> }
     const sessions = new Map<string, { cohort: string; hit: Record<string, boolean> }>();
@@ -160,12 +194,17 @@ export const getCatalogAnalytics = createServerFn({ method: "POST" })
         clicks: c.counts.card_click,
         views: c.counts.product_view,
         addToCart: c.counts.add_to_cart,
+        checkout: c.counts.checkout_started ?? 0,
+        purchases: c.counts.purchase_completed ?? 0,
         ctr: c.counts.card_impression ? c.counts.card_click / c.counts.card_impression : 0,
         viewRate: c.counts.card_click ? c.counts.product_view / c.counts.card_click : 0,
         cartRate: c.counts.product_view ? c.counts.add_to_cart / c.counts.product_view : 0,
+        purchaseRate: c.counts.card_impression
+          ? (c.counts.purchase_completed ?? 0) / c.counts.card_impression
+          : 0,
       }));
 
-    return { days: data.days, funnel, cohorts };
+    return { days: data.days, funnel, cohorts, kpis };
   });
 
 export type CatalogAnalytics = Awaited<ReturnType<typeof getCatalogAnalytics>>;

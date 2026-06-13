@@ -7,6 +7,7 @@ import { CheckCircle2, Package, Clock, AlertCircle } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { getOrderForConfirmation } from "@/lib/payments.functions";
+import { trackEvent } from "@/lib/track";
 
 export const Route = createFileRoute("/order-confirmed")({
   validateSearch: (s) => z.object({ order: z.string().optional(), n: z.string().optional() }).parse(s),
@@ -35,6 +36,22 @@ function OrderConfirmed() {
   useEffect(() => {
     if (data) setHasAttemptedLoad(true);
   }, [data]);
+
+  useEffect(() => {
+    if (!data || !order) return;
+    if (data.payment_status !== "paid") return;
+    const key = `cmx-purchase-tracked:${order}`;
+    try {
+      if (window.sessionStorage.getItem(key)) return;
+      window.sessionStorage.setItem(key, "1");
+    } catch {}
+    trackEvent("purchase_completed", {
+      source: "order_confirmed",
+      orderId: order,
+      revenueAed: Number(data.total_aed ?? 0),
+      metadata: { itemCount: (data.items as any[])?.length ?? 0 },
+    });
+  }, [data, order]);
 
   // Stripe may redirect here before webhook fires — show a "processing" state
   const isProcessing = data && data.payment_status === "pending";

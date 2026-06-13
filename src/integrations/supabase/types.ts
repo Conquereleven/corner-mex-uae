@@ -132,7 +132,9 @@ export type Database = {
           event_type: Database["public"]["Enums"]["catalog_event_type"]
           id: string
           metadata: Json | null
+          order_id: string | null
           product_id: string | null
+          revenue_aed: number | null
           seller_id: string | null
           session_hash: string | null
           source: string | null
@@ -144,7 +146,9 @@ export type Database = {
           event_type: Database["public"]["Enums"]["catalog_event_type"]
           id?: string
           metadata?: Json | null
+          order_id?: string | null
           product_id?: string | null
+          revenue_aed?: number | null
           seller_id?: string | null
           session_hash?: string | null
           source?: string | null
@@ -156,7 +160,9 @@ export type Database = {
           event_type?: Database["public"]["Enums"]["catalog_event_type"]
           id?: string
           metadata?: Json | null
+          order_id?: string | null
           product_id?: string | null
+          revenue_aed?: number | null
           seller_id?: string | null
           session_hash?: string | null
           source?: string | null
@@ -168,6 +174,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
@@ -1874,6 +1887,8 @@ export type Database = {
         | "add_to_cart"
         | "wishlist_add"
         | "b2b_lead_submit"
+        | "checkout_started"
+        | "purchase_completed"
       coupon_kind: "percent" | "fixed"
       emirate:
         | "abu_dhabi"
@@ -2089,6 +2104,8 @@ export const Constants = {
         "add_to_cart",
         "wishlist_add",
         "b2b_lead_submit",
+        "checkout_started",
+        "purchase_completed",
       ],
       coupon_kind: ["percent", "fixed"],
       emirate: [
