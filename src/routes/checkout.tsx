@@ -16,6 +16,7 @@ import { getShippingQuote, EMIRATE_FORM_TO_DB } from "@/lib/shipping.functions";
 import { validateCoupon } from "@/lib/coupons.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { trackEvent } from "@/lib/track";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Corner Mex" }] }),
@@ -60,6 +61,16 @@ function Checkout() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+  }, []);
+
+  useEffect(() => {
+    if (items.length === 0) return;
+    trackEvent("checkout_started", {
+      source: "checkout",
+      metadata: { itemCount: items.length, subtotal: totals.subtotal },
+    });
+    // only on first mount when cart has items
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [form, setForm] = useState({
