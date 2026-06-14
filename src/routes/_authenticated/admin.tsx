@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard, ShoppingCart, Store, Wallet, Tags, Users, Settings, Activity, Upload, Truck,
+  LayoutDashboard, ShoppingCart, Store, Wallet, Tags, Users, Settings, Activity, Upload, Truck, Globe2,
   Package, Star, RotateCcw, Ticket, Megaphone, Mail, Plus, ShieldCheck, Inbox,
 } from "lucide-react";
 import { isAdmin } from "@/lib/admin.functions";
@@ -54,6 +54,7 @@ function AdminLayout() {
             { to: "/admin/payouts", label: t("dash.nav.payouts"), icon: Wallet, badge: c?.payouts_pending },
             { to: "/admin/categories", label: t("dash.nav.categories"), icon: Tags },
             { to: "/admin/customers", label: t("dash.nav.customers"), icon: Users },
+            { to: "/admin/live-view", label: "Live view", icon: Globe2 },
             { to: "/admin/performance", label: t("dash.nav.performance"), icon: Activity },
             { to: "/admin/catalog-analytics", label: "Catalog analytics", icon: Activity },
             { to: "/admin/shipping", label: "Shipping", icon: Truck },
