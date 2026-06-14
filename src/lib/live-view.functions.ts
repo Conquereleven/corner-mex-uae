@@ -145,8 +145,14 @@ export const getLiveView = createServerFn({ method: "POST" })
     let productMeta: Record<string, { name: string; slug: string }> = {};
     if (topProductIds.length) {
       const { data: prods } = await supabaseAdmin
-        .from("products").select("id, name, slug").in("id", topProductIds);
-      for (const p of prods ?? []) productMeta[p.id] = { name: p.name, slug: p.slug };
+        .from("products")
+        .select("id, slug, product_translations(name, locale)")
+        .in("id", topProductIds);
+      for (const p of (prods ?? []) as any[]) {
+        const tr = (p.product_translations as any[] | null) ?? [];
+        const en = tr.find((t) => t.locale === "en") ?? tr[0];
+        productMeta[p.id] = { name: en?.name ?? "—", slug: p.slug };
+      }
     }
     const topProducts = Array.from(productPurchase.entries())
       .map(([id, v]) => ({
