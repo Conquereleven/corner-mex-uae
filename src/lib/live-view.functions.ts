@@ -64,7 +64,7 @@ export const getLiveView = createServerFn({ method: "POST" })
     // ---- Today's totals ----
     const { data: todayEvents } = await supabaseAdmin
       .from("catalog_events")
-      .select("event_type, session_hash, product_id, revenue_aed, order_id, created_at")
+      .select("event_type, session_hash, product_id, revenue_aed, order_id, created_at, source")
       .gte("created_at", todayStart)
       .limit(20000);
     const today = todayEvents ?? [];
@@ -74,14 +74,33 @@ export const getLiveView = createServerFn({ method: "POST" })
     const seenOrders = new Set<string>();
     let revenue = 0;
     let orders = 0;
+    // Extra aggregates
+    const cartSessions = new Set<string>();
+    const checkoutSessions = new Set<string>();
+    const purchasedSessions = new Set<string>();
+    const sourceAgg = new Map<string, { sessions: Set<string>; orders: number; revenue: number }>();
+    const sessionSource = new Map<string, string>();
+    // hourly sales for last 24h (24 buckets, idx 23 = current hour)
+    const hourlySales = new Array(24).fill(0);
+    const hourlyOrders = new Array(24).fill(0);
     for (const e of today) {
       if (e.session_hash) todaySessions.add(e.session_hash);
+      if (e.session_hash && e.source && !sessionSource.has(e.session_hash)) {
+        sessionSource.set(e.session_hash, e.source);
+      }
+      if (e.event_type === "add_to_cart" && e.session_hash) cartSessions.add(e.session_hash);
+      if (e.event_type === "checkout_started" && e.session_hash) checkoutSessions.add(e.session_hash);
       if (e.event_type === "purchase_completed") {
+        if (e.session_hash) purchasedSessions.add(e.session_hash);
         if (e.order_id) {
           if (!seenOrders.has(e.order_id)) {
             seenOrders.add(e.order_id);
             orders += 1;
             revenue += Number(e.revenue_aed ?? 0);
+            const hoursAgo = Math.floor((now - new Date(e.created_at).getTime()) / 3_600_000);
+            const idx = 23 - Math.min(23, Math.max(0, hoursAgo));
+            hourlySales[idx] += Number(e.revenue_aed ?? 0);
+            hourlyOrders[idx] += 1;
           }
         } else {
           orders += 1;
@@ -98,6 +117,50 @@ export const getLiveView = createServerFn({ method: "POST" })
         productAdds.set(e.product_id, (productAdds.get(e.product_id) ?? 0) + 1);
       }
     }
+
+    // Source attribution (per session, using earliest seen source)
+    for (const [sess, src] of sessionSource.entries()) {
+      const key = src || "direct";
+      const agg = sourceAgg.get(key) ?? { sessions: new Set<string>(), orders: 0, revenue: 0 };
+      agg.sessions.add(sess);
+      if (purchasedSessions.has(sess)) agg.orders += 1;
+      sourceAgg.set(key, agg);
+    }
+    const topSources = Array.from(sourceAgg.entries())
+      .map(([source, v]) => ({
+        source,
+        sessions: v.sessions.size,
+        orders: v.orders,
+        conversion: v.sessions.size ? v.orders / v.sessions.size : 0,
+      }))
+      .sort((a, b) => b.sessions - a.sessions)
+      .slice(0, 5);
+
+    // New vs returning: a session is "returning" if its hash appears in catalog_events
+    // before today's window.
+    const sessionHashes = Array.from(todaySessions);
+    let returningCount = 0;
+    if (sessionHashes.length) {
+      const { data: prior } = await supabaseAdmin
+        .from("catalog_events")
+        .select("session_hash")
+        .lt("created_at", todayStart)
+        .in("session_hash", sessionHashes.slice(0, 500))
+        .limit(2000);
+      const seen = new Set((prior ?? []).map((r: any) => r.session_hash).filter(Boolean));
+      returningCount = seen.size;
+    }
+    const newVisitors = Math.max(0, todaySessions.size - returningCount);
+
+    // Derived KPIs
+    const aov = orders ? revenue / orders : 0;
+    const conversionRate = todaySessions.size ? purchasedSessions.size / todaySessions.size : 0;
+    const cartAbandonment = cartSessions.size
+      ? 1 - purchasedSessions.size / cartSessions.size
+      : 0;
+    const checkoutAbandonment = checkoutSessions.size
+      ? 1 - purchasedSessions.size / checkoutSessions.size
+      : 0;
 
     // ---- Geo: recent paid orders by emirate (last 24h) ----
     const { data: recentOrders } = await supabaseAdmin
@@ -169,6 +232,12 @@ export const getLiveView = createServerFn({ method: "POST" })
         totalSessionsToday: todaySessions.size,
         totalSales: revenue,
         totalOrders: orders,
+        aov,
+        conversionRate,
+        cartAbandonment,
+        checkoutAbandonment,
+        newVisitors,
+        returningVisitors: returningCount,
       },
       behavior: {
         activeCarts: activeCarts.size,
@@ -176,6 +245,9 @@ export const getLiveView = createServerFn({ method: "POST" })
         purchased: purchased.size,
       },
       pageViews: buckets,
+      hourlySales,
+      hourlyOrders,
+      topSources,
       orderPoints,
       arcs,
       topLocations,
