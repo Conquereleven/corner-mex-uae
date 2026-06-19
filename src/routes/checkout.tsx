@@ -326,6 +326,13 @@ function Checkout() {
             <Button type="submit" size="lg" disabled={submitting} className="mt-6 w-full rounded-full bg-foreground text-background hover:bg-foreground/90">
               {submitting ? "Placing order…" : `Place order · AED ${effectiveTotal.toFixed(2)}`}
             </Button>
+            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+              By placing this order you accept our{" "}
+              <Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="underline">Terms</Link>,{" "}
+              <Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="underline">Returns &amp; Refunds Policy</Link>{" "}
+              and{" "}
+              <Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="underline">Privacy Policy</Link>.
+            </p>
           </aside>
         </form>
       </section>
