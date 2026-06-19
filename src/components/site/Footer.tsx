@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { subscribeNewsletter } from "@/lib/newsletter.functions";
 import { toast } from "sonner";
+import { openCookiePreferences } from "@/lib/cookie-consent";
 
 export function Footer() {
   const { t } = useTranslation();
@@ -30,7 +31,10 @@ export function Footer() {
         <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <h3 className="font-display text-2xl tracking-tight">Get Mexican news & offers</h3>
-            <p className="mt-1 text-sm text-muted-foreground">New drops, promo codes and HORECA deals — once a month.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              New drops, promo codes and HORECA deals — once a month. By subscribing you agree to our{" "}
+              <Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="underline">Privacy Policy</Link>.
+            </p>
           </div>
           <form onSubmit={onSubscribe} className="flex w-full max-w-md gap-2">
             <Input type="email" required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -40,7 +44,7 @@ export function Footer() {
           </form>
         </div>
       </div>
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 md:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 md:grid-cols-5 lg:px-8">
         <div>
           <div className="font-display text-2xl font-semibold tracking-tight">
             Corner<span className="text-primary">Mex</span>
@@ -63,8 +67,26 @@ export function Footer() {
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">{t("footer.legal")}</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/terms" className="hover:text-foreground">Terms</Link></li>
-            <li><Link to="/privacy" className="hover:text-foreground">Privacy</Link></li>
+            <li><Link to="/legal" className="hover:text-foreground">Legal Center</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="hover:text-foreground">Terms & Conditions</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="hover:text-foreground">Privacy Policy</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="hover:text-foreground">Cookie Policy</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="hover:text-foreground">Returns & Refunds</Link></li>
+            <li>
+              <button type="button" onClick={openCookiePreferences} className="text-left hover:text-foreground">
+                Cookie preferences
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">Trust & AI</h4>
+          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+            <li><Link to="/legal/$slug" params={{ slug: "ai-transparency" }} className="hover:text-foreground">AI Transparency</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "seller-agreement" }} className="hover:text-foreground">Seller Agreement</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "intellectual-property" }} className="hover:text-foreground">IP Policy</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "acceptable-use" }} className="hover:text-foreground">Acceptable Use</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "security" }} className="hover:text-foreground">Security</Link></li>
           </ul>
         </div>
       </div>

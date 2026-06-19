@@ -17,14 +17,17 @@ import { Route as SellersRouteImport } from './routes/sellers'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LegalRouteImport } from './routes/legal'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as B2bRouteImport } from './routes/b2b'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as B2bLeadRouteImport } from './routes/b2b_.lead'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -56,6 +59,7 @@ import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as AuthenticatedAdminNewsletterRouteImport } from './routes/_authenticated/admin.newsletter'
 import { Route as AuthenticatedAdminLiveViewRouteImport } from './routes/_authenticated/admin.live-view'
+import { Route as AuthenticatedAdminLegalRouteImport } from './routes/_authenticated/admin.legal'
 import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated/admin.leads'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin.coupons'
@@ -127,6 +131,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -156,6 +165,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalIndexRoute = LegalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LegalRoute,
+} as any)
 const SellersSlugRoute = SellersSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -165,6 +179,11 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LegalSlugRoute = LegalSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LegalRoute,
 } as any)
 const B2bLeadRoute = B2bLeadRouteImport.update({
   id: '/b2b_/lead',
@@ -345,6 +364,11 @@ const AuthenticatedAdminLiveViewRoute =
     path: '/live-view',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminLegalRoute = AuthenticatedAdminLegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminLeadsRoute = AuthenticatedAdminLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
@@ -531,6 +555,7 @@ export interface FileRoutesByFullPath {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
+  '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
@@ -543,8 +568,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
   '/b2b/lead': typeof B2bLeadRoute
+  '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/legal/': typeof LegalIndexRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -555,6 +582,7 @@ export interface FileRoutesByFullPath {
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/admin/leads': typeof AuthenticatedAdminLeadsRouteWithChildren
+  '/admin/legal': typeof AuthenticatedAdminLegalRoute
   '/admin/live-view': typeof AuthenticatedAdminLiveViewRoute
   '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
@@ -619,8 +647,10 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/b2b/lead': typeof B2bLeadRoute
+  '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/legal': typeof LegalIndexRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -629,6 +659,7 @@ export interface FileRoutesByTo {
   '/admin/catalog-analytics': typeof AuthenticatedAdminCatalogAnalyticsRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/admin/legal': typeof AuthenticatedAdminLegalRoute
   '/admin/live-view': typeof AuthenticatedAdminLiveViewRoute
   '/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -681,6 +712,7 @@ export interface FileRoutesById {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
+  '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
@@ -693,8 +725,10 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
   '/b2b_/lead': typeof B2bLeadRoute
+  '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/legal/': typeof LegalIndexRoute
   '/_authenticated/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/_authenticated/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/_authenticated/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -705,6 +739,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
   '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRouteWithChildren
+  '/_authenticated/admin/legal': typeof AuthenticatedAdminLegalRoute
   '/_authenticated/admin/live-view': typeof AuthenticatedAdminLiveViewRoute
   '/_authenticated/admin/newsletter': typeof AuthenticatedAdminNewsletterRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
@@ -761,6 +796,7 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/checkout'
+    | '/legal'
     | '/login'
     | '/order-confirmed'
     | '/privacy'
@@ -773,8 +809,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/seller'
     | '/b2b/lead'
+    | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/legal/'
     | '/account/loyalty'
     | '/account/notifications'
     | '/account/returns'
@@ -785,6 +823,7 @@ export interface FileRouteTypes {
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/leads'
+    | '/admin/legal'
     | '/admin/live-view'
     | '/admin/newsletter'
     | '/admin/orders'
@@ -849,8 +888,10 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/b2b/lead'
+    | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/legal'
     | '/account/loyalty'
     | '/account/notifications'
     | '/account/returns'
@@ -859,6 +900,7 @@ export interface FileRouteTypes {
     | '/admin/catalog-analytics'
     | '/admin/categories'
     | '/admin/coupons'
+    | '/admin/legal'
     | '/admin/live-view'
     | '/admin/newsletter'
     | '/admin/payouts'
@@ -910,6 +952,7 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/checkout'
+    | '/legal'
     | '/login'
     | '/order-confirmed'
     | '/privacy'
@@ -922,8 +965,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/seller'
     | '/b2b_/lead'
+    | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/legal/'
     | '/_authenticated/account/loyalty'
     | '/_authenticated/account/notifications'
     | '/_authenticated/account/returns'
@@ -934,6 +979,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/coupons'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/leads'
+    | '/_authenticated/admin/legal'
     | '/_authenticated/admin/live-view'
     | '/_authenticated/admin/newsletter'
     | '/_authenticated/admin/orders'
@@ -990,6 +1036,7 @@ export interface RootRouteChildren {
   B2bRoute: typeof B2bRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
+  LegalRoute: typeof LegalRouteWithChildren
   LoginRoute: typeof LoginRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1064,6 +1111,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -1106,6 +1160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/': {
+      id: '/legal/'
+      path: '/'
+      fullPath: '/legal/'
+      preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof LegalRoute
+    }
     '/sellers/$slug': {
       id: '/sellers/$slug'
       path: '/$slug'
@@ -1119,6 +1180,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/product/$slug'
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/legal/$slug': {
+      id: '/legal/$slug'
+      path: '/$slug'
+      fullPath: '/legal/$slug'
+      preLoaderRoute: typeof LegalSlugRouteImport
+      parentRoute: typeof LegalRoute
     }
     '/b2b_/lead': {
       id: '/b2b_/lead'
@@ -1335,6 +1403,13 @@ declare module '@tanstack/react-router' {
       path: '/live-view'
       fullPath: '/admin/live-view'
       preLoaderRoute: typeof AuthenticatedAdminLiveViewRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/legal': {
+      id: '/_authenticated/admin/legal'
+      path: '/legal'
+      fullPath: '/admin/legal'
+      preLoaderRoute: typeof AuthenticatedAdminLegalRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/leads': {
@@ -1638,6 +1713,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRouteWithChildren
   AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRouteWithChildren
+  AuthenticatedAdminLegalRoute: typeof AuthenticatedAdminLegalRoute
   AuthenticatedAdminLiveViewRoute: typeof AuthenticatedAdminLiveViewRoute
   AuthenticatedAdminNewsletterRoute: typeof AuthenticatedAdminNewsletterRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRouteWithChildren
@@ -1663,6 +1739,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCustomersRoute:
     AuthenticatedAdminCustomersRouteWithChildren,
   AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRouteWithChildren,
+  AuthenticatedAdminLegalRoute: AuthenticatedAdminLegalRoute,
   AuthenticatedAdminLiveViewRoute: AuthenticatedAdminLiveViewRoute,
   AuthenticatedAdminNewsletterRoute: AuthenticatedAdminNewsletterRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRouteWithChildren,
@@ -1802,6 +1879,18 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
   CheckoutRouteChildren,
 )
 
+interface LegalRouteChildren {
+  LegalSlugRoute: typeof LegalSlugRoute
+  LegalIndexRoute: typeof LegalIndexRoute
+}
+
+const LegalRouteChildren: LegalRouteChildren = {
+  LegalSlugRoute: LegalSlugRoute,
+  LegalIndexRoute: LegalIndexRoute,
+}
+
+const LegalRouteWithChildren = LegalRoute._addFileChildren(LegalRouteChildren)
+
 interface SellersRouteChildren {
   SellersSlugRoute: typeof SellersSlugRoute
 }
@@ -1820,6 +1909,7 @@ const rootRouteChildren: RootRouteChildren = {
   B2bRoute: B2bRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
+  LegalRoute: LegalRouteWithChildren,
   LoginRoute: LoginRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
   PrivacyRoute: PrivacyRoute,
