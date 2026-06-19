@@ -14,7 +14,7 @@ function AdminLegal() {
     <div className="space-y-6">
       <PageHeader
         title="Legal & Compliance"
-        subtitle="Templates pending UAE legal review. Full editing, publishing and archival will plug into this view."
+        description="Templates pending UAE legal review. Full editing, publishing and archival will plug into this view."
       />
       <div className="overflow-hidden rounded-lg border border-border/60">
         <table className="w-full text-sm">
