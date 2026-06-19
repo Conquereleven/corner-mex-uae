@@ -17,14 +17,17 @@ import { Route as SellersRouteImport } from './routes/sellers'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LegalRouteImport } from './routes/legal'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as B2bRouteImport } from './routes/b2b'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as B2bLeadRouteImport } from './routes/b2b_.lead'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -127,6 +130,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -156,6 +164,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalIndexRoute = LegalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LegalRoute,
+} as any)
 const SellersSlugRoute = SellersSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -165,6 +178,11 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LegalSlugRoute = LegalSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LegalRoute,
 } as any)
 const B2bLeadRoute = B2bLeadRouteImport.update({
   id: '/b2b_/lead',
@@ -531,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
+  '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
@@ -543,8 +562,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
   '/b2b/lead': typeof B2bLeadRoute
+  '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/legal/': typeof LegalIndexRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -619,8 +640,10 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/b2b/lead': typeof B2bLeadRoute
+  '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/legal': typeof LegalIndexRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -681,6 +704,7 @@ export interface FileRoutesById {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
+  '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
@@ -693,8 +717,10 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
   '/b2b_/lead': typeof B2bLeadRoute
+  '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
+  '/legal/': typeof LegalIndexRoute
   '/_authenticated/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/_authenticated/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/_authenticated/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -761,6 +787,7 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/checkout'
+    | '/legal'
     | '/login'
     | '/order-confirmed'
     | '/privacy'
@@ -773,8 +800,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/seller'
     | '/b2b/lead'
+    | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/legal/'
     | '/account/loyalty'
     | '/account/notifications'
     | '/account/returns'
@@ -849,8 +878,10 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/b2b/lead'
+    | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/legal'
     | '/account/loyalty'
     | '/account/notifications'
     | '/account/returns'
@@ -910,6 +941,7 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/checkout'
+    | '/legal'
     | '/login'
     | '/order-confirmed'
     | '/privacy'
@@ -922,8 +954,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/seller'
     | '/b2b_/lead'
+    | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
+    | '/legal/'
     | '/_authenticated/account/loyalty'
     | '/_authenticated/account/notifications'
     | '/_authenticated/account/returns'
@@ -990,6 +1024,7 @@ export interface RootRouteChildren {
   B2bRoute: typeof B2bRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
+  LegalRoute: typeof LegalRouteWithChildren
   LoginRoute: typeof LoginRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1064,6 +1099,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -1106,6 +1148,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/': {
+      id: '/legal/'
+      path: '/'
+      fullPath: '/legal/'
+      preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof LegalRoute
+    }
     '/sellers/$slug': {
       id: '/sellers/$slug'
       path: '/$slug'
@@ -1119,6 +1168,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/product/$slug'
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/legal/$slug': {
+      id: '/legal/$slug'
+      path: '/$slug'
+      fullPath: '/legal/$slug'
+      preLoaderRoute: typeof LegalSlugRouteImport
+      parentRoute: typeof LegalRoute
     }
     '/b2b_/lead': {
       id: '/b2b_/lead'
@@ -1802,6 +1858,18 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
   CheckoutRouteChildren,
 )
 
+interface LegalRouteChildren {
+  LegalSlugRoute: typeof LegalSlugRoute
+  LegalIndexRoute: typeof LegalIndexRoute
+}
+
+const LegalRouteChildren: LegalRouteChildren = {
+  LegalSlugRoute: LegalSlugRoute,
+  LegalIndexRoute: LegalIndexRoute,
+}
+
+const LegalRouteWithChildren = LegalRoute._addFileChildren(LegalRouteChildren)
+
 interface SellersRouteChildren {
   SellersSlugRoute: typeof SellersSlugRoute
 }
@@ -1820,6 +1888,7 @@ const rootRouteChildren: RootRouteChildren = {
   B2bRoute: B2bRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
+  LegalRoute: LegalRouteWithChildren,
   LoginRoute: LoginRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
   PrivacyRoute: PrivacyRoute,
