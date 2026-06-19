@@ -42,10 +42,15 @@ function Signup() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [needsConfirm, setNeedsConfirm] = useState(false);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!acceptedLegal) {
+      setError("Please accept the Terms and Privacy Policy to continue.");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -115,6 +120,20 @@ function Signup() {
               Mínimo 10 caracteres. Evita contraseñas comunes o que hayan aparecido en filtraciones.
             </p>
           </div>
+          <label className="flex items-start gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-border"
+              checked={acceptedLegal}
+              onChange={(e) => setAcceptedLegal(e.target.checked)}
+            />
+            <span>
+              I have read and accept the{" "}
+              <Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="underline">Terms & Conditions</Link>{" "}
+              and the{" "}
+              <Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="underline">Privacy Policy</Link>.
+            </span>
+          </label>
           {error && (
             <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
               {error}
