@@ -6,7 +6,11 @@ export const Route = createFileRoute("/sitemap.xml")({
       GET: async ({ request }) => {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const origin = new URL(request.url).origin;
-        const urls: string[] = ["/", "/shop", "/b2b", "/about", "/sellers"];
+        const { LEGAL_DOCS } = await import("@/lib/legal-docs");
+        const urls: string[] = [
+          "/", "/shop", "/b2b", "/about", "/sellers", "/legal",
+          ...LEGAL_DOCS.map((d) => `/legal/${d.slug}`),
+        ];
         const { data: products } = await supabaseAdmin.from("products").select("slug, updated_at").eq("status", "active").limit(5000);
         const { data: sellers } = await supabaseAdmin.from("sellers").select("slug, updated_at").eq("status", "active").limit(1000);
         const items = [
