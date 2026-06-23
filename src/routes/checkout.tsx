@@ -17,6 +17,7 @@ import { validateCoupon } from "@/lib/coupons.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { trackEvent } from "@/lib/track";
+import { buildCheckoutLegalAcceptancePayload } from "@/lib/legal-acceptance";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Corner Mex" }] }),
@@ -152,6 +153,16 @@ function Checkout() {
       return;
     }
     setSubmitting(true);
+    // LEGAL_ACCEPTANCE_TODO: persist this payload on the order record
+    // (acceptedTermsVersion / acceptedPrivacyVersion / acceptedReturnsVersion /
+    // acceptedLegalAt / acceptedLegalSource / acceptedLegalLanguage) so we
+    // have per-order acceptance evidence. Add the columns to orders and
+    // forward this object through placeOrder() when backend support lands.
+    const legalAcceptance = buildCheckoutLegalAcceptancePayload();
+    if (typeof window !== "undefined") {
+      // eslint-disable-next-line no-console
+      console.debug("[legal-acceptance:checkout]", legalAcceptance);
+    }
     try {
       const res = await place({
         data: {
