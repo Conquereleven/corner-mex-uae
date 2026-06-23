@@ -368,7 +368,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         "Sellers must dispatch within the SLAs published in the seller dashboard and use the logistics options enabled by CornerMex unless otherwise agreed in writing.",
       ]},
       { id: "returns", heading: "6. Returns, warranties and recalls", body: [
-        "Sellers honour the Returns & Refunds Policy and statutory warranties under UAE law. Sellers must notify CornerMex immediately of any product safety issue or recall and cooperate with corrective actions.",
+        "Sellers honour the Returns & Refunds Policy and statutory warranties under UAE law. Sellers must comply with applicable product safety, labeling, storage, handling, recall and food/import rules, notify CornerMex immediately of any product safety issue or recall, and cooperate with corrective actions.",
       ]},
       { id: "ip", heading: "7. Intellectual property warranties", body: [
         "Sellers warrant that they own or are licensed to use all content they upload and that their products do not infringe third-party rights.",
