@@ -22,9 +22,9 @@ export interface LegalDoc {
   owner: string;
   reviewStatus: ReviewStatus;
   language: "en";
-  availableTranslations: string[];
-  futureTranslations: string[];
-  requiresArabicReview: boolean;
+  availableTranslations?: string[];
+  futureTranslations?: string[];
+  requiresArabicReview?: boolean;
   sections: LegalSection[];
 }
 
