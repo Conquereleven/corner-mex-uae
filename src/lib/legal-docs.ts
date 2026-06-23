@@ -22,6 +22,9 @@ export interface LegalDoc {
   owner: string;
   reviewStatus: ReviewStatus;
   language: "en";
+  availableTranslations: string[];
+  futureTranslations: string[];
+  requiresArabicReview: boolean;
   sections: LegalSection[];
 }
 
@@ -33,14 +36,21 @@ const CONTACT_BLOCK: LegalSection = {
   heading: "Contact",
   body: [
     "For any question about this document, please reach out using the channels below. Company details will be completed once corporate registration is finalised.",
+    "Complaints: we provide accessible channels to submit and follow up on complaints. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
   ],
   list: [
     "Legal contact: legal@cornermex.ae",
     "Privacy contact: privacy@cornermex.ae",
     "Support contact: support@cornermex.ae",
+    "Complaints contact: complaints@cornermex.ae",
     "Company legal name: [INSERT UAE LEGAL ENTITY NAME]",
+    "Legal status: [INSERT LEGAL STATUS]",
     "Trade license number: [INSERT TRADE LICENSE NUMBER]",
+    "Licensing authority: [INSERT LICENSING AUTHORITY]",
     "Registered address: [INSERT UAE REGISTERED ADDRESS]",
+    "Website: [INSERT WEBSITE]",
+    "Contact number: [INSERT CONTACT NUMBER]",
+    "VAT registration: [INSERT VAT REGISTRATION STATUS IF APPLICABLE]",
     "TDRA / e-commerce approval: [INSERT IF APPLICABLE]",
   ],
 };
@@ -54,6 +64,9 @@ const DISCLAIMER_SECTION: LegalSection = {
 function doc(d: Omit<LegalDoc, "language" | "sections"> & { sections: LegalSection[] }): LegalDoc {
   return {
     language: "en",
+    availableTranslations: [],
+    futureTranslations: ["ar", "es"],
+    requiresArabicReview: true,
     ...d,
     sections: [DISCLAIMER_SECTION, ...d.sections, CONTACT_BLOCK],
   };
