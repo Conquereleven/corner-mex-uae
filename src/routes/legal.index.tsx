@@ -56,8 +56,15 @@ function LegalIndex() {
         </div>
 
         <p className="mt-12 text-xs text-muted-foreground">
-          Contact: legal@cornermex.ae · privacy@cornermex.ae · support@cornermex.ae
+          Contact: legal@cornermex.ae · privacy@cornermex.ae · support@cornermex.ae · complaints@cornermex.ae
         </p>
+
+        <div className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-900">
+          <p className="font-medium">Arabic readiness</p>
+          <p className="mt-1">
+            Arabic versions of consumer-facing legal documents, invoices, and key product/contracting information must be prepared and reviewed before full UAE public launch. These templates are currently in English and pending review by qualified UAE legal counsel.
+          </p>
+        </div>
       </section>
     </SiteLayout>
   );
