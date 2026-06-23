@@ -72,6 +72,7 @@ export function Footer() {
             <li><Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="hover:text-foreground">Privacy Policy</Link></li>
             <li><Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="hover:text-foreground">Cookie Policy</Link></li>
             <li><Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="hover:text-foreground">Returns & Refunds</Link></li>
+            <li><a href="mailto:complaints@cornermex.ae" className="hover:text-foreground">Submit a complaint</a></li>
             <li>
               <button type="button" onClick={openCookiePreferences} className="text-left hover:text-foreground">
                 Cookie preferences
