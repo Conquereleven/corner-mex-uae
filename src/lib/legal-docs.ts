@@ -139,8 +139,13 @@ export const LEGAL_DOCS: LegalDoc[] = [
       { id: "disputes", heading: "16. Disputes and governing law", body: [
         "These Terms are governed by the laws of the United Arab Emirates and, where applicable, of the emirate of registration of CornerMex. Disputes are subject to the competent UAE courts.",
         "Nothing here requires you to waive rights under UAE consumer protection law or to submit low-value consumer claims to mandatory arbitration.",
+        "Nothing in this section requires arbitration for a consumer digital contract below AED 50,000 where such a clause is not permitted under applicable UAE law.",
       ]},
-      { id: "changes", heading: "17. Changes to these Terms", body: [
+      { id: "complaints", heading: "17. Complaints", body: [
+        "We provide accessible channels to submit and follow up on complaints about the platform, a seller, an order, content moderation or an AI-assisted decision.",
+        "Write to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Where a complaint is not resolved internally, you may escalate via [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW], without prejudice to your rights under UAE consumer protection law.",
+      ]},
+      { id: "changes", heading: "18. Changes to these Terms", body: [
         "We may update these Terms. Material changes will be highlighted on the platform. Continued use after the effective date constitutes acceptance.",
       ]},
     ],
