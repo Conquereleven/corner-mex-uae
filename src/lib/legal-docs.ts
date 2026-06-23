@@ -22,6 +22,9 @@ export interface LegalDoc {
   owner: string;
   reviewStatus: ReviewStatus;
   language: "en";
+  availableTranslations?: string[];
+  futureTranslations?: string[];
+  requiresArabicReview?: boolean;
   sections: LegalSection[];
 }
 
@@ -33,14 +36,21 @@ const CONTACT_BLOCK: LegalSection = {
   heading: "Contact",
   body: [
     "For any question about this document, please reach out using the channels below. Company details will be completed once corporate registration is finalised.",
+    "Complaints: we provide accessible channels to submit and follow up on complaints. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
   ],
   list: [
     "Legal contact: legal@cornermex.ae",
     "Privacy contact: privacy@cornermex.ae",
     "Support contact: support@cornermex.ae",
+    "Complaints contact: complaints@cornermex.ae",
     "Company legal name: [INSERT UAE LEGAL ENTITY NAME]",
+    "Legal status: [INSERT LEGAL STATUS]",
     "Trade license number: [INSERT TRADE LICENSE NUMBER]",
+    "Licensing authority: [INSERT LICENSING AUTHORITY]",
     "Registered address: [INSERT UAE REGISTERED ADDRESS]",
+    "Website: [INSERT WEBSITE]",
+    "Contact number: [INSERT CONTACT NUMBER]",
+    "VAT registration: [INSERT VAT REGISTRATION STATUS IF APPLICABLE]",
     "TDRA / e-commerce approval: [INSERT IF APPLICABLE]",
   ],
 };
@@ -54,6 +64,9 @@ const DISCLAIMER_SECTION: LegalSection = {
 function doc(d: Omit<LegalDoc, "language" | "sections"> & { sections: LegalSection[] }): LegalDoc {
   return {
     language: "en",
+    availableTranslations: [],
+    futureTranslations: ["ar", "es"],
+    requiresArabicReview: true,
     ...d,
     sections: [DISCLAIMER_SECTION, ...d.sections, CONTACT_BLOCK],
   };
@@ -126,8 +139,13 @@ export const LEGAL_DOCS: LegalDoc[] = [
       { id: "disputes", heading: "16. Disputes and governing law", body: [
         "These Terms are governed by the laws of the United Arab Emirates and, where applicable, of the emirate of registration of CornerMex. Disputes are subject to the competent UAE courts.",
         "Nothing here requires you to waive rights under UAE consumer protection law or to submit low-value consumer claims to mandatory arbitration.",
+        "Nothing in this section requires arbitration for a consumer digital contract below AED 50,000 where such a clause is not permitted under applicable UAE law.",
       ]},
-      { id: "changes", heading: "17. Changes to these Terms", body: [
+      { id: "complaints", heading: "17. Complaints", body: [
+        "We provide accessible channels to submit and follow up on complaints about the platform, a seller, an order, content moderation or an AI-assisted decision.",
+        "Write to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Where a complaint is not resolved internally, you may escalate via [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW], without prejudice to your rights under UAE consumer protection law.",
+      ]},
+      { id: "changes", heading: "18. Changes to these Terms", body: [
         "We may update these Terms. Material changes will be highlighted on the platform. Continued use after the effective date constitutes acceptance.",
       ]},
     ],
@@ -251,13 +269,14 @@ export const LEGAL_DOCS: LegalDoc[] = [
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "scope", heading: "1. Eligibility", body: [
-        "You can request a return for defective products, items that do not match the listing, damaged items, or undelivered orders, subject to the conditions below.",
+        "You can request a return, replacement or refund for products that are defective, damaged, incorrect, incomplete, misdescribed, unsafe, or that were not delivered, subject to the conditions below and to applicable UAE law.",
+        "Food and short shelf-life consumables may have return exceptions where permitted by applicable UAE law. The final policy must be reviewed by UAE counsel and aligned with product category, storage, safety and shelf-life rules.",
       ]},
       { id: "window", heading: "2. Return window", body: [
         "Standard return window: [INSERT NUMBER] days from delivery for eligible items. Perishable, food and personalised items may be non-returnable unless defective.",
       ]},
       { id: "non-returnable", heading: "3. Non-returnable items", list: [
-        "Opened consumables and perishable food items, unless defective on arrival.",
+        "Opened consumables and perishable or short shelf-life food items, unless defective, damaged, unsafe, incorrect or where a return is legally required.",
         "Personalised, custom-prepared or made-to-order items.",
         "Items marked 'final sale' on the listing.",
       ], body: []},
@@ -275,6 +294,9 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ]},
       { id: "escalation", heading: "8. Escalation", body: [
         "If you are not satisfied with the seller's response, contact support@cornermex.ae. Nothing in this policy affects your rights under UAE consumer protection law.",
+      ]},
+      { id: "complaints", heading: "9. Complaints", body: [
+        "Formal complaints can be sent to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
       ]},
     ],
   }),
@@ -346,7 +368,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         "Sellers must dispatch within the SLAs published in the seller dashboard and use the logistics options enabled by CornerMex unless otherwise agreed in writing.",
       ]},
       { id: "returns", heading: "6. Returns, warranties and recalls", body: [
-        "Sellers honour the Returns & Refunds Policy and statutory warranties under UAE law. Sellers must notify CornerMex immediately of any product safety issue or recall and cooperate with corrective actions.",
+        "Sellers honour the Returns & Refunds Policy and statutory warranties under UAE law. Sellers must comply with applicable product safety, labeling, storage, handling, recall and food/import rules, notify CornerMex immediately of any product safety issue or recall, and cooperate with corrective actions.",
       ]},
       { id: "ip", heading: "7. Intellectual property warranties", body: [
         "Sellers warrant that they own or are licensed to use all content they upload and that their products do not infringe third-party rights.",

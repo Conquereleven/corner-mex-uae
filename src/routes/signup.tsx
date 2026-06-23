@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
+import { buildLegalAcceptancePayload } from "@/lib/legal-acceptance";
 
 function mapSignupError(err: { message?: string; code?: string } | null): string {
   if (!err) return "";
@@ -50,6 +51,15 @@ function Signup() {
     if (!acceptedLegal) {
       setError("Please accept the Terms and Privacy Policy to continue.");
       return;
+    }
+    // LEGAL_ACCEPTANCE_TODO: persist this payload on the user profile
+    // (acceptedTermsVersion / acceptedPrivacyVersion / acceptedLegalAt /
+    // acceptedLegalSource / acceptedLegalLanguage) for UAE consumer
+    // protection acceptance evidence. Currently captured client-side only.
+    const legalAcceptance = buildLegalAcceptancePayload("signup");
+    if (typeof window !== "undefined") {
+      // eslint-disable-next-line no-console
+      console.debug("[legal-acceptance:signup]", legalAcceptance);
     }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
