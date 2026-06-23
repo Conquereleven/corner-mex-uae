@@ -269,13 +269,14 @@ export const LEGAL_DOCS: LegalDoc[] = [
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "scope", heading: "1. Eligibility", body: [
-        "You can request a return for defective products, items that do not match the listing, damaged items, or undelivered orders, subject to the conditions below.",
+        "You can request a return, replacement or refund for products that are defective, damaged, incorrect, incomplete, misdescribed, unsafe, or that were not delivered, subject to the conditions below and to applicable UAE law.",
+        "Food and short shelf-life consumables may have return exceptions where permitted by applicable UAE law. The final policy must be reviewed by UAE counsel and aligned with product category, storage, safety and shelf-life rules.",
       ]},
       { id: "window", heading: "2. Return window", body: [
         "Standard return window: [INSERT NUMBER] days from delivery for eligible items. Perishable, food and personalised items may be non-returnable unless defective.",
       ]},
       { id: "non-returnable", heading: "3. Non-returnable items", list: [
-        "Opened consumables and perishable food items, unless defective on arrival.",
+        "Opened consumables and perishable or short shelf-life food items, unless defective, damaged, unsafe, incorrect or where a return is legally required.",
         "Personalised, custom-prepared or made-to-order items.",
         "Items marked 'final sale' on the listing.",
       ], body: []},
@@ -293,6 +294,9 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ]},
       { id: "escalation", heading: "8. Escalation", body: [
         "If you are not satisfied with the seller's response, contact support@cornermex.ae. Nothing in this policy affects your rights under UAE consumer protection law.",
+      ]},
+      { id: "complaints", heading: "9. Complaints", body: [
+        "Formal complaints can be sent to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
       ]},
     ],
   }),
