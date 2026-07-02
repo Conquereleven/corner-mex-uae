@@ -24,6 +24,19 @@ const HQ = { lat: 25.2048, lng: 55.2708, label: "CornerMex HQ" };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// Deterministic jitter in [-0.03, 0.03] from a string seed (order id / emirate).
+function stableJitter(seed: string, salt = 0): number {
+  let h = 2166136261 ^ salt;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  }
+  // Map to [-1, 1) then scale
+  const n = ((h >>> 0) % 10000) / 10000; // [0,1)
+  return (n - 0.5) * 0.06;
+}
+
+const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+
 export const getLiveView = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -171,14 +184,18 @@ export const getLiveView = createServerFn({ method: "POST" })
       .limit(500);
     const orderPoints: Array<{ lat: number; lng: number; label: string; total: number; ts: string }> = [];
     const locationAgg = new Map<string, { sessions: number; sales: number }>();
-    for (const o of recentOrders ?? []) {
+    const paidStatuses = new Set(["paid", "succeeded", "completed"]);
+    const paidOrders = (recentOrders ?? []).filter(
+      (o: any) => o.paid_at != null || paidStatuses.has(String(o.payment_status ?? "").toLowerCase()),
+    );
+    for (const o of paidOrders) {
       const addr = (o.shipping_address as any) ?? {};
       const code = String(addr.emirate ?? "").toUpperCase();
       const c = EMIRATE_COORDS[code];
       if (!c) continue;
       orderPoints.push({
-        lat: c.lat + (Math.random() - 0.5) * 0.06,
-        lng: c.lng + (Math.random() - 0.5) * 0.06,
+        lat: c.lat + stableJitter(String(o.id), 1),
+        lng: c.lng + stableJitter(String(o.id), 2),
         label: c.label,
         total: Number(o.total_aed ?? 0),
         ts: o.created_at,
@@ -191,7 +208,10 @@ export const getLiveView = createServerFn({ method: "POST" })
     const topLocations = Array.from(locationAgg.entries())
       .sort((a, b) => b[1].sales - a[1].sales)
       .slice(0, 5)
-      .map(([label, v]) => ({ label, sessions: v.sessions, sales: v.sales }));
+      .map(([label, v]) => ({ label, orders: v.sessions, sales: v.sales }));
+
+    const lastPaidLabel = orderPoints[0]?.label;
+    const activeEmirates = new Set(orderPoints.map((p) => p.label)).size;
 
     // Arcs: HQ → each recent order point (cap to 30 newest for perf)
     const arcs = orderPoints.slice(0, 30).map((p) => ({
@@ -225,17 +245,50 @@ export const getLiveView = createServerFn({ method: "POST" })
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
 
+    // ---- Activity feed (last 15 storefront events) ----
+    const feedEventTypes = ["product_view", "add_to_cart", "checkout_started", "purchase_completed"];
+    const { data: feedEvents } = await supabaseAdmin
+      .from("catalog_events")
+      .select("id, event_type, product_id, revenue_aed, created_at, source")
+      .in("event_type", feedEventTypes)
+      .order("created_at", { ascending: false })
+      .limit(15);
+    const feedProductIds = Array.from(
+      new Set((feedEvents ?? []).map((e: any) => e.product_id).filter(Boolean)),
+    ).filter((id) => !productMeta[id as string]);
+    if (feedProductIds.length) {
+      const { data: extraProds } = await supabaseAdmin
+        .from("products")
+        .select("id, slug, product_translations(name, locale)")
+        .in("id", feedProductIds as string[]);
+      for (const p of (extraProds ?? []) as any[]) {
+        const tr = (p.product_translations as any[] | null) ?? [];
+        const en = tr.find((t) => t.locale === "en") ?? tr[0];
+        productMeta[p.id] = { name: en?.name ?? "—", slug: p.slug };
+      }
+    }
+    const activityFeed = (feedEvents ?? []).map((e: any) => ({
+      id: String(e.id),
+      eventType: e.event_type as string,
+      productName: e.product_id ? productMeta[e.product_id]?.name : undefined,
+      productSlug: e.product_id ? productMeta[e.product_id]?.slug : undefined,
+      revenueAed: e.revenue_aed != null ? Number(e.revenue_aed) : undefined,
+      createdAt: e.created_at as string,
+      source: (e.source as string | null) ?? undefined,
+    }));
+
     return {
       generatedAt: new Date(now).toISOString(),
+      windowLabel: "Last 24h",
       kpis: {
         visitorsNow: visitorsNow.size,
         totalSessionsToday: todaySessions.size,
         totalSales: revenue,
         totalOrders: orders,
         aov,
-        conversionRate,
-        cartAbandonment,
-        checkoutAbandonment,
+        conversionRate: clamp01(conversionRate),
+        cartAbandonment: clamp01(cartAbandonment),
+        checkoutAbandonment: clamp01(checkoutAbandonment),
         newVisitors,
         returningVisitors: returningCount,
       },
@@ -252,6 +305,12 @@ export const getLiveView = createServerFn({ method: "POST" })
       arcs,
       topLocations,
       topProducts,
+      activityFeed,
+      globeStats: {
+        orders: orderPoints.length,
+        emirates: activeEmirates,
+        lastLabel: lastPaidLabel,
+      },
     };
   });
 
