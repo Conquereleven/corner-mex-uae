@@ -54,7 +54,7 @@ function AdminHome() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-3xl tracking-tight">Marketplace overview</h1>
+          <h1 className="font-display text-3xl tracking-tight">Commerce overview</h1>
           <p className="text-sm text-muted-foreground">Loading metrics…</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -72,8 +72,8 @@ function AdminHome() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl tracking-tight">Marketplace overview</h1>
-          <p className="text-sm text-muted-foreground">Live performance across sellers, orders and revenue.</p>
+          <h1 className="font-display text-3xl tracking-tight">Commerce overview</h1>
+          <p className="text-sm text-muted-foreground">Live performance across CornerMex first-party orders and revenue. Seller / marketplace metrics activate in Phase 2.</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-emerald-500" />

@@ -31,7 +31,7 @@ function AdminLayout() {
   return (
     <DashboardShell
       title="Corner Mex Admin"
-      subtitle="Marketplace control"
+      subtitle="E-commerce control"
       nav={[
         {
           label: t("dash.groups.overview"),
