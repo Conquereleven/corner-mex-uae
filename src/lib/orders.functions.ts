@@ -29,6 +29,7 @@ const Input = z.object({
   }),
   notes: z.string().max(500).optional().nullable(),
   coupon_code: z.string().min(1).max(64).optional().nullable(),
+  legal_acceptance: z.record(z.string(), z.any()).optional().nullable(),
 });
 
 export const placeOrder = createServerFn({ method: "POST" })
@@ -161,6 +162,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         weight_grams_total: totalWeight,
         sla_min_days: slaMin,
         sla_max_days: slaMax,
+        legal_acceptance: data.legal_acceptance ?? null,
       })
       .select("id, order_number")
       .single();
