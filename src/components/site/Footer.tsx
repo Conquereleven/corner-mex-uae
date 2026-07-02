@@ -70,8 +70,11 @@ export function Footer() {
             <li><Link to="/legal" className="hover:text-foreground">Legal Center</Link></li>
             <li><Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="hover:text-foreground">Terms & Conditions</Link></li>
             <li><Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="hover:text-foreground">Privacy Policy</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="hover:text-foreground">Cookie Policy</Link></li>
             <li><Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="hover:text-foreground">Returns & Refunds</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="hover:text-foreground">Cookie Policy</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "ai-transparency" }} className="hover:text-foreground">AI Transparency</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "acceptable-use" }} className="hover:text-foreground">Acceptable Use</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "security" }} className="hover:text-foreground">Security</Link></li>
             <li><a href="mailto:complaints@cornermex.ae" className="hover:text-foreground">Submit a complaint</a></li>
             <li>
               <button type="button" onClick={openCookiePreferences} className="text-left hover:text-foreground">
@@ -81,13 +84,15 @@ export function Footer() {
           </ul>
         </div>
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">Trust & AI</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">Business & Future Marketplace</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/legal/$slug" params={{ slug: "ai-transparency" }} className="hover:text-foreground">AI Transparency</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "seller-agreement" }} className="hover:text-foreground">Seller Agreement</Link></li>
+            <li><Link to="/legal/$slug" params={{ slug: "product-sourcing-compliance" }} className="hover:text-foreground">Product Sourcing</Link></li>
             <li><Link to="/legal/$slug" params={{ slug: "intellectual-property" }} className="hover:text-foreground">IP Policy</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "acceptable-use" }} className="hover:text-foreground">Acceptable Use</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "security" }} className="hover:text-foreground">Security</Link></li>
+            <li>
+              <Link to="/legal/$slug" params={{ slug: "seller-agreement" }} className="hover:text-foreground">
+                Future Seller Agreement <span className="text-[10px] uppercase tracking-widest text-muted-foreground">(Phase 2)</span>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

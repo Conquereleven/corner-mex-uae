@@ -65,7 +65,7 @@ export function ProductCard({ p, priority = false, source = "shop" }: { p: Produ
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
-        {p.seller && <span className="text-[11px] uppercase tracking-widest text-muted-foreground">{p.seller.name}</span>}
+        <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Sold by CornerMex</span>
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         {p.rating_count > 0 && (
           <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">

@@ -338,11 +338,14 @@ function Checkout() {
               {submitting ? "Placing order…" : `Place order · AED ${effectiveTotal.toFixed(2)}`}
             </Button>
             <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-              By placing this order you accept our{" "}
-              <Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="underline">Terms</Link>,{" "}
-              <Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="underline">Returns &amp; Refunds Policy</Link>{" "}
+              By placing your order, you are buying directly from CornerMex under our{" "}
+              <Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="underline">Terms &amp; Conditions</Link>,{" "}
+              <Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="underline">Privacy Policy</Link>,{" "}
+              <Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="underline">Returns &amp; Refunds Policy</Link>,{" "}
+              <Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="underline">Cookie Policy</Link>{" "}
               and{" "}
-              <Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="underline">Privacy Policy</Link>.
+              <Link to="/legal/$slug" params={{ slug: "ai-transparency" }} className="underline">AI Transparency Notice</Link>{" "}
+              where applicable.
             </p>
           </aside>
         </form>

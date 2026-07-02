@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Badge } from "@/components/ui/badge";
-import { LEGAL_INDEX } from "@/lib/legal-docs";
+import { LEGAL_INDEX, BUSINESS_MODEL } from "@/lib/legal-docs";
 import { FileText, ShieldCheck } from "lucide-react";
 
 const TITLE = "Legal & Compliance Center — Corner Mex";
@@ -30,8 +30,18 @@ function LegalIndex() {
         </div>
         <h1 className="mt-3 font-display text-5xl tracking-tight">Policies, transparency and your rights</h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-          Everything that governs your use of Corner Mex as a buyer or seller in the UAE — including how our CornerOps AI features work and how we protect your data. These documents are working templates pending review by qualified UAE legal counsel.
+          Everything that governs your purchases from CornerMex in the UAE — including how our CornerOps AI features work and how we protect your data. These documents are working templates pending review by qualified UAE legal counsel.
         </p>
+
+        <div className="mt-8 rounded-lg border border-border/60 bg-card p-5 text-sm">
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Business model</div>
+          <p className="mt-2 text-foreground">
+            CornerMex currently operates as a first-party e-commerce retailer. CornerMex may introduce third-party marketplace features in a future phase, subject to separate seller terms, onboarding, compliance checks, and legal review.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Seller of record: {BUSINESS_MODEL.sellerOfRecord} · Marketplace status: {BUSINESS_MODEL.marketplaceStatus}
+          </p>
+        </div>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {LEGAL_INDEX.map((d) => (
@@ -43,7 +53,12 @@ function LegalIndex() {
             >
               <div className="flex items-center justify-between">
                 <FileText className="h-5 w-5 text-muted-foreground" />
-                <Badge variant="outline" className="text-[10px]">v{d.version}</Badge>
+                <div className="flex items-center gap-1.5">
+                  {d.lifecycle === "phase-2-draft" && (
+                    <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-[10px] text-amber-700">Phase 2 Draft</Badge>
+                  )}
+                  <Badge variant="outline" className="text-[10px]">v{d.version}</Badge>
+                </div>
               </div>
               <h2 className="mt-4 font-display text-xl tracking-tight group-hover:underline">{d.title}</h2>
               <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{d.summary}</p>
