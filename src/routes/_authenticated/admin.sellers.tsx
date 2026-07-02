@@ -52,7 +52,7 @@ function Sellers() {
     <div className="space-y-6">
       <PageHeader
         title="Sellers"
-        description={`${rows.length} of ${(q.data ?? []).length} sellers on the marketplace.`}
+        description={`${rows.length} of ${(q.data ?? []).length} sellers. Phase 2 — marketplace onboarding is not active in the current MVP.`}
         icon={Store}
         breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Sellers" }]}
       />
@@ -75,7 +75,7 @@ function Sellers() {
           {q.isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : rows.length === 0 ? (
-            <EmptyState icon={Store} title="No sellers found" description="Try clearing filters or invite new sellers to your marketplace." />
+            <EmptyState icon={Store} title="No sellers found" description="Third-party sellers activate in Phase 2. For MVP, all inventory is sold directly by CornerMex." />
           ) : (
             <div className="overflow-x-auto">
               <Table>

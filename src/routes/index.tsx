@@ -12,9 +12,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Corner Mex — Authentic Mexican supply across the UAE" },
-      { name: "description", content: "A curated marketplace of Mexican chiles, salsas, masa and snacks for restaurants, hotels, caterers and supermarkets across the United Arab Emirates." },
+      { name: "description", content: "A curated range of Mexican chiles, salsas, masa and snacks for households, restaurants, hotels, caterers and supermarkets across the United Arab Emirates — sold directly by CornerMex." },
       { property: "og:title", content: "Corner Mex — Mexican pantry, delivered across the Emirates" },
-      { property: "og:description", content: "Wholesale and retail Mexican products. Multi-seller marketplace built for the UAE." },
+      { property: "og:description", content: "Wholesale and retail Mexican products, sold directly by CornerMex across the UAE." },
     ],
   }),
   component: Index,

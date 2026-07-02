@@ -9,20 +9,20 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 });
 
 const HUBS = [
-  { to: "/admin/categories", icon: Tags, title: "Categories", desc: "Manage marketplace categories and visibility." },
+  { to: "/admin/categories", icon: Tags, title: "Categories", desc: "Manage catalog categories and visibility." },
   { to: "/admin/coupons", icon: Ticket, title: "Coupons", desc: "Create and manage discount coupons." },
   { to: "/admin/banners", icon: Megaphone, title: "Promo banners", desc: "Edit homepage and storefront banners." },
   { to: "/admin/newsletter", icon: Mail, title: "Newsletter", desc: "Subscribers and broadcast emails." },
   { to: "/admin/shipping", icon: Truck, title: "Shipping zones", desc: "Configure shipping zones and rates." },
-  { to: "/admin/shipments", icon: Package, title: "Shipments", desc: "Track all marketplace shipments." },
+  { to: "/admin/shipments", icon: Package, title: "Shipments", desc: "Track all CornerMex shipments." },
 ] as const;
 
 function AdminSettings() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Marketplace settings"
-        description="Configure how the marketplace runs. More options (taxes, payments, locales) are coming soon."
+        title="Commerce settings"
+        description="Configure how CornerMex first-party e-commerce runs. Marketplace / seller onboarding activates in Phase 2."
         icon={SettingsIcon}
         breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Settings" }]}
       />

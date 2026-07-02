@@ -153,16 +153,9 @@ function Checkout() {
       return;
     }
     setSubmitting(true);
-    // LEGAL_ACCEPTANCE_TODO: persist this payload on the order record
-    // (acceptedTermsVersion / acceptedPrivacyVersion / acceptedReturnsVersion /
-    // acceptedLegalAt / acceptedLegalSource / acceptedLegalLanguage) so we
-    // have per-order acceptance evidence. Add the columns to orders and
-    // forward this object through placeOrder() when backend support lands.
+    // Per-order legal acceptance evidence — persisted on
+    // public.orders.legal_acceptance (jsonb) via placeOrder().
     const legalAcceptance = buildCheckoutLegalAcceptancePayload();
-    if (typeof window !== "undefined") {
-      // eslint-disable-next-line no-console
-      console.debug("[legal-acceptance:checkout]", legalAcceptance);
-    }
     try {
       const res = await place({
         data: {
@@ -180,6 +173,7 @@ function Checkout() {
           },
           notes: form.notes || null,
           coupon_code: coupon?.code ?? null,
+          legal_acceptance: legalAcceptance,
         },
       });
 
