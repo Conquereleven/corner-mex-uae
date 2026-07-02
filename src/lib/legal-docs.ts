@@ -338,22 +338,28 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "AI Transparency Notice — CornerOps AI",
     shortTitle: "AI Transparency",
     summary:
-      "How CornerOps AI assists CornerMex, its limitations, how your data is used by AI features and your rights to request human review.",
-    version: "1.0.0",
-    lastUpdated: "2026-06-19",
+      "How CornerOps AI assists CornerMex operations, its limitations, how your data is used by AI features and your rights to request human review.",
+    version: "1.1.0",
+    lastUpdated: "2026-06-20",
     owner: "CornerMex AI Governance",
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "what", heading: "1. What CornerOps AI does", list: [
-        "Recommendations and personalisation of products and content.",
-        "Search ranking and discovery.",
-        "Customer support drafting and routing.",
-        "Product content and seller copy assistance.",
+        "Product recommendations and personalisation.",
+        "Personalised search, ranking and discovery.",
+        "Product content drafting.",
+        "Customer support drafting and complaint routing.",
+        "Inventory planning and demand forecasting.",
+        "Pricing suggestions.",
+        "Supplier and product analysis.",
         "Fraud, abuse and risk signals.",
-        "Admin analytics, summaries and operational suggestions.",
-      ], body: []},
+        "Order operations and return / refund triage.",
+        "Admin dashboards and compliance reminders.",
+      ], body: [
+        "CornerOps AI may support internal operations, but CornerMex remains responsible for customer-facing decisions in the current first-party e-commerce model.",
+      ]},
       { id: "human-review", heading: "2. Human review", body: [
-        "CornerOps AI does not replace human review for critical cases. Material decisions affecting your account, orders or seller status are reviewed by trained staff before being applied.",
+        "CornerOps AI does not replace human review for critical cases. Material decisions affecting your account or orders are reviewed by trained staff before being applied.",
         "You can request human review when an AI-assisted decision materially affects you by writing to support@cornermex.ae.",
       ]},
       { id: "limitations", heading: "3. Limitations", body: [
