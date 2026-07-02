@@ -694,7 +694,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ], footnotes: [
         "CornerMex will not claim that a product is certified, approved, halal, registered, organic, compliant or authorised unless CornerMex has supporting documentation.",
       ]},
-      { id: "future", heading: "6. Future third-party sellers", body: [
+      { id: "future", heading: "7. Future third-party sellers", body: [
         "If CornerMex enables third-party sellers in the future, seller sourcing and product responsibility will be governed by the Future Marketplace Seller Agreement and additional onboarding, KYC/KYB and compliance controls.",
       ]},
     ],
