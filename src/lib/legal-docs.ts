@@ -10,6 +10,14 @@ export interface LegalSection {
   heading: string;
   body: string[]; // paragraphs (plain text, rendered as <p>)
   list?: string[]; // optional bullet list rendered after body
+  /** Optional responsive table rendered after body/list. */
+  table?: {
+    caption?: string;
+    headers: string[];
+    rows: string[][];
+  };
+  /** Optional footnote paragraphs rendered after the table. */
+  footnotes?: string[];
 }
 
 export interface LegalDoc {
@@ -47,6 +55,12 @@ export const BUSINESS_MODEL = {
     "CornerMex purchases products from suppliers (e.g. Intermex) and resells them directly to customers under the CornerMex brand.",
   marketplaceStatus: "Planned / Phase 2 / Not active for MVP",
   legalReviewStatus: "Legal Review Required" as ReviewStatus,
+  legalEntity: {
+    name: "RodMor TradeCo LLC",
+    tradeLicense: "2647014.01",
+    licensingAuthority: "Sharjah Media City",
+    registeredAddress: "Sharjah Media City, Sharjah, UAE",
+  },
 } as const;
 
 const DISCLAIMER =
@@ -56,7 +70,7 @@ const CONTACT_BLOCK: LegalSection = {
   id: "contact",
   heading: "Contact",
   body: [
-    "For any question about this document, please reach out using the channels below. Company details will be completed once corporate registration is finalised.",
+    "For any question about this document, please reach out using the channels below. CornerMex is a trading brand operated by RodMor TradeCo LLC, licensed by Sharjah Media City, UAE.",
     "Complaints: we provide accessible channels to submit and follow up on complaints. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
   ],
   list: [
@@ -64,15 +78,17 @@ const CONTACT_BLOCK: LegalSection = {
     "Privacy contact: privacy@cornermex.ae",
     "Support contact: support@cornermex.ae",
     "Complaints contact: complaints@cornermex.ae",
-    "Company legal name: [INSERT UAE LEGAL ENTITY NAME]",
-    "Legal status: [INSERT LEGAL STATUS]",
-    "Trade license number: [INSERT TRADE LICENSE NUMBER]",
-    "Licensing authority: [INSERT LICENSING AUTHORITY]",
-    "Registered address: [INSERT UAE REGISTERED ADDRESS]",
-    "Website: [INSERT WEBSITE]",
-    "Contact number: [INSERT CONTACT NUMBER]",
+    "Company legal name: RodMor TradeCo LLC",
+    "Trade license number: 2647014.01",
+    "Licensing authority: Sharjah Media City",
+    "Registered address: Sharjah Media City, Sharjah, UAE",
+    "Website: https://cornermex.ae",
+    "UAE contact number: [INSERT UAE PHONE NUMBER]",
+    "Contact form: [INSERT CONTACT FORM URL]",
     "VAT registration: [INSERT VAT REGISTRATION STATUS IF APPLICABLE]",
     "TDRA / e-commerce approval: [INSERT IF APPLICABLE]",
+    "Food registration (MOCCAE / Dubai Municipality): [INSERT IF APPLICABLE]",
+    "Arabic legal version: pending translation and UAE counsel review",
   ],
 };
 
@@ -106,9 +122,19 @@ export const LEGAL_DOCS: LegalDoc[] = [
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "identity", heading: "1. Who we are and our role", body: [
-        "CornerMex is an online store operated in the United Arab Emirates. For the current MVP, CornerMex acts as the seller of record for products sold directly through the CornerMex website.",
+        "CornerMex is an online store operated in the United Arab Emirates by RodMor TradeCo LLC (trade license 2647014.01, licensed by Sharjah Media City, registered address Sharjah Media City, Sharjah, UAE). For the current MVP, CornerMex acts as the seller of record for products sold directly through the CornerMex website.",
         "CornerMex sources inventory from selected suppliers (including Intermex) and resells those products directly to customers under the CornerMex brand. Customers purchase directly from CornerMex, not from independent third-party sellers.",
         "If CornerMex later enables third-party sellers on the site, additional marketplace and seller terms will apply and will be published separately before activation.",
+      ]},
+      { id: "at-a-glance", heading: "1a. Service levels at a glance", body: [
+        "This is a plain-language summary. Full timelines, exceptions and channels are set out in the Supplier & Product Sourcing Policy (Service Levels & Product Sourcing Transparency section) and the Returns & Refunds Policy.",
+      ], list: [
+        "Complaints: acknowledged within 1 business day; simple resolutions targeted within 5-10 business days.",
+        "Refunds: internal review 1-3 business days; card refunds typically 5-10 business days to settle after initiation, subject to bank/provider timing.",
+        "Delivery: express 1-2 business days, standard UAE 2-5 business days, remote areas +1-3 business days, subject to courier capacity and force majeure.",
+        "Sourcing: CornerMex sources products from selected suppliers, including Intermex where applicable. CornerMex remains the seller of record.",
+      ], footnotes: [
+        "For full SLA tables, courier handling, refund methods and Intermex disclosure, see the Product Sourcing & Compliance policy.",
       ]},
       { id: "model", heading: "2. Operating model", body: [
         "Product availability depends on stock held or sourced by CornerMex and on supplier availability, import status, logistics and compliance checks.",
@@ -191,7 +217,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "controller", heading: "1. Data controller", body: [
-        "The controller of personal data processed through CornerMex is [INSERT UAE LEGAL ENTITY NAME], operating from [INSERT UAE REGISTERED ADDRESS]. For the current MVP, CornerMex acts as the seller of record and processes customer data for its own first-party e-commerce orders. If a third-party marketplace is launched later, third-party sellers acting as independent controllers will be described in an updated Privacy Notice.",
+        "The controller of personal data processed through CornerMex is RodMor TradeCo LLC (trade license 2647014.01, licensed by Sharjah Media City, registered address Sharjah Media City, Sharjah, UAE), operating the CornerMex brand. For the current MVP, CornerMex acts as the seller of record and processes customer data for its own first-party e-commerce orders. If a third-party marketplace is launched later, third-party sellers acting as independent controllers will be described in an updated Privacy Notice.",
       ]},
       { id: "data", heading: "2. Personal data we collect", list: [
         "Account data: name, email, phone, password hash, language preference.",
@@ -319,7 +345,21 @@ export const LEGAL_DOCS: LegalDoc[] = [
         "CornerMex will review food-related claims case by case based on safety, storage, shelf life, product condition and applicable UAE law. Final food returns language will be reviewed by UAE counsel.",
       ]},
       { id: "refunds", heading: "6. Refund method and timing", body: [
-        "Approved refunds are issued to the original payment method, or (where appropriate) as a replacement or store credit. Bank processing times are typically [INSERT REFUND TIMING AFTER PAYMENT PROVIDER REVIEW] and depend on your bank.",
+        "Approved refunds are normally issued to the original payment method where technically possible, or (where appropriate) as a replacement or store credit. CornerMex separates internal approval time from bank/payment-provider settlement time. Refunds are not instant. Final payment-provider timings remain subject to review.",
+      ], table: {
+        caption: "Payment refund timing (target SLA)",
+        headers: ["Case", "Target SLA"],
+        rows: [
+          ["Review request", "1-3 business days"],
+          ["Approve or reject request", "3-5 business days"],
+          ["Initiate refund after approval", "1-2 business days"],
+          ["Card payments", "5-10 business days after initiation"],
+          ["Wallet / BNPL / Tabby / Tamara", "Subject to provider timing"],
+          ["Cash / bank transfer", "1-5 business days after complete payment details"],
+        ],
+      }, footnotes: [
+        "Refunds may take longer where a product requires inspection, the payment provider needs additional review, customer details are incomplete, or the case involves food safety, damage, misuse, missing items or a disputed transaction.",
+        "Full complaint, courier and sourcing SLAs are set out in the Supplier & Product Sourcing Policy (Service Levels & Product Sourcing Transparency section).",
       ]},
       { id: "delayed", heading: "7. Delayed or undelivered orders", body: [
         "If your order has not arrived within the estimated window, contact support@cornermex.ae so we can investigate with the courier.",
@@ -553,12 +593,12 @@ export const LEGAL_DOCS: LegalDoc[] = [
 
   doc({
     slug: "product-sourcing-compliance",
-    title: "Supplier & Product Sourcing Policy",
-    shortTitle: "Sourcing",
+    title: "Product Sourcing & Compliance — Service Levels & Sourcing Transparency",
+    shortTitle: "Sourcing & SLAs",
     summary:
-      "How CornerMex sources products from suppliers, how availability is managed, and how quality, safety and compliance concerns are handled for first-party e-commerce.",
-    version: "1.0.0",
-    lastUpdated: "2026-06-20",
+      "How CornerMex sources products, our operational service levels (complaints, refund timing, courier delivery), and our Intermex / supplier disclosure for first-party e-commerce.",
+    version: "1.1.0",
+    lastUpdated: "2026-07-02",
     owner: "CornerMex Operations",
     reviewStatus: "Legal Review Required",
     sections: [
@@ -578,7 +618,83 @@ export const LEGAL_DOCS: LegalDoc[] = [
       { id: "food", heading: "5. Food, beverages and consumables", body: [
         "Food products may require category-specific handling, storage, labelling, registration or import checks. Final food and import compliance processes will be reviewed by UAE counsel and the relevant competent authorities. CornerMex does not claim that all products are fully registered unless actual registration exists.",
       ]},
-      { id: "future", heading: "6. Future third-party sellers", body: [
+      { id: "service-levels", heading: "6. Service Levels & Product Sourcing Transparency", body: [
+        "This section sets out the operational service levels CornerMex targets for customer complaints, payment refund timing and courier delivery, together with our supplier and Intermex disclosure. These are internal targets, not guarantees, and are subject to UAE legal review, courier contracts and payment provider confirmation.",
+      ]},
+      { id: "complaint-sla", heading: "6.1 Customer Complaints SLA", body: [
+        "Complaint SLA means the target timeline CornerMex follows to acknowledge, review, resolve and (where necessary) escalate customer complaints. Timelines are targets, not guarantees, and depend on the complexity of the case.",
+      ], table: {
+        caption: "Customer complaints — target SLA",
+        headers: ["Stage", "Target SLA"],
+        rows: [
+          ["Complaint acknowledgement", "1 business day"],
+          ["Initial review", "3-5 business days"],
+          ["Simple resolution", "5-10 business days"],
+          ["Complex cases", "Up to 15-30 business days"],
+          ["External escalation", "After 30 days unresolved"],
+        ],
+      }, list: [
+        "Customers can submit complaints through support or complaint channels.",
+        "Please include the order number, product name, description of the issue, photos or videos where relevant, delivery date and your preferred resolution.",
+        "CornerMex may request additional information to investigate.",
+        "CornerMex maintains internal complaint records.",
+        "If a complaint cannot be resolved internally, CornerMex may provide information about escalation to the competent UAE consumer protection authority after legal review.",
+      ], footnotes: [
+        "Support: support@cornermex.ae · Complaints: complaints@cornermex.ae · Legal: legal@cornermex.ae · Privacy: privacy@cornermex.ae · UAE phone: [INSERT UAE PHONE NUMBER] · Contact form: [INSERT CONTACT FORM URL].",
+      ]},
+      { id: "refund-timing", heading: "6.2 Payment Refund Timing", body: [
+        "Payment refund timing means the timeline for reviewing a refund request, approving or rejecting it, initiating the refund, and the expected payment-provider/bank settlement time. CornerMex separates internal approval time from bank/payment-provider settlement time.",
+      ], table: {
+        caption: "Payment refund timing — target SLA",
+        headers: ["Case", "Target SLA"],
+        rows: [
+          ["Review request", "1-3 business days"],
+          ["Approve or reject request", "3-5 business days"],
+          ["Initiate refund after approval", "1-2 business days"],
+          ["Card payments", "5-10 business days after initiation"],
+          ["Wallet / BNPL / Tabby / Tamara", "Subject to provider timing"],
+          ["Cash / bank transfer", "1-5 business days after complete payment details"],
+        ],
+      }, list: [
+        "Refunds are normally made to the original payment method where technically possible.",
+        "Refunds may take longer if the product requires inspection, the payment provider needs additional review, customer details are incomplete, or the case involves food safety, damage, misuse, missing items or a disputed transaction.",
+        "CornerMex does not promise instant refunds.",
+      ], footnotes: [
+        "Final payment-provider settlement timing is pending final provider confirmation and remains subject to UAE legal review.",
+      ]},
+      { id: "courier-sla", heading: "6.3 Delivery & Courier SLA", body: [
+        "Courier SLA means the estimated delivery timeline, delivery attempts, tracking process, failed delivery handling and return-to-origin process. Delivery timelines are estimates, not guarantees.",
+      ], table: {
+        caption: "Delivery & courier — target SLA",
+        headers: ["Service", "Target SLA"],
+        rows: [
+          ["Same-day, where available", "Same day in eligible areas"],
+          ["Express", "1-2 business days"],
+          ["Standard UAE", "2-5 business days"],
+          ["Remote areas", "+1-3 business days"],
+          ["Delivery attempts", "Minimum 2 attempts where courier supports it"],
+          ["Tracking", "Required by email / SMS / WhatsApp where available"],
+          ["Retention / RTO", "3-7 days before return, depending on courier"],
+          ["Return pickup", "2-5 business days after approval"],
+        ],
+      }, list: [
+        "Timelines depend on emirate, address, product availability, courier capacity, public holidays, weather, road conditions, regulatory requirements and force majeure events.",
+        "Customers are responsible for providing accurate address details and responding to courier calls or messages.",
+        "For failed delivery, incorrect address, damaged items in transit, delayed or lost shipments, return-to-origin or warehouse return handling, CornerMex will investigate with the courier and provide an appropriate update or remedy.",
+      ], footnotes: [
+        "Final courier SLAs are subject to signed courier contracts and remain pending final provider confirmation.",
+      ]},
+      { id: "sourcing-intermex", heading: "6.4 Product Sourcing & Intermex Disclosure", body: [
+        "CornerMex sources products from selected suppliers, including Intermex where applicable. CornerMex remains the seller of record for customer purchases.",
+        "Customers buy directly from CornerMex. Intermex is a supplier/source where applicable, not the customer-facing seller for MVP purchases. CornerMex handles customer support, complaints, refunds, returns and order issues.",
+        "Supplier names may be disclosed where commercially appropriate, legally required, or necessary for product safety, recall, compliance, warranty or regulatory reasons. CornerMex will not disclose confidential supplier commercial terms, margins, purchase prices or private contract details unless legally required.",
+      ], list: [
+        "Public product information may include: product name; country of origin; ingredients; allergen information; net weight or volume; storage instructions; expiry or best-before date where applicable; batch or lot information where applicable; importer or distributor details where legally required; product warnings or safety information; halal or other certification information only where verified.",
+        "Internal supplier records may include: supplier name; purchase invoices; product registration status; batch and lot details; food safety documents; certificates where applicable; recall contact process; shelf-life and storage requirements.",
+      ], footnotes: [
+        "CornerMex will not claim that a product is certified, approved, halal, registered, organic, compliant or authorised unless CornerMex has supporting documentation.",
+      ]},
+      { id: "future", heading: "7. Future third-party sellers", body: [
         "If CornerMex enables third-party sellers in the future, seller sourcing and product responsibility will be governed by the Future Marketplace Seller Agreement and additional onboarding, KYC/KYB and compliance controls.",
       ]},
     ],

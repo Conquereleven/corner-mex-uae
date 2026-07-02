@@ -97,7 +97,14 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Corner Mex · {t("footer.rights")}
+        <p>
+          Complaints: <a href="mailto:complaints@cornermex.ae" className="hover:text-foreground">complaints@cornermex.ae</a>
+          {" · "}
+          Support: <a href="mailto:support@cornermex.ae" className="hover:text-foreground">support@cornermex.ae</a>
+        </p>
+        <p className="mt-2">
+          © {new Date().getFullYear()} CornerMex, a trading brand of RodMor TradeCo LLC · Sharjah Media City, UAE · Trade license 2647014.01 · {t("footer.rights")}
+        </p>
       </div>
     </footer>
   );
