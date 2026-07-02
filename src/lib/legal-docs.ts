@@ -99,59 +99,63 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Terms & Conditions",
     shortTitle: "Terms",
     summary:
-      "The rules that govern your use of CornerMex as a buyer, including marketplace role, orders, payments in AED, returns and UAE jurisdiction.",
-    version: "1.0.0",
-    lastUpdated: "2026-06-19",
+      "The rules that govern your purchases from CornerMex as a first-party e-commerce retailer in the UAE, including orders, payments in AED, returns and UAE jurisdiction.",
+    version: "1.1.0",
+    lastUpdated: "2026-06-20",
     owner: "CornerMex Legal",
     reviewStatus: "Legal Review Required",
     sections: [
-      { id: "platform", heading: "1. Platform identity and role", body: [
-        "CornerMex is an online marketplace operating in the United Arab Emirates that connects verified Mexican producers and importers with buyers across the UAE.",
-        "CornerMex is the operator of the platform. Unless expressly stated, CornerMex is not the seller of the products listed; each seller is the merchant of record for its own listings.",
+      { id: "identity", heading: "1. Who we are and our role", body: [
+        "CornerMex is an online store operated in the United Arab Emirates. For the current MVP, CornerMex acts as the seller of record for products sold directly through the CornerMex website.",
+        "CornerMex sources inventory from selected suppliers (including Intermex) and resells those products directly to customers under the CornerMex brand. Customers purchase directly from CornerMex, not from independent third-party sellers.",
+        "If CornerMex later enables third-party sellers on the site, additional marketplace and seller terms will apply and will be published separately before activation.",
       ]},
-      { id: "marketplace", heading: "2. Marketplace model", body: [
-        "Sellers list products, set prices, manage stock and are responsible for fulfilment, compliance with UAE import and food-safety rules where applicable, and after-sales support, subject to CornerMex's policies.",
-        "CornerMex provides the technology, payments processing routing, logistics integrations and support workflows that make the marketplace work.",
+      { id: "model", heading: "2. Operating model", body: [
+        "Product availability depends on stock held or sourced by CornerMex and on supplier availability, import status, logistics and compliance checks.",
+        "CornerMex may use third-party suppliers, logistics providers, payment processors, hosting providers, AI systems and support tools to operate the site and fulfil orders.",
       ]},
-      { id: "buyer", heading: "3. Buyer responsibilities", body: [
+      { id: "buyer", heading: "3. Customer responsibilities", body: [
         "You must provide accurate account, delivery and contact information, use the platform lawfully, and respect sellers, couriers and support staff.",
         "You are responsible for any activity on your account.",
       ]},
-      { id: "seller", heading: "4. Seller responsibilities (summary)", body: [
-        "Sellers commit to accurate listings, lawful products, UAE import and labelling compliance where applicable, timely fulfilment and honoring the Returns & Refunds Policy. Full seller obligations are set out in the Seller Agreement.",
+      { id: "sourcing", heading: "4. Product sourcing and availability", body: [
+        "CornerMex is responsible for ensuring products listed on the website are represented accurately to customers, subject to information provided by suppliers.",
+        "Availability is subject to inventory and supplier availability. CornerMex may remove products where there are quality, safety, regulatory, import, labelling, shelf-life or recall concerns.",
+        "See also the Supplier & Product Sourcing Policy.",
       ]},
       { id: "accounts", heading: "5. Account registration", body: [
         "An account is required to place orders. You must be at least 18 years old, or the age of legal capacity in your emirate of residence, to create one.",
         "We may suspend or close accounts that violate these Terms or our Acceptable Use Policy.",
       ]},
-      { id: "listings", heading: "6. Product listings", body: [
-        "Listings include title, description, images, price in AED, available variants and shipping information. CornerMex does not warrant that listings are free of errors and may correct them at any time.",
+      { id: "listings", heading: "6. Product listings and pricing display", body: [
+        "Listings include title, description, images, price in AED, available variants, applicable logistics fees and any digital payment fees, and shipping information. CornerMex does not warrant that listings are free of errors and may correct them at any time.",
       ]},
       { id: "pricing", heading: "7. Pricing, VAT and taxes", body: [
-        "All prices are displayed in UAE Dirhams (AED). Where applicable, prices include UAE Value Added Tax (VAT) at the prevailing rate. Final VAT treatment per order is reflected on the order confirmation and any tax invoice issued.",
+        "All prices are displayed in UAE Dirhams (AED). [INSERT VAT REGISTRATION STATUS AND TAX TREATMENT AFTER UAE TAX REVIEW]. Any applicable VAT will be reflected on the order confirmation and any tax invoice issued.",
       ]},
       { id: "orders", heading: "8. Orders and payments", body: [
-        "An order is a buyer offer to purchase. The contract of sale is formed when the seller (or CornerMex on the seller's behalf) confirms acceptance, typically upon successful payment capture.",
+        "An order is a customer offer to purchase. The contract of sale is formed only when CornerMex confirms acceptance of the order, typically upon successful payment capture.",
+        "CornerMex may reject or cancel an order for reasons including stock issues, pricing errors, compliance issues, payment failure, suspected fraud, or logistics constraints.",
         "Payments are processed by regulated payment service providers. CornerMex does not store full card numbers.",
       ]},
       { id: "shipping", heading: "9. Shipping and logistics", body: [
         "Delivery windows depend on origin emirate, destination zone and the courier selected. Estimated delivery times are not guarantees. Risk of loss passes on delivery to the address you provided.",
       ]},
-      { id: "returns", heading: "10. Returns and refunds", body: [
-        "Returns and refunds are governed by the separate Returns & Refunds Policy, which forms part of these Terms.",
+      { id: "returns", heading: "10. Returns, refunds and customer support", body: [
+        "CornerMex is responsible for customer support, complaints, refund handling and the returns process for first-party orders placed on the CornerMex website. Details are set out in the separate Returns & Refunds Policy, which forms part of these Terms.",
       ]},
       { id: "availability", heading: "11. Product availability", body: [
-        "Listings depend on seller stock. If an item becomes unavailable after an order is placed, CornerMex or the seller will contact you to offer a replacement, partial fulfilment or refund.",
+        "If an item becomes unavailable after an order is placed, CornerMex will contact you to offer a replacement, partial fulfilment or refund.",
       ]},
       { id: "ai", heading: "12. AI-assisted features (CornerOps AI)", body: [
-        "Parts of the platform are assisted by CornerOps AI, including recommendations, search ranking, customer support drafts, product content suggestions, fraud and risk checks, and admin analytics.",
-        "AI outputs may contain errors and are not a substitute for professional advice. Material decisions affecting your account or orders are reviewed by humans where required, and you may request human review (see the AI Transparency Notice).",
+        "Parts of the site are assisted by CornerOps AI, including search, recommendations, customer support drafts, product content suggestions, admin decisions, fraud and risk checks, pricing suggestions and operations.",
+        "AI does not replace human review for material customer-impacting decisions. AI outputs may contain errors and are not a substitute for professional advice. You may request human review (see the AI Transparency Notice).",
       ]},
       { id: "prohibited", heading: "13. Prohibited uses", body: [
         "Use of the platform is also subject to the Acceptable Use Policy. Violations may result in suspension, removal of content, or termination.",
       ]},
       { id: "ip", heading: "14. Intellectual property", body: [
-        "The CornerMex name, logos, design system and content are protected. Seller and user submissions remain owned by their authors, who grant CornerMex a limited license to operate the marketplace as set out in the IP Policy.",
+        "The CornerMex name, logos, design system and content are protected. User submissions remain owned by their authors, who grant CornerMex a limited license to operate the site as set out in the IP Policy.",
       ]},
       { id: "liability", heading: "15. Limitation of liability", body: [
         "To the maximum extent permitted by UAE law, CornerMex's aggregate liability arising out of or related to your use of the platform is limited to the amount you paid for the order giving rise to the claim. CornerMex is not liable for indirect or consequential losses.",
@@ -163,10 +167,13 @@ export const LEGAL_DOCS: LegalDoc[] = [
         "Nothing in this section requires arbitration for a consumer digital contract below AED 50,000 where such a clause is not permitted under applicable UAE law.",
       ]},
       { id: "complaints", heading: "17. Complaints", body: [
-        "We provide accessible channels to submit and follow up on complaints about the platform, a seller, an order, content moderation or an AI-assisted decision.",
+        "We provide accessible channels to submit and follow up on complaints about the site, an order, content moderation or an AI-assisted decision.",
         "Write to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Where a complaint is not resolved internally, you may escalate via [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW], without prejudice to your rights under UAE consumer protection law.",
       ]},
-      { id: "changes", heading: "18. Changes to these Terms", body: [
+      { id: "future-marketplace", heading: "18. Future marketplace features", body: [
+        "CornerMex does not currently operate an open third-party seller marketplace. Any third-party marketplace features are not active and, if launched later, will be governed by separate seller terms, onboarding, KYC/KYB, compliance checks and UAE legal review.",
+      ]},
+      { id: "changes", heading: "19. Changes to these Terms", body: [
         "We may update these Terms. Material changes will be highlighted on the platform. Continued use after the effective date constitutes acceptance.",
       ]},
     ],
