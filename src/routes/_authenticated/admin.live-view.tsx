@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/site/PageHeader";
 import {
   Users, ShoppingBag, DollarSign, BadgeCheck, TrendingUp, Percent, ShoppingCart, UserPlus,
   RefreshCw, Pause, Play, Eye, EyeOff, Maximize2, Minimize2, Activity, Eye as EyeIcon,
