@@ -556,6 +556,6 @@ export function getLegalDoc(slug: string): LegalDoc | undefined {
   return LEGAL_DOCS.find((d) => d.slug === slug);
 }
 
-export const LEGAL_INDEX = LEGAL_DOCS.map(({ slug, title, shortTitle, summary, version, lastUpdated, reviewStatus }) => ({
-  slug, title, shortTitle, summary, version, lastUpdated, reviewStatus,
+export const LEGAL_INDEX = LEGAL_DOCS.map(({ slug, title, shortTitle, summary, version, lastUpdated, reviewStatus, lifecycle }) => ({
+  slug, title, shortTitle, summary, version, lastUpdated, reviewStatus, lifecycle,
 }));
