@@ -25,8 +25,29 @@ export interface LegalDoc {
   availableTranslations?: string[];
   futureTranslations?: string[];
   requiresArabicReview?: boolean;
+  /**
+   * Optional lifecycle flag. Documents marked as `phase-2-draft` describe
+   * capabilities that are NOT active in the current first-party MVP and are
+   * only kept for future planning (e.g. a future third-party marketplace).
+   */
+  lifecycle?: "active" | "phase-2-draft";
   sections: LegalSection[];
 }
+
+/**
+ * Business model metadata for the current CornerMex operating model.
+ * Referenced by the Legal Center, admin/legal and the checkout / signup
+ * legal acceptance payload. Update here if the operating model changes.
+ */
+export const BUSINESS_MODEL = {
+  current: "first_party_ecommerce" as const,
+  futurePhase: "third_party_marketplace" as const,
+  sellerOfRecord: "CornerMex",
+  supplierModel:
+    "CornerMex purchases products from suppliers (e.g. Intermex) and resells them directly to customers under the CornerMex brand.",
+  marketplaceStatus: "Planned / Phase 2 / Not active for MVP",
+  legalReviewStatus: "Legal Review Required" as ReviewStatus,
+} as const;
 
 const DISCLAIMER =
   "This document is a working template and must be reviewed by qualified UAE legal counsel before publication.";
