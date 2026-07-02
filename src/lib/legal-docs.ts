@@ -381,15 +381,20 @@ export const LEGAL_DOCS: LegalDoc[] = [
 
   doc({
     slug: "seller-agreement",
-    title: "Seller Agreement",
-    shortTitle: "Sellers",
+    title: "Future Marketplace Seller Agreement (Phase 2 Draft)",
+    shortTitle: "Future Sellers",
     summary:
-      "Obligations of sellers operating on CornerMex, including onboarding, product legality, taxes, fulfilment, IP and data protection.",
-    version: "1.0.0",
-    lastUpdated: "2026-06-19",
+      "Phase 2 draft. Not active for the current first-party e-commerce MVP. Describes future obligations of third-party sellers if CornerMex activates marketplace features.",
+    version: "1.0.0-draft",
+    lastUpdated: "2026-06-20",
     owner: "CornerMex Marketplace",
     reviewStatus: "Legal Review Required",
+    lifecycle: "phase-2-draft",
     sections: [
+      { id: "status", heading: "0. Status of this document", body: [
+        "CornerMex does not currently operate an open third-party seller marketplace. This Seller Agreement is a Phase 2 draft for future marketplace expansion and does not apply to current first-party e-commerce purchases unless CornerMex activates seller onboarding.",
+        "For the current MVP, CornerMex is the seller of record for products sold directly through the CornerMex website.",
+      ]},
       { id: "onboarding", heading: "1. Onboarding and identity", body: [
         "Sellers must complete onboarding, including identity verification and provision of a valid UAE trade license or equivalent authorisation for the products they intend to sell. CornerMex may request additional documentation at any time.",
       ]},
