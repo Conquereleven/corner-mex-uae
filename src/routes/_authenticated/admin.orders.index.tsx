@@ -109,7 +109,7 @@ function Orders() {
     <div className="space-y-6">
       <PageHeader
         title="Orders"
-        description={`${rows.length} of ${(q.data ?? []).length} orders across the marketplace.`}
+        description={`${rows.length} of ${(q.data ?? []).length} CornerMex orders.`}
         icon={ShoppingCart}
         breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Orders" }]}
         actions={
