@@ -191,39 +191,40 @@ export const LEGAL_DOCS: LegalDoc[] = [
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "controller", heading: "1. Data controller", body: [
-        "The controller of personal data processed through CornerMex is [INSERT UAE LEGAL ENTITY NAME], operating from [INSERT UAE REGISTERED ADDRESS]. Sellers act as independent controllers for the order data they receive to fulfil their sales.",
+        "The controller of personal data processed through CornerMex is [INSERT UAE LEGAL ENTITY NAME], operating from [INSERT UAE REGISTERED ADDRESS]. For the current MVP, CornerMex acts as the seller of record and processes customer data for its own first-party e-commerce orders. If a third-party marketplace is launched later, third-party sellers acting as independent controllers will be described in an updated Privacy Notice.",
       ]},
       { id: "data", heading: "2. Personal data we collect", list: [
         "Account data: name, email, phone, password hash, language preference.",
         "Order and payment-related data: order history, billing data, last-4 digits and brand of payment instrument (full card data is handled by our payment partners).",
         "Delivery data: address, recipient name, contact phone, delivery notes.",
         "Device and analytics data: IP address, device, browser, pages viewed, performance metrics, consented cookies.",
-        "Seller data: business name, trade license details, payout account, performance metrics.",
+        "Business customer data (for B2B enquiries): business name, trade licence details where provided, contact details, order and quotation history.",
         "Support data: messages, attachments, satisfaction ratings.",
       ], body: []},
       { id: "ai", heading: "3. AI-assisted processing", body: [
-        "We use CornerOps AI to assist with recommendations, search ranking, customer support drafting, content moderation, fraud and risk checks, and analytics. AI-assisted processing may include limited profiling to personalise your experience and to protect the marketplace.",
+        "We use CornerOps AI to assist with recommendations, search ranking, customer support drafting, content moderation, fraud and risk checks, pricing suggestions, supplier/product analysis and analytics. AI-assisted processing may include limited profiling to personalise your experience and to protect the site.",
         "Material decisions affecting you are reviewed by humans where required and you may request human review of an AI-assisted decision (see Section 8).",
       ]},
       { id: "purposes", heading: "4. Purposes of processing", list: [
-        "Provide and operate the marketplace and your account.",
+        "Provide and operate the CornerMex online store and your account.",
         "Process orders, payments, deliveries, returns and refunds.",
         "Communicate about your orders and provide customer support.",
-        "Prevent fraud, abuse and protect users and sellers.",
-        "Improve and personalise the platform, including via AI-assisted features.",
+        "Prevent fraud, abuse and protect users, staff and suppliers.",
+        "Improve and personalise the site, including via AI-assisted features.",
         "Comply with UAE legal, tax and regulatory obligations.",
       ], body: []},
       { id: "legal-bases", heading: "5. Legal bases", body: [
         "We process personal data on the bases of contract performance, our legitimate interests in operating a safe marketplace, compliance with legal obligations, and your consent where required (for example, marketing communications and non-essential cookies). You may withdraw consent at any time.",
       ]},
       { id: "sharing", heading: "6. Sharing", list: [
-        "Sellers: minimum data required to fulfil your order.",
+        "Suppliers (such as Intermex): limited to what is needed for sourcing, fulfilment, quality claims, recalls or legal compliance.",
         "Logistics partners: delivery contact and address.",
         "Payment service providers: data needed to authorise and reconcile payments.",
         "Hosting and infrastructure providers operating under contractual safeguards.",
         "Analytics providers under your cookie consent.",
         "AI providers used by CornerOps AI under contractual safeguards prohibiting use of your data to train third-party models without authorisation.",
         "Authorities when required by UAE law.",
+        "If a third-party marketplace is launched later, seller-related data sharing will be described in updated Terms and Privacy notices.",
       ], body: []},
       { id: "transfers", heading: "7. International data transfers", body: [
         "Some of our processors operate outside the UAE. Where this is the case, we put in place contractual and technical safeguards consistent with UAE personal data protection requirements.",
