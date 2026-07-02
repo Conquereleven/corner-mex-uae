@@ -1,0 +1,2 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS legal_acceptance JSONB;
+COMMENT ON COLUMN public.orders.legal_acceptance IS 'Auditable per-order legal acceptance evidence (versions, timestamp, source, seller of record, business model).';

@@ -763,6 +763,7 @@ export type Database = {
           created_at: string
           discount_aed: number
           id: string
+          legal_acceptance: Json | null
           notes: string | null
           order_number: string
           paid_at: string | null
@@ -787,6 +788,7 @@ export type Database = {
           created_at?: string
           discount_aed?: number
           id?: string
+          legal_acceptance?: Json | null
           notes?: string | null
           order_number?: string
           paid_at?: string | null
@@ -811,6 +813,7 @@ export type Database = {
           created_at?: string
           discount_aed?: number
           id?: string
+          legal_acceptance?: Json | null
           notes?: string | null
           order_number?: string
           paid_at?: string | null
@@ -1748,6 +1751,7 @@ export type Database = {
           created_at: string
           discount_aed: number
           id: string
+          legal_acceptance: Json | null
           notes: string | null
           order_number: string
           paid_at: string | null
