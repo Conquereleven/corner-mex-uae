@@ -122,9 +122,19 @@ export const LEGAL_DOCS: LegalDoc[] = [
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "identity", heading: "1. Who we are and our role", body: [
-        "CornerMex is an online store operated in the United Arab Emirates. For the current MVP, CornerMex acts as the seller of record for products sold directly through the CornerMex website.",
+        "CornerMex is an online store operated in the United Arab Emirates by RodMor TradeCo LLC (trade license 2647014.01, licensed by Sharjah Media City, registered address Sharjah Media City, Sharjah, UAE). For the current MVP, CornerMex acts as the seller of record for products sold directly through the CornerMex website.",
         "CornerMex sources inventory from selected suppliers (including Intermex) and resells those products directly to customers under the CornerMex brand. Customers purchase directly from CornerMex, not from independent third-party sellers.",
         "If CornerMex later enables third-party sellers on the site, additional marketplace and seller terms will apply and will be published separately before activation.",
+      ]},
+      { id: "at-a-glance", heading: "1a. Service levels at a glance", body: [
+        "This is a plain-language summary. Full timelines, exceptions and channels are set out in the Supplier & Product Sourcing Policy (Service Levels & Product Sourcing Transparency section) and the Returns & Refunds Policy.",
+      ], list: [
+        "Complaints: acknowledged within 1 business day; simple resolutions targeted within 5-10 business days.",
+        "Refunds: internal review 1-3 business days; card refunds typically 5-10 business days to settle after initiation, subject to bank/provider timing.",
+        "Delivery: express 1-2 business days, standard UAE 2-5 business days, remote areas +1-3 business days, subject to courier capacity and force majeure.",
+        "Sourcing: CornerMex sources products from selected suppliers, including Intermex where applicable. CornerMex remains the seller of record.",
+      ], footnotes: [
+        "For full SLA tables, courier handling, refund methods and Intermex disclosure, see the Product Sourcing & Compliance policy.",
       ]},
       { id: "model", heading: "2. Operating model", body: [
         "Product availability depends on stock held or sourced by CornerMex and on supplier availability, import status, logistics and compliance checks.",
