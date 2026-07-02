@@ -288,15 +288,9 @@ function ProductPage() {
           </div>
 
           <div>
-            {product.seller && (
-              <Link
-                to="/sellers/$slug"
-                params={{ slug: product.seller.slug }}
-                className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground"
-              >
-                {product.seller.name}
-              </Link>
-            )}
+            <div className="text-xs uppercase tracking-widest text-muted-foreground">
+              Sold by CornerMex
+            </div>
             <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">
               {product.name}
             </h1>
