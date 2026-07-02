@@ -7,10 +7,12 @@ export function LiveGlobe({
   points,
   arcs,
   height = 520,
+  stats,
 }: {
   points: Point[];
   arcs: Arc[];
   height?: number;
+  stats?: { orders: number; emirates: number; lastLabel?: string };
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [Globe, setGlobe] = useState<any>(null);
@@ -41,6 +43,7 @@ export function LiveGlobe({
           width={size.w}
           height={size.h}
           backgroundColor="rgba(0,0,0,0)"
+          // TODO: Replace external texture with local asset for offline resilience
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
           atmosphereColor="#7dd3fc"
           atmosphereAltitude={0.18}
@@ -62,6 +65,29 @@ export function LiveGlobe({
         />
       ) : (
         <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">Loading globe…</div>
+      )}
+
+      {stats && (
+        <div className="pointer-events-none absolute left-3 top-3 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-[11px] text-white/90 backdrop-blur-sm">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span>{stats.orders} paid orders</span>
+            <span className="text-white/40">·</span>
+            <span>{stats.emirates} emirates</span>
+          </div>
+          {stats.lastLabel && (
+            <div className="mt-0.5 text-white/60">Last: {stats.lastLabel}</div>
+          )}
+        </div>
+      )}
+
+      {Globe && points.length === 0 && (
+        <div className="pointer-events-none absolute inset-0 grid place-items-center">
+          <div className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-center text-xs text-white/70 backdrop-blur-sm">
+            <div className="font-medium text-white/90">Waiting for paid orders…</div>
+            <div className="mt-1 text-[11px] text-white/50">New orders appear here in real time.</div>
+          </div>
+        </div>
       )}
     </div>
   );
