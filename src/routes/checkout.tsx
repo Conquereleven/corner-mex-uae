@@ -341,6 +341,13 @@ function Checkout() {
               <Link to="/legal/$slug" params={{ slug: "ai-transparency" }} className="underline">AI Transparency Notice</Link>{" "}
               where applicable.
             </p>
+            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+              Delivery and refund timelines are governed by our{" "}
+              <Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="underline">Returns &amp; Refunds</Link>{" "}
+              and{" "}
+              <Link to="/legal/$slug" params={{ slug: "product-sourcing-compliance" }} className="underline">Product Sourcing &amp; Service Levels</Link>{" "}
+              policies.
+            </p>
           </aside>
         </form>
       </section>
