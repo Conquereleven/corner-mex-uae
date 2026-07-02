@@ -246,7 +246,12 @@ export const getLiveView = createServerFn({ method: "POST" })
       .slice(0, 5);
 
     // ---- Activity feed (last 15 storefront events) ----
-    const feedEventTypes = ["product_view", "add_to_cart", "checkout_started", "purchase_completed"];
+    const feedEventTypes = [
+      "product_view",
+      "add_to_cart",
+      "checkout_started",
+      "purchase_completed",
+    ] as const;
     const { data: feedEvents } = await supabaseAdmin
       .from("catalog_events")
       .select("id, event_type, product_id, revenue_aed, created_at, source")
