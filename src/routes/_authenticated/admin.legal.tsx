@@ -21,12 +21,42 @@ function AdminLegal() {
           <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Current model</div>
           <p className="mt-1 font-medium text-foreground">First-party e-commerce</p>
           <p className="mt-1 text-xs text-muted-foreground">Seller of record: {BUSINESS_MODEL.sellerOfRecord}. {BUSINESS_MODEL.supplierModel}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Legal entity: {BUSINESS_MODEL.legalEntity.name} · Trade license {BUSINESS_MODEL.legalEntity.tradeLicense} · {BUSINESS_MODEL.legalEntity.licensingAuthority} · {BUSINESS_MODEL.legalEntity.registeredAddress}
+          </p>
         </div>
         <div className="rounded-lg border border-border/60 bg-card p-4 text-sm">
           <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Future model</div>
           <p className="mt-1 font-medium text-foreground">Marketplace — Phase 2</p>
           <p className="mt-1 text-xs text-muted-foreground">{BUSINESS_MODEL.marketplaceStatus}</p>
         </div>
+      </div>
+      <div className="rounded-lg border border-border/60 bg-card p-4 text-sm">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Operational SLAs & compliance status</div>
+          <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-[10px] text-amber-700">Legal Review Required</Badge>
+        </div>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[520px] text-left text-sm">
+            <thead className="text-xs uppercase tracking-widest text-muted-foreground">
+              <tr>
+                <th className="py-2 pr-4 font-medium">Area</th>
+                <th className="py-2 pr-4 font-medium">Status</th>
+                <th className="py-2 font-medium">Notes</th>
+              </tr>
+            </thead>
+            <tbody className="[&_tr]:border-t [&_tr]:border-border/60">
+              <tr><td className="py-2 pr-4">Complaint SLA</td><td className="py-2 pr-4"><Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700">Configured</Badge></td><td className="py-2 text-muted-foreground">Acknowledge 1 bd · resolve 5-10 bd · escalate after 30 d</td></tr>
+              <tr><td className="py-2 pr-4">Refund timing</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Configured · provider review pending</Badge></td><td className="py-2 text-muted-foreground">Review 1-3 bd · card 5-10 bd after initiation</td></tr>
+              <tr><td className="py-2 pr-4">Courier SLA</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Configured · courier contract pending</Badge></td><td className="py-2 text-muted-foreground">Express 1-2 bd · Standard 2-5 bd · Remote +1-3 bd</td></tr>
+              <tr><td className="py-2 pr-4">Intermex disclosure</td><td className="py-2 pr-4"><Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700">Configured</Badge></td><td className="py-2 text-muted-foreground">Sourced from selected suppliers incl. Intermex. CornerMex remains seller of record.</td></tr>
+              <tr><td className="py-2 pr-4">Arabic version</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Pending</Badge></td><td className="py-2 text-muted-foreground">Translation and UAE counsel review required</td></tr>
+              <tr><td className="py-2 pr-4">UAE counsel review</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Pending</Badge></td><td className="py-2 text-muted-foreground">Required before public launch</td></tr>
+              <tr><td className="py-2 pr-4">VAT / TDRA / food registration</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Pending</Badge></td><td className="py-2 text-muted-foreground">Subject to regulatory review; placeholders in legal docs</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">Full SLA tables live in <Link to="/legal/$slug" params={{ slug: "product-sourcing-compliance" }} className="underline">Product Sourcing & Compliance</Link>.</p>
       </div>
       <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-900">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
