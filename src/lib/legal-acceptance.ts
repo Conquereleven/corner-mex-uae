@@ -7,7 +7,7 @@
 // it must be persisted server-side (e.g. on the user profile for signup and
 // on the order record for checkout) before public UAE launch so we have
 // auditable acceptance evidence per UAE consumer protection expectations.
-import { LEGAL_DOCS } from "@/lib/legal-docs";
+import { LEGAL_DOCS, BUSINESS_MODEL } from "@/lib/legal-docs";
 
 export type LegalAcceptanceSource = "signup" | "checkout" | "reacceptance";
 
@@ -26,6 +26,8 @@ export interface LegalAcceptancePayload {
   acceptedLegalAt: string; // ISO timestamp
   acceptedLegalSource: LegalAcceptanceSource;
   acceptedLegalLanguage: "en";
+  sellerOfRecord: string;
+  businessModel: typeof BUSINESS_MODEL.current;
 }
 
 function versionOf(slug: string): string {
@@ -52,6 +54,8 @@ export function buildLegalAcceptancePayload(
     acceptedLegalAt: new Date().toISOString(),
     acceptedLegalSource: source,
     acceptedLegalLanguage: "en",
+    sellerOfRecord: BUSINESS_MODEL.sellerOfRecord,
+    businessModel: BUSINESS_MODEL.current,
   };
 }
 
@@ -64,5 +68,7 @@ export function buildCheckoutLegalAcceptancePayload(): LegalAcceptancePayload {
     acceptedLegalAt: new Date().toISOString(),
     acceptedLegalSource: "checkout",
     acceptedLegalLanguage: "en",
+    sellerOfRecord: BUSINESS_MODEL.sellerOfRecord,
+    businessModel: BUSINESS_MODEL.current,
   };
 }
