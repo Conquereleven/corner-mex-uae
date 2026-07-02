@@ -345,7 +345,21 @@ export const LEGAL_DOCS: LegalDoc[] = [
         "CornerMex will review food-related claims case by case based on safety, storage, shelf life, product condition and applicable UAE law. Final food returns language will be reviewed by UAE counsel.",
       ]},
       { id: "refunds", heading: "6. Refund method and timing", body: [
-        "Approved refunds are issued to the original payment method, or (where appropriate) as a replacement or store credit. Bank processing times are typically [INSERT REFUND TIMING AFTER PAYMENT PROVIDER REVIEW] and depend on your bank.",
+        "Approved refunds are normally issued to the original payment method where technically possible, or (where appropriate) as a replacement or store credit. CornerMex separates internal approval time from bank/payment-provider settlement time. Refunds are not instant. Final payment-provider timings remain subject to review.",
+      ], table: {
+        caption: "Payment refund timing (target SLA)",
+        headers: ["Case", "Target SLA"],
+        rows: [
+          ["Review request", "1-3 business days"],
+          ["Approve or reject request", "3-5 business days"],
+          ["Initiate refund after approval", "1-2 business days"],
+          ["Card payments", "5-10 business days after initiation"],
+          ["Wallet / BNPL / Tabby / Tamara", "Subject to provider timing"],
+          ["Cash / bank transfer", "1-5 business days after complete payment details"],
+        ],
+      }, footnotes: [
+        "Refunds may take longer where a product requires inspection, the payment provider needs additional review, customer details are incomplete, or the case involves food safety, damage, misuse, missing items or a disputed transaction.",
+        "Full complaint, courier and sourcing SLAs are set out in the Supplier & Product Sourcing Policy (Service Levels & Product Sourcing Transparency section).",
       ]},
       { id: "delayed", heading: "7. Delayed or undelivered orders", body: [
         "If your order has not arrived within the estimated window, contact support@cornermex.ae so we can investigate with the courier.",
