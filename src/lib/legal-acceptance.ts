@@ -1,12 +1,18 @@
 // Lightweight legal acceptance evidence helpers.
 //
-// LEGAL_ACCEPTANCE_TODO:
 // These helpers build a structured payload describing which legal document
 // versions a user accepted, when, in which language and from which surface.
-// Today the payload is only logged to the console at signup and checkout —
-// it must be persisted server-side (e.g. on the user profile for signup and
-// on the order record for checkout) before public UAE launch so we have
-// auditable acceptance evidence per UAE consumer protection expectations.
+//
+// Persistence:
+//  - signup: forwarded to Supabase auth user_metadata via
+//    supabase.auth.signUp({ options: { data: { legal_acceptance } } }).
+//  - checkout: forwarded to placeOrder() and stored on
+//    public.orders.legal_acceptance (jsonb).
+//
+// Follow-ups still open (require external decisions, tracked separately):
+//  - UAE counsel sign-off on document contents.
+//  - Optional mirror to a dedicated legal_acceptance_events table for
+//    long-term audit querying (backend/database decision).
 import { LEGAL_DOCS, BUSINESS_MODEL } from "@/lib/legal-docs";
 
 export type LegalAcceptanceSource = "signup" | "checkout" | "reacceptance";
@@ -23,6 +29,8 @@ export interface LegalAcceptancePayload {
   acceptedTermsVersion: string;
   acceptedPrivacyVersion: string;
   acceptedReturnsVersion?: string;
+  acceptedAiTransparencyVersion?: string;
+  acceptedCookiePolicyVersion?: string;
   acceptedLegalAt: string; // ISO timestamp
   acceptedLegalSource: LegalAcceptanceSource;
   acceptedLegalLanguage: "en";
@@ -51,6 +59,7 @@ export function buildLegalAcceptancePayload(
   return {
     acceptedTermsVersion: v.terms,
     acceptedPrivacyVersion: v.privacy,
+    acceptedCookiePolicyVersion: v.cookies,
     acceptedLegalAt: new Date().toISOString(),
     acceptedLegalSource: source,
     acceptedLegalLanguage: "en",
@@ -65,6 +74,8 @@ export function buildCheckoutLegalAcceptancePayload(): LegalAcceptancePayload {
     acceptedTermsVersion: v.terms,
     acceptedPrivacyVersion: v.privacy,
     acceptedReturnsVersion: v.returns,
+    acceptedAiTransparencyVersion: v.aiTransparency,
+    acceptedCookiePolicyVersion: v.cookies,
     acceptedLegalAt: new Date().toISOString(),
     acceptedLegalSource: "checkout",
     acceptedLegalLanguage: "en",

@@ -52,22 +52,18 @@ function Signup() {
       setError("Please accept the Terms and Privacy Policy to continue.");
       return;
     }
-    // LEGAL_ACCEPTANCE_TODO: persist this payload on the user profile
-    // (acceptedTermsVersion / acceptedPrivacyVersion / acceptedLegalAt /
-    // acceptedLegalSource / acceptedLegalLanguage) for UAE consumer
-    // protection acceptance evidence. Currently captured client-side only.
+    // Persist legal acceptance evidence into Supabase auth user_metadata
+    // (raw_user_meta_data.legal_acceptance) so we have an auditable record of
+    // which Terms / Privacy versions this user accepted at signup, in which
+    // language, from which surface, and under which business model.
     const legalAcceptance = buildLegalAcceptancePayload("signup");
-    if (typeof window !== "undefined") {
-      // eslint-disable-next-line no-console
-      console.debug("[legal-acceptance:signup]", legalAcceptance);
-    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: name },
+        data: { full_name: name, legal_acceptance: legalAcceptance },
       },
     });
     setLoading(false);
