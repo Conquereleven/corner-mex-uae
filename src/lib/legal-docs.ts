@@ -550,6 +550,39 @@ export const LEGAL_DOCS: LegalDoc[] = [
       ]},
     ],
   }),
+
+  doc({
+    slug: "product-sourcing-compliance",
+    title: "Supplier & Product Sourcing Policy",
+    shortTitle: "Sourcing",
+    summary:
+      "How CornerMex sources products from suppliers, how availability is managed, and how quality, safety and compliance concerns are handled for first-party e-commerce.",
+    version: "1.0.0",
+    lastUpdated: "2026-06-20",
+    owner: "CornerMex Operations",
+    reviewStatus: "Legal Review Required",
+    sections: [
+      { id: "overview", heading: "1. Sourcing overview", body: [
+        "CornerMex sources products from selected suppliers and resells them directly to customers under the CornerMex brand.",
+        "CornerMex may purchase inventory from suppliers such as Intermex. Supplier names may be disclosed where commercially appropriate or legally required.",
+      ]},
+      { id: "accuracy", heading: "2. Accurate representation", body: [
+        "CornerMex is responsible for ensuring products listed on the website are represented accurately to customers, based on the information provided by suppliers and on CornerMex's own review.",
+      ]},
+      { id: "availability", heading: "3. Availability", body: [
+        "Product availability depends on supplier stock, CornerMex inventory, import/registration status, logistics and compliance checks. Availability is not guaranteed until an order is confirmed.",
+      ]},
+      { id: "removal", heading: "4. Removal and recalls", body: [
+        "CornerMex may remove products from sale where there are quality, safety, regulatory, import, labelling, shelf-life or recall concerns, and will act on supplier or authority notices in line with applicable UAE law.",
+      ]},
+      { id: "food", heading: "5. Food, beverages and consumables", body: [
+        "Food products may require category-specific handling, storage, labelling, registration or import checks. Final food and import compliance processes will be reviewed by UAE counsel and the relevant competent authorities. CornerMex does not claim that all products are fully registered unless actual registration exists.",
+      ]},
+      { id: "future", heading: "6. Future third-party sellers", body: [
+        "If CornerMex enables third-party sellers in the future, seller sourcing and product responsibility will be governed by the Future Marketplace Seller Agreement and additional onboarding, KYC/KYB and compliance controls.",
+      ]},
+    ],
+  }),
 ];
 
 export function getLegalDoc(slug: string): LegalDoc | undefined {
