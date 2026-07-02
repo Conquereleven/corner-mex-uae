@@ -217,7 +217,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     reviewStatus: "Legal Review Required",
     sections: [
       { id: "controller", heading: "1. Data controller", body: [
-        "The controller of personal data processed through CornerMex is [INSERT UAE LEGAL ENTITY NAME], operating from [INSERT UAE REGISTERED ADDRESS]. For the current MVP, CornerMex acts as the seller of record and processes customer data for its own first-party e-commerce orders. If a third-party marketplace is launched later, third-party sellers acting as independent controllers will be described in an updated Privacy Notice.",
+        "The controller of personal data processed through CornerMex is RodMor TradeCo LLC (trade license 2647014.01, licensed by Sharjah Media City, registered address Sharjah Media City, Sharjah, UAE), operating the CornerMex brand. For the current MVP, CornerMex acts as the seller of record and processes customer data for its own first-party e-commerce orders. If a third-party marketplace is launched later, third-party sellers acting as independent controllers will be described in an updated Privacy Notice.",
       ]},
       { id: "data", heading: "2. Personal data we collect", list: [
         "Account data: name, email, phone, password hash, language preference.",
