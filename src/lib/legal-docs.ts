@@ -10,6 +10,14 @@ export interface LegalSection {
   heading: string;
   body: string[]; // paragraphs (plain text, rendered as <p>)
   list?: string[]; // optional bullet list rendered after body
+  /** Optional responsive table rendered after body/list. */
+  table?: {
+    caption?: string;
+    headers: string[];
+    rows: string[][];
+  };
+  /** Optional footnote paragraphs rendered after the table. */
+  footnotes?: string[];
 }
 
 export interface LegalDoc {
@@ -47,6 +55,12 @@ export const BUSINESS_MODEL = {
     "CornerMex purchases products from suppliers (e.g. Intermex) and resells them directly to customers under the CornerMex brand.",
   marketplaceStatus: "Planned / Phase 2 / Not active for MVP",
   legalReviewStatus: "Legal Review Required" as ReviewStatus,
+  legalEntity: {
+    name: "RodMor TradeCo LLC",
+    tradeLicense: "2647014.01",
+    licensingAuthority: "Sharjah Media City",
+    registeredAddress: "Sharjah Media City, Sharjah, UAE",
+  },
 } as const;
 
 const DISCLAIMER =
@@ -56,7 +70,7 @@ const CONTACT_BLOCK: LegalSection = {
   id: "contact",
   heading: "Contact",
   body: [
-    "For any question about this document, please reach out using the channels below. Company details will be completed once corporate registration is finalised.",
+    "For any question about this document, please reach out using the channels below. CornerMex is a trading brand operated by RodMor TradeCo LLC, licensed by Sharjah Media City, UAE.",
     "Complaints: we provide accessible channels to submit and follow up on complaints. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
   ],
   list: [
@@ -64,15 +78,17 @@ const CONTACT_BLOCK: LegalSection = {
     "Privacy contact: privacy@cornermex.ae",
     "Support contact: support@cornermex.ae",
     "Complaints contact: complaints@cornermex.ae",
-    "Company legal name: [INSERT UAE LEGAL ENTITY NAME]",
-    "Legal status: [INSERT LEGAL STATUS]",
-    "Trade license number: [INSERT TRADE LICENSE NUMBER]",
-    "Licensing authority: [INSERT LICENSING AUTHORITY]",
-    "Registered address: [INSERT UAE REGISTERED ADDRESS]",
-    "Website: [INSERT WEBSITE]",
-    "Contact number: [INSERT CONTACT NUMBER]",
+    "Company legal name: RodMor TradeCo LLC",
+    "Trade license number: 2647014.01",
+    "Licensing authority: Sharjah Media City",
+    "Registered address: Sharjah Media City, Sharjah, UAE",
+    "Website: https://cornermex.ae",
+    "UAE contact number: [INSERT UAE PHONE NUMBER]",
+    "Contact form: [INSERT CONTACT FORM URL]",
     "VAT registration: [INSERT VAT REGISTRATION STATUS IF APPLICABLE]",
     "TDRA / e-commerce approval: [INSERT IF APPLICABLE]",
+    "Food registration (MOCCAE / Dubai Municipality): [INSERT IF APPLICABLE]",
+    "Arabic legal version: pending translation and UAE counsel review",
   ],
 };
 
