@@ -291,38 +291,41 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Returns & Refunds Policy",
     shortTitle: "Returns",
     summary:
-      "When you can return an order, how refunds are processed, and how to escalate issues with a seller or delivery.",
-    version: "1.0.0",
-    lastUpdated: "2026-06-19",
+      "When you can return an order bought from CornerMex, how refunds are processed, and how to escalate a first-party e-commerce order issue.",
+    version: "1.1.0",
+    lastUpdated: "2026-06-20",
     owner: "CornerMex Operations",
     reviewStatus: "Legal Review Required",
     sections: [
-      { id: "scope", heading: "1. Eligibility", body: [
-        "You can request a return, replacement or refund for products that are defective, damaged, incorrect, incomplete, misdescribed, unsafe, or that were not delivered, subject to the conditions below and to applicable UAE law.",
+      { id: "who", heading: "1. Who manages returns", body: [
+        "CornerMex will manage the customer-facing return and refund process for first-party e-commerce orders placed through this website. You do not need to contact any third-party seller for MVP orders.",
+      ]},
+      { id: "scope", heading: "2. Eligibility", body: [
+        "You can request a return, replacement, refund or (where appropriate) store credit for products that are defective, damaged, incorrect, incomplete, misdescribed, unsafe, that were not delivered, or where a late delivery means you can no longer reasonably benefit from the product, subject to the conditions below and to applicable UAE law.",
         "Food and short shelf-life consumables may have return exceptions where permitted by applicable UAE law. The final policy must be reviewed by UAE counsel and aligned with product category, storage, safety and shelf-life rules.",
       ]},
-      { id: "window", heading: "2. Return window", body: [
-        "Standard return window: [INSERT NUMBER] days from delivery for eligible items. Perishable, food and personalised items may be non-returnable unless defective.",
+      { id: "window", heading: "3. Return window", body: [
+        "Standard return window: [INSERT RETURN WINDOW AFTER UAE COUNSEL REVIEW] from delivery for eligible items. Perishable, food and personalised items may be non-returnable unless defective.",
       ]},
       { id: "non-returnable", heading: "3. Non-returnable items", list: [
-        "Opened consumables and perishable or short shelf-life food items, unless defective, damaged, unsafe, incorrect or where a return is legally required.",
+        "Opened, used, temperature-compromised or perishable food, beverages, snacks, sauces, spices or short shelf-life consumables, unless defective, damaged, unsafe, incorrect, incomplete or where a return is legally required.",
         "Personalised, custom-prepared or made-to-order items.",
         "Items marked 'final sale' on the listing.",
       ], body: []},
       { id: "process", heading: "4. How to request a return", body: [
-        "Open the order in your account, choose 'Request return' and describe the issue. The seller has [INSERT NUMBER] business days to respond. If unresolved, CornerMex support can escalate.",
+        "Open the order in your account, choose 'Request return' and describe the issue. CornerMex will inspect the request, may ask for photos or additional information, and will respond within a reasonable timeframe.",
       ]},
-      { id: "refunds", heading: "5. Refund method and timing", body: [
-        "Approved refunds are issued to the original payment method. Bank processing times are typically [INSERT NUMBER] business days and depend on your bank.",
+      { id: "food", heading: "5. Food and consumables", body: [
+        "CornerMex will review food-related claims case by case based on safety, storage, shelf life, product condition and applicable UAE law. Final food returns language will be reviewed by UAE counsel.",
       ]},
-      { id: "delayed", heading: "6. Delayed or undelivered orders", body: [
-        "If your order has not arrived within the estimated window, contact support@cornermex.ae so we can investigate with the courier and the seller.",
+      { id: "refunds", heading: "6. Refund method and timing", body: [
+        "Approved refunds are issued to the original payment method, or (where appropriate) as a replacement or store credit. Bank processing times are typically [INSERT REFUND TIMING AFTER PAYMENT PROVIDER REVIEW] and depend on your bank.",
       ]},
-      { id: "seller", heading: "7. Seller responsibility", body: [
-        "Each seller is responsible for the conformity, safety and warranty of its own products. CornerMex facilitates the dispute and may step in where the seller does not respond within policy timeframes.",
+      { id: "delayed", heading: "7. Delayed or undelivered orders", body: [
+        "If your order has not arrived within the estimated window, contact support@cornermex.ae so we can investigate with the courier.",
       ]},
       { id: "escalation", heading: "8. Escalation", body: [
-        "If you are not satisfied with the seller's response, contact support@cornermex.ae. Nothing in this policy affects your rights under UAE consumer protection law.",
+        "If you are not satisfied with the outcome of a return or refund request, contact complaints@cornermex.ae. Nothing in this policy affects your rights under UAE consumer protection law.",
       ]},
       { id: "complaints", heading: "9. Complaints", body: [
         "Formal complaints can be sent to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
