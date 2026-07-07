@@ -108,7 +108,7 @@ export const getOrderForConfirmation = createServerFn({ method: "GET" })
     const { userId } = context;
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select(`id, order_number, status, payment_status, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
+      .select(`id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
         items:order_items(product_name, variant_label, qty, unit_price_aed, line_total_aed, seller_id, fulfillment_status,
           seller:sellers(store_name)
         )`)
