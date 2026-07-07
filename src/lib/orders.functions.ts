@@ -141,6 +141,13 @@ export const placeOrder = createServerFn({ method: "POST" })
     }
     const total = +(subtotal - discount + shipping + tax).toFixed(2);
 
+    // Internal admin note for Cash on Delivery orders.
+    const codNote = "Cash on Delivery selected. Confirm order by WhatsApp before dispatch.";
+    const notesCombined =
+      data.payment_method === "cod"
+        ? (data.notes ? `${data.notes}\n\n[Internal] ${codNote}` : `[Internal] ${codNote}`)
+        : (data.notes ?? null);
+
     // Insert order with admin (auth_id captured separately)
     const { data: order, error: oErr } = await supabaseAdmin
       .from("orders")
@@ -157,7 +164,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         payment_method: data.payment_method,
         payment_status: data.payment_method === "cod" ? "pending" : "pending",
         shipping_address: data.shipping_address,
-        notes: data.notes ?? null,
+        notes: notesCombined,
         shipping_zone_id: shippingZoneId,
         weight_grams_total: totalWeight,
         sla_min_days: slaMin,
