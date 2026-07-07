@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CreditCard, Smartphone, Truck, Wallet, Building2 } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { trackEvent } from "@/lib/track";
 import { buildCheckoutLegalAcceptancePayload } from "@/lib/legal-acceptance";
+import { getAvailablePaymentMethods, type PaymentMethodId } from "@/lib/payment-methods";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Corner Mex" }] }),
@@ -33,16 +33,6 @@ const EMIRATES = [
   { code: "RK", name: "Ras Al Khaimah" },
   { code: "FU", name: "Fujairah" },
 ];
-
-const PAYMENT_OPTIONS = [
-  { id: "card", label: "Credit / Debit card", icon: CreditCard, hint: "Visa, Mastercard, Amex" },
-  { id: "apple_pay", label: "Apple Pay", icon: Smartphone, hint: "One-tap checkout" },
-  { id: "google_pay", label: "Google Pay", icon: Smartphone, hint: "Fast & secure" },
-  { id: "tabby", label: "Tabby", icon: Wallet, hint: "Pay in 4 · 0% interest" },
-  { id: "tamara", label: "Tamara", icon: Wallet, hint: "Split into 3 payments" },
-  { id: "bank_transfer", label: "Bank transfer", icon: Building2, hint: "AED IBAN" },
-  { id: "cod", label: "Cash on delivery", icon: Truck, hint: "Pay the courier" },
-] as const;
 
 function Checkout() {
   const items = useCart((s) => s.items);
@@ -85,8 +75,37 @@ function Checkout() {
     landmark: "",
     notes: "",
   });
-  const [payment, setPayment] = useState<(typeof PAYMENT_OPTIONS)[number]["id"]>("card");
+  const [payment, setPayment] = useState<PaymentMethodId | null>("card");
   const [submitting, setSubmitting] = useState(false);
+
+  // Device availability for wallet payments (Apple Pay / Google Pay).
+  const [wallet, setWallet] = useState({ applePay: false, googlePay: false });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const apple = !!(window as any).ApplePaySession && typeof (window as any).ApplePaySession.canMakePayments === "function"
+      ? !!(window as any).ApplePaySession.canMakePayments()
+      : false;
+    const google = typeof (window as any).PaymentRequest !== "undefined";
+    setWallet({ applePay: apple, googlePay: google });
+  }, []);
+
+  const paymentMethods = useMemo(
+    () =>
+      getAvailablePaymentMethods({
+        subtotal: totals.subtotal,
+        emirate: form.emirate,
+        applePayAvailable: wallet.applePay,
+        googlePayAvailable: wallet.googlePay,
+      }),
+    [totals.subtotal, form.emirate, wallet.applePay, wallet.googlePay],
+  );
+
+  // Auto-clear selection if it becomes unavailable after cart/address changes.
+  useEffect(() => {
+    if (!payment) return;
+    const found = paymentMethods.find((m) => m.id === payment);
+    if (!found || !found.enabled) setPayment(null);
+  }, [paymentMethods, payment]);
 
   const dbEmirate = EMIRATE_FORM_TO_DB[form.emirate];
   const quoteEnabled = items.length > 0 && !!dbEmirate;
@@ -150,6 +169,10 @@ function Checkout() {
     e.preventDefault();
     if (!form.recipient_name || !form.phone || !form.area) {
       toast.error("Please complete required fields");
+      return;
+    }
+    if (!payment) {
+      toast.error("Please select an available payment method for your order.");
       return;
     }
     setSubmitting(true);
@@ -242,27 +265,37 @@ function Checkout() {
             <div className="rounded-3xl border border-border bg-card p-6">
               <h2 className="font-display text-xl">Payment method</h2>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {PAYMENT_OPTIONS.map((opt) => {
+                {paymentMethods.map((opt) => {
                   const Icon = opt.icon;
                   const active = payment === opt.id;
+                  const disabled = !opt.enabled;
                   return (
                     <button
                       type="button"
                       key={opt.id}
-                      onClick={() => setPayment(opt.id)}
-                      className={`flex items-center gap-3 rounded-2xl border p-4 text-start transition-all ${active ? "border-foreground bg-foreground/[0.03]" : "border-border hover:border-foreground/30"}`}
+                      onClick={() => !disabled && setPayment(opt.id)}
+                      disabled={disabled}
+                      aria-disabled={disabled}
+                      className={`flex items-center gap-3 rounded-2xl border p-4 text-start transition-all ${active ? "border-foreground bg-foreground/[0.03]" : "border-border hover:border-foreground/30"} ${disabled ? "cursor-not-allowed opacity-50 hover:border-border" : ""}`}
                     >
                       <Icon className="h-5 w-5 text-foreground" />
                       <div>
-                        <div className="text-sm font-medium">{opt.label}</div>
-                        <div className="text-xs text-muted-foreground">{opt.hint}</div>
+                        <div className="text-sm font-medium">{opt.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {disabled && opt.unavailableReason ? opt.unavailableReason : opt.subtitle}
+                        </div>
                       </div>
                     </button>
                   );
                 })}
               </div>
+              {!payment && (
+                <p className="mt-3 text-xs text-destructive">
+                  Please select an available payment method for your order.
+                </p>
+              )}
               <p className="mt-4 text-[11px] text-muted-foreground">
-                Card / Apple Pay / Google Pay redirect to Stripe. Tabby / Tamara are in demo mode.
+                Secure payment options available at checkout. Some methods may depend on order value and delivery location.
               </p>
             </div>
           </div>
