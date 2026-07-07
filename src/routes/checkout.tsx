@@ -93,7 +93,7 @@ function Checkout() {
     () =>
       getAvailablePaymentMethods({
         subtotal: totals.subtotal,
-        emirate: form.emirate,
+        emirate: form.emirate as import("@/lib/payment-methods").EmirateCode,
         applePayAvailable: wallet.applePay,
         googlePayAvailable: wallet.googlePay,
       }),
