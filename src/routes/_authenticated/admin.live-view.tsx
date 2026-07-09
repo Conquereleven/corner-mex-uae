@@ -9,9 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Users, ShoppingBag, DollarSign, BadgeCheck, TrendingUp, Percent, ShoppingCart, UserPlus,
   RefreshCw, Pause, Play, Eye, EyeOff, Maximize2, Minimize2, Activity, Eye as EyeIcon,
-  Package, CreditCard, CheckCircle2, AlertTriangle,
+  Package, CreditCard, CheckCircle2, AlertTriangle, Globe2, Map as MapIcon, Brain,
 } from "lucide-react";
 import { getLiveView, type LiveView } from "@/lib/live-view.functions";
+import { LiveUaeMap } from "@/components/site/LiveUaeMap";
+import { CommerceAnomalies } from "@/components/site/CommerceIntelligence";
 
 const LiveGlobe = lazy(() =>
   import("@/components/site/LiveGlobe").then((m) => ({ default: m.LiveGlobe })),
@@ -52,6 +54,7 @@ function AdminLiveView() {
     refetchInterval: paused ? false : 15_000,
   });
   const d = q.data;
+  const [view, setView] = useState<"globe" | "map" | "intel">("globe");
   const maxBar = Math.max(1, ...(d?.pageViews ?? [1]));
   const maxHourly = Math.max(1, ...(d?.hourlySales ?? [1]));
   const newReturnTotal = (d?.kpis.newVisitors ?? 0) + (d?.kpis.returningVisitors ?? 0);
@@ -85,23 +88,47 @@ function AdminLiveView() {
         onToggleStreamer={() => setStreamer((s) => !s)}
         isFs={isFs}
         onToggleFullscreen={toggleFullscreen}
+        view={view}
+        onViewChange={setView}
       />
 
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <Suspense fallback={<div className="h-[520px] rounded-2xl border border-border bg-muted/30" />}>
-            <LiveGlobe
-              points={d?.orderPoints ?? []}
-              arcs={d?.arcs ?? []}
-              height={520}
-              stats={d?.globeStats}
+          {view === "globe" && (
+            <Suspense fallback={<div className="h-[520px] rounded-2xl border border-border bg-muted/30" />}>
+              <LiveGlobe
+                points={d?.orderPoints ?? []}
+                arcs={d?.arcs ?? []}
+                height={520}
+                stats={d?.globeStats}
+              />
+            </Suspense>
+          )}
+          {view === "map" && (
+            <LiveUaeMap
+              topLocations={d?.topLocations ?? []}
+              lastLabel={d?.globeStats?.lastLabel}
+              streamer={streamer}
+              money={money}
             />
-          </Suspense>
+          )}
+          {view === "intel" && (
+            <div className="space-y-4">
+              <CommerceAnomalies d={d} />
+              <LiveUaeMap
+                topLocations={d?.topLocations ?? []}
+                lastLabel={d?.globeStats?.lastLabel}
+                streamer={streamer}
+                money={money}
+              />
+            </div>
+          )}
         </div>
 
         <div className="space-y-4 lg:col-span-2">
           <LiveKpiGrid d={d} isLoading={q.isLoading} money={money} windowLabel={windowLabel} returningPct={returningPct} />
           <LiveActivityFeed items={d?.activityFeed ?? []} isLoading={q.isLoading} streamer={streamer} />
+          {view !== "intel" && <CommerceAnomalies d={d} />}
         </div>
       </div>
 
@@ -239,11 +266,14 @@ function AdminLiveView() {
 function LiveViewCommandBar({
   generatedAt, isLoading, isFetching, paused, onTogglePause, onRefresh,
   streamer, onToggleStreamer, isFs, onToggleFullscreen,
+  view, onViewChange,
 }: {
   generatedAt?: string; isLoading: boolean; isFetching: boolean;
   paused: boolean; onTogglePause: () => void; onRefresh: () => void;
   streamer: boolean; onToggleStreamer: () => void;
   isFs: boolean; onToggleFullscreen: () => void;
+  view: "globe" | "map" | "intel";
+  onViewChange: (v: "globe" | "map" | "intel") => void;
 }) {
   const dotCls = paused
     ? "bg-amber-500"
@@ -254,11 +284,11 @@ function LiveViewCommandBar({
         <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotCls}`} />
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold tracking-tight">Live View</h1>
+            <h1 className="text-xl font-semibold tracking-tight">Commerce Spatial Intelligence</h1>
             {paused && <Badge variant="secondary" className="text-[10px]">Paused</Badge>}
           </div>
           <p className="text-xs text-muted-foreground">
-            CornerMex storefront activity
+            CornerMex storefront activity · signals, orders, carts, and delivery risk
             {generatedAt && (
               <>
                 {" · "}Updated {new Date(generatedAt).toLocaleTimeString()}
@@ -270,6 +300,28 @@ function LiveViewCommandBar({
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center rounded-full border border-border bg-background p-0.5 text-[11px]">
+          {([
+            { id: "globe", label: "Globe", icon: Globe2 },
+            { id: "map", label: "UAE Map", icon: MapIcon },
+            { id: "intel", label: "Intelligence", icon: Brain },
+          ] as const).map((v) => {
+            const Icon = v.icon;
+            const active = view === v.id;
+            return (
+              <button
+                key={v.id}
+                onClick={() => onViewChange(v.id)}
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition ${
+                  active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="h-3 w-3" />
+                {v.label}
+              </button>
+            );
+          })}
+        </div>
         <Button size="sm" variant="outline" onClick={onRefresh} disabled={isFetching}>
           <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
           Refresh
