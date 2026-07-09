@@ -62,6 +62,92 @@ export type Database = {
         }
         Relationships: []
       }
+      anomaly_events: {
+        Row: {
+          anomaly_key: string
+          assigned_to_user_id: string | null
+          confidence_score: number | null
+          created_at: string
+          description: string | null
+          dismissed_at: string | null
+          emirate_code: string | null
+          emirate_name: string | null
+          evidence: Json
+          first_detected_at: string
+          hypotheses: Json
+          id: string
+          last_detected_at: string
+          product_id: string | null
+          product_slug: string | null
+          resolved_at: string | null
+          severity: string
+          source: string
+          status: string
+          suggested_action: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          anomaly_key: string
+          assigned_to_user_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          description?: string | null
+          dismissed_at?: string | null
+          emirate_code?: string | null
+          emirate_name?: string | null
+          evidence?: Json
+          first_detected_at?: string
+          hypotheses?: Json
+          id?: string
+          last_detected_at?: string
+          product_id?: string | null
+          product_slug?: string | null
+          resolved_at?: string | null
+          severity: string
+          source?: string
+          status?: string
+          suggested_action?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          anomaly_key?: string
+          assigned_to_user_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          description?: string | null
+          dismissed_at?: string | null
+          emirate_code?: string | null
+          emirate_name?: string | null
+          evidence?: Json
+          first_detected_at?: string
+          hypotheses?: Json
+          id?: string
+          last_detected_at?: string
+          product_id?: string | null
+          product_slug?: string | null
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          suggested_action?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anomaly_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       b2b_leads: {
         Row: {
           admin_note: string | null
