@@ -162,18 +162,55 @@ export function LiveUaeMap({
               "radial-gradient(circle at 30% 20%, oklch(0.96 0.02 90 / 0.9), transparent 55%), radial-gradient(circle at 80% 90%, oklch(0.92 0.04 60 / 0.7), transparent 60%), linear-gradient(180deg, oklch(0.98 0.01 90), oklch(0.94 0.02 80))",
           }}
         >
-          {/* Subtle grid */}
-          <svg className="absolute inset-0 h-full w-full" aria-hidden>
+          {/* UAE silhouette + arcs. viewBox stretched to container via preserveAspectRatio=none so
+              percentage-based emirate node positions align with the shape. */}
+          <svg
+            className="absolute inset-0 h-full w-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden
+          >
             <defs>
-              <pattern id="uae-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="oklch(0.85 0.02 80)" strokeWidth="0.5" opacity="0.4" />
+              <pattern id="uae-grid" width="6" height="6" patternUnits="userSpaceOnUse">
+                <path d="M 6 0 L 0 0 0 6" fill="none" stroke="oklch(0.85 0.02 80)" strokeWidth="0.15" opacity="0.35" />
               </pattern>
+              <linearGradient id="uae-land" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="oklch(0.95 0.03 85)" />
+                <stop offset="1" stopColor="oklch(0.90 0.05 70)" />
+              </linearGradient>
               <linearGradient id="uae-arc" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0" stopColor="oklch(0.65 0.14 30)" stopOpacity="0.9" />
                 <stop offset="1" stopColor="oklch(0.75 0.12 220)" stopOpacity="0.5" />
               </linearGradient>
             </defs>
-            <rect width="100%" height="100%" fill="url(#uae-grid)" />
+            <rect width="100" height="100" fill="url(#uae-grid)" />
+            {/* UAE landmass — stylized silhouette (not survey-grade) */}
+            <path
+              d="M 76 16 L 82 22 L 84 28 L 80 32 L 84 38 L 89 42 L 88 50 L 82 54 L 76 56 Q 70 60 62 62 L 50 66 L 30 76 L 12 84 L 4 78 L 2 68 Q 8 62 18 58 L 30 54 L 44 50 Q 54 46 60 42 L 66 36 L 70 28 Q 72 20 76 16 Z"
+              fill="url(#uae-land)"
+              stroke="oklch(0.55 0.06 60 / 0.55)"
+              strokeWidth="0.5"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+            {/* Subtle internal emirate boundary hints */}
+            <g
+              stroke="oklch(0.55 0.06 60 / 0.35)"
+              strokeWidth="0.4"
+              strokeDasharray="1.2 1.4"
+              fill="none"
+              vectorEffect="non-scaling-stroke"
+            >
+              <path d="M 40 74 Q 48 62 55 55" />
+              <path d="M 55 55 L 62 49 L 66 44 L 71 38 L 79 24" />
+              <path d="M 71 38 Q 80 40 86 44" />
+            </g>
+            <text x="26" y="34" fontSize="2.6" fill="oklch(0.55 0.06 240 / 0.55)" fontStyle="italic">
+              Persian Gulf
+            </text>
+            <text x="94" y="66" fontSize="2.2" fill="oklch(0.55 0.06 240 / 0.55)" fontStyle="italic" textAnchor="end">
+              Gulf of Oman
+            </text>
 
             {/* Arcs from HQ (Dubai) to active emirates */}
             {layers.orders && activeStats
@@ -185,13 +222,14 @@ export function LiveUaeMap({
                 return (
                   <path
                     key={s.code}
-                    d={`M ${x1}% ${y1}% Q ${mx}% ${my}% ${x2}% ${y2}%`}
+                    d={`M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`}
                     fill="none"
                     stroke="url(#uae-arc)"
-                    strokeWidth={1.5}
+                    strokeWidth={0.5}
                     strokeLinecap="round"
-                    strokeDasharray="4 3"
-                    opacity={0.75}
+                    strokeDasharray="1.2 1"
+                    opacity={0.85}
+                    vectorEffect="non-scaling-stroke"
                   />
                 );
               })}
