@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,16 @@ import {
 import { getLiveView, type LiveView } from "@/lib/live-view.functions";
 import { LiveUaeMap } from "@/components/site/LiveUaeMap";
 import { CommerceAnomalies } from "@/components/site/CommerceIntelligence";
+import { AnomalyCasesPanel } from "@/components/site/AnomalyCases";
+import { DataQualityCard } from "@/components/site/DataQualityCard";
+import {
+  getAnomalyEvents,
+  upsertAnomalyCase,
+  updateAnomalyEventStatus,
+  type AnomalyCandidate,
+  type AnomalyStatus,
+  type AnomalyEventRow,
+} from "@/lib/anomaly-cases.functions";
 
 const LiveGlobe = lazy(() =>
   import("@/components/site/LiveGlobe").then((m) => ({ default: m.LiveGlobe })),
@@ -43,6 +53,10 @@ function formatRelative(iso: string): string {
 
 function AdminLiveView() {
   const fn = useServerFn(getLiveView);
+  const getCases = useServerFn(getAnomalyEvents);
+  const upsertCase = useServerFn(upsertAnomalyCase);
+  const updateCaseStatus = useServerFn(updateAnomalyEventStatus);
+  const qc = useQueryClient();
   const [paused, setPaused] = useState(false);
   const [streamer, setStreamer] = useState(false);
   const [isFs, setIsFs] = useState(false);
@@ -52,6 +66,21 @@ function AdminLiveView() {
     queryKey: ["admin-live-view"],
     queryFn: () => fn({}),
     refetchInterval: paused ? false : 15_000,
+  });
+  const casesQ = useQuery<AnomalyEventRow[]>({
+    queryKey: ["admin-anomaly-cases"],
+    queryFn: () => getCases({ data: { statuses: ["open", "investigating"] as AnomalyStatus[] } }),
+    refetchInterval: paused ? false : 30_000,
+  });
+  const trackedKeys = new Set((casesQ.data ?? []).map((c: any) => c.anomaly_key as string));
+  const trackMut = useMutation({
+    mutationFn: (candidate: AnomalyCandidate) => upsertCase({ data: candidate }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-anomaly-cases"] }),
+  });
+  const statusMut = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: AnomalyStatus }) =>
+      updateCaseStatus({ data: { id, status } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-anomaly-cases"] }),
   });
   const d = q.data;
   const [view, setView] = useState<"globe" | "map" | "intel">("globe");
@@ -110,16 +139,27 @@ function AdminLiveView() {
               lastLabel={d?.globeStats?.lastLabel}
               streamer={streamer}
               money={money}
+              locationSummary={d?.locationSummary}
             />
           )}
           {view === "intel" && (
             <div className="space-y-4">
-              <CommerceAnomalies d={d} />
+              <CommerceAnomalies
+                d={d}
+                onTrackCase={(c) => trackMut.mutate(c)}
+                trackedKeys={trackedKeys}
+              />
+              <AnomalyCasesPanel
+                cases={casesQ.data ?? []}
+                isLoading={casesQ.isLoading}
+                onUpdateStatus={(id, status) => statusMut.mutate({ id, status })}
+              />
               <LiveUaeMap
                 topLocations={d?.topLocations ?? []}
                 lastLabel={d?.globeStats?.lastLabel}
                 streamer={streamer}
                 money={money}
+                locationSummary={d?.locationSummary}
               />
             </div>
           )}
@@ -128,7 +168,21 @@ function AdminLiveView() {
         <div className="space-y-4 lg:col-span-2">
           <LiveKpiGrid d={d} isLoading={q.isLoading} money={money} windowLabel={windowLabel} returningPct={returningPct} />
           <LiveActivityFeed items={d?.activityFeed ?? []} isLoading={q.isLoading} streamer={streamer} />
-          {view !== "intel" && <CommerceAnomalies d={d} />}
+          {view !== "intel" && (
+            <CommerceAnomalies
+              d={d}
+              onTrackCase={(c) => trackMut.mutate(c)}
+              trackedKeys={trackedKeys}
+            />
+          )}
+          <DataQualityCard d={d} />
+          {view !== "intel" && (casesQ.data ?? []).length > 0 && (
+            <AnomalyCasesPanel
+              cases={casesQ.data ?? []}
+              isLoading={casesQ.isLoading}
+              onUpdateStatus={(id, status) => statusMut.mutate({ id, status })}
+            />
+          )}
         </div>
       </div>
 
