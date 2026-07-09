@@ -106,13 +106,12 @@ export const updateAnomalyEventStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = { status: data.status };
-    if (data.status === "resolved") patch.resolved_at = new Date().toISOString();
-    if (data.status === "dismissed") patch.dismissed_at = new Date().toISOString();
-    if (data.status === "open" || data.status === "investigating") {
-      patch.resolved_at = null;
-      patch.dismissed_at = null;
-    }
+    const now = new Date().toISOString();
+    const patch = {
+      status: data.status,
+      resolved_at: data.status === "resolved" ? now : null,
+      dismissed_at: data.status === "dismissed" ? now : null,
+    };
     const { data: row, error } = await supabaseAdmin
       .from("anomaly_events")
       .update(patch)
