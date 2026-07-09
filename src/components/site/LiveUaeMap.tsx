@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Radio, ShoppingCart, CreditCard, Truck, Flame, Compass, Activity } from "lucide-react";
+import type { LocationSummary } from "@/lib/live-view.functions";
 
 export type EmirateStat = {
   code: string;
@@ -11,6 +12,7 @@ export type EmirateStat = {
   y: number; // % top
   orders: number;
   sales: number;
+  loc?: LocationSummary;
 };
 
 // UAE emirate anchors (approx, stylized — not geographic accuracy)
@@ -48,11 +50,13 @@ export function LiveUaeMap({
   lastLabel,
   streamer,
   money,
+  locationSummary,
 }: {
   topLocations: Array<{ label: string; orders: number; sales: number }>;
   lastLabel?: string;
   streamer: boolean;
   money: (n: number) => string;
+  locationSummary?: LocationSummary[];
 }) {
   const [layers, setLayers] = useState<Record<MapLayer, boolean>>({
     orders: true, sessions: false, carts: false, checkout: false,
@@ -62,11 +66,30 @@ export function LiveUaeMap({
 
   const stats: EmirateStat[] = useMemo(() => {
     const byName = new Map(topLocations.map((l) => [l.label, l]));
+    const byCode = new Map((locationSummary ?? []).map((l) => [l.emirateCode, l]));
     return EMIRATES.map((e) => {
       const s = byName.get(e.name);
-      return { ...e, orders: s?.orders ?? 0, sales: s?.sales ?? 0 };
+      const loc = byCode.get(e.code);
+      return {
+        ...e,
+        orders: loc?.orders ?? s?.orders ?? 0,
+        sales: loc?.salesAed ?? s?.sales ?? 0,
+        loc,
+      };
     });
-  }, [topLocations]);
+  }, [topLocations, locationSummary]);
+
+  const anyProductHeat = stats.some((s) => s.loc?.topProductName);
+  // Which layers are functionally live given current data availability.
+  const layerCaps: Record<MapLayer, { live: boolean; reason?: string }> = {
+    orders: { live: true },
+    sessions: { live: false, reason: "Needs session location data" },
+    carts: { live: false, reason: "Needs session location data" },
+    checkout: { live: false, reason: "Needs session location data" },
+    delivery: { live: false, reason: "Courier SLA not connected" },
+    heat: { live: anyProductHeat, reason: anyProductHeat ? undefined : "No paid orders with product attribution yet" },
+    source: { live: false, reason: "Needs per-emirate traffic source" },
+  };
 
   const maxOrders = Math.max(1, ...stats.map((s) => s.orders));
   const activeEmirates = stats.filter((s) => s.orders > 0).length;
@@ -103,23 +126,28 @@ export function LiveUaeMap({
         {/* Layer toggles */}
         <div className="flex flex-wrap gap-1.5">
           {LAYERS.map((l) => {
+            const cap = layerCaps[l.id];
             const active = layers[l.id];
             const Icon = l.icon;
             return (
               <button
                 key={l.id}
-                onClick={() => l.live && toggle(l.id)}
-                disabled={!l.live}
+                onClick={() => cap.live && toggle(l.id)}
+                disabled={!cap.live}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition ${
                   active
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-border bg-background text-muted-foreground hover:text-foreground"
-                } ${!l.live ? "cursor-not-allowed opacity-60" : ""}`}
-                title={l.live ? l.label : `${l.label} · coming soon`}
+                } ${!cap.live ? "cursor-not-allowed opacity-60" : ""}`}
+                title={cap.live ? l.label : `${l.label} · ${cap.reason ?? "coming soon"}`}
               >
                 <Icon className="h-3 w-3" />
                 {l.label}
-                {!l.live && <span className="ml-0.5 text-[9px] uppercase tracking-wide">soon</span>}
+                {!cap.live && (
+                  <span className="ml-0.5 text-[9px] uppercase tracking-wide">
+                    {cap.reason?.startsWith("Needs") ? "needs data" : "soon"}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -258,20 +286,60 @@ export function LiveUaeMap({
             </div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
               <SelStat label="Orders" value={String(sel.orders)} />
-              <SelStat label="Sales" value={sel.orders ? money(sel.sales) : "—"} />
-              <SelStat label="Delivery risk" value="—" hint="soon" />
+              <SelStat label="Sales" value={sel.orders && !streamer ? money(sel.sales) : sel.orders ? money(sel.sales) : "—"} />
+              <SelStat
+                label="Conversion"
+                value={sel.loc?.conversionRate != null ? `${(sel.loc.conversionRate * 100).toFixed(1)}%` : "—"}
+                hint={sel.loc?.conversionRate == null ? "needs data" : undefined}
+              />
+              <SelStat
+                label="Sessions"
+                value={sel.loc?.sessions != null ? String(sel.loc.sessions) : "—"}
+                hint={sel.loc?.sessions == null ? "needs data" : undefined}
+              />
+              <SelStat
+                label="Active carts"
+                value={sel.loc?.activeCarts != null ? String(sel.loc.activeCarts) : "—"}
+                hint={sel.loc?.activeCarts == null ? "needs data" : undefined}
+              />
+              <SelStat
+                label="Delivery risk"
+                value={sel.loc?.deliveryRisk ?? "—"}
+                hint={sel.loc?.deliveryRisk == null ? "placeholder" : undefined}
+              />
             </div>
+            {sel.loc?.topProductName && (
+              <div className="mt-2 flex items-center justify-between gap-2 rounded-md border border-border bg-background px-2 py-1.5 text-[11px]">
+                <span className="text-muted-foreground">Top product</span>
+                <span className="truncate font-medium">{sel.loc.topProductName}</span>
+                {sel.loc.topProductRevenueAed != null && !streamer && (
+                  <span className="shrink-0 tabular-nums text-muted-foreground">
+                    {money(sel.loc.topProductRevenueAed)}
+                  </span>
+                )}
+              </div>
+            )}
+            {sel.loc?.lastOrderAt && (
+              <div className="mt-1.5 text-[10px] text-muted-foreground">
+                Last order · {new Date(sel.loc.lastOrderAt).toLocaleTimeString()}
+              </div>
+            )}
             <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Activity className="h-3 w-3" />
-              Recommended: {sel.orders === 0
-                ? "Boost visibility with a localized promotion."
-                : "Monitor delivery SLA and stock availability."}
+              Recommended: {recommendation(sel)}
             </div>
           </div>
         )}
       </CardContent>
     </Card>
   );
+}
+
+function recommendation(s: EmirateStat): string {
+  if (s.orders === 0) return "Needs more location data · consider a targeted campaign.";
+  if (s.loc?.checkoutAbandonment != null && s.loc.checkoutAbandonment > 0.5) return "Monitor checkout drop-off.";
+  if (s.loc?.topProductName) return `Review inventory for ${s.loc.topProductName}.`;
+  return "Check courier SLA and stock availability.";
 }
 
 function SelStat({ label, value, hint }: { label: string; value: string; hint?: string }) {
