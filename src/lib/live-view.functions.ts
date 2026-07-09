@@ -282,6 +282,99 @@ export const getLiveView = createServerFn({ method: "POST" })
       source: (e.source as string | null) ?? undefined,
     }));
 
+    // ---- Per-emirate summary (paid orders only) ----
+    // TODO: catalog_events has no emirate/location column, so per-session
+    // attribution (sessions, carts, checkout, source) by emirate is not
+    // available yet. Once session_hash → emirate is captured server-side,
+    // wire it in here and flip the corresponding dataQuality flags.
+    const orderIdToEmirate = new Map<string, string>();
+    const emirateAgg = new Map<string, {
+      orders: number; salesAed: number; lastOrderAt: string | null;
+      productRevenue: Map<string, number>;
+    }>();
+    for (const o of paidOrders) {
+      const addr = (o.shipping_address as any) ?? {};
+      const code = String(addr.emirate ?? "").toUpperCase();
+      if (!EMIRATE_COORDS[code]) continue;
+      orderIdToEmirate.set(String(o.id), code);
+      const cur = emirateAgg.get(code) ?? {
+        orders: 0, salesAed: 0, lastOrderAt: null, productRevenue: new Map<string, number>(),
+      };
+      cur.orders += 1;
+      cur.salesAed += Number(o.total_aed ?? 0);
+      const ts = o.created_at as string;
+      if (!cur.lastOrderAt || new Date(ts) > new Date(cur.lastOrderAt)) cur.lastOrderAt = ts;
+      emirateAgg.set(code, cur);
+    }
+    for (const e of today) {
+      if (e.event_type !== "purchase_completed" || !e.order_id || !e.product_id) continue;
+      const code = orderIdToEmirate.get(String(e.order_id));
+      if (!code) continue;
+      const agg = emirateAgg.get(code);
+      if (!agg) continue;
+      const rev = Number(e.revenue_aed ?? 0);
+      agg.productRevenue.set(e.product_id, (agg.productRevenue.get(e.product_id) ?? 0) + rev);
+    }
+    const extraTopIds = new Set<string>();
+    for (const agg of emirateAgg.values()) {
+      for (const pid of agg.productRevenue.keys()) {
+        if (!productMeta[pid]) extraTopIds.add(pid);
+      }
+    }
+    if (extraTopIds.size) {
+      const { data: extra } = await supabaseAdmin
+        .from("products")
+        .select("id, slug, product_translations(name, locale)")
+        .in("id", Array.from(extraTopIds));
+      for (const p of (extra ?? []) as any[]) {
+        const tr = (p.product_translations as any[] | null) ?? [];
+        const en = tr.find((t) => t.locale === "en") ?? tr[0];
+        productMeta[p.id] = { name: en?.name ?? "—", slug: p.slug };
+      }
+    }
+    const locationSummary = Object.entries(EMIRATE_COORDS).map(([code, meta]) => {
+      const agg = emirateAgg.get(code);
+      let topProductId: string | null = null;
+      let topProductRevenueAed = 0;
+      if (agg) {
+        for (const [pid, rev] of agg.productRevenue.entries()) {
+          if (rev > topProductRevenueAed) { topProductRevenueAed = rev; topProductId = pid; }
+        }
+      }
+      const top = topProductId ? productMeta[topProductId] : undefined;
+      return {
+        emirateCode: code,
+        emirateName: meta.label,
+        orders: agg?.orders ?? 0,
+        salesAed: agg?.salesAed ?? 0,
+        sessions: null as number | null,
+        activeCarts: null as number | null,
+        checkingOut: null as number | null,
+        purchased: agg?.orders ?? 0,
+        conversionRate: null as number | null,
+        cartAbandonment: null as number | null,
+        checkoutAbandonment: null as number | null,
+        topProductId,
+        topProductName: top?.name ?? null,
+        topProductSlug: top?.slug ?? null,
+        topProductRevenueAed: topProductRevenueAed || null,
+        topSource: null as string | null,
+        deliveryRisk: null as null | "low" | "medium" | "high",
+        lastOrderAt: agg?.lastOrderAt ?? null,
+      };
+    });
+    const anyEmirateOrders = locationSummary.some((l) => l.orders > 0);
+    const anyEmirateTopProduct = locationSummary.some((l) => l.topProductId);
+    const dataQuality = {
+      locationData: anyEmirateOrders ? ("partial" as const) : ("unavailable" as const),
+      paidOrdersOnly: true,
+      sessionLocationAttribution: "missing" as const,
+      deliverySlaData: "placeholder" as const,
+      productHeatData: anyEmirateTopProduct ? ("partial" as const) : ("unavailable" as const),
+      trafficSourceByEmirate: "missing" as const,
+      anomalyPersistence: "connected" as const,
+    };
+
     return {
       generatedAt: new Date(now).toISOString(),
       windowLabel: "Last 24h",
