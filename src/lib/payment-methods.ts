@@ -148,9 +148,18 @@ export function isMethodAvailable(id: PaymentMethodId, methods: PaymentMethodOpt
   return methods.some((m) => m.id === id && m.enabled);
 }
 
-// TODO: Wire real bank details from admin settings / secrets when available.
+// Bank transfer details. Configure via env vars so real values ship without
+// code changes; missing values are hidden from the confirmation UI instead of
+// showing placeholder text to the customer.
+// TODO: Move to an admin-editable settings row once available.
+const envBankName = (import.meta.env.VITE_BANK_NAME as string | undefined)?.trim();
+const envBankIban = (import.meta.env.VITE_BANK_IBAN as string | undefined)?.trim();
+const envBankAccount = (import.meta.env.VITE_BANK_ACCOUNT_NAME as string | undefined)?.trim();
+
 export const BANK_TRANSFER_DETAILS = {
-  accountName: "RodMor Trade Co LLC",
-  bankName: "[Add bank name]",
-  iban: "[Add IBAN]",
+  accountName: envBankAccount || "RodMor Trade Co LLC",
+  bankName: envBankName || null,
+  iban: envBankIban || null,
 };
+
+export const BANK_TRANSFER_CONFIGURED = Boolean(envBankName && envBankIban);
