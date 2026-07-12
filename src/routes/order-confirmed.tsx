@@ -8,7 +8,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { getOrderForConfirmation } from "@/lib/payments.functions";
 import { trackEvent } from "@/lib/track";
-import { BANK_TRANSFER_DETAILS } from "@/lib/payment-methods";
+import { BANK_TRANSFER_DETAILS, BANK_TRANSFER_CONFIGURED } from "@/lib/payment-methods";
 
 export const Route = createFileRoute("/order-confirmed")({
   validateSearch: (s) => z.object({ order: z.string().optional(), n: z.string().optional() }).parse(s),
@@ -109,16 +109,27 @@ function OrderConfirmed() {
             {data.payment_method === "bank_transfer" && data.payment_status !== "paid" && (
               <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                 <p className="font-medium">Bank transfer instructions</p>
-                <p className="mt-1 text-amber-900/90">
-                  Please transfer the total amount to our UAE bank account. Your order will be processed after payment confirmation.
-                </p>
-                <dl className="mt-3 space-y-1 text-xs">
-                  <div className="flex justify-between gap-3"><dt className="text-amber-900/70">Account name</dt><dd className="font-medium">{BANK_TRANSFER_DETAILS.accountName}</dd></div>
-                  <div className="flex justify-between gap-3"><dt className="text-amber-900/70">Bank</dt><dd className="font-medium">{BANK_TRANSFER_DETAILS.bankName}</dd></div>
-                  <div className="flex justify-between gap-3"><dt className="text-amber-900/70">IBAN</dt><dd className="font-medium">{BANK_TRANSFER_DETAILS.iban}</dd></div>
-                  <div className="flex justify-between gap-3"><dt className="text-amber-900/70">Reference</dt><dd className="font-medium">Order #{data.order_number}</dd></div>
-                </dl>
-                <p className="mt-3 text-xs text-amber-900/80">After transferring, please send your receipt by WhatsApp.</p>
+                {BANK_TRANSFER_CONFIGURED ? (
+                  <>
+                    <p className="mt-1 text-amber-900/90">
+                      Please transfer the total amount to our UAE bank account. Your order will be processed after payment confirmation.
+                    </p>
+                    <dl className="mt-3 space-y-1 text-xs">
+                      <div className="flex justify-between gap-3"><dt className="text-amber-900/70">Account name</dt><dd className="font-medium">{BANK_TRANSFER_DETAILS.accountName}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-amber-900/70">Bank</dt><dd className="font-medium">{BANK_TRANSFER_DETAILS.bankName}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-amber-900/70">IBAN</dt><dd className="font-medium">{BANK_TRANSFER_DETAILS.iban}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-amber-900/70">Reference</dt><dd className="font-medium">Order #{data.order_number}</dd></div>
+                    </dl>
+                    <p className="mt-3 text-xs text-amber-900/80">After transferring, please send your receipt by WhatsApp.</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-1 text-amber-900/90">
+                      Your order is reserved. Please contact us on WhatsApp with your order number and we'll share the UAE bank account details to complete your transfer.
+                    </p>
+                    <p className="mt-3 text-xs text-amber-900/80">Reference: Order #{data.order_number}</p>
+                  </>
+                )}
               </div>
             )}
             <div className="mt-4 border-t border-border pt-4">
