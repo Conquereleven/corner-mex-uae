@@ -382,11 +382,21 @@ export const adminGetOrderDetail = createServerFn({ method: "GET" })
         order.buyer_id
           ? supabaseAdmin
               .from("profiles")
-              .select("id, full_name, email, phone, company_name, preferred_lang")
+              .select("id, full_name, phone, company_name, preferred_lang")
               .eq("id", order.buyer_id)
               .maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
+    let buyer: any = profileRes.data ?? null;
+    if (order.buyer_id) {
+      try {
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(order.buyer_id);
+        const email = authUser?.user?.email ?? null;
+        buyer = { ...(buyer ?? { id: order.buyer_id }), email };
+      } catch {
+        // Ignore auth lookup failures; buyer info is best-effort.
+      }
+    }
     return {
       order,
       items: itemsRes.data ?? [],
@@ -394,7 +404,7 @@ export const adminGetOrderDetail = createServerFn({ method: "GET" })
       events: eventsRes.data ?? [],
       shipments: shipmentsRes.data ?? [],
       payments: paymentsRes.data ?? [],
-      buyer: profileRes.data ?? null,
+      buyer,
     };
   });
 

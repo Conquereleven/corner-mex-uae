@@ -28,7 +28,7 @@ export const createStripeSession = createServerFn({ method: "POST" })
 
     const { data: order, error: oErr } = await supabaseAdmin
       .from("orders")
-      .select(`id, order_number, total_aed, status, buyer_id,
+      .select(`id, order_number, total_aed, subtotal_aed, shipping_aed, tax_aed, discount_aed, status, buyer_id,
         items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed)`)
       .eq("id", data.orderId)
       .eq("buyer_id", userId)
@@ -36,17 +36,34 @@ export const createStripeSession = createServerFn({ method: "POST" })
     if (oErr || !order) throw new Error("Order not found");
     if (order.status !== "pending") throw new Error("Order already processed");
 
-    const lineItems = (order.items as any[]).map((item) => ({
-      price_data: {
-        currency: "aed",
-        product_data: {
-          name: item.product_name,
-          description: item.variant_label || undefined,
+    // Charge the full order total (subtotal - discount + shipping + VAT) as a single
+    // aggregated line item so Stripe collects exactly what the order was confirmed at.
+    // Item-level breakdown is preserved in the order record for the confirmation screen.
+    const subtotal = Number(order.subtotal_aed ?? 0);
+    const shipping = Number(order.shipping_aed ?? 0);
+    const tax = Number(order.tax_aed ?? 0);
+    const discount = Number(order.discount_aed ?? 0);
+    const total = Number(order.total_aed ?? 0);
+    const itemCount = (order.items as any[]).reduce((n, it) => n + Number(it.qty ?? 0), 0);
+    const descParts = [
+      `Subtotal AED ${subtotal.toFixed(2)}`,
+      discount > 0 ? `Discount -AED ${discount.toFixed(2)}` : null,
+      `Shipping AED ${shipping.toFixed(2)}`,
+      `VAT AED ${tax.toFixed(2)}`,
+    ].filter(Boolean);
+    const lineItems = [
+      {
+        price_data: {
+          currency: "aed",
+          product_data: {
+            name: `Corner Mex order #${order.order_number}`,
+            description: `${itemCount} item${itemCount === 1 ? "" : "s"} · ${descParts.join(" · ")}`,
+          },
+          unit_amount: Math.round(total * 100),
         },
-        unit_amount: Math.round(Number(item.unit_price_aed) * 100),
+        quantity: 1,
       },
-      quantity: item.qty,
-    }));
+    ];
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
