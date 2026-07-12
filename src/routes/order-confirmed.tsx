@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/order-confirmed")({
 function OrderConfirmed() {
   const { order, n } = Route.useSearch();
   const fetchOrder = useServerFn(getOrderForConfirmation);
-  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+  const pollStartRef = useRef<number>(Date.now());
 
   const { data, isLoading } = useQuery({
     queryKey: ["order-confirmation", order],
@@ -27,16 +27,15 @@ function OrderConfirmed() {
     enabled: !!order,
     retry: 2,
     refetchInterval: (q) => {
-      // If payment is still pending, poll every 3 seconds for up to 30s
+      // If payment is still pending (Stripe redirected before the webhook landed),
+      // poll every 3 seconds for up to 60s so the UI flips to "paid" automatically.
       const d = q.state.data as any;
-      if (d && d.payment_status === "pending" && !hasAttemptedLoad) return 3000;
-      return false;
+      if (!d) return 3000;
+      if (d.payment_status !== "pending") return false;
+      if (Date.now() - pollStartRef.current > 60_000) return false;
+      return 3000;
     },
   });
-
-  useEffect(() => {
-    if (data) setHasAttemptedLoad(true);
-  }, [data]);
 
   useEffect(() => {
     if (!data || !order) return;
