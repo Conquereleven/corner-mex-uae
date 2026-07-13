@@ -4,7 +4,7 @@
          <stop offset="0.6" stop-color="#2A2622" stop-opacity="0.28"/>
          <stop offset="1" stop-color="#2A2622" stop-opacity="0.05"/>
        </linearGradient></defs>
-  <image href="../master-scenes/chiles-lime-macro.jpg" x="0" y="0" width="1500" height="500" preserveAspectRatio="xMidYMid slice"/>
+  <image href="../../master-scenes/chiles-lime-macro.jpg" x="0" y="0" width="1500" height="500" preserveAspectRatio="xMidYMid slice"/>
   <rect width="1500" height="500" fill="url(#tint)"/>
   <text x="35" y="79.4" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="38" letter-spacing="4" fill="#B4362B" font-weight="600">CORNERMEX UAE</text>
   <text x="35" y="226.132" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="130" font-weight="500" fill="#F8F3E8" letter-spacing="-1.5">Mexico,</text>

@@ -4,7 +4,7 @@
   <line x1="54" y1="670" x2="1026" y2="670" stroke="rgba(42,38,34,0.18)" stroke-width="1"/>
   <clipPath id="ph"><rect x="0" y="670" width="1080" height="410"/></clipPath>
   <g clip-path="url(#ph)">
-    <image href="../master-scenes/chef-hospitality.jpg" x="0" y="670" width="1080" height="410" preserveAspectRatio="xMidYMid slice"/>
+    <image href="../../master-scenes/chef-hospitality.jpg" x="0" y="670" width="1080" height="410" preserveAspectRatio="xMidYMid slice"/>
     <rect x="0" y="670" width="1080" height="410" fill="#2A2622" opacity="0.25"/>
   </g>
   <text x="75.6" y="121.2" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="24" letter-spacing="4" fill="#B4362B" font-weight="600">N&#176; 01 &#183; B2B TRADE</text>
@@ -19,5 +19,5 @@
       <rect x="75.6" y="549" width="322" height="67" fill="#B4362B"/>
       <text x="236.6" y="593.22" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="600" fill="#F8F3E8" letter-spacing="3">REQUEST A QUOTE</text>
     </g>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-full-color.svg" x="810.4" y="553" width="194" height="63" preserveAspectRatio="xMidYMax meet"/>
+  <image href="../../logos/horizontal/cornermex-logo-horizontal-full-color.svg" x="810.4" y="553" width="194" height="63" preserveAspectRatio="xMidYMax meet"/>
 </svg>

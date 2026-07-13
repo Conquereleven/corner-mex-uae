@@ -4,7 +4,7 @@
          <stop offset="0.6" stop-color="#2A2622" stop-opacity="0.28"/>
          <stop offset="1" stop-color="#2A2622" stop-opacity="0.05"/>
        </linearGradient></defs>
-  <image href="../master-scenes/uae-delivery.jpg" x="0" y="0" width="970" height="250" preserveAspectRatio="xMidYMid slice"/>
+  <image href="../../master-scenes/uae-delivery.jpg" x="0" y="0" width="970" height="250" preserveAspectRatio="xMidYMid slice"/>
   <rect width="970" height="250" fill="url(#tint)"/>
   
   <text x="18" y="146.21599999999998" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="65" font-weight="500" fill="#F8F3E8" letter-spacing="-1.5">Mexican favourites,</text>

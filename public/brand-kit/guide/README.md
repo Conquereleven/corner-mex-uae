@@ -37,10 +37,7 @@ node scripts/build-cornermex-brand-kit-v2.mjs
 
 ## Zip packages
 - `cornermex-marketing-kit-v1.zip` — original v1 archive (retained).
-- `cornermex-marketing-kit-v2-premium.zip` — v2 premium archive (~40 MB, hosted on CDN).
-  - Pointer: `cornermex-marketing-kit-v2-premium.zip.asset.json`
-  - Download URL: `/__l5e/assets-v1/70150782-1de6-4958-b0bf-749cd9a024d5/cornermex-marketing-kit-v2-premium.zip`
-  - The ZIP is externalized because it exceeds the 10 MB per-file repo limit. To regenerate it locally, run the v2 build script — it writes the ZIP to `public/brand-kit/` before it gets externalized.
+- `cornermex-marketing-kit-v2-premium.zip` — v2 premium archive.
 
 ## Known limitations (v2)
 - Arabic / RTL copy still not included. Vertical space reserved for later native review.
