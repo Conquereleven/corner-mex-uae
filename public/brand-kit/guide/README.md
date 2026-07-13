@@ -37,7 +37,9 @@ node scripts/build-cornermex-brand-kit-v2.mjs
 
 ## Zip packages
 - `cornermex-marketing-kit-v1.zip` — original v1 archive (retained).
-- `cornermex-marketing-kit-v2-premium.zip` — v2 premium archive.
+- `cornermex-marketing-kit-v2-premium.zip` — v2 premium archive (~92 MB, externalized to Lovable Assets CDN).
+  - Pointer file: `cornermex-marketing-kit-v2-premium.zip.asset.json` — read its `url` field to obtain the CDN download URL.
+  - Externalized because it exceeds the 10 MB per-file repo limit. The build script uploads the ZIP via the `lovable-assets` CLI and updates the pointer automatically.
 
 ## Known limitations (v2)
 - Arabic / RTL copy still not included. Vertical space reserved for later native review.
