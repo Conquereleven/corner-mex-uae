@@ -744,6 +744,14 @@ function buildZip() {
   execSync(`cd "${KIT}" && zip -qr "cornermex-marketing-kit-v2-premium.zip" . -x "cornermex-marketing-kit-v1.zip" "cornermex-marketing-kit-v2-premium.zip"`, { stdio: "inherit" });
   const stat = fs.statSync(zipPath);
   console.log(`v2 ZIP: ${zipPath} (${(stat.size / 1024 / 1024).toFixed(2)} MB)`);
+  // The v2 ZIP is >10 MB. Externalize it via lovable-assets so it does not blow the repo file-size limit.
+  try {
+    execSync(`lovable-assets create --file "${zipPath}" --filename cornermex-marketing-kit-v2-premium.zip > "${zipPath}.asset.json"`, { stdio: "inherit" });
+    fs.unlinkSync(zipPath);
+    console.log(`v2 ZIP externalized -> ${zipPath}.asset.json`);
+  } catch (e) {
+    console.warn(`lovable-assets externalization skipped: ${e.message}`);
+  }
 }
 
 async function main() {
