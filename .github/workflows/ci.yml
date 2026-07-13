@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  contract-and-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:alignment
+      - run: npm run validate:a2-migration
+      - run: npm run test:a2
+      - run: npm run lint:changed
+
+  type-and-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run build:railway
+      - name: Node server health smoke
+        run: |
+          PORT=3000 npm run start:railway > /tmp/cornermex-server.log 2>&1 &
+          pid=$!
+          trap 'kill $pid' EXIT
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:3000/api/health && exit 0
+            sleep 1
+          done
+          cat /tmp/cornermex-server.log
+          exit 1

@@ -241,7 +241,7 @@ function Shop() {
         </div>
 
         <div className="mt-16 border-t border-border pt-8 text-sm text-muted-foreground">
-          Browse by <Link to="/sellers" className="font-medium text-foreground underline">verified sellers</Link>.
+          Products are sold directly by CornerMex UAE.
         </div>
       </section>
     </SiteLayout>

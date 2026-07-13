@@ -29,6 +29,8 @@ import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as B2bLeadRouteImport } from './routes/b2b_.lead'
+import { Route as ApiReadyRouteImport } from './routes/api/ready'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -188,6 +190,16 @@ const LegalSlugRoute = LegalSlugRouteImport.update({
 const B2bLeadRoute = B2bLeadRouteImport.update({
   id: '/b2b_/lead',
   path: '/b2b/lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReadyRoute = ApiReadyRouteImport.update({
+  id: '/api/ready',
+  path: '/api/ready',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSellerRoute = AuthenticatedSellerRouteImport.update({
@@ -567,6 +579,8 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
+  '/api/ready': typeof ApiReadyRoute
   '/b2b/lead': typeof B2bLeadRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -646,6 +660,8 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
+  '/api/ready': typeof ApiReadyRoute
   '/b2b/lead': typeof B2bLeadRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -724,6 +740,8 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
+  '/api/health': typeof ApiHealthRoute
+  '/api/ready': typeof ApiReadyRoute
   '/b2b_/lead': typeof B2bLeadRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -808,6 +826,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/seller'
+    | '/api/health'
+    | '/api/ready'
     | '/b2b/lead'
     | '/legal/$slug'
     | '/product/$slug'
@@ -887,6 +907,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/account'
+    | '/api/health'
+    | '/api/ready'
     | '/b2b/lead'
     | '/legal/$slug'
     | '/product/$slug'
@@ -964,6 +986,8 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/seller'
+    | '/api/health'
+    | '/api/ready'
     | '/b2b_/lead'
     | '/legal/$slug'
     | '/product/$slug'
@@ -1045,6 +1069,8 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  ApiHealthRoute: typeof ApiHealthRoute
+  ApiReadyRoute: typeof ApiReadyRoute
   B2bLeadRoute: typeof B2bLeadRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
@@ -1193,6 +1219,20 @@ declare module '@tanstack/react-router' {
       path: '/b2b/lead'
       fullPath: '/b2b/lead'
       preLoaderRoute: typeof B2bLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ready': {
+      id: '/api/ready'
+      path: '/api/ready'
+      fullPath: '/api/ready'
+      preLoaderRoute: typeof ApiReadyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/seller': {
@@ -1918,6 +1958,8 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  ApiHealthRoute: ApiHealthRoute,
+  ApiReadyRoute: ApiReadyRoute,
   B2bLeadRoute: B2bLeadRoute,
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
@@ -1928,3 +1970,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -12,7 +12,13 @@
     "format": "prettier --write .",
     "seo:products": "node scripts/seo-products.mjs",
     "seo:products:editorial": "node scripts/seo-products-editorial.mjs",
-    "test:alignment": "node scripts/validate-cornerops-contract-a1.mjs"
+    "test:alignment": "node scripts/validate-cornerops-contract-a1.mjs",
+    "validate:a2-migration": "node scripts/validate-commerce-foundation-a2.mjs",
+    "typecheck": "tsc --noEmit",
+    "build:railway": "NITRO_PRESET=node_server vite build",
+    "start:railway": "node .output/server/index.mjs",
+    "lint:changed": "node scripts/lint-changed-a2.mjs",
+    "test:a2": "node --test tests/a2/*.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
