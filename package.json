@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "seo:products": "node scripts/seo-products.mjs",
-    "seo:products:editorial": "node scripts/seo-products-editorial.mjs"
+    "seo:products:editorial": "node scripts/seo-products-editorial.mjs",
+    "test:alignment": "node scripts/validate-cornerops-contract-a1.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
