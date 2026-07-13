@@ -1,11 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" width="1600" height="600">
-  <image href="../master-scenes/restaurant-b2b.jpg" x="0" y="0" width="1600" height="600" preserveAspectRatio="xMidYMid slice"/>
-       <rect x="0" y="0" width="1600" height="600" fill="rgba(42,38,34,0.42)"/>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="1432" y="36" width="132" height="43" preserveAspectRatio="xMidYMid meet"/>
-  <text x="36" y="53" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="17" letter-spacing="6" fill="#B4362B" font-weight="600">B2B WHOLESALE</text>
-  <text x="36" y="137" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="60" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Authentic Mexican</text>
-<text x="36" y="197" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="60" font-weight="500" fill="#F8F3E8" letter-spacing="-2">supply for pros.</text>
-  <text x="36" y="239" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="18" fill="#F8F3E8" opacity="0.92">For restaurants, retailers and hotels across the UAE.</text>
-  <rect x="36" y="518" width="219" height="46" rx="23" fill="#B4362B"/>
-      <text x="145.5" y="548.36" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="19" font-weight="600" fill="#F8F3E8" letter-spacing="2">REQUEST A QUOTE</text>
+<rect width="1600" height="600" fill="#F8F3E8"/>
+  <line x1="30" y1="30" x2="1570" y2="30" stroke="#1C1915" stroke-width="1"/>
+  <line x1="30" y1="372" x2="1570" y2="372" stroke="rgba(42,38,34,0.18)" stroke-width="1"/>
+  <clipPath id="ph"><rect x="0" y="372" width="1600" height="228"/></clipPath>
+  <g clip-path="url(#ph)">
+    <image href="../master-scenes/chef-hospitality.jpg" x="0" y="372" width="1600" height="228" preserveAspectRatio="xMidYMid slice"/>
+    <rect x="0" y="372" width="1600" height="228" fill="#2A2622" opacity="0.25"/>
+  </g>
+  <text x="42" y="67" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="13" letter-spacing="4" fill="#B4362B" font-weight="600">N&#176; 01 &#183; B2B TRADE</text>
+  <text x="1558" y="67" text-anchor="end" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="13" letter-spacing="4" fill="#8A7E6E" font-weight="500">B2B WHOLESALE</text>
+  <text x="42" y="172.1108" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="47" font-weight="500" fill="#1C1915" letter-spacing="-1.5">Authentic Mexican</text>
+<text x="42" y="220.05079999999998" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="47" font-weight="500" fill="#1C1915" letter-spacing="-1.5">supply for pros.</text>
+  <text x="42" y="250.68" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#8A7E6E" font-weight="400">Reliable wholesale for restaurants, retailers and hotels.</text>
+  <g font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="11" letter-spacing="3" fill="#1C1915" font-weight="600">
+    <text x="42" y="284.28000000000003">&#8226; RESTAURANTS</text><text x="266" y="284.28000000000003">&#8226; RETAILERS</text><text x="490.00000000000006" y="284.28000000000003">&#8226; HOTELS</text><text x="714.0000000000001" y="284.28000000000003">&#8226; DISTRIBUTORS</text>
+  </g>
+  <g>
+      <rect x="42" y="306" width="174" height="36" fill="#B4362B"/>
+      <text x="129" y="329.76" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600" fill="#F8F3E8" letter-spacing="3">REQUEST A QUOTE</text>
+    </g>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-full-color.svg" x="1450" y="307" width="108" height="35" preserveAspectRatio="xMidYMax meet"/>
 </svg>

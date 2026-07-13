@@ -1,11 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 628" width="1200" height="628">
-  <image href="../master-scenes/uae-delivery.jpg" x="0" y="0" width="1200" height="628" preserveAspectRatio="xMidYMid slice"/>
-       <rect x="0" y="0" width="1200" height="628" fill="rgba(42,38,34,0.42)"/>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="1024" y="38" width="138" height="45" preserveAspectRatio="xMidYMid meet"/>
-  <text x="38" y="56" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="18" letter-spacing="6" fill="#B4362B" font-weight="600">DELIVERY ACROSS THE UAE</text>
-  <text x="38" y="143" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="63" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Mexican favourites,</text>
-<text x="38" y="206" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="63" font-weight="500" fill="#F8F3E8" letter-spacing="-2">delivered.</text>
-  <text x="38" y="249" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="19" fill="#F8F3E8" opacity="0.92">Fresh from Mexico to your door.</text>
-  <rect x="38" y="542" width="143" height="48" rx="24" fill="#B4362B"/>
-      <text x="109.5" y="573.68" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="600" fill="#F8F3E8" letter-spacing="2">SHOP NOW</text>
+<defs><linearGradient id="tint" x1="0" y1="0" x2="1" y2="0">
+         <stop offset="0" stop-color="#2A2622" stop-opacity="0.78"/>
+         <stop offset="0.6" stop-color="#2A2622" stop-opacity="0.28"/>
+         <stop offset="1" stop-color="#2A2622" stop-opacity="0.05"/>
+       </linearGradient></defs>
+  <image href="../../master-scenes/uae-delivery.jpg" x="0" y="0" width="1200" height="628" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1200" height="628" fill="url(#tint)"/>
+  <text x="44" y="100.74000000000001" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="47" letter-spacing="4" fill="#B4362B" font-weight="600">DELIVERY ACROSS THE UAE</text>
+  <text x="44" y="284.0732" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="163" font-weight="500" fill="#F8F3E8" letter-spacing="-1.5">Mexican favourites,</text>
+<text x="44" y="450.3332" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="163" font-weight="500" fill="#F8F3E8" letter-spacing="-1.5">delivered.</text>
+  <text x="1156" y="584" text-anchor="end" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="50" letter-spacing="3" fill="#F8F3E8" font-weight="600">SHOP NOW  &#8250;</text>
 </svg>

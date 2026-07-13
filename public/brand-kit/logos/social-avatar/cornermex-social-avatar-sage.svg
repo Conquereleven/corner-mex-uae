@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-label="CornerMex avatar">
   <rect width="1080" height="1080" fill="#3E7A54"/>
-  <text x="50%" y="640" text-anchor="middle" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-weight="500" font-size="620" fill="#F8F3E8" letter-spacing="-24">CM</text>
-  <text x="50%" y="900" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="52" letter-spacing="20" fill="#F8F3E8" opacity="0.85" font-weight="500">CORNERMEX</text>
+  <circle cx="540" cy="540" r="440" fill="none" stroke="#F8F3E8" stroke-width="1.2" opacity="0.35"/>
+  <text x="50%" y="620" text-anchor="middle" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-weight="500" font-size="560" fill="#F8F3E8" letter-spacing="-22">CM</text>
+  <line x1="440" y1="760" x2="640" y2="760" stroke="#F8F3E8" stroke-width="1.5" opacity="0.8"/>
+  <text x="50%" y="880" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="46" letter-spacing="22" fill="#F8F3E8" opacity="0.9" font-weight="500">CORNERMEX</text>
 </svg>
