@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <image href="../master-scenes/chiles-lime-corn.jpg" x="0" y="0" width="1200" height="630" preserveAspectRatio="xMidYMid slice"/>
+       <rect x="0" y="0" width="1200" height="630" fill="rgba(42,38,34,0.42)"/>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="1023" y="38" width="139" height="45" preserveAspectRatio="xMidYMid meet"/>
+  <text x="38" y="56" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="18" letter-spacing="6" fill="#B4362B" font-weight="600">CORNERMEX UAE</text>
+  <text x="38" y="143" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="63" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Mexico,</text>
+<text x="38" y="206" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="63" font-weight="500" fill="#F8F3E8" letter-spacing="-2">closer than ever.</text>
+  <text x="38" y="249" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="19" fill="#F8F3E8" opacity="0.92">Authentic Mexican groceries, delivered across the UAE.</text>
+  <rect x="38" y="544" width="267" height="48" rx="24" fill="#B4362B"/>
+      <text x="171.5" y="575.68" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="600" fill="#F8F3E8" letter-spacing="2">DISCOVER CORNERMEX</text>
+</svg>

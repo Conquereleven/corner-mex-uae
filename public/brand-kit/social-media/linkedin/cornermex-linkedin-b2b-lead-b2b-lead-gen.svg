@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 627" width="1200" height="627">
+  <image href="../master-scenes/restaurant-b2b.jpg" x="0" y="0" width="1200" height="627" preserveAspectRatio="xMidYMid slice"/>
+       <rect x="0" y="0" width="1200" height="627" fill="rgba(42,38,34,0.42)"/>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="1024" y="38" width="138" height="45" preserveAspectRatio="xMidYMid meet"/>
+  <text x="38" y="56" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="18" letter-spacing="6" fill="#B4362B" font-weight="600">B2B LEAD</text>
+  <text x="38" y="143" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="63" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Looking for a reliable</text>
+<text x="38" y="206" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="63" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Mexican supplier?</text>
+  <text x="38" y="249" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="19" fill="#F8F3E8" opacity="0.92">Wholesale supply for restaurants and retailers across the UAE.</text>
+  <rect x="38" y="541" width="230" height="48" rx="24" fill="#B4362B"/>
+      <text x="153" y="572.68" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="600" fill="#F8F3E8" letter-spacing="2">REQUEST A QUOTE</text>
+</svg>

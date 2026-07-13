@@ -1,0 +1,2089 @@
+{
+  "version": 1,
+  "generated_at": "2026-07-13T18:21:52.707Z",
+  "total_assets": 130,
+  "tokens": {
+    "clay": "#B4362B",
+    "sage": "#3E7A54",
+    "cream": "#F8F3E8",
+    "sand": "#EFE6D2",
+    "obsidian": "#2A2622",
+    "muted": "#8A7E6E",
+    "display": "'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif",
+    "sans": "'Inter', ui-sans-serif, system-ui, sans-serif"
+  },
+  "assets": [
+    {
+      "name": "Premium Mexican pantry ingredients flatlay",
+      "filename": "pantry.jpg",
+      "folder": "master-scenes",
+      "dimensions": "1920x1280",
+      "aspect_ratio": "3:2",
+      "format": "jpg",
+      "category": "master-scene",
+      "use": "Reusable master photo for templates"
+    },
+    {
+      "name": "Hot sauces, dried chiles, lime and corn",
+      "filename": "chiles-lime-corn.jpg",
+      "folder": "master-scenes",
+      "dimensions": "1920x1280",
+      "aspect_ratio": "3:2",
+      "format": "jpg",
+      "category": "master-scene",
+      "use": "Reusable master photo for templates"
+    },
+    {
+      "name": "Restaurant kitchen and B2B wholesale supply",
+      "filename": "restaurant-b2b.jpg",
+      "folder": "master-scenes",
+      "dimensions": "1920x1280",
+      "aspect_ratio": "3:2",
+      "format": "jpg",
+      "category": "master-scene",
+      "use": "Reusable master photo for templates"
+    },
+    {
+      "name": "Grocery delivery in a modern UAE urban setting",
+      "filename": "uae-delivery.jpg",
+      "folder": "master-scenes",
+      "dimensions": "1920x1280",
+      "aspect_ratio": "3:2",
+      "format": "jpg",
+      "category": "master-scene",
+      "use": "Reusable master photo for templates"
+    },
+    {
+      "name": "Brand color texture",
+      "filename": "brand-texture.svg",
+      "folder": "master-scenes",
+      "dimensions": "1920x1280",
+      "aspect_ratio": "3:2",
+      "format": "svg",
+      "category": "master-scene",
+      "use": "Neutral cream/clay/sage brand backdrop"
+    },
+    {
+      "name": "Horizontal UAE full-color",
+      "filename": "cornermex-logo-horizontal-uae-full-color.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Primary brand mark with UAE descriptor",
+      "variation": "full-color"
+    },
+    {
+      "name": "Horizontal full-color",
+      "filename": "cornermex-logo-horizontal-full-color.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x200",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Wordmark without UAE descriptor",
+      "variation": "full-color"
+    },
+    {
+      "name": "Stacked full-color",
+      "filename": "cornermex-logo-stacked-full-color.svg",
+      "folder": "logos/stacked",
+      "dimensions": "600x600",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Stacked mark for square placements",
+      "variation": "full-color"
+    },
+    {
+      "name": "Monogram full-color",
+      "filename": "cornermex-monogram-full-color.svg",
+      "folder": "logos/monogram",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Compact CM monogram",
+      "variation": "full-color"
+    },
+    {
+      "name": "Horizontal UAE clay",
+      "filename": "cornermex-logo-horizontal-uae-clay.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Primary brand mark with UAE descriptor",
+      "variation": "clay"
+    },
+    {
+      "name": "Horizontal clay",
+      "filename": "cornermex-logo-horizontal-clay.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x200",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Wordmark without UAE descriptor",
+      "variation": "clay"
+    },
+    {
+      "name": "Stacked clay",
+      "filename": "cornermex-logo-stacked-clay.svg",
+      "folder": "logos/stacked",
+      "dimensions": "600x600",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Stacked mark for square placements",
+      "variation": "clay"
+    },
+    {
+      "name": "Monogram clay",
+      "filename": "cornermex-monogram-clay.svg",
+      "folder": "logos/monogram",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Compact CM monogram",
+      "variation": "clay"
+    },
+    {
+      "name": "Horizontal UAE charcoal",
+      "filename": "cornermex-logo-horizontal-uae-charcoal.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Primary brand mark with UAE descriptor",
+      "variation": "charcoal"
+    },
+    {
+      "name": "Horizontal charcoal",
+      "filename": "cornermex-logo-horizontal-charcoal.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x200",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Wordmark without UAE descriptor",
+      "variation": "charcoal"
+    },
+    {
+      "name": "Stacked charcoal",
+      "filename": "cornermex-logo-stacked-charcoal.svg",
+      "folder": "logos/stacked",
+      "dimensions": "600x600",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Stacked mark for square placements",
+      "variation": "charcoal"
+    },
+    {
+      "name": "Monogram charcoal",
+      "filename": "cornermex-monogram-charcoal.svg",
+      "folder": "logos/monogram",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Compact CM monogram",
+      "variation": "charcoal"
+    },
+    {
+      "name": "Horizontal UAE cream",
+      "filename": "cornermex-logo-horizontal-uae-cream.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Primary brand mark with UAE descriptor",
+      "variation": "cream"
+    },
+    {
+      "name": "Horizontal cream",
+      "filename": "cornermex-logo-horizontal-cream.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x200",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Wordmark without UAE descriptor",
+      "variation": "cream"
+    },
+    {
+      "name": "Stacked cream",
+      "filename": "cornermex-logo-stacked-cream.svg",
+      "folder": "logos/stacked",
+      "dimensions": "600x600",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Stacked mark for square placements",
+      "variation": "cream"
+    },
+    {
+      "name": "Monogram cream",
+      "filename": "cornermex-monogram-cream.svg",
+      "folder": "logos/monogram",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Compact CM monogram",
+      "variation": "cream"
+    },
+    {
+      "name": "Horizontal UAE reversed",
+      "filename": "cornermex-logo-horizontal-uae-reversed.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Primary brand mark with UAE descriptor",
+      "variation": "reversed"
+    },
+    {
+      "name": "Horizontal reversed",
+      "filename": "cornermex-logo-horizontal-reversed.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x200",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Wordmark without UAE descriptor",
+      "variation": "reversed"
+    },
+    {
+      "name": "Stacked reversed",
+      "filename": "cornermex-logo-stacked-reversed.svg",
+      "folder": "logos/stacked",
+      "dimensions": "600x600",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Stacked mark for square placements",
+      "variation": "reversed"
+    },
+    {
+      "name": "Monogram reversed",
+      "filename": "cornermex-monogram-reversed.svg",
+      "folder": "logos/monogram",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Compact CM monogram",
+      "variation": "reversed"
+    },
+    {
+      "name": "Horizontal UAE mono-black",
+      "filename": "cornermex-logo-horizontal-uae-mono-black.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Primary brand mark with UAE descriptor",
+      "variation": "mono-black"
+    },
+    {
+      "name": "Horizontal mono-black",
+      "filename": "cornermex-logo-horizontal-mono-black.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x200",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Wordmark without UAE descriptor",
+      "variation": "mono-black"
+    },
+    {
+      "name": "Stacked mono-black",
+      "filename": "cornermex-logo-stacked-mono-black.svg",
+      "folder": "logos/stacked",
+      "dimensions": "600x600",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Stacked mark for square placements",
+      "variation": "mono-black"
+    },
+    {
+      "name": "Monogram mono-black",
+      "filename": "cornermex-monogram-mono-black.svg",
+      "folder": "logos/monogram",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Compact CM monogram",
+      "variation": "mono-black"
+    },
+    {
+      "name": "Print mono-black",
+      "filename": "cornermex-print-mono-black.svg",
+      "folder": "logos/monochrome",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Single-color print",
+      "variation": "mono-black"
+    },
+    {
+      "name": "Horizontal UAE mono-white",
+      "filename": "cornermex-logo-horizontal-uae-mono-white.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Primary brand mark with UAE descriptor",
+      "variation": "mono-white"
+    },
+    {
+      "name": "Horizontal mono-white",
+      "filename": "cornermex-logo-horizontal-mono-white.svg",
+      "folder": "logos/horizontal",
+      "dimensions": "800x200",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Wordmark without UAE descriptor",
+      "variation": "mono-white"
+    },
+    {
+      "name": "Stacked mono-white",
+      "filename": "cornermex-logo-stacked-mono-white.svg",
+      "folder": "logos/stacked",
+      "dimensions": "600x600",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Stacked mark for square placements",
+      "variation": "mono-white"
+    },
+    {
+      "name": "Monogram mono-white",
+      "filename": "cornermex-monogram-mono-white.svg",
+      "folder": "logos/monogram",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Compact CM monogram",
+      "variation": "mono-white"
+    },
+    {
+      "name": "Print mono-white",
+      "filename": "cornermex-print-mono-white.svg",
+      "folder": "logos/monochrome",
+      "dimensions": "800x260",
+      "aspect_ratio": "40:13",
+      "format": "svg",
+      "category": "logo",
+      "use": "Single-color print",
+      "variation": "mono-white"
+    },
+    {
+      "name": "Social avatar clay",
+      "filename": "cornermex-social-avatar-clay.svg",
+      "folder": "logos/social-avatar",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Profile picture",
+      "variation": "clay"
+    },
+    {
+      "name": "Social avatar sage",
+      "filename": "cornermex-social-avatar-sage.svg",
+      "folder": "logos/social-avatar",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Profile picture",
+      "variation": "sage"
+    },
+    {
+      "name": "Social avatar cream",
+      "filename": "cornermex-social-avatar-cream.svg",
+      "folder": "logos/social-avatar",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Profile picture",
+      "variation": "cream"
+    },
+    {
+      "name": "Social avatar charcoal",
+      "filename": "cornermex-social-avatar-charcoal.svg",
+      "folder": "logos/social-avatar",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "logo",
+      "use": "Profile picture",
+      "variation": "charcoal"
+    },
+    {
+      "name": "Favicon SVG",
+      "filename": "favicon.svg",
+      "folder": "icons/favicon",
+      "dimensions": "vector",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "icon",
+      "use": "Browser favicon"
+    },
+    {
+      "name": "App icon 16",
+      "filename": "cornermex-app-icon-16.svg",
+      "folder": "icons/app-icons",
+      "dimensions": "16x16",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "icon",
+      "use": "App/OS icon at 16px"
+    },
+    {
+      "name": "App icon 32",
+      "filename": "cornermex-app-icon-32.svg",
+      "folder": "icons/app-icons",
+      "dimensions": "32x32",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "icon",
+      "use": "App/OS icon at 32px"
+    },
+    {
+      "name": "App icon 48",
+      "filename": "cornermex-app-icon-48.svg",
+      "folder": "icons/app-icons",
+      "dimensions": "48x48",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "icon",
+      "use": "App/OS icon at 48px"
+    },
+    {
+      "name": "App icon 180",
+      "filename": "cornermex-app-icon-180.svg",
+      "folder": "icons/app-icons",
+      "dimensions": "180x180",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "icon",
+      "use": "App/OS icon at 180px"
+    },
+    {
+      "name": "App icon 192",
+      "filename": "cornermex-app-icon-192.svg",
+      "folder": "icons/app-icons",
+      "dimensions": "192x192",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "icon",
+      "use": "App/OS icon at 192px"
+    },
+    {
+      "name": "App icon 512",
+      "filename": "cornermex-app-icon-512.svg",
+      "folder": "icons/app-icons",
+      "dimensions": "512x512",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "icon",
+      "use": "App/OS icon at 512px"
+    },
+    {
+      "name": "cornermex-instagram-square-brand-introduction",
+      "filename": "cornermex-instagram-square-brand-introduction.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-square-uae-delivery",
+      "filename": "cornermex-instagram-square-uae-delivery.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-square-pantry-essentials",
+      "filename": "cornermex-instagram-square-pantry-essentials.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-square-new-arrivals",
+      "filename": "cornermex-instagram-square-new-arrivals.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "new-arrivals",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-portrait-pantry-essentials",
+      "filename": "cornermex-instagram-portrait-pantry-essentials.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1350",
+      "aspect_ratio": "4:5",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-portrait-snacks-sweets",
+      "filename": "cornermex-instagram-portrait-snacks-sweets.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1350",
+      "aspect_ratio": "4:5",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "snacks-sweets",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-portrait-weekend-promotion",
+      "filename": "cornermex-instagram-portrait-weekend-promotion.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1350",
+      "aspect_ratio": "4:5",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "weekend-promotion",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-story-brand-introduction",
+      "filename": "cornermex-instagram-story-brand-introduction.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-story-uae-delivery",
+      "filename": "cornermex-instagram-story-uae-delivery.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-story-new-arrivals",
+      "filename": "cornermex-instagram-story-new-arrivals.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "new-arrivals",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-reel-cover-pantry-essentials",
+      "filename": "cornermex-instagram-reel-cover-pantry-essentials.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-instagram-reel-cover-restaurant-restock",
+      "filename": "cornermex-instagram-reel-cover-restaurant-restock.svg",
+      "folder": "social-media/instagram",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "restaurant-restock",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-facebook-square-brand-introduction",
+      "filename": "cornermex-facebook-square-brand-introduction.svg",
+      "folder": "social-media/facebook",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-facebook-square-uae-delivery",
+      "filename": "cornermex-facebook-square-uae-delivery.svg",
+      "folder": "social-media/facebook",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-facebook-square-weekend-promotion",
+      "filename": "cornermex-facebook-square-weekend-promotion.svg",
+      "folder": "social-media/facebook",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "weekend-promotion",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-linkedin-post-b2b-wholesale",
+      "filename": "cornermex-linkedin-post-b2b-wholesale.svg",
+      "folder": "social-media/linkedin",
+      "dimensions": "1200x627",
+      "aspect_ratio": "400:209",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-linkedin-post-b2b-lead-gen",
+      "filename": "cornermex-linkedin-post-b2b-lead-gen.svg",
+      "folder": "social-media/linkedin",
+      "dimensions": "1200x627",
+      "aspect_ratio": "400:209",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "b2b-lead-gen",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-linkedin-banner-b2b-wholesale",
+      "filename": "cornermex-linkedin-banner-b2b-wholesale.svg",
+      "folder": "social-media/linkedin",
+      "dimensions": "1128x191",
+      "aspect_ratio": "1128:191",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-linkedin-b2b-lead-b2b-lead-gen",
+      "filename": "cornermex-linkedin-b2b-lead-b2b-lead-gen.svg",
+      "folder": "social-media/linkedin",
+      "dimensions": "1200x627",
+      "aspect_ratio": "400:209",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "b2b-lead-gen",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-x-header-brand-introduction",
+      "filename": "cornermex-x-header-brand-introduction.svg",
+      "folder": "social-media/x",
+      "dimensions": "1500x500",
+      "aspect_ratio": "3:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-x-post-uae-delivery",
+      "filename": "cornermex-x-post-uae-delivery.svg",
+      "folder": "social-media/x",
+      "dimensions": "1600x900",
+      "aspect_ratio": "16:9",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-x-post-b2b-wholesale",
+      "filename": "cornermex-x-post-b2b-wholesale.svg",
+      "folder": "social-media/x",
+      "dimensions": "1600x900",
+      "aspect_ratio": "16:9",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-whatsapp-catalog-cover-brand-introduction",
+      "filename": "cornermex-whatsapp-catalog-cover-brand-introduction.svg",
+      "folder": "social-media/whatsapp",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-whatsapp-promo-weekend-promotion",
+      "filename": "cornermex-whatsapp-promo-weekend-promotion.svg",
+      "folder": "social-media/whatsapp",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "weekend-promotion",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-whatsapp-b2b-contact-b2b-lead-gen",
+      "filename": "cornermex-whatsapp-b2b-contact-b2b-lead-gen.svg",
+      "folder": "social-media/whatsapp",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "social-media",
+      "campaign": "b2b-lead-gen",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-homepage-hero-desktop-brand-introduction",
+      "filename": "cornermex-website-homepage-hero-desktop-brand-introduction.svg",
+      "folder": "website",
+      "dimensions": "1920x900",
+      "aspect_ratio": "32:15",
+      "format": "svg",
+      "category": "website",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-homepage-hero-desktop-uae-delivery",
+      "filename": "cornermex-website-homepage-hero-desktop-uae-delivery.svg",
+      "folder": "website",
+      "dimensions": "1920x900",
+      "aspect_ratio": "32:15",
+      "format": "svg",
+      "category": "website",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-homepage-hero-mobile-brand-introduction",
+      "filename": "cornermex-website-homepage-hero-mobile-brand-introduction.svg",
+      "folder": "website",
+      "dimensions": "1080x1350",
+      "aspect_ratio": "4:5",
+      "format": "svg",
+      "category": "website",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-collection-banner-pantry-essentials",
+      "filename": "cornermex-website-collection-banner-pantry-essentials.svg",
+      "folder": "website",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "website",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-collection-banner-snacks-sweets",
+      "filename": "cornermex-website-collection-banner-snacks-sweets.svg",
+      "folder": "website",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "website",
+      "campaign": "snacks-sweets",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-promo-banner-weekend-promotion",
+      "filename": "cornermex-website-promo-banner-weekend-promotion.svg",
+      "folder": "website",
+      "dimensions": "1600x400",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "website",
+      "campaign": "weekend-promotion",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-og-image-brand-introduction",
+      "filename": "cornermex-website-og-image-brand-introduction.svg",
+      "folder": "website",
+      "dimensions": "1200x630",
+      "aspect_ratio": "40:21",
+      "format": "svg",
+      "category": "website",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-newsletter-header-new-arrivals",
+      "filename": "cornermex-website-newsletter-header-new-arrivals.svg",
+      "folder": "website",
+      "dimensions": "1200x400",
+      "aspect_ratio": "3:1",
+      "format": "svg",
+      "category": "website",
+      "campaign": "new-arrivals",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-category-placeholder-pantry-essentials",
+      "filename": "cornermex-website-category-placeholder-pantry-essentials.svg",
+      "folder": "website",
+      "dimensions": "1600x1000",
+      "aspect_ratio": "8:5",
+      "format": "svg",
+      "category": "website",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-product-placeholder-pantry-essentials",
+      "filename": "cornermex-website-product-placeholder-pantry-essentials.svg",
+      "folder": "website",
+      "dimensions": "1200x1200",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "website",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-new-arrivals-new-arrivals",
+      "filename": "cornermex-website-new-arrivals-new-arrivals.svg",
+      "folder": "website",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "website",
+      "campaign": "new-arrivals",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-b2b-homepage-b2b-wholesale",
+      "filename": "cornermex-website-b2b-homepage-b2b-wholesale.svg",
+      "folder": "website",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "website",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-delivery-promo-uae-delivery",
+      "filename": "cornermex-website-delivery-promo-uae-delivery.svg",
+      "folder": "website",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "website",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-website-wholesale-collection-b2b-wholesale",
+      "filename": "cornermex-website-wholesale-collection-b2b-wholesale.svg",
+      "folder": "website",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "website",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-ecommerce-collection-hero-pantry-essentials",
+      "filename": "cornermex-ecommerce-collection-hero-pantry-essentials.svg",
+      "folder": "ecommerce",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "ecommerce",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-ecommerce-collection-hero-snacks-sweets",
+      "filename": "cornermex-ecommerce-collection-hero-snacks-sweets.svg",
+      "folder": "ecommerce",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "ecommerce",
+      "campaign": "snacks-sweets",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-ecommerce-product-tile-pantry-essentials",
+      "filename": "cornermex-ecommerce-product-tile-pantry-essentials.svg",
+      "folder": "ecommerce",
+      "dimensions": "1200x1200",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "ecommerce",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-linkedin-hero-b2b-wholesale",
+      "filename": "cornermex-b2b-linkedin-hero-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1200x627",
+      "aspect_ratio": "400:209",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-restaurant-supply-restaurant-restock",
+      "filename": "cornermex-b2b-restaurant-supply-restaurant-restock.svg",
+      "folder": "b2b",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "restaurant-restock",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-retailer-distributor-b2b-wholesale",
+      "filename": "cornermex-b2b-retailer-distributor-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-hotel-hospitality-b2b-wholesale",
+      "filename": "cornermex-b2b-hotel-hospitality-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1600x600",
+      "aspect_ratio": "8:3",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-email-signature-b2b-lead-gen",
+      "filename": "cornermex-b2b-email-signature-b2b-lead-gen.svg",
+      "folder": "b2b",
+      "dimensions": "1200x300",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-lead-gen",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-proposal-cover-b2b-wholesale",
+      "filename": "cornermex-b2b-proposal-cover-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1920x1080",
+      "aspect_ratio": "16:9",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-presentation-cover-b2b-wholesale",
+      "filename": "cornermex-b2b-presentation-cover-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1920x1080",
+      "aspect_ratio": "16:9",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-a4-sales-sheet-b2b-wholesale",
+      "filename": "cornermex-b2b-a4-sales-sheet-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1240x1754",
+      "aspect_ratio": "620:877",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-a4-price-list-b2b-wholesale",
+      "filename": "cornermex-b2b-a4-price-list-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1240x1754",
+      "aspect_ratio": "620:877",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-a4-catalog-cover-pantry-essentials",
+      "filename": "cornermex-b2b-a4-catalog-cover-pantry-essentials.svg",
+      "folder": "b2b",
+      "dimensions": "1240x1754",
+      "aspect_ratio": "620:877",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-trade-show-backdrop-brand-introduction",
+      "filename": "cornermex-b2b-trade-show-backdrop-brand-introduction.svg",
+      "folder": "b2b",
+      "dimensions": "1500x1000",
+      "aspect_ratio": "3:2",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-quotation-cover-b2b-wholesale",
+      "filename": "cornermex-b2b-quotation-cover-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1240x1754",
+      "aspect_ratio": "620:877",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-b2b-distributor-intro-b2b-wholesale",
+      "filename": "cornermex-b2b-distributor-intro-b2b-wholesale.svg",
+      "folder": "b2b",
+      "dimensions": "1240x1754",
+      "aspect_ratio": "620:877",
+      "format": "svg",
+      "category": "b2b",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-meta-feed-square-uae-delivery",
+      "filename": "cornermex-meta-feed-square-uae-delivery.svg",
+      "folder": "paid-ads/meta",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-meta-feed-square-new-arrivals",
+      "filename": "cornermex-meta-feed-square-new-arrivals.svg",
+      "folder": "paid-ads/meta",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "new-arrivals",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-meta-feed-square-weekend-promotion",
+      "filename": "cornermex-meta-feed-square-weekend-promotion.svg",
+      "folder": "paid-ads/meta",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "weekend-promotion",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-meta-feed-portrait-pantry-essentials",
+      "filename": "cornermex-meta-feed-portrait-pantry-essentials.svg",
+      "folder": "paid-ads/meta",
+      "dimensions": "1080x1350",
+      "aspect_ratio": "4:5",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-meta-feed-portrait-snacks-sweets",
+      "filename": "cornermex-meta-feed-portrait-snacks-sweets.svg",
+      "folder": "paid-ads/meta",
+      "dimensions": "1080x1350",
+      "aspect_ratio": "4:5",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "snacks-sweets",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-meta-story-ad-uae-delivery",
+      "filename": "cornermex-meta-story-ad-uae-delivery.svg",
+      "folder": "paid-ads/meta",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-meta-story-ad-weekend-promotion",
+      "filename": "cornermex-meta-story-ad-weekend-promotion.svg",
+      "folder": "paid-ads/meta",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "weekend-promotion",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-google-display-landscape-uae-delivery",
+      "filename": "cornermex-google-display-landscape-uae-delivery.svg",
+      "folder": "paid-ads/google-display",
+      "dimensions": "1200x628",
+      "aspect_ratio": "300:157",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-google-display-square-uae-delivery",
+      "filename": "cornermex-google-display-square-uae-delivery.svg",
+      "folder": "paid-ads/google-display",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-google-display-medium-rect-uae-delivery",
+      "filename": "cornermex-google-display-medium-rect-uae-delivery.svg",
+      "folder": "paid-ads/google-display",
+      "dimensions": "300x250",
+      "aspect_ratio": "6:5",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-google-display-large-rect-uae-delivery",
+      "filename": "cornermex-google-display-large-rect-uae-delivery.svg",
+      "folder": "paid-ads/google-display",
+      "dimensions": "336x280",
+      "aspect_ratio": "6:5",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-google-display-leaderboard-uae-delivery",
+      "filename": "cornermex-google-display-leaderboard-uae-delivery.svg",
+      "folder": "paid-ads/google-display",
+      "dimensions": "728x90",
+      "aspect_ratio": "364:45",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-google-display-billboard-uae-delivery",
+      "filename": "cornermex-google-display-billboard-uae-delivery.svg",
+      "folder": "paid-ads/google-display",
+      "dimensions": "970x250",
+      "aspect_ratio": "97:25",
+      "format": "svg",
+      "category": "paid-ads",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-marketplaces-storefront-hero-brand-introduction",
+      "filename": "cornermex-marketplaces-storefront-hero-brand-introduction.svg",
+      "folder": "marketplaces",
+      "dimensions": "1464x600",
+      "aspect_ratio": "61:25",
+      "format": "svg",
+      "category": "marketplaces",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-marketplaces-promo-tile-weekend-promotion",
+      "filename": "cornermex-marketplaces-promo-tile-weekend-promotion.svg",
+      "folder": "marketplaces",
+      "dimensions": "1000x1000",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "marketplaces",
+      "campaign": "weekend-promotion",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-marketplaces-collection-tile-pantry-essentials",
+      "filename": "cornermex-marketplaces-collection-tile-pantry-essentials.svg",
+      "folder": "marketplaces",
+      "dimensions": "1000x1000",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "marketplaces",
+      "campaign": "pantry-essentials",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-marketplaces-delivery-banner-uae-delivery",
+      "filename": "cornermex-marketplaces-delivery-banner-uae-delivery.svg",
+      "folder": "marketplaces",
+      "dimensions": "1464x600",
+      "aspect_ratio": "61:25",
+      "format": "svg",
+      "category": "marketplaces",
+      "campaign": "uae-delivery",
+      "scene": "uae-delivery.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-marketplaces-wholesale-banner-b2b-wholesale",
+      "filename": "cornermex-marketplaces-wholesale-banner-b2b-wholesale.svg",
+      "folder": "marketplaces",
+      "dimensions": "1464x600",
+      "aspect_ratio": "61:25",
+      "format": "svg",
+      "category": "marketplaces",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-marketplaces-new-arrivals-banner-new-arrivals",
+      "filename": "cornermex-marketplaces-new-arrivals-banner-new-arrivals.svg",
+      "folder": "marketplaces",
+      "dimensions": "1464x600",
+      "aspect_ratio": "61:25",
+      "format": "svg",
+      "category": "marketplaces",
+      "campaign": "new-arrivals",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-email-header-brand-brand-introduction",
+      "filename": "cornermex-email-header-brand-brand-introduction.svg",
+      "folder": "email",
+      "dimensions": "1200x400",
+      "aspect_ratio": "3:1",
+      "format": "svg",
+      "category": "email",
+      "campaign": "brand-introduction",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-email-header-new-arrivals-new-arrivals",
+      "filename": "cornermex-email-header-new-arrivals-new-arrivals.svg",
+      "folder": "email",
+      "dimensions": "1200x400",
+      "aspect_ratio": "3:1",
+      "format": "svg",
+      "category": "email",
+      "campaign": "new-arrivals",
+      "scene": "pantry.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-email-header-b2b-b2b-wholesale",
+      "filename": "cornermex-email-header-b2b-b2b-wholesale.svg",
+      "folder": "email",
+      "dimensions": "1200x400",
+      "aspect_ratio": "3:1",
+      "format": "svg",
+      "category": "email",
+      "campaign": "b2b-wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-email-signature-banner-b2b-lead-gen",
+      "filename": "cornermex-email-signature-banner-b2b-lead-gen.svg",
+      "folder": "email",
+      "dimensions": "1200x300",
+      "aspect_ratio": "4:1",
+      "format": "svg",
+      "category": "email",
+      "campaign": "b2b-lead-gen",
+      "scene": "restaurant-b2b.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "cornermex-seasonal-ramadan-eid-square-ramadan-eid",
+      "filename": "cornermex-seasonal-ramadan-eid-square-ramadan-eid.svg",
+      "folder": "seasonal",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "seasonal",
+      "campaign": "ramadan-eid",
+      "scene": null,
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "#1F1A15"
+    },
+    {
+      "name": "cornermex-seasonal-ramadan-eid-story-ramadan-eid",
+      "filename": "cornermex-seasonal-ramadan-eid-story-ramadan-eid.svg",
+      "folder": "seasonal",
+      "dimensions": "1080x1920",
+      "aspect_ratio": "9:16",
+      "format": "svg",
+      "category": "seasonal",
+      "campaign": "ramadan-eid",
+      "scene": null,
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "#1F1A15"
+    },
+    {
+      "name": "cornermex-seasonal-uae-national-day-square-uae-national-day",
+      "filename": "cornermex-seasonal-uae-national-day-square-uae-national-day.svg",
+      "folder": "seasonal",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "seasonal",
+      "campaign": "uae-national-day",
+      "scene": null,
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "full-color",
+      "background": "#F8F3E8"
+    },
+    {
+      "name": "cornermex-seasonal-mexican-independence-square-mexican-independence",
+      "filename": "cornermex-seasonal-mexican-independence-square-mexican-independence.svg",
+      "folder": "seasonal",
+      "dimensions": "1080x1080",
+      "aspect_ratio": "1:1",
+      "format": "svg",
+      "category": "seasonal",
+      "campaign": "mexican-independence",
+      "scene": "chiles-lime-corn.jpg",
+      "editable_fields": [
+        "eyebrow",
+        "headline",
+        "body",
+        "cta"
+      ],
+      "logo_variation": "cream",
+      "background": "scene+overlay"
+    },
+    {
+      "name": "Editable copy presets",
+      "filename": "copy-presets.json",
+      "folder": "templates",
+      "dimensions": "-",
+      "aspect_ratio": "-",
+      "format": "json",
+      "category": "template",
+      "use": "Editable headlines, CTAs and campaign copy blocks"
+    },
+    {
+      "name": "Template schema",
+      "filename": "template-schema.json",
+      "folder": "templates",
+      "dimensions": "-",
+      "aspect_ratio": "-",
+      "format": "json",
+      "category": "template",
+      "use": "Template definition schema"
+    }
+  ]
+}
