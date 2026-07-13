@@ -1,32 +1,14 @@
 {
-  "version": 1,
-  "description": "Template definition schema for CornerMex marketing SVGs.",
+  "version": 2,
+  "description": "Template schema for CornerMex v2 premium marketing SVGs.",
   "fields": {
+    "layout": "editorial|split|executive|conversion|minimal|banner",
     "w": "width px",
     "h": "height px",
-    "scene": "master-scenes filename or null",
-    "bg": "hex bg",
-    "overlay": "rgba tint",
-    "eyebrow": "kicker",
-    "headline": "serif headline (\\n for line breaks)",
-    "body": "body line",
-    "cta": "CTA label",
-    "logo": "logo variant slug",
-    "textColor": "hex",
-    "accent": "hex",
-    "align": "left|center|right"
-  },
-  "example": {
-    "w": 1080,
-    "h": 1080,
-    "scene": "pantry.jpg",
-    "eyebrow": "Mexican pantry",
-    "headline": "Real flavour,\nreal ingredients.",
-    "body": "Chiles, tortillas, salsas, beans and more.",
-    "cta": "Shop the pantry",
-    "logo": "cream",
-    "textColor": "#F8F3E8",
-    "accent": "#B4362B",
-    "align": "left"
+    "scene": "master-scenes filename",
+    "eyebrow": "kicker uppercase tracked",
+    "headline": "serif headline, \\n for line break",
+    "body": "sans body 1 line",
+    "cta": "CTA label (uppercase)"
   }
 }

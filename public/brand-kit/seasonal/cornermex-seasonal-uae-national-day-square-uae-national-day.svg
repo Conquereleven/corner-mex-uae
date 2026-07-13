@@ -1,12 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
-  <rect x="0" y="0" width="1080" height="1080" fill="#F8F3E8"/>
-       <circle cx="993.6" cy="162" r="270" fill="#B4362B" opacity="0.12"/>
-       <circle cx="86.4" cy="918" r="216" fill="#3E7A54" opacity="0.1"/>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-full-color.svg" x="777" y="65" width="238" height="77" preserveAspectRatio="xMidYMid meet"/>
-  <text x="65" y="95" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="30" letter-spacing="6" fill="#B4362B" font-weight="600">UAE NATIONAL DAY</text>
-  <text x="65" y="227" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="108" font-weight="500" fill="#2A2622" letter-spacing="-2">Proudly delivering</text>
-<text x="65" y="335" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="108" font-weight="500" fill="#2A2622" letter-spacing="-2">Mexico across the UAE.</text>
-  <text x="65" y="391" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="32" fill="#2A2622" opacity="0.92">A quiet salute from our shelves to yours.</text>
-  <rect x="65" y="931" width="489" height="84" rx="42" fill="#B4362B"/>
-      <text x="309.5" y="986.44" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="35" font-weight="600" fill="#F8F3E8" letter-spacing="2">SHOP THE COLLECTION</text>
+<rect width="1080" height="1080" fill="#F8F3E8"/>
+  <rect x="86" y="86" width="908" height="908" fill="none" stroke="rgba(42,38,34,0.18)" stroke-width="1"/>
+  <image href="../logos/monogram/cornermex-monogram-clay.svg" x="491.5" y="86" width="97" height="97" preserveAspectRatio="xMidYMid meet"/>
+  <text x="540" y="372.62" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="28" letter-spacing="10" fill="#B4362B" font-weight="600">UAE NATIONAL DAY</text>
+  <text x="540" y="543.793" text-anchor="middle" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="119" font-style="italic" font-weight="500" fill="#1C1915" letter-spacing="-1.5">Proudly delivering</text>
+<text x="540" y="665.173" text-anchor="middle" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="119" font-style="italic" font-weight="500" fill="#1C1915" letter-spacing="-1.5">Mexico across the UAE.</text>
+  <text x="540" y="731.38" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="30" fill="#8A7E6E" font-weight="400">A quiet salute from our shelves to yours.</text>
+  <line x1="500" y1="779.38" x2="580" y2="779.38" stroke="#B4362B" stroke-width="1.2"/>
+  <text x="540" y="839.38" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="26" letter-spacing="6" fill="#B4362B" font-weight="600">SHOP THE COLLECTION  &#8250;</text>
 </svg>

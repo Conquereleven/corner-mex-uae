@@ -1,11 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
-  <image href="../master-scenes/pantry.jpg" x="0" y="0" width="1080" height="1080" preserveAspectRatio="xMidYMid slice"/>
-       <rect x="0" y="0" width="1080" height="1080" fill="rgba(42,38,34,0.42)"/>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="777" y="65" width="238" height="77" preserveAspectRatio="xMidYMid meet"/>
-  <text x="65" y="95" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="30" letter-spacing="6" fill="#B4362B" font-weight="600">JUST IN</text>
-  <text x="65" y="227" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="108" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Fresh arrivals</text>
-<text x="65" y="335" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="108" font-weight="500" fill="#F8F3E8" letter-spacing="-2">from Mexico.</text>
-  <text x="65" y="391" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="32" fill="#F8F3E8" opacity="0.92">New shelves, new flavours.</text>
-  <rect x="65" y="931" width="446" height="84" rx="42" fill="#B4362B"/>
-      <text x="288" y="986.44" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="35" font-weight="600" fill="#F8F3E8" letter-spacing="2">VIEW NEW ARRIVALS</text>
+<defs><linearGradient id="tint" x1="0" y1="0" x2="0" y2="1">
+         <stop offset="0" stop-color="#2A2622" stop-opacity="0.55"/>
+         <stop offset="0.55" stop-color="#2A2622" stop-opacity="0.25"/>
+         <stop offset="1" stop-color="#2A2622" stop-opacity="0.72"/>
+       </linearGradient></defs>
+  <image href="../master-scenes/shelf-assortment.jpg" x="0" y="0" width="1080" height="1080" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1080" height="1080" fill="url(#tint)"/>
+  <rect x="59" y="59" width="962" height="962" fill="none" stroke="rgba(248,243,232,0.35)" stroke-width="1"/>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="816" y="59" width="205" height="67" preserveAspectRatio="xMidYMid meet"/>
+  <g><line x1="59" y1="650.76" x2="100.6" y2="650.76" stroke="#B4362B" stroke-width="2"/>
+       <text x="116.2" y="654.76" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="26" letter-spacing="6" fill="#F8F3E8" font-weight="600" opacity="0.95">JUST LANDED</text></g>
+  <text x="59" y="798.662" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="106" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Fresh arrivals</text>
+<text x="59" y="906.782" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="106" font-weight="500" fill="#F8F3E8" letter-spacing="-2">from Mexico.</text>
+  <text x="59" y="959" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="28" fill="#F8F3E8" opacity="0.88" font-weight="400">New shelves, new flavours — curated this month.</text>
+  <g>
+      <text x="59" y="1016.2" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="26" font-weight="600" fill="#F8F3E8" letter-spacing="3">VIEW NEW ARRIVALS</text>
+      <line x1="59" y1="1024.2" x2="405" y2="1024.2" stroke="#F8F3E8" stroke-width="1"/>
+      <line x1="413" y1="1007.88" x2="428.6" y2="1007.88" stroke="#F8F3E8" stroke-width="1.5"/>
+      <line x1="422.1" y1="1000.6" x2="428.6" y2="1007.88" stroke="#F8F3E8" stroke-width="1.5"/>
+      <line x1="422.1" y1="1015.1600000000001" x2="428.6" y2="1007.88" stroke="#F8F3E8" stroke-width="1.5"/>
+    </g>
 </svg>

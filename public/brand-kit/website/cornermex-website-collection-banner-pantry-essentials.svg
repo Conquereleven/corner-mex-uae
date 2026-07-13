@@ -1,11 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" width="1600" height="600">
-  <image href="../master-scenes/pantry.jpg" x="0" y="0" width="1600" height="600" preserveAspectRatio="xMidYMid slice"/>
-       <rect x="0" y="0" width="1600" height="600" fill="rgba(42,38,34,0.42)"/>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="1432" y="36" width="132" height="43" preserveAspectRatio="xMidYMid meet"/>
-  <text x="36" y="53" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="17" letter-spacing="6" fill="#B4362B" font-weight="600">MEXICAN PANTRY</text>
-  <text x="36" y="137" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="60" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Real flavour,</text>
-<text x="36" y="197" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="60" font-weight="500" fill="#F8F3E8" letter-spacing="-2">real ingredients.</text>
-  <text x="36" y="239" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="18" fill="#F8F3E8" opacity="0.92">Chiles, tortillas, salsas, beans and more.</text>
-  <rect x="36" y="518" width="219" height="46" rx="23" fill="#B4362B"/>
-      <text x="145.5" y="548.36" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="19" font-weight="600" fill="#F8F3E8" letter-spacing="2">SHOP THE PANTRY</text>
+<rect width="1600" height="600" fill="#F8F3E8"/>
+  <clipPath id="imgclip"><rect x="0" y="0" width="928" height="600"/></clipPath>
+  <g clip-path="url(#imgclip)">
+    <image href="../master-scenes/pantry-editorial.jpg" x="0" y="0" width="928" height="600" preserveAspectRatio="xMidYMid slice"/>
+  </g>
+  <line x1="928" y1="0" x2="928" y2="600" stroke="rgba(42,38,34,0.18)" stroke-width="1"/>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-full-color.svg" x="982" y="54" width="330" height="107" preserveAspectRatio="xMinYMin meet"/>
+  <g>
+      <line x1="982" y1="144.22" x2="1012.6" y2="144.22" stroke="#B4362B" stroke-width="2"/>
+      <text x="1024.5" y="154.42000000000002" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="17" letter-spacing="6" fill="#B4362B" font-weight="600">THE MEXICAN PANTRY</text>
+    </g>
+  <text x="982" y="239.33159999999998" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="69" font-weight="500" fill="#1C1915" letter-spacing="-2">Real flavour,</text>
+<text x="982" y="309.7116" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="69" font-weight="500" fill="#1C1915" letter-spacing="-2">real ingredients.</text>
+  <text x="982" y="357.38" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="19" fill="#8A7E6E" font-weight="400">Dried chiles, tortillas, salsas, beans, oregano and more.</text>
+  <g>
+      <rect x="982" y="411.78" width="224" height="44" fill="none" stroke="#1C1915" stroke-width="1.2"/>
+      <text x="1094" y="440.82" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="600" fill="#1C1915" letter-spacing="3">SHOP THE PANTRY</text>
+    </g>
+  <text x="982" y="546" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="13" letter-spacing="4" fill="#8A7E6E" font-weight="500">CORNERMEX &#183; UAE</text>
 </svg>

@@ -1,11 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
-  <image href="../master-scenes/restaurant-b2b.jpg" x="0" y="0" width="1200" height="300" preserveAspectRatio="xMidYMid slice"/>
-       <rect x="0" y="0" width="1200" height="300" fill="rgba(42,38,34,0.42)"/>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="1116" y="18" width="66" height="21" preserveAspectRatio="xMidYMid meet"/>
-  <text x="18" y="28" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="10" letter-spacing="6" fill="#B4362B" font-weight="600">B2B LEAD</text>
-  <text x="18" y="82" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="30" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Looking for a reliable</text>
-<text x="18" y="112" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="30" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Mexican supplier?</text>
-  <text x="18" y="146" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#F8F3E8" opacity="0.92">Wholesale supply for restaurants and retailers across the UAE.</text>
-  <rect x="18" y="256" width="127" height="26" rx="13" fill="#B4362B"/>
-      <text x="81.5" y="273.16" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" fill="#F8F3E8" letter-spacing="2">REQUEST A QUOTE</text>
+<defs><linearGradient id="tint" x1="0" y1="0" x2="1" y2="0">
+         <stop offset="0" stop-color="#2A2622" stop-opacity="0.78"/>
+         <stop offset="0.6" stop-color="#2A2622" stop-opacity="0.28"/>
+         <stop offset="1" stop-color="#2A2622" stop-opacity="0.05"/>
+       </linearGradient></defs>
+  <image href="../master-scenes/chef-hospitality.jpg" x="0" y="0" width="1200" height="300" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1200" height="300" fill="url(#tint)"/>
+  <text x="21" y="47.44" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="23" letter-spacing="4" fill="#B4362B" font-weight="600">TRADE ENQUIRIES</text>
+  <text x="21" y="135.67919999999998" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="78" font-weight="500" fill="#F8F3E8" letter-spacing="-1.5">Looking for a</text>
+<text x="21" y="215.23919999999998" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="78" font-weight="500" fill="#F8F3E8" letter-spacing="-1.5">reliable supplier?</text>
+  <text x="1179" y="279" text-anchor="end" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="24" letter-spacing="3" fill="#F8F3E8" font-weight="600">REQUEST A QUOTE  &#8250;</text>
 </svg>

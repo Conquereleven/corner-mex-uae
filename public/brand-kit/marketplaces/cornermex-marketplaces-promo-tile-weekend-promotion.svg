@@ -1,11 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
-  <image href="../master-scenes/chiles-lime-corn.jpg" x="0" y="0" width="1000" height="1000" preserveAspectRatio="xMidYMid slice"/>
-       <rect x="0" y="0" width="1000" height="1000" fill="rgba(42,38,34,0.42)"/>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="720" y="60" width="220" height="72" preserveAspectRatio="xMidYMid meet"/>
-  <text x="60" y="88" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="28" letter-spacing="6" fill="#B4362B" font-weight="600">THIS WEEKEND</text>
-  <text x="60" y="212" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="100" font-weight="500" fill="#F8F3E8" letter-spacing="-2">A little more Mexico</text>
-<text x="60" y="312" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="100" font-weight="500" fill="#F8F3E8" letter-spacing="-2">this weekend.</text>
-  <text x="60" y="366" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="30" fill="#F8F3E8" opacity="0.92">Curated picks for your table.</text>
-  <rect x="60" y="863" width="428" height="77" rx="38.5" fill="#B4362B"/>
-      <text x="274" y="913.82" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="32" font-weight="600" fill="#F8F3E8" letter-spacing="2">SHOP WEEKEND PICKS</text>
+<defs><linearGradient id="tint" x1="0" y1="0" x2="0" y2="1">
+         <stop offset="0" stop-color="#2A2622" stop-opacity="0.55"/>
+         <stop offset="0.55" stop-color="#2A2622" stop-opacity="0.25"/>
+         <stop offset="1" stop-color="#2A2622" stop-opacity="0.72"/>
+       </linearGradient></defs>
+  <image href="../master-scenes/chiles-lime-macro.jpg" x="0" y="0" width="1000" height="1000" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1000" height="1000" fill="url(#tint)"/>
+  <rect x="55" y="55" width="890" height="890" fill="none" stroke="rgba(248,243,232,0.35)" stroke-width="1"/>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="755" y="55" width="190" height="62" preserveAspectRatio="xMidYMid meet"/>
+  <g><line x1="55" y1="599.0799999999999" x2="93.4" y2="599.0799999999999" stroke="#B4362B" stroke-width="2"/>
+       <text x="107.80000000000001" y="603.0799999999999" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="24" letter-spacing="6" fill="#F8F3E8" font-weight="600" opacity="0.95">THIS WEEKEND</text></g>
+  <text x="55" y="738.0459999999999" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="98" font-weight="500" fill="#F8F3E8" letter-spacing="-2">A little more Mexico,</text>
+<text x="55" y="838.006" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="98" font-weight="500" fill="#F8F3E8" letter-spacing="-2">this weekend.</text>
+  <text x="55" y="887" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="26" fill="#F8F3E8" opacity="0.88" font-weight="400">Curated picks for the table.</text>
+  <g>
+      <text x="55" y="939.8" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="600" fill="#F8F3E8" letter-spacing="3">SHOP WEEKEND PICKS</text>
+      <line x1="55" y1="947.8" x2="391" y2="947.8" stroke="#F8F3E8" stroke-width="1"/>
+      <line x1="399" y1="932.12" x2="413.4" y2="932.12" stroke="#F8F3E8" stroke-width="1.5"/>
+      <line x1="407.4" y1="925.4" x2="413.4" y2="932.12" stroke="#F8F3E8" stroke-width="1.5"/>
+      <line x1="407.4" y1="938.8399999999999" x2="413.4" y2="932.12" stroke="#F8F3E8" stroke-width="1.5"/>
+    </g>
 </svg>
