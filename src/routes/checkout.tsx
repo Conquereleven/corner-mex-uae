@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -20,6 +20,11 @@ import { buildCheckoutLegalAcceptancePayload } from "@/lib/legal-acceptance";
 import { getAvailablePaymentMethods, type PaymentMethodId } from "@/lib/payment-methods";
 
 export const Route = createFileRoute("/checkout")({
+  beforeLoad: () => {
+    if (import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED !== "true") {
+      throw redirect({ to: "/cart" });
+    }
+  },
   head: () => ({ meta: [{ title: "Checkout — Corner Mex" }] }),
   component: Checkout,
 });

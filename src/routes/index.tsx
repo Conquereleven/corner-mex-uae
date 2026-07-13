@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { ArrowRight, Flame, Leaf, Wheat, Cookie, CupSoda, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import { PromoBanners } from "@/components/site/PromoBanners";
 import heroChiles from "@/assets/hero-chiles.jpg";
 import featureSalsa from "@/assets/feature-salsa.jpg";
 import b2bKitchen from "@/assets/b2b-kitchen.jpg";
@@ -24,7 +23,6 @@ function Index() {
   return (
     <SiteLayout>
       <Hero />
-      <PromoBanners />
       <Categories />
       <Features />
       <B2BBlock />
@@ -75,8 +73,10 @@ function Hero() {
             />
           </div>
           <div className="absolute -bottom-6 -start-6 hidden rounded-2xl border border-border bg-background/95 px-5 py-4 shadow-xl backdrop-blur sm:block">
-            <div className="font-display text-3xl font-semibold text-foreground">120+</div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">SKUs</div>
+            <div className="font-display text-xl font-semibold text-foreground">CornerMex</div>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground">
+              Single merchant
+            </div>
           </div>
         </div>
       </div>

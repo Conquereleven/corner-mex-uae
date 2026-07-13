@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { supabaseReadOnly as supabaseAdmin } from "@/integrations/supabase/client.readonly.server";
 import { z } from "zod";
 
 const Lang = z.enum(["en", "es", "ar"]).default("en");
@@ -100,15 +100,10 @@ export const listProducts = createServerFn({ method: "GET" })
       categoryId = cat?.id ?? null;
       if (!categoryId) return { items: [], nextCursor: null };
     }
-    let sellerId: string | null = null;
-    if (data.sellerSlug) {
-      const { data: s } = await supabaseAdmin
-        .from("sellers")
-        .select("id")
-        .eq("slug", data.sellerSlug)
-        .maybeSingle();
-      sellerId = s?.id ?? null;
-      if (!sellerId) return { items: [], nextCursor: null };
+    // A2 is single-merchant. Legacy seller filters fail closed instead of
+    // reviving the marketplace data model.
+    if (data.sellerSlug && data.sellerSlug !== "cornermex") {
+      return { items: [], nextCursor: null };
     }
 
     let query = supabaseAdmin
@@ -116,7 +111,6 @@ export const listProducts = createServerFn({ method: "GET" })
       .select(
         `
         id, slug, brand, origin_region, spice_level, is_bulk, created_at,
-        seller:sellers!inner(id, slug, store_name),
         category:categories(slug),
         translations:product_translations(lang, name, description),
         images:product_images(url, sort_order),
@@ -146,7 +140,6 @@ export const listProducts = createServerFn({ method: "GET" })
     }
 
     if (categoryId) query = query.eq("category_id", categoryId);
-    if (sellerId) query = query.eq("seller_id", sellerId);
     if (data.origin) query = query.ilike("origin_region", data.origin);
     if (data.brand) query = query.ilike("brand", data.brand);
     if (data.bulk) query = query.eq("is_bulk", true);
@@ -192,9 +185,7 @@ export const listProducts = createServerFn({ method: "GET" })
         compare_at_price_aed: defaultVariant?.compare_at_price_aed
           ? Number(defaultVariant.compare_at_price_aed)
           : null,
-        seller: row.seller
-          ? { id: row.seller.id, slug: row.seller.slug, name: row.seller.store_name }
-          : null,
+        seller: { id: "00000000-0000-0000-0000-000000000001", slug: "cornermex", name: "CornerMex" },
         category_slug: row.category?.slug ?? null,
         origin_region: row.origin_region,
         spice_level: row.spice_level,
@@ -412,7 +403,6 @@ export const getProduct = createServerFn({ method: "GET" })
       .select(
         `
         id, slug, brand, origin_region, spice_level, is_bulk, is_halal, attrs,
-        seller:sellers(id, slug, store_name),
         category:categories(slug, name_en, name_es, name_ar),
         translations:product_translations(lang, name, description),
         images:product_images(url, alt_text, sort_order),
@@ -450,7 +440,6 @@ export const getProduct = createServerFn({ method: "GET" })
           ? cat.name_ar
           : cat.name_en
       : null;
-    const seller = row.seller as any;
     const attrs =
       row.attrs && typeof row.attrs === "object" && !Array.isArray(row.attrs)
         ? (row.attrs as any)
@@ -478,7 +467,7 @@ export const getProduct = createServerFn({ method: "GET" })
       price_aed: variants[0]?.price_aed ?? 0,
       compare_at_price_aed: variants[0]?.compare_at_price_aed ?? null,
       variants,
-      seller: seller ? { id: seller.id, slug: seller.slug, name: seller.store_name } : null,
+      seller: { id: "00000000-0000-0000-0000-000000000001", slug: "cornermex", name: "CornerMex" },
       category_slug: cat?.slug ?? null,
       category: cat ? { slug: cat.slug, name: categoryName ?? cat.name_en } : null,
       origin_region: row.origin_region,

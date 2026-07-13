@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    "src/config/commerce-env.ts",
+    "src/integrations/supabase/client.readonly.server.ts",
+    "src/integrations/supabase/types.ts"
+  ]
+}
