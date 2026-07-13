@@ -2,16 +2,22 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 const base = process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : "origin/main";
-const names = execFileSync("git", ["diff", "--name-only", "--diff-filter=ACMR", base], { encoding: "utf8" });
+const names = execFileSync("git", ["diff", "--name-only", "--diff-filter=ACMR", base], {
+  encoding: "utf8",
+});
 const files = names
   .split("\n")
   .filter((file) => /\.(?:js|mjs|cjs|ts|tsx)$/.test(file) && file !== "src/routeTree.gen.ts");
 
 function lint(file, content) {
-  const result = spawnSync("npx", ["eslint", "--stdin", "--stdin-filename", file, "--format", "json"], {
-    input: content,
-    encoding: "utf8",
-  });
+  const result = spawnSync(
+    "npx",
+    ["eslint", "--stdin", "--stdin-filename", file, "--format", "json"],
+    {
+      input: content,
+      encoding: "utf8",
+    },
+  );
   return JSON.parse(result.stdout || "[]")[0]?.errorCount ?? Number.POSITIVE_INFINITY;
 }
 

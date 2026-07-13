@@ -1,1 +1,7 @@
-fatal: path 'src/routes/sellers..tsx' does not exist in 'HEAD'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/sellers/$slug')({
+  beforeLoad: () => {
+    throw redirect({ to: '/shop' })
+  },
+})

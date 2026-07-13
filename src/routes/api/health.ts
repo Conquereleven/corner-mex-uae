@@ -15,10 +15,7 @@ export const Route = createFileRoute("/api/health")({
   server: {
     handlers: {
       GET: async () =>
-        Response.json(
-          getHealthPayload(),
-          { headers: { "cache-control": "no-store" } },
-        ),
+        Response.json(getHealthPayload(), { headers: { "cache-control": "no-store" } }),
     },
   },
 });

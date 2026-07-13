@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getCommerceSafetyStatus, validateCommerceEnvironment } from "../../src/config/commerce-env.ts";
+import {
+  getCommerceSafetyStatus,
+  validateCommerceEnvironment,
+} from "../../src/config/commerce-env.ts";
 
 test("commerce capabilities fail closed", () => {
   const status = getCommerceSafetyStatus({});
