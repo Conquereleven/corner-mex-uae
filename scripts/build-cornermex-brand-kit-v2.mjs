@@ -36,6 +36,13 @@ const aspect = (w, h) => { const g=(a,b)=>b?g(b,a%b):a; const d=g(w,h); return `
 const manifest = [];
 const rec = (e) => manifest.push({ ...e, version: 2 });
 
+// current template-folder depth; used so nested folders emit correct relative hrefs
+let REL_PREFIX = "../";
+const setRel = (folder) => {
+  const depth = folder.split("/").filter(Boolean).length;
+  REL_PREFIX = "../".repeat(depth);
+};
+
 // ============ LOGO SVGs (unchanged from v1 identity) ============
 function wordmarkSVG({ corner, mex, uae, showUAE = true }) {
   const height = showUAE ? 260 : 200;
@@ -110,7 +117,7 @@ function photoLayer(w, h, scene, tint = "linear") {
          <stop offset="1" stop-color="${OBSIDIAN}" stop-opacity="0.05"/>
        </linearGradient>`;
   return `<defs>${tintStops}</defs>
-  <image href="../master-scenes/${scene}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"/>
+  <image href="${REL_PREFIX}master-scenes/${scene}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice"/>
   <rect width="${w}" height="${h}" fill="url(#tint)"/>`;
 }
 
@@ -150,7 +157,7 @@ function layoutEditorial({ w, h, scene, eyebrow, headline, body, cta, logo = "cr
   }
   const logoW = Math.min(w * 0.22, Math.round(s * 0.19));
   const logoH = Math.round(logoW * 0.325);
-  const logoEl = `<image href="../logos/horizontal/cornermex-logo-horizontal-${logo}.svg" x="${w - pad - logoW}" y="${pad}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMidYMid meet"/>`;
+  const logoEl = `<image href="${REL_PREFIX}logos/horizontal/cornermex-logo-horizontal-${logo}.svg" x="${w - pad - logoW}" y="${pad}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMidYMid meet"/>`;
   return `${photoLayer(w, h, scene, "linear")}
   <rect x="${pad}" y="${pad}" width="${w - pad * 2}" height="${h - pad * 2}" fill="none" stroke="${HAIRLINE}" stroke-width="1"/>
   ${logoEl}
@@ -198,11 +205,11 @@ function layoutSplit({ w, h, scene, eyebrow, headline, body, cta, logo = "full-c
   }
   const logoW = Math.min(panelW * 0.55, Math.round(s * 0.55));
   const logoH = Math.round(logoW * 0.325);
-  const logoEl = `<image href="../logos/horizontal/cornermex-logo-horizontal-${logo}.svg" x="${tx}" y="${pad}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMinYMin meet"/>`;
+  const logoEl = `<image href="${REL_PREFIX}logos/horizontal/cornermex-logo-horizontal-${logo}.svg" x="${tx}" y="${pad}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMinYMin meet"/>`;
   return `<rect width="${w}" height="${h}" fill="${CREAM}"/>
   <clipPath id="imgclip"><rect x="${imgX}" y="0" width="${imgW}" height="${h}"/></clipPath>
   <g clip-path="url(#imgclip)">
-    <image href="../master-scenes/${scene}" x="${imgX}" y="0" width="${imgW}" height="${h}" preserveAspectRatio="xMidYMid slice"/>
+    <image href="${REL_PREFIX}master-scenes/${scene}" x="${imgX}" y="0" width="${imgW}" height="${h}" preserveAspectRatio="xMidYMid slice"/>
   </g>
   <line x1="${panelX}" y1="0" x2="${panelX}" y2="${h}" stroke="${HAIRLINE_INK}" stroke-width="1"/>
   ${logoEl}
@@ -226,7 +233,7 @@ function layoutMinimal({ w, h, eyebrow, headline, body, cta, accent = CLAY, text
   const totalH = lineH * lines.length + fsEyebrow + 60 + (body ? fsBody + 30 : 0);
   const y0 = h / 2 - totalH / 2 + fsEyebrow;
   const monoW = Math.round(s * 0.09);
-  const monoEl = `<image href="../logos/monogram/cornermex-monogram-${textColor === CREAM ? "cream" : "clay"}.svg" x="${cx - monoW / 2}" y="${pad}" width="${monoW}" height="${monoW}" preserveAspectRatio="xMidYMid meet"/>`;
+  const monoEl = `<image href="${REL_PREFIX}logos/monogram/cornermex-monogram-${textColor === CREAM ? "cream" : "clay"}.svg" x="${cx - monoW / 2}" y="${pad}" width="${monoW}" height="${monoW}" preserveAspectRatio="xMidYMid meet"/>`;
   const eyebrowEl = eyebrow ? `<text x="${cx}" y="${y0}" text-anchor="middle" font-family="${SANS}" font-size="${fsEyebrow}" letter-spacing="10" fill="${accent}" font-weight="600">${esc(String(eyebrow).toUpperCase())}</text>` : "";
   const headStart = y0 + fsEyebrow + 40;
   const headBlock = lines.map((l, i) =>
@@ -287,13 +294,13 @@ function layoutExecutive({ w, h, scene, eyebrow, headline, body, cta, credential
   }
   const logoW = Math.round(s * 0.18);
   const logoH = Math.round(logoW * 0.325);
-  const logoEl = `<image href="../logos/horizontal/cornermex-logo-horizontal-full-color.svg" x="${w - pad * 1.4 - logoW}" y="${bandH - pad - logoH}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMidYMax meet"/>`;
+  const logoEl = `<image href="${REL_PREFIX}logos/horizontal/cornermex-logo-horizontal-full-color.svg" x="${w - pad * 1.4 - logoW}" y="${bandH - pad - logoH}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMidYMax meet"/>`;
   return `<rect width="${w}" height="${h}" fill="${CREAM}"/>
   <line x1="${pad}" y1="${pad}" x2="${w - pad}" y2="${pad}" stroke="${INK}" stroke-width="1"/>
   <line x1="${pad}" y1="${bandH}" x2="${w - pad}" y2="${bandH}" stroke="${HAIRLINE_INK}" stroke-width="1"/>
   <clipPath id="ph"><rect x="0" y="${bandH}" width="${w}" height="${h - bandH}"/></clipPath>
   <g clip-path="url(#ph)">
-    <image href="../master-scenes/${scene}" x="0" y="${bandH}" width="${w}" height="${h - bandH}" preserveAspectRatio="xMidYMid slice"/>
+    <image href="${REL_PREFIX}master-scenes/${scene}" x="0" y="${bandH}" width="${w}" height="${h - bandH}" preserveAspectRatio="xMidYMid slice"/>
     <rect x="0" y="${bandH}" width="${w}" height="${h - bandH}" fill="${OBSIDIAN}" opacity="0.25"/>
   </g>
   ${numEl}
@@ -341,10 +348,10 @@ function layoutConversion({ w, h, scene, eyebrow, headline, body, cta, logo = "f
   return `<rect width="${w}" height="${h}" fill="${CREAM}"/>
   <clipPath id="ic"><rect x="0" y="0" width="${w}" height="${imgH}"/></clipPath>
   <g clip-path="url(#ic)">
-    <image href="../master-scenes/${scene}" x="0" y="0" width="${w}" height="${imgH}" preserveAspectRatio="xMidYMid slice"/>
+    <image href="${REL_PREFIX}master-scenes/${scene}" x="0" y="0" width="${w}" height="${imgH}" preserveAspectRatio="xMidYMid slice"/>
     <rect x="0" y="0" width="${w}" height="${imgH}" fill="${OBSIDIAN}" opacity="0.14"/>
   </g>
-  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="${pad}" y="${pad}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMinYMin meet"/>
+  <image href="${REL_PREFIX}logos/horizontal/cornermex-logo-horizontal-cream.svg" x="${pad}" y="${pad}" width="${logoW}" height="${logoH}" preserveAspectRatio="xMinYMin meet"/>
   <line x1="${tx}" y1="${imgH + pad * 0.4}" x2="${tx + Math.round(s * 0.08)}" y2="${imgH + pad * 0.4}" stroke="${accent}" stroke-width="2"/>
   ${eyebrowEl}
   ${headBlock}
@@ -494,6 +501,7 @@ function renderTemplate({ layout, w, h, camp }) {
 function buildTemplates() {
   const generated = [];
   for (const p of PLAN) {
+    setRel(p.folder);
     for (const key of p.campaigns) {
       const camp = CAMPAIGNS[key];
       const file = `cornermex-${p.folder.split("/").pop()}-${p.size}-${key}.svg`;
