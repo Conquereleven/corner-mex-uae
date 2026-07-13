@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "headlines": [
+    "Mexico, delivered.",
+    "Authentic Mexican groceries across the UAE.",
+    "Stock your kitchen with the real thing.",
+    "Wholesale supply for restaurants and retailers.",
+    "From Mexican shelves to UAE doors.",
+    "Real Mexican flavour, closer to home.",
+    "Mexican essentials for every kitchen.",
+    "Your next favourite flavour is here.",
+    "Authentic products for professional kitchens.",
+    "Mexican flavours for restaurants, retailers, and homes."
+  ],
+  "ctas": [
+    "Shop now",
+    "Explore products",
+    "View new arrivals",
+    "Order wholesale",
+    "Request a quote",
+    "Browse the collection",
+    "Restock now",
+    "Contact our B2B team",
+    "Discover CornerMex",
+    "View wholesale options"
+  ],
+  "campaigns": {
+    "brand-introduction": {
+      "eyebrow": "CornerMex UAE",
+      "headline": "Mexico,\ncloser than ever.",
+      "body": "Authentic Mexican groceries, delivered across the UAE.",
+      "cta": "Discover CornerMex",
+      "scene": "chiles-lime-corn.jpg",
+      "logo": "cream"
+    },
+    "uae-delivery": {
+      "eyebrow": "Delivery across the UAE",
+      "headline": "Mexican favourites,\ndelivered.",
+      "body": "Fresh from Mexico to your door.",
+      "cta": "Shop now",
+      "scene": "uae-delivery.jpg",
+      "logo": "cream"
+    },
+    "b2b-wholesale": {
+      "eyebrow": "B2B wholesale",
+      "headline": "Authentic Mexican\nsupply for pros.",
+      "body": "For restaurants, retailers and hotels across the UAE.",
+      "cta": "Request a quote",
+      "scene": "restaurant-b2b.jpg",
+      "logo": "cream"
+    },
+    "pantry-essentials": {
+      "eyebrow": "Mexican pantry",
+      "headline": "Real flavour,\nreal ingredients.",
+      "body": "Chiles, tortillas, salsas, beans and more.",
+      "cta": "Shop the pantry",
+      "scene": "pantry.jpg",
+      "logo": "cream"
+    },
+    "snacks-sweets": {
+      "eyebrow": "Snacks and sweets",
+      "headline": "Your Mexican\nfavourites are here.",
+      "body": "Tamarind candies, chili peanuts, dulce de leche.",
+      "cta": "Explore snacks",
+      "scene": "pantry.jpg",
+      "logo": "cream"
+    },
+    "restaurant-restock": {
+      "eyebrow": "For professional kitchens",
+      "headline": "Restock your\nMexican kitchen.",
+      "body": "Reliable supply, quality you can plate.",
+      "cta": "Order wholesale",
+      "scene": "restaurant-b2b.jpg",
+      "logo": "cream"
+    },
+    "new-arrivals": {
+      "eyebrow": "Just in",
+      "headline": "Fresh arrivals\nfrom Mexico.",
+      "body": "New shelves, new flavours.",
+      "cta": "View new arrivals",
+      "scene": "pantry.jpg",
+      "logo": "cream"
+    },
+    "weekend-promotion": {
+      "eyebrow": "This weekend",
+      "headline": "A little more Mexico\nthis weekend.",
+      "body": "Curated picks for your table.",
+      "cta": "Shop weekend picks",
+      "scene": "chiles-lime-corn.jpg",
+      "logo": "cream"
+    },
+    "b2b-lead-gen": {
+      "eyebrow": "B2B lead",
+      "headline": "Looking for a reliable\nMexican supplier?",
+      "body": "Wholesale supply for restaurants and retailers across the UAE.",
+      "cta": "Request a quote",
+      "scene": "restaurant-b2b.jpg",
+      "logo": "cream"
+    },
+    "ramadan-eid": {
+      "eyebrow": "Season of gathering",
+      "headline": "Flavour worth\nsharing.",
+      "body": "Thoughtful pantry picks for evenings together.",
+      "cta": "Shop the collection",
+      "scene": null,
+      "bg": "#1F1A15",
+      "textColor": "#F8F3E8",
+      "overlay": "rgba(0,0,0,0.15)",
+      "logo": "cream"
+    },
+    "uae-national-day": {
+      "eyebrow": "UAE National Day",
+      "headline": "Proudly delivering\nMexico across the UAE.",
+      "body": "A quiet salute from our shelves to yours.",
+      "cta": "Shop the collection",
+      "scene": null,
+      "bg": "#F8F3E8",
+      "textColor": "#2A2622",
+      "overlay": "rgba(255,255,255,0)",
+      "logo": "full-color"
+    },
+    "mexican-independence": {
+      "eyebrow": "Mexican season",
+      "headline": "Real Mexico,\nrefined.",
+      "body": "Ingredients, snacks and sweets from home.",
+      "cta": "Shop the collection",
+      "scene": "chiles-lime-corn.jpg",
+      "logo": "cream"
+    }
+  }
+}

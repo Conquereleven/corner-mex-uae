@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1464 600" width="1464" height="600">
+  <image href="../master-scenes/uae-delivery.jpg" x="0" y="0" width="1464" height="600" preserveAspectRatio="xMidYMid slice"/>
+       <rect x="0" y="0" width="1464" height="600" fill="rgba(42,38,34,0.42)"/>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="1296" y="36" width="132" height="43" preserveAspectRatio="xMidYMid meet"/>
+  <text x="36" y="53" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="17" letter-spacing="6" fill="#B4362B" font-weight="600">DELIVERY ACROSS THE UAE</text>
+  <text x="36" y="137" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="60" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Mexican favourites,</text>
+<text x="36" y="197" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="60" font-weight="500" fill="#F8F3E8" letter-spacing="-2">delivered.</text>
+  <text x="36" y="239" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="18" fill="#F8F3E8" opacity="0.92">Fresh from Mexico to your door.</text>
+  <rect x="36" y="518" width="136" height="46" rx="23" fill="#B4362B"/>
+      <text x="104" y="548.36" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="19" font-weight="600" fill="#F8F3E8" letter-spacing="2">SHOP NOW</text>
+</svg>

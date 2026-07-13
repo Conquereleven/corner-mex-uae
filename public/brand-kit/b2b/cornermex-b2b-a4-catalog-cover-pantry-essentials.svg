@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1754" width="1240" height="1754">
+  <image href="../master-scenes/pantry.jpg" x="0" y="0" width="1240" height="1754" preserveAspectRatio="xMidYMid slice"/>
+       <rect x="0" y="0" width="1240" height="1754" fill="rgba(42,38,34,0.42)"/>
+  <image href="../logos/horizontal/cornermex-logo-horizontal-cream.svg" x="893" y="74" width="273" height="89" preserveAspectRatio="xMidYMid meet"/>
+  <text x="74" y="109" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="35" letter-spacing="6" fill="#B4362B" font-weight="600">MEXICAN PANTRY</text>
+  <text x="74" y="257" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="124" font-weight="500" fill="#F8F3E8" letter-spacing="-2">Real flavour,</text>
+<text x="74" y="381" text-anchor="start" font-family="'Cormorant Garamond', 'Cormorant', ui-serif, Georgia, serif" font-size="124" font-weight="500" fill="#F8F3E8" letter-spacing="-2">real ingredients.</text>
+  <text x="74" y="442" text-anchor="start" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="37" fill="#F8F3E8" opacity="0.92">Chiles, tortillas, salsas, beans and more.</text>
+  <rect x="74" y="1584" width="460" height="96" rx="48" fill="#B4362B"/>
+      <text x="304" y="1647.36" text-anchor="middle" font-family="'Inter', ui-sans-serif, system-ui, sans-serif" font-size="40" font-weight="600" fill="#F8F3E8" letter-spacing="2">SHOP THE PANTRY</text>
+</svg>
