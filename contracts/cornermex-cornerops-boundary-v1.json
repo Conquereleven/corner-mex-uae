@@ -1,0 +1,68 @@
+{
+  "contractVersion": "cornermex-cornerops-boundary-v1",
+  "commerceModel": "single_merchant_with_internal_supplier_network",
+  "systems": {
+    "cornermex": "commerce_system_of_record",
+    "cornerops": "operations_intelligence_system_of_record"
+  },
+  "domainOwnership": {
+    "cornermex": ["customer_authentication", "customer_profiles", "customer_pii", "public_catalog_products", "product_activation_state", "sellable_prices", "sellable_inventory", "inventory_reservations", "cart", "checkout", "orders", "order_items", "payments", "delivery_status", "published_promotions", "published_marketing_content", "verified_reviews", "ecommerce_tracking_events", "commercial_analytics"],
+    "cornerops": ["supplier_profiles", "supplier_catalog_listings", "supplier_evidence", "supplier_price_observations", "supplier_moq_evidence", "supplier_lead_time_evidence", "supplier_shelf_life_evidence", "sourcing_requests", "supplygraph_matches", "internal_operational_inventory", "procurement_recommendations", "internal_campaign_plans", "internal_content_drafts", "work_queue", "approvals", "audit_events", "internal_workers", "future_openclaw_execution_policy"]
+  },
+  "entityReferences": ["cornermex_product_id", "cornermex_product_sku", "cornermex_order_id", "cornermex_order_number", "cornermex_customer_ref", "supplygraph_supplier_id", "supplygraph_supplier_key", "supplygraph_catalog_item_id", "cornerops_campaign_id", "cornerops_work_item_id", "cornerops_approval_id", "cornerops_audit_id"],
+  "catalogScopes": {
+    "cornermex": "sellable_products",
+    "supplygraph": "supplier_listings_not_sellable_products"
+  },
+  "inventoryScopes": {
+    "cornermexSellableInventory": "commerce_source_of_truth",
+    "corneropsOperationalInventory": "planning_only_not_physical_stock",
+    "physicalVerification": "requires_explicit_evidence",
+    "automaticSynchronization": "blocked"
+  },
+  "customerDataPolicy": {
+    "piiOwner": "cornermex",
+    "corneropsAccess": "masked_references_or_aggregates_only",
+    "rawCustomerExport": "blocked",
+    "rawContactLists": "blocked",
+    "sellerCustomerDataAccess": "blocked"
+  },
+  "marketingOwnership": {
+    "cornerops": ["campaign_planning", "product_readiness", "supplier_readiness", "internal_briefs", "internal_content_drafts", "audience_planning", "internal_calendar", "recommendations"],
+    "cornermex": ["public_website_content", "active_product_pages", "published_banners", "published_promotions", "campaign_publication", "customer_messaging", "ecommerce_events", "conversion_events", "attributed_sales", "public_brand_assets"]
+  },
+  "reviewsOwnership": {
+    "owner": "cornermex",
+    "corneropsAllowed": ["aggregate_rating", "review_count", "summarized_issue_categories", "readiness_signal"]
+  },
+  "analyticsOwnership": {
+    "rawCommerceAnalytics": "cornermex",
+    "crossDomainOperationalAnalysis": "cornerops",
+    "unavailableIsZero": false
+  },
+  "integrationModes": {
+    "cornermexToCornerops": "read_only_masked_or_aggregated",
+    "corneropsToCornermex": "blocked",
+    "futureApprovedCommandBridge": "not_implemented",
+    "openClawExecution": "disabled"
+  },
+  "readPolicies": {
+    "allowedSourceModes": ["real_read_only", "real_read_only_partial", "unavailable"],
+    "requiredMetadata": ["sourceSystem", "sourceProjectRef", "sourceMode", "readOnly", "writesBlocked", "piiMasked", "observedAt", "freshness", "scope", "warnings"]
+  },
+  "writePolicies": {
+    "corneropsDirectDatabaseWrite": "blocked",
+    "automaticProductActivation": "blocked",
+    "automaticStockCopy": "blocked",
+    "externalContact": "blocked"
+  },
+  "futureCommandBridge": {
+    "status": "not_implemented",
+    "requirements": ["separate_credentials", "signed_requests", "narrow_allowlist", "optimistic_versioning", "idempotency", "expiry", "replay_protection", "audit", "compensation", "kill_switch"]
+  },
+  "roadmapDependencies": {
+    "marketingIntelligenceV116": "blocked_until_joint_gate_a1_accepted",
+    "controlledBusinessActions": "requires_future_command_bridge",
+    "openClaw": "deferred"
+  }
+}
