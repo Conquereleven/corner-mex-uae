@@ -1,0 +1,150 @@
+{
+  "contractVersion": "cornermex-callback-inventory-v1",
+  "containsSecretValues": false,
+  "entries": [
+    {
+      "id": "auth_site_url",
+      "owner": "founder",
+      "classification": "public_url",
+      "futureTarget": "production_domain_pending",
+      "status": "unconfigured",
+      "validationMethod": "supabase_auth_settings_review",
+      "cutoverStep": "set_after_authorization",
+      "rollbackStep": "restore_lovable_site_url",
+      "blocker": "domain_decision",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "auth_redirect_allowlist",
+      "owner": "founder",
+      "classification": "public_url_list",
+      "futureTarget": "production_callbacks_pending",
+      "status": "unconfigured",
+      "validationMethod": "allowlist_exact_match",
+      "cutoverStep": "add_before_auth_bootstrap",
+      "rollbackStep": "restore_previous_allowlist",
+      "blocker": "auth_timing_decision",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "password_reset_callback",
+      "owner": "founder",
+      "classification": "public_url",
+      "futureTarget": "production_reset_callback_pending",
+      "status": "unconfigured",
+      "validationMethod": "controlled_reset_smoke",
+      "cutoverStep": "set_before_auth_bootstrap",
+      "rollbackStep": "restore_previous_callback",
+      "blocker": "auth_timing_decision",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "oauth_callbacks",
+      "owner": "founder",
+      "classification": "public_url_list",
+      "futureTarget": "not_applicable_until_provider_selected",
+      "status": "not_verified",
+      "validationMethod": "provider_console_review",
+      "cutoverStep": "configure_only_if_authorized",
+      "rollbackStep": "disable_provider",
+      "blocker": "provider_not_selected",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "stripe_webhook",
+      "owner": "founder",
+      "classification": "public_endpoint_secret_separate",
+      "futureTarget": "production_webhook_pending",
+      "status": "unconfigured",
+      "validationMethod": "signed_test_event",
+      "cutoverStep": "set_only_after_payment_gate",
+      "rollbackStep": "restore_or_disable_endpoint",
+      "blocker": "payments_disabled",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "payment_success_url",
+      "owner": "founder",
+      "classification": "public_url",
+      "futureTarget": "production_success_pending",
+      "status": "unconfigured",
+      "validationMethod": "test_mode_redirect",
+      "cutoverStep": "set_only_after_payment_gate",
+      "rollbackStep": "restore_previous_url",
+      "blocker": "payments_disabled",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "payment_cancel_url",
+      "owner": "founder",
+      "classification": "public_url",
+      "futureTarget": "production_cancel_pending",
+      "status": "unconfigured",
+      "validationMethod": "test_mode_redirect",
+      "cutoverStep": "set_only_after_payment_gate",
+      "rollbackStep": "restore_previous_url",
+      "blocker": "payments_disabled",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "email_confirmation_url",
+      "owner": "founder",
+      "classification": "public_url",
+      "futureTarget": "production_confirmation_pending",
+      "status": "unconfigured",
+      "validationMethod": "controlled_email_smoke",
+      "cutoverStep": "set_only_after_email_gate",
+      "rollbackStep": "disable_email_and_restore_url",
+      "blocker": "email_disabled",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "railway_public_url",
+      "owner": "platform",
+      "classification": "public_url",
+      "futureTarget": "production_environment_not_created",
+      "status": "not_verified",
+      "validationMethod": "railway_metadata_and_http",
+      "cutoverStep": "create_only_after_authorization",
+      "rollbackStep": "disable_target_and_keep_staging",
+      "blocker": "production_environment_not_authorized",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "future_custom_domain",
+      "owner": "founder",
+      "classification": "public_domain",
+      "futureTarget": "pending_founder_decision",
+      "status": "unconfigured",
+      "validationMethod": "dns_tls_smoke",
+      "cutoverStep": "switch_only_after_authorization",
+      "rollbackStep": "restore_lovable_dns",
+      "blocker": "domain_decision",
+      "founderDecisionRequired": true
+    },
+    {
+      "id": "api_health_readiness",
+      "owner": "platform",
+      "classification": "public_endpoints",
+      "futureTarget": "/api/health,/api/ready",
+      "status": "verified_staging",
+      "validationMethod": "http_200",
+      "cutoverStep": "verify_after_exact_commit_deploy",
+      "rollbackStep": "restore_previous_host",
+      "blocker": "none",
+      "founderDecisionRequired": false
+    },
+    {
+      "id": "lovable_callback_dependency",
+      "owner": "founder",
+      "classification": "configuration_metadata",
+      "futureTarget": "retain_until_observation_closes",
+      "status": "not_verified",
+      "validationMethod": "lovable_settings_review",
+      "cutoverStep": "document_before_changes",
+      "rollbackStep": "retain_lovable_anchor",
+      "blocker": "lovable_access_not_used",
+      "founderDecisionRequired": true
+    }
+  ]
+}

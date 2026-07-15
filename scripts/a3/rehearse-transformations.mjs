@@ -11,8 +11,20 @@ const PROHIBITED_DOMAINS = Object.freeze([
   },
 ]);
 
+export function compareCodePoints(left, right) {
+  const leftCodePoints = Array.from(String(left), (value) => value.codePointAt(0));
+  const rightCodePoints = Array.from(String(right), (value) => value.codePointAt(0));
+  const length = Math.min(leftCodePoints.length, rightCodePoints.length);
+  for (let index = 0; index < length; index += 1) {
+    if (leftCodePoints[index] !== rightCodePoints[index]) {
+      return leftCodePoints[index] - rightCodePoints[index];
+    }
+  }
+  return leftCodePoints.length - rightCodePoints.length;
+}
+
 function sorted(rows, key) {
-  return [...rows].sort((left, right) => String(key(left)).localeCompare(String(key(right))));
+  return [...rows].sort((left, right) => compareCodePoints(key(left), key(right)));
 }
 
 export function validateGreenfieldFixture(fixture) {

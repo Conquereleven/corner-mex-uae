@@ -26,7 +26,24 @@ test("readiness reports ready for a bounded successful target check", async () =
     async () => new Response("[]", { status: 200 }),
   );
   assert.equal(response.status, 200);
-  assert.equal((await response.json()).status, "ready");
+  const body = await response.json();
+  assert.equal(body.status, "ready");
+  assert.deepEqual(body.capabilities, {
+    commerceModel: "single_merchant_with_internal_supplier_network",
+    marketplaceEnabled: false,
+    sellerAuthEnabled: false,
+    sellerPayoutsEnabled: false,
+    commissionsEnabled: false,
+    checkoutEnabled: false,
+    externalEmailEnabled: false,
+    externalMessagesEnabled: false,
+    realPaymentExecutionEnabled: false,
+    automaticImportEnabled: false,
+    automaticInventorySyncEnabled: false,
+    openClawEnabled: false,
+    cornerOpsWriteEnabled: false,
+  });
+  assert.doesNotMatch(JSON.stringify(body), /public-key|target\.supabase\.co/);
 });
 
 test("readiness sanitizes target failures", async () => {

@@ -1,0 +1,107 @@
+{
+  "contractVersion": "cornermex-production-activation-readiness-v1",
+  "sprint": "a3.2a",
+  "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
+  "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
+  "railwayEnvironment": "staging",
+  "railwayService": "cornermex-web",
+  "sourceCommit": "100bb57fc92938a0b803c088abf57a03fa1e8a27",
+  "observedAt": "2026-07-15T14:49:24-06:00",
+  "evidenceValidUntil": "2026-07-16T14:49:24-06:00",
+  "liveReadOnlyVerificationPerformed": true,
+  "evidenceSource": "authenticated_read_only_platform_preflight",
+  "checksPerformed": [
+    "supabase_project",
+    "supabase_schema",
+    "supabase_zero_state",
+    "supabase_advisors",
+    "supabase_migrations",
+    "railway_metadata",
+    "railway_http",
+    "cornerops_boundary"
+  ],
+  "checksNotPerformed": ["lovable_runtime_metadata", "custom_domain_metadata"],
+  "database": {
+    "status": "ACTIVE_HEALTHY",
+    "postgresVersion": "17.6.1.141",
+    "publicTables": 20,
+    "rlsTables": 20,
+    "policies": 37,
+    "schemaFingerprint": "ffce61d5cca7d6e92699f72f4e593bb1",
+    "securityAdvisorFindings": 0,
+    "migrationCount": 4,
+    "zeroState": {
+      "products": 0,
+      "inventory": 0,
+      "orders": 0,
+      "payments": 0,
+      "reviews": 0,
+      "rehearsalSchemas": 0
+    }
+  },
+  "auth": { "users": 0, "bootstrapComplete": false, "status": "not_started" },
+  "storage": {
+    "buckets": 0,
+    "objects": 0,
+    "bootstrapComplete": false,
+    "status": "not_started"
+  },
+  "railway": {
+    "status": "online",
+    "deploymentId": "f84f6c13-8003-4207-839f-d6ff3c0067d2",
+    "sourceRepository": "Conquereleven/corner-mex-uae",
+    "sourceBranch": "NOT_VERIFIED",
+    "rootHttp": 200,
+    "healthHttp": 200,
+    "readinessHttp": 200,
+    "assetHttp": 200,
+    "productionEnvironmentExists": false,
+    "duplicateServiceExists": false
+  },
+  "runtimeFlags": {
+    "checkoutEnabled": false,
+    "paymentsEnabled": false,
+    "emailEnabled": false,
+    "messagingEnabled": false,
+    "automaticImportEnabled": false,
+    "automaticInventorySyncEnabled": false,
+    "openClawEnabled": false,
+    "cornerOpsWritesEnabled": false,
+    "productionActivated": false
+  },
+  "callbacks": { "changed": false, "inventoryStatus": "documented_unconfigured" },
+  "dns": {
+    "changed": false,
+    "customProductionDomain": "NOT_VERIFIED",
+    "currentCommercialAnchor": "Lovable Cloud",
+    "anchorVerification": "documented_not_independently_verified"
+  },
+  "rollback": {
+    "anchor": "Lovable Cloud",
+    "owner": "unassigned",
+    "runbook": "docs/runbooks/cornermex-production-activation-a3-2b.md",
+    "executable": false
+  },
+  "blockers": [
+    "founder_decisions_unresolved",
+    "rollback_owner_unassigned",
+    "lovable_runtime_not_independently_verified",
+    "railway_source_branch_not_verified"
+  ],
+  "founderDecisions": [
+    "railway_production_environment",
+    "lovable_rollback_window",
+    "custom_domain_dns_timing",
+    "auth_bootstrap_timing",
+    "storage_bucket_creation",
+    "first_catalog_batch",
+    "physical_inventory_verification",
+    "checkout_activation",
+    "payment_provider_activation",
+    "email_provider_activation",
+    "customer_communication",
+    "rollback_owner",
+    "observation_window"
+  ],
+  "readyForA3_2bReview": false
+}

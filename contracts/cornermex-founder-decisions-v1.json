@@ -1,0 +1,63 @@
+{
+  "contractVersion": "cornermex-founder-decisions-v1",
+  "decisions": [
+    {
+      "id": "railway_production_environment",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    {
+      "id": "lovable_rollback_window",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    {
+      "id": "custom_domain_dns_timing",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    {
+      "id": "auth_bootstrap_timing",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    {
+      "id": "storage_bucket_creation",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    { "id": "first_catalog_batch", "owner": "founder", "decision": "unanswered", "required": true },
+    {
+      "id": "physical_inventory_verification",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    { "id": "checkout_activation", "owner": "founder", "decision": "unanswered", "required": true },
+    {
+      "id": "payment_provider_activation",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    {
+      "id": "email_provider_activation",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    {
+      "id": "customer_communication",
+      "owner": "founder",
+      "decision": "unanswered",
+      "required": true
+    },
+    { "id": "rollback_owner", "owner": "founder", "decision": "unanswered", "required": true },
+    { "id": "observation_window", "owner": "founder", "decision": "unanswered", "required": true }
+  ]
+}

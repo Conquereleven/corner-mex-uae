@@ -8,7 +8,7 @@ import {
 
 test("commerce capabilities fail closed", () => {
   const status = getCommerceSafetyStatus({});
-  assert.equal(status.commerceModel, "single_merchant");
+  assert.equal(status.commerceModel, "single_merchant_with_internal_supplier_network");
   assert.equal(status.marketplaceEnabled, false);
   assert.equal(status.sellerAuthEnabled, false);
   assert.equal(status.sellerPayoutsEnabled, false);
@@ -16,6 +16,10 @@ test("commerce capabilities fail closed", () => {
   assert.equal(status.checkoutEnabled, false);
   assert.equal(status.externalEmailEnabled, false);
   assert.equal(status.realPaymentExecutionEnabled, false);
+  assert.equal(status.automaticImportEnabled, false);
+  assert.equal(status.automaticInventorySyncEnabled, false);
+  assert.equal(status.openClawEnabled, false);
+  assert.equal(status.cornerOpsWriteEnabled, false);
 });
 
 test("target configuration is required and client secrets are rejected", () => {

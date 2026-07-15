@@ -33,6 +33,11 @@ jobs:
           GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           GITHUB_BEFORE: ${{ github.event.before }}
       - run: npm run validate:a3:target-clean-evidence
+      - run: npm run validate:a3-2a:readiness
+      - run: npm run validate:a3-2a:callbacks
+      - run: npm run validate:a3-2a:founder-decisions
+      - run: npm run test:a3-2a
+      - run: npm run verify:a3:activation-readiness
       - run: npm run lint:changed
 
   type-and-runtime:
