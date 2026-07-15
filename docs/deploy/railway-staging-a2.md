@@ -15,4 +15,4 @@
 
 Only variable names are documented in `.env.example`. Staging uses the target URL and publishable key. Service-role credentials remain server-only and are unnecessary for public readiness. Checkout, payments, email and messages stay disabled. Use the Railway-generated domain; do not change DNS.
 
-Rollback: select the preceding successful deployment `28c20d08-7947-4108-ac7d-30c7ae15bb9f` in Railway and choose Redeploy. Preserve the project/environment and target schema. The current Lovable Cloud deployment remains the commercial rollback anchor.
+Rollback: redeploy the accepted implementation commit `80ec9a5b635e6654c07fa41648bba6899ddd7599` from Git if the current Railway deployment is unhealthy. Railway may retire prior deployment IDs after a newer successful deployment, so the commit is the durable rollback reference. Preserve the project/environment and target schema. The current Lovable Cloud deployment remains the commercial rollback anchor.
