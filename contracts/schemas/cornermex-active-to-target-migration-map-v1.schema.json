@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "mode",
+    "canonicalProjectRef",
+    "mappingCoveragePercent",
+    "mappings"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-active-to-target-migration-map-v1" },
+    "mode": { "const": "greenfield_activation" },
+    "canonicalProjectRef": { "const": "wlrfknmrhowldygmvtvn" },
+    "mappingCoveragePercent": { "const": 100 },
+    "mappings": {
+      "type": "array",
+      "minItems": 25,
+      "items": {
+        "type": "object",
+        "required": [
+          "sourceObject",
+          "sourceDomain",
+          "targetObject",
+          "targetDomain",
+          "migrationDecision",
+          "transformation",
+          "identityStrategy",
+          "foreignKeyStrategy",
+          "moneyStrategy",
+          "timestampStrategy",
+          "privacyClassification",
+          "validationMethod",
+          "rollbackTreatment",
+          "manualReviewRequired",
+          "blockers",
+          "notes"
+        ]
+      }
+    }
+  }
+}

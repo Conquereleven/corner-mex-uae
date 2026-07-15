@@ -1,0 +1,30 @@
+{
+  "synthetic": true,
+  "fixtureVersion": "a3-greenfield-v1",
+  "categories": [
+    { "sourceId": "syn-category-001", "slug": "synthetic-pantry", "name": "Synthetic Pantry" }
+  ],
+  "products": [
+    {
+      "sourceId": "syn-product-001",
+      "categorySourceId": "syn-category-001",
+      "slug": "synthetic-product",
+      "name": "Synthetic Product",
+      "active": false
+    }
+  ],
+  "variants": [
+    {
+      "sourceId": "syn-variant-001",
+      "productSourceId": "syn-product-001",
+      "sku": "SYN-A3-001",
+      "priceMinor": 1250,
+      "currency": "AED"
+    }
+  ],
+  "inventory": [{ "variantSourceId": "syn-variant-001", "available": 0, "reserved": 0 }],
+  "orders": [],
+  "payments": [],
+  "customers": [],
+  "reviews": []
+}

@@ -1,64 +1,75 @@
 # Acceptance A3.1
 
-Status: `a3_1_blocked_by_source_access`
+Status: `a3_1_rehearsal_ready_for_independent_review`
+
+## Decision Change
+
+The founder confirmed that legacy project `ywyiejqnbyzjfatojvkh` no longer exists and `wlrfknmrhowldygmvtvn` is the canonical CornerMex home. A source-to-target production migration is therefore impossible and unnecessary. A3.1 validates a greenfield activation from the empty A2 baseline and never fabricates legacy rows.
 
 ## Baseline
 
-- CornerMex main: `255e7fcb40b6ecb7e6b5928e16d3b2442c735fe5`
+- CornerMex base: `255e7fcb40b6ecb7e6b5928e16d3b2442c735fe5`
 - CornerOps main: `a8a751bdbaf2b12fef3f94c83769bac52fffbaad`
-- Active Supabase: `ywyiejqnbyzjfatojvkh`
-- Target Supabase: `wlrfknmrhowldygmvtvn`
-- Railway staging deployment: `75795c59-5c01-45f3-a64c-458b8fffd583`
+- Canonical Supabase: `wlrfknmrhowldygmvtvn`
+- Railway staging: `CornerMex UAE/staging/cornermex-web`
 - Shared contract checksum: `b87acfbdeac1427e141677616a0d8fbda5ecabc10a4c84012a9bd5d8bc98249a`
 
-## Preflight Result
+## Canonical State
 
-- Both repositories were clean and matched their expected main SHAs.
-- A2 implementation and evidence PRs are merged.
-- Railway `staging/cornermex-web` is online. The default Railway `production` environment has no service configuration.
-- The target retains 20 public tables, 20 RLS-enabled tables, 37 policies, zero business rows, zero Auth users, zero Storage buckets and no `a3_rehearsal_*` schema.
-- Target Security Advisor has no findings. Performance Advisor remains non-blocking and unchanged in category.
-- The active project ref in the local CornerMex configuration matches `ywyiejqnbyzjfatojvkh`.
+- Project status: `ACTIVE_HEALTHY`
+- PostgreSQL: 17
+- Public tables: 20
+- RLS tables: 20
+- Policies: 37
+- Schema fingerprint: `ffce61d5cca7d6e92699f72f4e593bb1`
+- Auth users: 0
+- Storage buckets/objects: 0/0
+- Products, inventory, orders, payments and reviews: 0
+- Rehearsal schemas: 0
+- Security Advisor findings: 0
+- Performance Advisor: classified in the A3 performance plan; no migration applied
 
-## Source Access Blocker
+## Rehearsal
 
-The authenticated Supabase connector can access `nhxpujypqxbjiqqddxqt` and `wlrfknmrhowldygmvtvn`, but not the active project. Metadata and aggregate SQL requests to `ywyiejqnbyzjfatojvkh` are rejected before execution with a permission error. The authenticated Supabase dashboard also redirects away from that project.
+- Fixture: deterministic synthetic catalog only
+- Products/variants: inactive
+- Inventory: zero
+- Customers/orders/payments/reviews: zero
+- Identity mapping: deterministic namespaced UUIDs
+- Money: AED integer minor units; no FX
+- Foreign keys: reconciled
+- Duplicate/orphan counts: zero
+- Output: in-memory/stdout only, never inserted
+- Determinism and idempotency: verified by checksum
 
-The production publishable key permits RLS-scoped HEAD counts for known public tables. Those counts are preserved in the sanitized inventory contract, but they do not prove complete production counts, hidden rows, schema metadata, Auth state, Storage state, policies, grants, functions, triggers, callbacks or integrity. `sellers` is inaccessible even through that public path.
+## Safety
 
-A complete migration map, Auth strategy decision, Storage strategy decision and data reconciliation rehearsal would therefore rely on assumptions. The A3.1 stop conditions require stopping instead.
+- Canonical database writes: none
+- Auth or Storage changes: none
+- Migrations or hardening changes applied: none
+- Production Railway deployment/DNS/callback changes: none
+- Lovable production: unchanged
+- CornerOps runtime/write boundary: unchanged
+- Checkout, payments, sends, product activation, imports and sync: disabled
+- PII/secrets committed: none
 
-## Minimum Access Required
+## Independent Review Gate
 
-Provide a dedicated, temporary production database role or equivalent platform connection that is technically constrained to:
+Claude Code must review the mapping, synthetic transformations, privacy guard, performance classification, Auth/Storage strategies and A3.2 activation/rollback runbook. This PR must not be merged until critical findings are resolved and founder authorization is recorded.
 
-- read-only transactions;
-- catalog/metadata reads;
-- aggregate SELECT access needed for counts, duplicates, orphans and checksums;
-- aggregate Auth/provider inspection without identities;
-- aggregate Storage bucket/object inspection without object paths;
-- no INSERT, UPDATE, DELETE, TRUNCATE, DDL, function execution, Auth mutation, Storage mutation or configuration mutation.
+## Validation Results
 
-Do not paste credentials into GitHub, PRs, chat or documentation. Store any approved credential only in a local ignored secret file or an authenticated connector.
+- A1 contract validation: pass
+- A2 migration validator: pass
+- A2 tests: 7/7 pass
+- A3 inventory and mapping validators: pass
+- A3 tests: 10/10 pass
+- Targeted A3 ESLint and changed-file lint: pass
+- TypeScript: pass
+- Vite production build: pass
+- Railway Node build: pass
+- `git diff --check`: pass
+- Privacy/secret guard: pass, including untracked A3 artifacts
+- Full `eslint .`: not a usable gate because the repository baseline contains unrelated historical formatting debt; A3 adds no lint regression
 
-## Safety Proof
-
-- Production database writes: none.
-- Production migrations, functions, triggers, grants and policies changed: none.
-- Production Auth or Storage changes: none.
-- Production configuration, callbacks, DNS and secrets changed: none.
-- Target schema or data changed: none.
-- Railway deployments triggered: none.
-- CornerOps runtime or data boundary changed: none.
-- External sends, customer/supplier contact, Lovable and OpenClaw calls: none.
-
-## Deferred Until Access Is Resolved
-
-- complete active-source inventory;
-- source-to-target migration map;
-- Auth and Storage migration strategy selection;
-- synthetic transformation and reconciliation tooling;
-- performance hardening classification against live source evidence;
-- A3.2 runbook revision;
-- full A3.1 CI gates and review-ready PR.
-
+Review packet: `docs/migrations/a3/claude-review-handoff-a3.md`.

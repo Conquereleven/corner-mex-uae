@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "canonicalProjectRef",
+    "legacySourceStatus",
+    "migrationMode",
+    "completeInventory",
+    "tables",
+    "businessCounts"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-active-source-inventory-v1" },
+    "legacySourceStatus": { "const": "retired_not_available_for_migration" },
+    "migrationMode": { "const": "greenfield_activation" },
+    "completeInventory": { "const": true },
+    "tables": { "type": "array", "minItems": 20, "uniqueItems": true },
+    "businessCounts": { "type": "object" }
+  }
+}

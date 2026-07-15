@@ -1,0 +1,21 @@
+{
+  "contractVersion": "cornermex-target-clean-state-a3",
+  "projectRef": "wlrfknmrhowldygmvtvn",
+  "observedOn": "2026-07-15",
+  "schemaFingerprint": "ffce61d5cca7d6e92699f72f4e593bb1",
+  "publicTables": 20,
+  "rlsTables": 20,
+  "policies": 37,
+  "authUsers": 0,
+  "storageBuckets": 0,
+  "storageObjects": 0,
+  "products": 0,
+  "inventory": 0,
+  "orders": 0,
+  "payments": 0,
+  "reviews": 0,
+  "rehearsalSchemas": 0,
+  "securityAdvisorFindings": 0,
+  "containsSecrets": false,
+  "containsPii": false
+}

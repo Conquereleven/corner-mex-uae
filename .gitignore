@@ -15,6 +15,24 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+.env
+.env.*
+!.env.example
+
+# A3 migration rehearsal: local-only and never committed
+.a3-rehearsal/
+a3-rehearsal-*/
+rehearsal-output/
+migration-scratch/
+production-exports/
+sanitized-samples/
+storage-manifests/
+auth-manifests/
+*.dump
+*.dump.gz
+*.sql.gz
+.supabase/
+.railway/
 
 # Wrangler / Cloudflare
 .wrangler/
