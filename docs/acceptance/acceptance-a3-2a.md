@@ -24,12 +24,19 @@
 
 ## Current blockers
 
-Founder decisions unresolved; rollback owner unassigned; Railway source branch not verified; Lovable runtime and custom-domain metadata not independently verified. Therefore `readyForA3_2bReview` is false.
+Eleven founder decisions remain unresolved; rollback owner is unassigned; Railway source branch is not verified; Lovable runtime and custom-domain metadata are not independently verified. Therefore `readyForA3_2bReview` remains derived as false.
+
+## Founder decisions recorded
+
+- Railway production environment: `approved_for_a3_2b_execution_only`, decided by Joel / Founder at `2026-07-15T15:21:27-06:00`. Execution has not occurred; no environment, deployment, variables, DNS, callbacks, checkout, payments, products, or inventory changed.
+- Lovable rollback window: approved for 14 full days after a successful future A3.2b cutover. Cutover has not occurred, the rollback window has not started, and Lovable has not been modified or retired.
+
+Pending decisions: custom domain/DNS timing, Auth bootstrap, Storage creation, first catalog batch, physical inventory verification, checkout, payment provider, email provider, customer communication, rollback owner, and observation window.
 
 ## Validation
 
 - A1 contract and A2 migration validators passed
-- A2: 7/7; A3: 29/29; A3.2a: 37/37
+- A2: 7/7; A3: 29/29; A3.2a: 44/44
 - rehearsal and reconciliation checksum: `4d2ce1a09e698cde442fc2148a78db329aba3bc520b135eedb644977c7a6a29c`
 - privacy guard: clean across 32 changed files
 - target clean evidence, readiness, callback, founder-decision, and static verifier gates passed with the expected blocked status

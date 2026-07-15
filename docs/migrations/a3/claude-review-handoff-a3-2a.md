@@ -53,7 +53,18 @@ git diff --check
 - Railway staging evidence: root, health, readiness, and asset HTTP 200
 - No platform mutation or deployment occurred
 - Railway source branch, Lovable runtime metadata, and custom-domain metadata remain `NOT VERIFIED`
-- all founder decisions are unanswered and rollback owner is unassigned
+- Railway production-environment execution is approved for A3.2b only and has not occurred
+- the 14-day post-cutover Lovable rollback window is approved but has not started; Lovable is not retired
+- 11 founder decisions remain unanswered and rollback owner is unassigned
+
+## Founder decision re-review
+
+Verify the existing decision enum remains `yes|no|unanswered` and that only these two entries are `yes`:
+
+1. `railway_production_environment`: `approved_for_a3_2b_execution_only`, with all execution and production flags false.
+2. `lovable_rollback_window`: exactly 14 days after successful future cutover, with cutover, window-start, and retirement false.
+
+The remaining decisions must stay unanswered. `readyForA3_2bReview` must remain false and derived from actual blockers. Re-review the exact updated PR head; do not merge and do not execute A3.2b.
 
 ## Safety assertions
 

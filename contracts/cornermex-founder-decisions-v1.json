@@ -4,14 +4,67 @@
     {
       "id": "railway_production_environment",
       "owner": "founder",
-      "decision": "unanswered",
-      "required": true
+      "decision": "yes",
+      "required": true,
+      "status": "approved_for_a3_2b_execution_only",
+      "scope": "railway_production_environment",
+      "decidedBy": "Joel / Founder",
+      "decidedAt": "2026-07-15T15:21:27-06:00",
+      "executionPhase": "a3.2b",
+      "conditions": [
+        "a3_2a_merged",
+        "claude_approved_exact_a3_2b_execution_head",
+        "founder_authorization_recorded_immediately_before_execution",
+        "fresh_live_read_only_verification_passed",
+        "evidence_unexpired",
+        "no_critical_or_high_findings",
+        "exact_railway_project_environment_service_confirmed",
+        "rollback_owner_assigned",
+        "rollback_plan_executable",
+        "no_duplicate_railway_project_or_service"
+      ],
+      "prohibitions": [
+        "no_production_environment_creation_in_a3_2a",
+        "no_deploy_in_a3_2a",
+        "no_variable_change",
+        "no_dns_change",
+        "no_callback_change",
+        "no_checkout_enablement",
+        "no_payment_enablement",
+        "no_product_activation",
+        "no_inventory_initialization"
+      ],
+      "executionOccurred": false
     },
     {
       "id": "lovable_rollback_window",
       "owner": "founder",
-      "decision": "unanswered",
-      "required": true
+      "decision": "yes",
+      "required": true,
+      "status": "approved_14_day_post_cutover_rollback_window",
+      "scope": "lovable_commercial_rollback_anchor",
+      "decidedBy": "Joel / Founder",
+      "decidedAt": "2026-07-15T15:21:27-06:00",
+      "executionPhase": "post_a3_2b_cutover",
+      "conditions": [
+        "window_begins_only_after_successful_a3_2b_cutover",
+        "lovable_remains_available_and_unmodified_for_14_full_days",
+        "rollback_available_throughout_observation_period",
+        "window_may_extend_while_incidents_remain_unresolved",
+        "retirement_requires_separate_founder_decision_after_window"
+      ],
+      "prohibitions": [
+        "no_lovable_modification",
+        "no_lovable_deletion",
+        "no_lovable_configuration_change",
+        "no_dns_change_in_a3_2a",
+        "no_claim_that_rollback_window_started"
+      ],
+      "executionOccurred": false,
+      "cutoverExecuted": false,
+      "rollbackWindowDays": 14,
+      "rollbackWindowStarted": false,
+      "lovableRetired": false
     },
     {
       "id": "custom_domain_dns_timing",

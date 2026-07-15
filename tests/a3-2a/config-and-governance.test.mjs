@@ -72,10 +72,29 @@ test("founder decisions remain explicit blockers", async () => {
   const original = await readJson("contracts/cornermex-founder-decisions-v1.json");
   const result = await validateFounderDecisions(original);
   assert.equal(result.readyForA3_2bReview, false);
-  assert.equal(result.unanswered.length, 13);
+  assert.deepEqual(result.approved, ["railway_production_environment", "lovable_rollback_window"]);
+  assert.equal(result.unanswered.length, 11);
+  assert.equal(original.decisions[0].executionOccurred, false);
+  assert.equal(original.decisions[1].rollbackWindowDays, 14);
+  assert.equal(original.decisions[1].rollbackWindowStarted, false);
   const missingOwner = structuredClone(original);
   missingOwner.decisions[0].owner = "";
   await assert.rejects(validateFounderDecisions(missingOwner));
+});
+
+test("founder approvals fail closed on execution or rollback contradictions", async () => {
+  const original = await readJson("contracts/cornermex-founder-decisions-v1.json");
+  for (const mutate of [
+    (value) => (value.decisions[0].executionOccurred = true),
+    (value) => (value.decisions[1].rollbackWindowDays = 13),
+    (value) => (value.decisions[1].cutoverExecuted = true),
+    (value) => (value.decisions[1].rollbackWindowStarted = true),
+    (value) => (value.decisions[1].lovableRetired = true),
+  ]) {
+    const invalid = structuredClone(original);
+    mutate(invalid);
+    await assert.rejects(validateFounderDecisions(invalid));
+  }
 });
 
 test("new configuration canaries are detected without disclosure", () => {

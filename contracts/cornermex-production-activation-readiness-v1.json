@@ -56,7 +56,9 @@
     "readinessHttp": 200,
     "assetHttp": 200,
     "productionEnvironmentExists": false,
-    "duplicateServiceExists": false
+    "duplicateServiceExists": false,
+    "productionEnvironmentDecision": "approved_for_a3_2b_execution_only",
+    "productionEnvironmentExecutionOccurred": false
   },
   "runtimeFlags": {
     "checkoutEnabled": false,
@@ -80,7 +82,12 @@
     "anchor": "Lovable Cloud",
     "owner": "unassigned",
     "runbook": "docs/runbooks/cornermex-production-activation-a3-2b.md",
-    "executable": false
+    "executable": false,
+    "windowDecision": "approved_14_day_post_cutover_rollback_window",
+    "approvedWindowDays": 14,
+    "cutoverExecuted": false,
+    "windowStarted": false,
+    "lovableRetired": false
   },
   "blockers": [
     "founder_decisions_unresolved",

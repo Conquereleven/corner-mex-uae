@@ -83,12 +83,28 @@ export async function validateProductionActivationReadiness(contract, options = 
   }
   assert(contract.railway.productionEnvironmentExists === false, "PRODUCTION_ENVIRONMENT_EXISTS");
   assert(contract.railway.duplicateServiceExists === false, "DUPLICATE_RAILWAY_SERVICE_EXISTS");
+  assert(
+    contract.railway.productionEnvironmentDecision === "approved_for_a3_2b_execution_only",
+    "PRODUCTION_ENVIRONMENT_DECISION_INVALID",
+  );
+  assert(
+    contract.railway.productionEnvironmentExecutionOccurred === false,
+    "PRODUCTION_ENVIRONMENT_EXECUTION_MUST_REMAIN_FALSE",
+  );
   for (const flag of BLOCKED_FLAGS) {
     assert(contract.runtimeFlags[flag] === false, `UNSAFE_FLAG_${flag.toUpperCase()}`);
   }
   assert(contract.callbacks.changed === false, "CALLBACKS_CHANGED");
   assert(contract.dns.changed === false, "DNS_CHANGED");
   assert(contract.rollback.anchor === "Lovable Cloud", "ROLLBACK_ANCHOR_MISSING");
+  assert(
+    contract.rollback.windowDecision === "approved_14_day_post_cutover_rollback_window",
+    "LOVABLE_ROLLBACK_WINDOW_DECISION_INVALID",
+  );
+  assert(contract.rollback.approvedWindowDays === 14, "LOVABLE_ROLLBACK_WINDOW_MUST_BE_14_DAYS");
+  assert(contract.rollback.cutoverExecuted === false, "CUTOVER_MUST_NOT_BE_EXECUTED");
+  assert(contract.rollback.windowStarted === false, "LOVABLE_ROLLBACK_WINDOW_NOT_STARTED");
+  assert(contract.rollback.lovableRetired === false, "LOVABLE_MUST_NOT_BE_RETIRED");
   assert(Array.isArray(contract.blockers), "BLOCKERS_INVALID");
   assert(Array.isArray(contract.founderDecisions), "FOUNDER_DECISIONS_INVALID");
 

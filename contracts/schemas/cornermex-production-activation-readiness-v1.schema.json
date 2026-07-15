@@ -133,7 +133,9 @@
         "readinessHttp",
         "assetHttp",
         "productionEnvironmentExists",
-        "duplicateServiceExists"
+        "duplicateServiceExists",
+        "productionEnvironmentDecision",
+        "productionEnvironmentExecutionOccurred"
       ],
       "properties": {
         "status": { "const": "online" },
@@ -145,7 +147,11 @@
         "readinessHttp": { "const": 200 },
         "assetHttp": { "const": 200 },
         "productionEnvironmentExists": { "const": false },
-        "duplicateServiceExists": { "const": false }
+        "duplicateServiceExists": { "const": false },
+        "productionEnvironmentDecision": {
+          "const": "approved_for_a3_2b_execution_only"
+        },
+        "productionEnvironmentExecutionOccurred": { "const": false }
       }
     },
     "runtimeFlags": {
@@ -204,12 +210,29 @@
     "rollback": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["anchor", "owner", "runbook", "executable"],
+      "required": [
+        "anchor",
+        "owner",
+        "runbook",
+        "executable",
+        "windowDecision",
+        "approvedWindowDays",
+        "cutoverExecuted",
+        "windowStarted",
+        "lovableRetired"
+      ],
       "properties": {
         "anchor": { "const": "Lovable Cloud" },
         "owner": { "type": "string", "minLength": 1 },
         "runbook": { "const": "docs/runbooks/cornermex-production-activation-a3-2b.md" },
-        "executable": { "type": "boolean" }
+        "executable": { "type": "boolean" },
+        "windowDecision": {
+          "const": "approved_14_day_post_cutover_rollback_window"
+        },
+        "approvedWindowDays": { "const": 14 },
+        "cutoverExecuted": { "const": false },
+        "windowStarted": { "const": false },
+        "lovableRetired": { "const": false }
       }
     },
     "blockers": {

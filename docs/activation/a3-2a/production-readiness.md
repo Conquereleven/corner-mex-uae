@@ -27,10 +27,17 @@ The following default to false and accept only `true` or `false`: marketplace, s
 
 ## Blockers
 
-- all 13 founder decisions remain unanswered
+- 11 founder decisions remain unanswered; only Railway production-environment execution for A3.2b and the 14-day Lovable rollback window are approved
 - rollback owner is unassigned
 - Railway source branch is not verified
 - Lovable runtime metadata is not independently verified
 - custom-domain metadata was not checked
 
 Run `npm run verify:a3:activation-readiness` for committed evidence. Live mode is separate, explicit, read-only, and requires an injected approved adapter; it never silently falls back to static evidence.
+
+## Approved founder decisions
+
+- Railway production environment: approved for A3.2b execution only. It is not created, activated, or deployed. All runtime action flags remain false.
+- Lovable rollback: approved for 14 full days after a successful future cutover. Cutover has not occurred, the window has not started, and Lovable remains the unmodified rollback anchor.
+
+Decision timestamp: `2026-07-15T15:21:27-06:00`. Decider: Joel / Founder.

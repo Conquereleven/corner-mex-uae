@@ -18,6 +18,24 @@ test("committed readiness is valid but blocked by documented decisions", async (
   assert.ok(result.blockers.includes("founder_decisions_unresolved"));
 });
 
+test("approved Railway execution remains future-only with commerce disabled", async () => {
+  const contract = await readContract();
+  assert.equal(contract.railway.productionEnvironmentDecision, "approved_for_a3_2b_execution_only");
+  assert.equal(contract.railway.productionEnvironmentExecutionOccurred, false);
+  assert.equal(contract.railway.productionEnvironmentExists, false);
+  assert.equal(contract.runtimeFlags.productionActivated, false);
+  assert.equal(contract.runtimeFlags.checkoutEnabled, false);
+  assert.equal(contract.runtimeFlags.paymentsEnabled, false);
+});
+
+test("approved Lovable rollback window is 14 days and has not started", async () => {
+  const contract = await readContract();
+  assert.equal(contract.rollback.approvedWindowDays, 14);
+  assert.equal(contract.rollback.cutoverExecuted, false);
+  assert.equal(contract.rollback.windowStarted, false);
+  assert.equal(contract.rollback.lovableRetired, false);
+});
+
 const mutations = [
   ["wrong project", (v) => (v.canonicalProjectRef = "wrong")],
   ["wrong Railway project", (v) => (v.railwayProjectId = "wrong")],
@@ -40,6 +58,10 @@ const mutations = [
   ["rollback anchor missing", (v) => (v.rollback.anchor = "")],
   ["schema drift", (v) => (v.database.schemaFingerprint = "wrong")],
   ["fake readiness", (v) => (v.readyForA3_2bReview = true)],
+  ["Railway execution claimed", (v) => (v.railway.productionEnvironmentExecutionOccurred = true)],
+  ["wrong Lovable window", (v) => (v.rollback.approvedWindowDays = 13)],
+  ["Lovable window started", (v) => (v.rollback.windowStarted = true)],
+  ["Lovable retired", (v) => (v.rollback.lovableRetired = true)],
 ];
 
 for (const [name, mutate] of mutations) {
