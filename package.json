@@ -19,7 +19,14 @@
     "build:railway": "NITRO_PRESET=node_server vite build",
     "start:railway": "node .output/server/index.mjs",
     "lint:changed": "node scripts/lint-changed-a2.mjs",
-    "test:a2": "node --test tests/a2/*.test.mjs"
+    "test:a2": "node --test tests/a2/*.test.mjs",
+    "test:a3": "node --test tests/a3/*.test.mjs",
+    "validate:a3:inventory": "node scripts/a3/validate-canonical-baseline-inventory.mjs",
+    "validate:a3:mapping": "node scripts/a3/validate-migration-map.mjs",
+    "rehearse:a3": "node scripts/a3/rehearse-transformations.mjs",
+    "reconcile:a3": "node scripts/a3/reconcile-rehearsal.mjs",
+    "privacy:a3": "node scripts/a3/privacy-guard.mjs",
+    "validate:a3:target-clean-evidence": "node scripts/a3/validate-target-clean-evidence.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

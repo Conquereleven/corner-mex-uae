@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "canonicalProjectRef",
+    "legacySourceStatus",
+    "migrationMode",
+    "completeInventory",
+    "tables",
+    "requiredExclusionMappings",
+    "businessCounts"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-canonical-baseline-inventory-v1" },
+    "legacySourceStatus": { "const": "retired_not_available_for_migration" },
+    "migrationMode": { "const": "greenfield_activation" },
+    "completeInventory": { "const": true },
+    "tables": { "type": "array", "minItems": 20, "maxItems": 20, "uniqueItems": true },
+    "requiredExclusionMappings": {
+      "type": "array",
+      "const": ["legacy.marketplace", "legacy.stock_50", "cornerops.planning_stock_100"]
+    },
+    "businessCounts": { "type": "object" }
+  }
+}

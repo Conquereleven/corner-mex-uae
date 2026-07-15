@@ -23,6 +23,16 @@ jobs:
       - run: npm run test:alignment
       - run: npm run validate:a2-migration
       - run: npm run test:a2
+      - run: npm run validate:a3:inventory
+      - run: npm run validate:a3:mapping
+      - run: npm run test:a3
+      - run: npm run rehearse:a3
+      - run: npm run reconcile:a3
+      - run: npm run privacy:a3
+        env:
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_BEFORE: ${{ github.event.before }}
+      - run: npm run validate:a3:target-clean-evidence
       - run: npm run lint:changed
 
   type-and-runtime:

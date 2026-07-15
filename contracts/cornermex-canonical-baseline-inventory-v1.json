@@ -1,0 +1,67 @@
+{
+  "contractVersion": "cornermex-canonical-baseline-inventory-v1",
+  "generatedForSprint": "a3.1",
+  "legacySourceProjectRef": "ywyiejqnbyzjfatojvkh",
+  "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
+  "legacySourceStatus": "retired_not_available_for_migration",
+  "migrationMode": "greenfield_activation",
+  "containsPii": false,
+  "containsSecrets": false,
+  "completeInventory": true,
+  "inventoryScope": "canonical_target_baseline",
+  "schemaFingerprint": "ffce61d5cca7d6e92699f72f4e593bb1",
+  "publicTableCount": 20,
+  "rlsTableCount": 20,
+  "policyCount": 37,
+  "authUserCount": 0,
+  "storageBucketCount": 0,
+  "storageObjectCount": 0,
+  "businessCounts": {
+    "products": 0,
+    "inventory": 0,
+    "orders": 0,
+    "payments": 0,
+    "reviews": 0
+  },
+  "tables": [
+    "addresses",
+    "b2b_leads",
+    "cart_items",
+    "carts",
+    "catalog_events",
+    "categories",
+    "coupon_redemptions",
+    "coupons",
+    "inventory",
+    "inventory_movements",
+    "order_items",
+    "orders",
+    "payments",
+    "product_images",
+    "product_reviews",
+    "product_translations",
+    "product_variants",
+    "products",
+    "profiles",
+    "user_roles"
+  ],
+  "excludedLegacyDomains": [
+    "seller_accounts",
+    "seller_payouts",
+    "commissions",
+    "split_orders",
+    "marketplace_storefronts",
+    "legacy_stock_50",
+    "cornerops_planning_stock_100"
+  ],
+  "requiredExclusionMappings": [
+    "legacy.marketplace",
+    "legacy.stock_50",
+    "cornerops.planning_stock_100"
+  ],
+  "warnings": [
+    "The retired source does not exist and no production rows can be migrated from it.",
+    "Greenfield activation must not invent customer, order, payment or inventory records.",
+    "Catalog and inventory population require a separately approved data-load plan."
+  ]
+}
