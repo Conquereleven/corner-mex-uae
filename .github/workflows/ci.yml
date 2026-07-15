@@ -23,6 +23,13 @@ jobs:
       - run: npm run test:alignment
       - run: npm run validate:a2-migration
       - run: npm run test:a2
+      - run: npm run validate:a3:inventory
+      - run: npm run validate:a3:mapping
+      - run: npm run test:a3
+      - run: npm run rehearse:a3
+      - run: npm run reconcile:a3
+      - run: npm run privacy:a3
+      - run: npm run verify:a3:target-clean
       - run: npm run lint:changed
 
   type-and-runtime:
