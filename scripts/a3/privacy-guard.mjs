@@ -13,6 +13,15 @@ export const FORBIDDEN_PATTERNS = Object.freeze([
   ["supabase_service_role_jwt", /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/g],
   ["supabase_secret", /sb_(?:secret|service_role)_[A-Za-z0-9_-]{16,}/gi],
   ["stripe_secret", /(?:sk_(?:live|test)|whsec)_[A-Za-z0-9_-]{12,}/g],
+  ["railway_token", /(?:RAILWAY_TOKEN|RAILWAY_API_TOKEN)[ \t]*[=:][ \t]*[A-Za-z0-9._-]{16,}/gi],
+  [
+    "oauth_client_secret",
+    /(?:OAUTH_CLIENT_SECRET|CLIENT_SECRET)[ \t]*[=:][ \t]*[A-Za-z0-9._-]{12,}/gi,
+  ],
+  [
+    "email_provider_key",
+    /(?:RESEND_API_KEY|SENDGRID_API_KEY)[ \t]*[=:][ \t]*[A-Za-z0-9._-]{12,}/gi,
+  ],
   ["bearer_token", /Bearer\s+[A-Za-z0-9._-]{20,}/g],
   ["email", /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi],
   ["international_phone", /\+[1-9]\d(?:[\s().-]*\d){7,14}/g],

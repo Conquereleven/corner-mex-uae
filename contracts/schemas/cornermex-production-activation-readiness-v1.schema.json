@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cornermex-production-activation-readiness-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "sprint",
+    "canonicalProjectRef",
+    "railwayProjectId",
+    "railwayEnvironment",
+    "railwayService",
+    "sourceCommit",
+    "observedAt",
+    "evidenceValidUntil",
+    "liveReadOnlyVerificationPerformed",
+    "evidenceSource",
+    "checksPerformed",
+    "checksNotPerformed",
+    "database",
+    "auth",
+    "storage",
+    "railway",
+    "runtimeFlags",
+    "callbacks",
+    "dns",
+    "rollback",
+    "blockers",
+    "founderDecisions",
+    "readyForA3_2bReview"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-production-activation-readiness-v1" },
+    "sprint": { "const": "a3.2a" },
+    "canonicalProjectRef": { "const": "wlrfknmrhowldygmvtvn" },
+    "railwayProjectId": { "const": "06d2ecdd-3c03-4480-8299-48c539595a94" },
+    "railwayEnvironment": { "const": "staging" },
+    "railwayService": { "const": "cornermex-web" },
+    "sourceCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "evidenceValidUntil": { "type": "string", "format": "date-time" },
+    "liveReadOnlyVerificationPerformed": { "type": "boolean" },
+    "evidenceSource": {
+      "enum": ["committed_static_evidence", "authenticated_read_only_platform_preflight"]
+    },
+    "checksPerformed": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "checksNotPerformed": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "postgresVersion",
+        "publicTables",
+        "rlsTables",
+        "policies",
+        "schemaFingerprint",
+        "securityAdvisorFindings",
+        "migrationCount",
+        "zeroState"
+      ],
+      "properties": {
+        "status": { "const": "ACTIVE_HEALTHY" },
+        "postgresVersion": { "type": "string", "minLength": 1 },
+        "publicTables": { "const": 20 },
+        "rlsTables": { "const": 20 },
+        "policies": { "type": "integer", "minimum": 37 },
+        "schemaFingerprint": { "const": "ffce61d5cca7d6e92699f72f4e593bb1" },
+        "securityAdvisorFindings": { "const": 0 },
+        "migrationCount": { "const": 4 },
+        "zeroState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "products",
+            "inventory",
+            "orders",
+            "payments",
+            "reviews",
+            "rehearsalSchemas"
+          ],
+          "properties": {
+            "products": { "const": 0 },
+            "inventory": { "const": 0 },
+            "orders": { "const": 0 },
+            "payments": { "const": 0 },
+            "reviews": { "const": 0 },
+            "rehearsalSchemas": { "const": 0 }
+          }
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["users", "bootstrapComplete", "status"],
+      "properties": {
+        "users": { "const": 0 },
+        "bootstrapComplete": { "const": false },
+        "status": { "const": "not_started" }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["buckets", "objects", "bootstrapComplete", "status"],
+      "properties": {
+        "buckets": { "const": 0 },
+        "objects": { "const": 0 },
+        "bootstrapComplete": { "const": false },
+        "status": { "const": "not_started" }
+      }
+    },
+    "railway": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "deploymentId",
+        "sourceRepository",
+        "sourceBranch",
+        "rootHttp",
+        "healthHttp",
+        "readinessHttp",
+        "assetHttp",
+        "productionEnvironmentExists",
+        "duplicateServiceExists",
+        "productionEnvironmentDecision",
+        "productionEnvironmentExecutionOccurred"
+      ],
+      "properties": {
+        "status": { "const": "online" },
+        "deploymentId": { "type": "string", "format": "uuid" },
+        "sourceRepository": { "const": "Conquereleven/corner-mex-uae" },
+        "sourceBranch": { "type": "string", "minLength": 1 },
+        "rootHttp": { "const": 200 },
+        "healthHttp": { "const": 200 },
+        "readinessHttp": { "const": 200 },
+        "assetHttp": { "const": 200 },
+        "productionEnvironmentExists": { "const": false },
+        "duplicateServiceExists": { "const": false },
+        "productionEnvironmentDecision": {
+          "const": "approved_for_a3_2b_execution_only"
+        },
+        "productionEnvironmentExecutionOccurred": { "const": false }
+      }
+    },
+    "runtimeFlags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkoutEnabled",
+        "paymentsEnabled",
+        "emailEnabled",
+        "messagingEnabled",
+        "automaticImportEnabled",
+        "automaticInventorySyncEnabled",
+        "openClawEnabled",
+        "cornerOpsWritesEnabled",
+        "productionActivated"
+      ],
+      "properties": {
+        "checkoutEnabled": { "const": false },
+        "paymentsEnabled": { "const": false },
+        "emailEnabled": { "const": false },
+        "messagingEnabled": { "const": false },
+        "automaticImportEnabled": { "const": false },
+        "automaticInventorySyncEnabled": { "const": false },
+        "openClawEnabled": { "const": false },
+        "cornerOpsWritesEnabled": { "const": false },
+        "productionActivated": { "const": false }
+      }
+    },
+    "callbacks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changed", "inventoryStatus"],
+      "properties": {
+        "changed": { "const": false },
+        "inventoryStatus": { "enum": ["documented_unconfigured", "verified_unchanged"] }
+      }
+    },
+    "dns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed",
+        "customProductionDomain",
+        "currentCommercialAnchor",
+        "anchorVerification"
+      ],
+      "properties": {
+        "changed": { "const": false },
+        "customProductionDomain": { "type": "string" },
+        "currentCommercialAnchor": { "const": "Lovable Cloud" },
+        "anchorVerification": {
+          "enum": ["documented_not_independently_verified", "independently_verified"]
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "anchor",
+        "owner",
+        "runbook",
+        "executable",
+        "windowDecision",
+        "approvedWindowDays",
+        "cutoverExecuted",
+        "windowStarted",
+        "lovableRetired"
+      ],
+      "properties": {
+        "anchor": { "const": "Lovable Cloud" },
+        "owner": { "type": "string", "minLength": 1 },
+        "runbook": { "const": "docs/runbooks/cornermex-production-activation-a3-2b.md" },
+        "executable": { "type": "boolean" },
+        "windowDecision": {
+          "const": "approved_14_day_post_cutover_rollback_window"
+        },
+        "approvedWindowDays": { "const": 14 },
+        "cutoverExecuted": { "const": false },
+        "windowStarted": { "const": false },
+        "lovableRetired": { "const": false }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "founderDecisions": {
+      "type": "array",
+      "minItems": 13,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "readyForA3_2bReview": { "type": "boolean" }
+  }
+}

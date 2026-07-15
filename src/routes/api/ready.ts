@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { validateCommerceEnvironment } from "../../config/commerce-env.ts";
+import { getCommerceSafetyStatus, validateCommerceEnvironment } from "../../config/commerce-env.ts";
 
 const READINESS_TIMEOUT_MS = 4_000;
 
@@ -21,6 +21,7 @@ export async function getReadinessResponse(
   fetcher: typeof fetch = fetch,
 ): Promise<Response> {
   const validation = validateCommerceEnvironment(environment);
+  const capabilities = validation.config ? getCommerceSafetyStatus(environment) : undefined;
   if (!validation.valid) {
     return Response.json(
       {
@@ -29,6 +30,7 @@ export async function getReadinessResponse(
         target: "unavailable",
         missing: validation.missing,
         errors: validation.errors,
+        ...(capabilities ? { capabilities } : {}),
       },
       { status: 503, headers: { "cache-control": "no-store" } },
     );
@@ -45,12 +47,18 @@ export async function getReadinessResponse(
         status: ready ? "ready" : "degraded",
         service: "cornermex-web",
         target: ready ? "reachable" : "unavailable",
+        capabilities,
       },
       { status: ready ? 200 : 503, headers: { "cache-control": "no-store" } },
     );
   } catch {
     return Response.json(
-      { status: "degraded", service: "cornermex-web", target: "unavailable" },
+      {
+        status: "degraded",
+        service: "cornermex-web",
+        target: "unavailable",
+        capabilities,
+      },
       { status: 503, headers: { "cache-control": "no-store" } },
     );
   }

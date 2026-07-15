@@ -5,7 +5,7 @@ export function getHealthPayload(environment: Record<string, string | undefined>
     status: "ok",
     service: "cornermex-web",
     runtime: "node",
-    commerceModel: "single_merchant",
+    commerceModel: "single_merchant_with_internal_supplier_network",
     version: environment.npm_package_version ?? "unversioned",
     commit: environment.RAILWAY_GIT_COMMIT_SHA?.slice(0, 12) ?? "unknown",
   };
