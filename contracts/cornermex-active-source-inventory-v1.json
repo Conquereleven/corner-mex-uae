@@ -1,0 +1,72 @@
+{
+  "contractVersion": "cornermex-active-source-inventory-v1",
+  "generatedForSprint": "a3.1",
+  "sourceProjectRef": "ywyiejqnbyzjfatojvkh",
+  "status": "partial_blocked_by_source_access",
+  "containsPii": false,
+  "containsSecrets": false,
+  "evidenceScope": "public_rls_visible_aggregate_only",
+  "completeInventory": false,
+  "knownObjectCountFromRepositoryTypes": 36,
+  "verifiedVisibleCounts": {
+    "categories": 6,
+    "currency_rates": 5,
+    "product_images": 243,
+    "product_translations": 450,
+    "product_variants": 150,
+    "products": 150,
+    "shipping_rates": 2,
+    "shipping_zones": 2
+  },
+  "visibleZeroCountObjects": [
+    "addresses",
+    "anomaly_events",
+    "b2b_leads",
+    "catalog_events",
+    "coupon_redemptions",
+    "coupons",
+    "lead_notes",
+    "lead_status_history",
+    "loyalty_accounts",
+    "loyalty_transactions",
+    "newsletter_subscribers",
+    "notifications",
+    "order_events",
+    "order_items",
+    "order_notes",
+    "order_notifications",
+    "orders",
+    "payments",
+    "product_reviews",
+    "product_views",
+    "profiles",
+    "promo_banners",
+    "returns",
+    "seller_payouts",
+    "shipments",
+    "user_roles",
+    "wishlists"
+  ],
+  "inaccessibleObjects": [
+    {
+      "name": "sellers",
+      "reason": "public_path_http_401"
+    }
+  ],
+  "unknownDomains": [
+    "auth",
+    "storage",
+    "live_schema_catalog",
+    "policies_and_grants",
+    "functions_and_triggers",
+    "cron_and_webhooks",
+    "duplicates_and_orphans",
+    "money_and_inventory_aggregates",
+    "callbacks"
+  ],
+  "warnings": [
+    "RLS-visible counts are not complete production totals.",
+    "Repository-generated types are discovery evidence, not live schema proof.",
+    "No migration map may be approved from this partial manifest."
+  ]
+}
