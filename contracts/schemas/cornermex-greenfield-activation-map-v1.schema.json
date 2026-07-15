@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "contractVersion",
+    "mode",
+    "canonicalProjectRef",
+    "mappingCoveragePercent",
+    "mappings"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-greenfield-activation-map-v1" },
+    "mode": { "const": "greenfield_activation" },
+    "canonicalProjectRef": { "const": "wlrfknmrhowldygmvtvn" },
+    "mappingCoveragePercent": { "const": 100 },
+    "mappings": {
+      "type": "array",
+      "minItems": 25,
+      "items": {
+        "type": "object",
+        "required": [
+          "sourceObject",
+          "sourceDomain",
+          "targetObject",
+          "targetDomain",
+          "migrationDecision",
+          "transformation",
+          "identityStrategy",
+          "foreignKeyStrategy",
+          "moneyStrategy",
+          "timestampStrategy",
+          "privacyClassification",
+          "validationMethod",
+          "rollbackTreatment",
+          "manualReviewRequired",
+          "blockers",
+          "notes"
+        ],
+        "properties": {
+          "sourceDomain": {
+            "enum": [
+              "analytics",
+              "auth",
+              "authorization",
+              "b2b",
+              "catalog",
+              "checkout",
+              "customers",
+              "inventory",
+              "marketplace_legacy",
+              "orders",
+              "payments",
+              "planning_only",
+              "promotions",
+              "reviews",
+              "storage",
+              "unsafe_legacy"
+            ]
+          },
+          "targetDomain": {
+            "enum": [
+              "analytics",
+              "auth",
+              "authorization",
+              "b2b",
+              "catalog",
+              "checkout",
+              "customers",
+              "excluded",
+              "inventory",
+              "orders",
+              "payments",
+              "promotions",
+              "reviews",
+              "storage"
+            ]
+          },
+          "migrationDecision": {
+            "enum": ["excluded", "initialize_empty", "new_enrollment_only", "runtime_only"]
+          },
+          "privacyClassification": {
+            "enum": [
+              "business_contact_pii",
+              "commercial_internal",
+              "customer_private",
+              "internal_planning",
+              "legacy_unknown",
+              "none",
+              "pii",
+              "pseudonymous_analytics",
+              "public_catalog",
+              "public_media",
+              "public_moderated",
+              "public_or_private_by_bucket",
+              "restricted",
+              "restricted_identity",
+              "restricted_payment",
+              "sensitive_commerce",
+              "sensitive_pii"
+            ]
+          },
+          "moneyStrategy": {
+            "enum": [
+              "integer_minor_units_aed_no_fx",
+              "integer_minor_units_or_basis_points",
+              "not_applicable"
+            ]
+          },
+          "timestampStrategy": { "enum": ["not_applicable", "utc_iso_8601"] },
+          "validationMethod": {
+            "enum": [
+              "approved_enrollment_test",
+              "bounded_event_test",
+              "controlled_checkout_test",
+              "exclusion_assertion",
+              "intake_rls_test",
+              "promotion_contract_test",
+              "rls_authorization_test",
+              "rls_ownership_test",
+              "schema_contract",
+              "sha256_size_policy_parity",
+              "staging_auth_flow",
+              "staging_cart_test",
+              "storage_manifest_checksum",
+              "stripe_test_mode_reconciliation",
+              "synthetic_rehearsal",
+              "verified_purchase_policy_test",
+              "zero_baseline_reconciliation",
+              "zero_baseline_then_controlled_test"
+            ]
+          },
+          "rollbackTreatment": {
+            "enum": [
+              "disable_account_preserve_audit",
+              "disable_coupon",
+              "disable_references_remove_unreferenced",
+              "discard_unactivated_output",
+              "expire_cart",
+              "moderate_unpublish",
+              "not_applicable",
+              "owner_controlled_delete",
+              "preserve_audit",
+              "provider_reconciliation_required",
+              "reconcile_preserve_order",
+              "remove_unreferenced_objects",
+              "restore_zero",
+              "retain_or_delete_per_policy",
+              "retention_policy",
+              "revoke_role",
+              "revoke_sessions_disable_account"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

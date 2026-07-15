@@ -1,5 +1,5 @@
 {
-  "contractVersion": "cornermex-active-source-inventory-v1",
+  "contractVersion": "cornermex-canonical-baseline-inventory-v1",
   "generatedForSprint": "a3.1",
   "legacySourceProjectRef": "ywyiejqnbyzjfatojvkh",
   "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
@@ -53,6 +53,11 @@
     "marketplace_storefronts",
     "legacy_stock_50",
     "cornerops_planning_stock_100"
+  ],
+  "requiredExclusionMappings": [
+    "legacy.marketplace",
+    "legacy.stock_50",
+    "cornerops.planning_stock_100"
   ],
   "warnings": [
     "The retired source does not exist and no production rows can be migrated from it.",

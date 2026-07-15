@@ -1,7 +1,9 @@
 {
   "contractVersion": "cornermex-target-clean-state-a3",
   "projectRef": "wlrfknmrhowldygmvtvn",
-  "observedOn": "2026-07-15",
+  "observedAt": "2026-07-15T09:50:00-06:00",
+  "evidenceValidUntil": "2026-07-16T09:50:00-06:00",
+  "revalidationRule": "Authenticated read-only platform verification is mandatory immediately before A3.2 activation.",
   "schemaFingerprint": "ffce61d5cca7d6e92699f72f4e593bb1",
   "publicTables": 20,
   "rlsTables": 20,

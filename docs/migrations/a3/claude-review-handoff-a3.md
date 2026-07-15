@@ -6,8 +6,8 @@ Review the branch `feature/production-migration-rehearsal-a3-1` without merging 
 
 ## Required Review Scope
 
-- source inventory and target clean-state evidence;
-- all 25 source-to-target decisions and exclusion assertions;
+- canonical baseline inventory and target clean-state evidence;
+- all 25 greenfield activation decisions and exclusion assertions;
 - JSON Schema alignment and deterministic validators;
 - synthetic transformation, identity, money and reconciliation rules;
 - privacy/secret guard coverage;
@@ -38,7 +38,7 @@ npm run test:a3
 npm run rehearse:a3
 npm run reconcile:a3
 npm run privacy:a3
-npm run verify:a3:target-clean
+npm run validate:a3:target-clean-evidence
 npx eslint scripts/a3/*.mjs tests/a3/*.mjs
 npm run lint:changed
 npm run typecheck
@@ -49,13 +49,27 @@ git diff --check
 
 `eslint .` is not a release gate for this branch because the repository baseline currently contains thousands of unrelated historical formatting findings. A3 files pass targeted ESLint, and changed tracked files do not increase the established baseline.
 
-## Expected Evidence
+## A3.1 Remediation Evidence
 
-- mapping coverage: 100%, 25 decisions;
+- mapping coverage: computed 100%, 25/25 exact objects;
 - A2 tests: 7 passing;
-- A3 tests: 10 passing;
-- rehearsal checksum: `6762fc8586df77c10cf9ea2eb38928e3ab389e13f4491faa6975cdc9b507b5d4`;
+- A3 tests: 29 passing, including adversarial mutations;
+- rehearsal checksum: `4d2ce1a09e698cde442fc2148a78db329aba3bc520b135eedb644977c7a6a29c`;
 - duplicate/orphan counts: zero;
 - inventory: zero;
-- privacy guard: clean;
+- privacy guard: scans the complete PR/push/local diff, including untracked files, with sanitized findings;
+- committed clean-state evidence: static and time-bounded; no live query is implied;
 - TypeScript and both builds: passing.
+
+Separate read-only platform verification confirmed the canonical target remains empty and staging root/health/readiness return HTTP 200. This did not modify Supabase, Railway or CornerOps and does not replace the mandatory immediate pre-activation A3.2 check.
+
+## Findings Closed In Code
+
+1. Mapping coverage is derived from the exact inventory and required exclusions.
+2. Prohibited commerce/customer/activity arrays fail closed instead of being discarded.
+3. Money checks validate every row and derive totals from fixture contents.
+4. Mapping vocabularies are closed enums.
+5. Inventory validation enforces the exact canonical table set.
+6. Privacy scanning covers the whole changed-file set and safely handles missing, binary, large and linked files.
+7. Clean-state validation describes committed evidence and requires a fresh authenticated read-only check before A3.2.
+8. Deterministic UUID tuple encoding is delimiter-safe and output checksums are row-order independent.

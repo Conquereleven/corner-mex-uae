@@ -1,30 +1,80 @@
 {
   "synthetic": true,
-  "fixtureVersion": "a3-greenfield-v1",
+  "fixtureVersion": "a3-greenfield-v2",
   "categories": [
-    { "sourceId": "syn-category-001", "slug": "synthetic-pantry", "name": "Synthetic Pantry" }
+    { "sourceId": "syn-category-pantry", "slug": "synthetic-pantry", "name": " Synthetic Pantry " },
+    { "sourceId": "syn-category-drinks", "slug": "synthetic-drinks", "name": "مشروبات تجريبية" }
   ],
   "products": [
     {
-      "sourceId": "syn-product-001",
-      "categorySourceId": "syn-category-001",
-      "slug": "synthetic-product",
-      "name": "Synthetic Product",
-      "active": false
+      "sourceId": "syn-product-alpha",
+      "categorySourceId": "syn-category-pantry",
+      "slug": "synthetic-salsa",
+      "name": "Synthetic Salsa",
+      "description": "Unicode test: jalapeño"
+    },
+    {
+      "sourceId": "syn-product-beta",
+      "categorySourceId": "syn-category-drinks",
+      "slug": "synthetic-drink",
+      "name": "Synthetic Salsa"
+    },
+    {
+      "sourceId": "syn-product-gamma",
+      "categorySourceId": "syn-category-pantry",
+      "slug": "synthetic-optional",
+      "name": "منتج تجريبي"
     }
   ],
   "variants": [
     {
-      "sourceId": "syn-variant-001",
-      "productSourceId": "syn-product-001",
-      "sku": "SYN-A3-001",
-      "priceMinor": 1250,
+      "sourceId": "syn-variant-alpha-small",
+      "productSourceId": "syn-product-alpha",
+      "sku": " SYN-A3-001 ",
+      "priceMinor": 1,
+      "currency": "AED"
+    },
+    {
+      "sourceId": "syn-variant-alpha-large",
+      "productSourceId": "syn-product-alpha",
+      "sku": "SYN-A3-002",
+      "priceMinor": 10,
+      "currency": "AED"
+    },
+    {
+      "sourceId": "syn-variant-beta",
+      "productSourceId": "syn-product-beta",
+      "sku": "SYN-A3-003",
+      "priceMinor": 199,
+      "currency": "AED"
+    },
+    {
+      "sourceId": "syn-variant-gamma",
+      "productSourceId": "syn-product-gamma",
+      "sku": "SYN-A3-004",
+      "priceMinor": 9007199254740000,
       "currency": "AED"
     }
   ],
-  "inventory": [{ "variantSourceId": "syn-variant-001", "available": 0, "reserved": 0 }],
-  "orders": [],
-  "payments": [],
+  "inventory": [
+    { "variantSourceId": "syn-variant-alpha-small", "available": 0, "reserved": 0 },
+    { "variantSourceId": "syn-variant-alpha-large", "available": 0, "reserved": 0 },
+    { "variantSourceId": "syn-variant-beta", "available": 0, "reserved": 0 },
+    { "variantSourceId": "syn-variant-gamma", "available": 0, "reserved": 0 }
+  ],
+  "profiles": [],
   "customers": [],
-  "reviews": []
+  "addresses": [],
+  "carts": [],
+  "cartItems": [],
+  "orders": [],
+  "orderItems": [],
+  "payments": [],
+  "refunds": [],
+  "reviews": [],
+  "couponRedemptions": [],
+  "catalogEvents": [],
+  "inventoryMovements": [],
+  "stock50": [],
+  "planningStock100": []
 }

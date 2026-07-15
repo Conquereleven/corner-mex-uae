@@ -13,7 +13,7 @@ This runbook activates the canonical greenfield project `wlrfknmrhowldygmvtvn`. 
 - payment callback, webhook and Auth redirect inventories complete;
 - email requirements and DNS TTL preparation documented;
 - support/communication plan approved;
-- final target clean-state verification complete;
+- authenticated read-only target clean-state verification completed immediately before activation, within the evidence validity window;
 - rollback, cutover and observation-window owners assigned;
 - no production data load unless a separate reviewed source contract exists.
 
@@ -22,45 +22,46 @@ This runbook activates the canonical greenfield project `wlrfknmrhowldygmvtvn`. 
 1. Announce the maintenance/write-freeze window.
 2. Confirm Lovable production writes are blocked for the activation window.
 3. Record the exact freeze timestamp in UTC.
-4. Record final canonical row counts.
-5. Record aggregate monetary totals, expected to be zero before launch.
-6. Record schema and integrity checksums.
-7. Confirm no legacy static/reference export exists.
-8. Confirm no eligible legacy commerce export exists.
-9. Validate the approved greenfield mapping.
-10. Load approved static/reference data only if separately reviewed.
-11. Load approved categories, products and variants only if separately reviewed.
-12. Load explicitly verified commercial inventory only; never stock-50 or planning stock-100.
-13. Confirm customer/profile migration is not applicable; use approved enrollment.
-14. Confirm orders/order-items remain empty before controlled launch.
-15. Confirm payments/refunds remain empty before controlled launch.
-16. Load approved reviews/promotions only when backed by a reviewed source.
-17. Create approved Storage buckets/media with checksums and policy parity.
-18. Configure approved Auth providers and founder enrollment.
-19. Confirm no source delta exists.
-20. Run full reconciliation.
-21. Confirm zero unexplained row-count differences.
-22. Confirm monetary totals within zero minor-unit tolerance.
-23. Confirm zero unexpected orphan records.
-24. Confirm target RLS, functions and grants.
-25. Switch production environment variables to the canonical project.
-26. Switch Supabase Auth redirects/callbacks.
-27. Switch Stripe callbacks/webhooks.
-28. Configure approved production email callbacks.
-29. Deploy the independently accepted Railway production commit.
-30. Verify `/api/health`.
-31. Verify `/api/ready`.
-32. Verify SSR and static assets.
-33. Verify founder and customer authentication.
-34. Verify product browsing.
-35. Verify cart behavior.
-36. Verify checkout in approved controlled mode.
-37. Verify order creation.
-38. Verify payment reconciliation.
-39. Switch DNS.
-40. Run full production acceptance.
-41. Begin the observation window.
-42. Preserve Lovable Cloud as rollback anchor until the window closes.
+4. Run the authenticated read-only clean-state query against `wlrfknmrhowldygmvtvn`; stop if the evidence is expired, unavailable or differs from the committed contract.
+5. Record final canonical row counts and the query timestamp.
+6. Record aggregate monetary totals, expected to be zero before launch.
+7. Record schema and integrity checksums.
+8. Confirm no legacy static/reference export exists.
+9. Confirm no eligible legacy commerce export exists.
+10. Validate the approved greenfield mapping.
+11. Load approved static/reference data only if separately reviewed.
+12. Load approved categories, products and variants only if separately reviewed.
+13. Load explicitly verified commercial inventory only; never stock-50 or planning stock-100.
+14. Confirm customer/profile migration is not applicable; use approved enrollment.
+15. Confirm orders/order-items remain empty before controlled launch.
+16. Confirm payments/refunds remain empty before controlled launch.
+17. Load approved reviews/promotions only when backed by a reviewed source.
+18. Create approved Storage buckets/media with checksums and policy parity.
+19. Configure approved Auth providers and founder enrollment.
+20. Confirm no source delta exists.
+21. Run full reconciliation.
+22. Confirm zero unexplained row-count differences.
+23. Confirm monetary totals within zero minor-unit tolerance.
+24. Confirm zero unexpected orphan records.
+25. Confirm target RLS, functions and grants.
+26. Switch production environment variables to the canonical project.
+27. Switch Supabase Auth redirects/callbacks.
+28. Switch Stripe callbacks/webhooks.
+29. Configure approved production email callbacks.
+30. Deploy the independently accepted Railway production commit.
+31. Verify `/api/health`.
+32. Verify `/api/ready`.
+33. Verify SSR and static assets.
+34. Verify founder and customer authentication.
+35. Verify product browsing.
+36. Verify cart behavior.
+37. Verify checkout in approved controlled mode.
+38. Verify order creation.
+39. Verify payment reconciliation.
+40. Switch DNS.
+41. Run full production acceptance.
+42. Begin the observation window.
+43. Preserve Lovable Cloud as rollback anchor until the window closes.
 
 ## Objective Rollback Triggers
 

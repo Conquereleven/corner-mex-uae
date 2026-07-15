@@ -17,11 +17,11 @@ The legacy source `ywyiejqnbyzjfatojvkh` is retired. The complete relevant inven
 | Analytics  | catalog_events                                                               |
 | B2B        | b2b_leads                                                                    |
 
-All 20 tables have RLS. There are 37 policies. Column and policy counts were re-read from the live target metadata. The schema fingerprint is `ffce61d5cca7d6e92699f72f4e593bb1`.
+The committed evidence records 20 RLS-enabled tables, 37 policies and schema fingerprint `ffce61d5cca7d6e92699f72f4e593bb1`. This document validates the recorded snapshot only; it does not perform a live Supabase query.
 
 ## Data State
 
-Auth users, Storage buckets/objects, products, inventory, orders, payments and reviews are all zero. No `a3_rehearsal_*` schema exists. Empty means no legacy business truth is available to migrate; it does not authorize synthetic production data.
+The committed snapshot records zero Auth users, Storage buckets/objects, products, inventory, orders, payments and reviews, and no `a3_rehearsal_*` schema. It expires at the timestamp in `contracts/cornermex-target-clean-state-a3.json` and must be replaced by an authenticated read-only verification immediately before A3.2. Empty means no legacy business truth is available to migrate; it does not authorize synthetic production data.
 
 ## Exclusions
 

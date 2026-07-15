@@ -23,7 +23,8 @@ export function sha256(value) {
 }
 
 export function deterministicUuid(namespace, sourceId) {
-  const hex = sha256(`${namespace}:${sourceId}`).slice(0, 32).split("");
+  const canonicalIdentity = stableStringify([String(namespace), String(sourceId)]);
+  const hex = sha256(canonicalIdentity).slice(0, 32).split("");
   hex[12] = "5";
   hex[16] = ["8", "9", "a", "b"][Number.parseInt(hex[16], 16) % 4];
   return [

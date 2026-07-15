@@ -1,6 +1,6 @@
 # Acceptance A3.1
 
-Status: `a3_1_rehearsal_ready_for_independent_review`
+Status: `a3_1_remediation_ready_for_claude_rereview`
 
 ## Decision Change
 
@@ -63,13 +63,24 @@ Claude Code must review the mapping, synthetic transformations, privacy guard, p
 - A2 migration validator: pass
 - A2 tests: 7/7 pass
 - A3 inventory and mapping validators: pass
-- A3 tests: 10/10 pass
+- A3 tests: 29/29 pass, including malformed mappings, prohibited domains, invalid money, identity collisions, reordered fixtures and privacy canaries
 - Targeted A3 ESLint and changed-file lint: pass
 - TypeScript: pass
 - Vite production build: pass
 - Railway Node build: pass
 - `git diff --check`: pass
-- Privacy/secret guard: pass, including untracked A3 artifacts
+- Privacy/secret guard: pass across the full changed-file set, including untracked artifacts, with no matched value disclosed
+- Clean-state command: validates only committed, expiring evidence and explicitly reports that no live query occurred
 - Full `eslint .`: not a usable gate because the repository baseline contains unrelated historical formatting debt; A3 adds no lint regression
+
+## Read-Only Platform Verification
+
+- Supabase `wlrfknmrhowldygmvtvn`: `ACTIVE_HEALTHY`, PostgreSQL 17, four existing migrations unchanged
+- Public schema: exact 20 tables, all RLS enabled, all row counts zero
+- Auth users, Storage buckets/objects and `a3_rehearsal_*` schemas: zero
+- Security Advisor: zero findings; existing performance findings remain documented for A3.2 review
+- Railway: existing `CornerMex UAE/staging/cornermex-web` deployment online; root, health and readiness returned HTTP 200
+- CornerOps: local `main` clean; no target connection, writes or OpenClaw calls
+- Platform mutations performed by A3.1 remediation: none
 
 Review packet: `docs/migrations/a3/claude-review-handoff-a3.md`.
