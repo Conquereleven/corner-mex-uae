@@ -1,4 +1,5 @@
 import { assert, readJson } from "./lib.mjs";
+import { validateFounderDecisions } from "./validate-founder-decisions.mjs";
 
 export const EXPECTED_IDENTITIES = Object.freeze({
   projectRef: "wlrfknmrhowldygmvtvn",
@@ -53,7 +54,8 @@ export async function validateProductionActivationReadiness(contract, options = 
   const observedAt = parseTimestamp(contract.observedAt, "observedAt");
   const validUntil = parseTimestamp(contract.evidenceValidUntil, "evidenceValidUntil");
   assert(validUntil > observedAt, "EVIDENCE_WINDOW_INVALID");
-  assert(now.getTime() <= validUntil, "ACTIVATION_EVIDENCE_EXPIRED");
+  const evidenceFresh = now.getTime() <= validUntil;
+  if (!options.allowStaleForNonActivation) assert(evidenceFresh, "ACTIVATION_EVIDENCE_EXPIRED");
 
   assert(contract.database.status === "ACTIVE_HEALTHY", "DATABASE_NOT_HEALTHY");
   assert(contract.database.publicTables === 20, "PUBLIC_TABLE_COUNT_MISMATCH");
@@ -107,9 +109,16 @@ export async function validateProductionActivationReadiness(contract, options = 
   assert(contract.rollback.lovableRetired === false, "LOVABLE_MUST_NOT_BE_RETIRED");
   assert(Array.isArray(contract.blockers), "BLOCKERS_INVALID");
   assert(Array.isArray(contract.founderDecisions), "FOUNDER_DECISIONS_INVALID");
+  const founderDecisionResult = await validateFounderDecisions();
+  const derivedBlockers = new Set(
+    contract.blockers.filter((item) => item !== "founder_decisions_unresolved"),
+  );
+  if (!founderDecisionResult.readyForA3_2bReview)
+    derivedBlockers.add("founder_decisions_unresolved");
 
   const reviewReady =
-    contract.blockers.length === 0 &&
+    derivedBlockers.size === 0 &&
+    evidenceFresh &&
     contract.rollback.executable === true &&
     contract.rollback.owner !== "unassigned" &&
     contract.checksNotPerformed.length === 0;
@@ -120,13 +129,18 @@ export async function validateProductionActivationReadiness(contract, options = 
 
   return {
     status: reviewReady ? "ready_for_a3_2b_review" : "a3_2a_valid_but_blocked",
-    evidenceFresh: true,
+    evidenceFresh,
     readyForA3_2bReview: reviewReady,
-    blockers: contract.blockers,
+    blockers: [...derivedBlockers],
     checksNotPerformed: contract.checksNotPerformed,
   };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  console.log(JSON.stringify(await validateProductionActivationReadiness()));
+  const allowStaleForNonActivation = process.argv.includes("--ci-static");
+  console.log(
+    JSON.stringify(
+      await validateProductionActivationReadiness(undefined, { allowStaleForNonActivation }),
+    ),
+  );
 }

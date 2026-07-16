@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cornerops-cornermex-media-manifest-v1",
+  "type": "object",
+  "required": ["contractVersion", "sourceFingerprint", "itemCount", "items", "policy"],
+  "properties": {
+    "contractVersion": { "const": "cornerops-cornermex-media-manifest-v1" },
+    "sourceFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "items": { "type": "array" }
+  }
+}

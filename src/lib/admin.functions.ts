@@ -36,6 +36,43 @@ export const isAdmin = createServerFn({ method: "GET" })
     return { admin: !!data };
   });
 
+export const adminCatalogImportVisibility = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const adminClient: any = supabaseAdmin;
+    const [executions, reviews, drafts] = await Promise.all([
+      adminClient
+        .from("catalog_import_executions")
+        .select(
+          "id, source_fingerprint, status, source_count, imported_count, review_count, public_count, inventory_total, created_at",
+        )
+        .order("created_at", { ascending: false })
+        .limit(10),
+      adminClient
+        .from("catalog_import_reviews")
+        .select(
+          "id, source_row, source_id, sku, name, classification, blocking_reasons, source_fingerprint, publication_state, inventory, created_at",
+        )
+        .order("source_row", { ascending: true })
+        .limit(500),
+      adminClient
+        .from("products")
+        .select("id, slug, status, attrs, created_at")
+        .contains("attrs", { importSource: "cornerops" })
+        .order("created_at", { ascending: false })
+        .limit(500),
+    ]);
+    return {
+      executions: executions.data ?? [],
+      reviews: reviews.data ?? [],
+      drafts: drafts.data ?? [],
+      errors: [executions.error, reviews.error, drafts.error]
+        .filter(Boolean)
+        .map(() => "catalog_visibility_query_failed"),
+    };
+  });
+
 export const adminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -305,7 +342,9 @@ export const adminSetPaymentStatus = createServerFn({ method: "POST" })
     if (current.payment_status === data.status) return { ok: true, unchanged: true };
     if (data.manual && data.status === "paid") {
       if (current.payment_method !== "bank_transfer" && current.payment_method !== "cod") {
-        throw new Error("Manual payment confirmation is only allowed for Bank Transfer or Cash on Delivery");
+        throw new Error(
+          "Manual payment confirmation is only allowed for Bank Transfer or Cash on Delivery",
+        );
       }
     }
     const { error } = await (context.supabase.rpc as any)("admin_update_order_state", {
@@ -477,14 +516,54 @@ export const adminDashboardCounts = createServerFn({ method: "GET" })
       returnsPending,
       lowStock,
     ] = await Promise.all([
-      head(supabaseAdmin.from("orders").select("id", { count: "exact", head: true }).in("status", ["pending", "preparing"])),
-      head(supabaseAdmin.from("orders").select("id", { count: "exact", head: true }).eq("status", "preparing")),
-      head(supabaseAdmin.from("b2b_leads").select("id", { count: "exact", head: true }).eq("status", "new")),
-      head(supabaseAdmin.from("sellers").select("id", { count: "exact", head: true }).eq("kyc_status", "pending")),
-      head(supabaseAdmin.from("seller_payouts").select("id", { count: "exact", head: true }).eq("status", "pending")),
-      head(supabaseAdmin.from("product_reviews").select("id", { count: "exact", head: true }).eq("status", "pending")),
-      head(supabaseAdmin.from("returns").select("id", { count: "exact", head: true }).eq("status", "requested")),
-      head(supabaseAdmin.from("product_variants").select("id", { count: "exact", head: true }).lte("stock", 5)),
+      head(
+        supabaseAdmin
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .in("status", ["pending", "preparing"]),
+      ),
+      head(
+        supabaseAdmin
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "preparing"),
+      ),
+      head(
+        supabaseAdmin
+          .from("b2b_leads")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "new"),
+      ),
+      head(
+        supabaseAdmin
+          .from("sellers")
+          .select("id", { count: "exact", head: true })
+          .eq("kyc_status", "pending"),
+      ),
+      head(
+        supabaseAdmin
+          .from("seller_payouts")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending"),
+      ),
+      head(
+        supabaseAdmin
+          .from("product_reviews")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending"),
+      ),
+      head(
+        supabaseAdmin
+          .from("returns")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "requested"),
+      ),
+      head(
+        supabaseAdmin
+          .from("product_variants")
+          .select("id", { count: "exact", head: true })
+          .lte("stock", 5),
+      ),
     ]);
     return {
       orders_pending: ordersPending,
