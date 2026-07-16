@@ -4,7 +4,7 @@
   "sourceCommit": "a8a751bdbaf2b12fef3f94c83769bac52fffbaad",
   "technicalGates": {
     "stalePreviewProtection": true,
-    "rollbackDbDryRun": false,
+    "rollbackDbDryRun": true,
     "mediaContentValidation": true,
     "sourcePinRequired": true,
     "railwaySourceIntrospection": true,
