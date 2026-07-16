@@ -1,11 +1,15 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 
 export const VERSIONS = Object.freeze({
   export: "cornerops-cornermex-catalog-export-v1",
   media: "cornerops-cornermex-media-manifest-v1",
   execution: "cornermex-catalog-import-execution-v1",
+  preview: "cornermex-catalog-preview-v1",
+  mediaEvidence: "cornermex-media-validation-evidence-v1",
+  rollback: "cornermex-catalog-rollback-preview-v1",
 });
 export const CLASSES = Object.freeze([
   "ready_to_import",
@@ -156,6 +160,9 @@ export function buildPackages(rows, meta) {
     records,
   };
   const fingerprint = sha256(JSON.stringify(base));
+  const mediaManifestFingerprint = sha256(
+    JSON.stringify({ sourceFingerprint: fingerprint, media }),
+  );
   return {
     catalog: { ...base, sourceFingerprint: fingerprint },
     media: {
@@ -169,8 +176,10 @@ export function buildPackages(rows, meta) {
         executablesRejected: true,
         pathTraversalRejected: true,
       },
+      mediaManifestFingerprint,
     },
     fingerprint,
+    mediaManifestFingerprint,
   };
 }
 export function assertSafePackage(pkg) {
@@ -192,4 +201,62 @@ export function loadSource(sourcePath) {
 export function resolveSource(env = process.env) {
   const repo = env.CORNEROPS_REPO_PATH || "/Users/rodrigom./cornerops-ai";
   return path.join(repo, "docs/data/cornermex-products-master-enriched-from-intermex.csv");
+}
+
+export function requirePinnedSource(env = process.env) {
+  const sourceSha = env.CORNEROPS_SOURCE_SHA;
+  if (!sourceSha || !/^[0-9a-f]{40}$/.test(sourceSha))
+    throw new Error("PINNED_CORNEROPS_SOURCE_REQUIRED");
+  const sourcePath = resolveSource(env);
+  const sourceRepo = path.resolve(path.dirname(sourcePath), "../..");
+  const relativePath = path.relative(sourceRepo, sourcePath);
+  try {
+    execFileSync("git", ["-C", sourceRepo, "cat-file", "-e", `${sourceSha}:${relativePath}`], {
+      stdio: "ignore",
+    });
+  } catch {
+    throw new Error("SOURCE_COMMIT_MISMATCH");
+  }
+  const bytes = execFileSync("git", ["-C", sourceRepo, "show", `${sourceSha}:${relativePath}`], {
+    encoding: null,
+    maxBuffer: 20 * 1024 * 1024,
+  });
+  return {
+    sourceSha,
+    sourceRepo,
+    relativePath,
+    rows: parseCsv(bytes.toString("utf8")),
+    checksum: sha256(bytes),
+  };
+}
+
+export function buildPreview(packages, generatedAt = new Date().toISOString()) {
+  return {
+    contractVersion: VERSIONS.preview,
+    generatedAt,
+    sourceCommitSha: packages.catalog.sourceRepoSha,
+    sourceFingerprint: packages.fingerprint,
+    sourceRecordCount: packages.catalog.sourceCount,
+    classificationCounts: packages.catalog.classificationCounts,
+    mediaManifestFingerprint: packages.mediaManifestFingerprint,
+    catalog: packages.catalog,
+    media: packages.media,
+  };
+}
+
+export function verifyPreview(saved, fresh, expectedPin) {
+  if (!expectedPin) throw new Error("PINNED_CORNEROPS_SOURCE_REQUIRED");
+  if (saved.contractVersion !== VERSIONS.preview) throw new Error("STALE_CATALOG_PREVIEW");
+  if (saved.sourceCommitSha !== expectedPin || fresh.sourceCommitSha !== expectedPin)
+    throw new Error("SOURCE_COMMIT_MISMATCH");
+  if (saved.sourceFingerprint !== fresh.sourceFingerprint)
+    throw new Error("SOURCE_FINGERPRINT_MISMATCH");
+  if (saved.sourceRecordCount !== fresh.sourceRecordCount)
+    throw new Error("SOURCE_RECORD_COUNT_MISMATCH");
+  if (JSON.stringify(saved.classificationCounts) !== JSON.stringify(fresh.classificationCounts))
+    throw new Error("STALE_CATALOG_PREVIEW");
+  if (saved.mediaManifestFingerprint !== fresh.mediaManifestFingerprint)
+    throw new Error("MEDIA_MANIFEST_FINGERPRINT_MISMATCH");
+  assertSafePackage(saved.catalog);
+  return { verified: true, sourceFingerprint: fresh.sourceFingerprint };
 }

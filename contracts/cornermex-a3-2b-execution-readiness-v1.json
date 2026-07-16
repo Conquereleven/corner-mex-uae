@@ -1,0 +1,15 @@
+{
+  "contractVersion": "cornermex-a3-2b-execution-readiness-v1",
+  "canonicalProject": "wlrfknmrhowldygmvtvn",
+  "sourceCommit": "a8a751bdbaf2b12fef3f94c83769bac52fffbaad",
+  "technicalGates": {
+    "stalePreviewProtection": true,
+    "rollbackDbDryRun": false,
+    "mediaContentValidation": true,
+    "sourcePinRequired": true,
+    "railwaySourceIntrospection": true,
+    "freshLiveReadOnlyPreflight": false,
+    "independentReviewOfRemediationHead": false
+  },
+  "declaredReady": false
+}

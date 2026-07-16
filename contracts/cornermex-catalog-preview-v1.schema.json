@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "generatedAt",
+    "sourceCommitSha",
+    "sourceFingerprint",
+    "sourceRecordCount",
+    "classificationCounts",
+    "mediaManifestFingerprint",
+    "catalog",
+    "media"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-catalog-preview-v1" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "sourceCommitSha": { "const": "a8a751bdbaf2b12fef3f94c83769bac52fffbaad" },
+    "sourceFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sourceRecordCount": { "const": 190 },
+    "classificationCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ready_to_import",
+        "needs_review",
+        "missing_media",
+        "duplicate",
+        "compliance_blocked",
+        "price_blocked",
+        "identity_blocked",
+        "invalid_data",
+        "excluded_non_catalog_record"
+      ],
+      "properties": {
+        "ready_to_import": { "const": 148 },
+        "needs_review": { "const": 41 },
+        "missing_media": { "const": 1 },
+        "duplicate": { "const": 0 },
+        "compliance_blocked": { "const": 0 },
+        "price_blocked": { "const": 0 },
+        "identity_blocked": { "const": 0 },
+        "invalid_data": { "const": 0 },
+        "excluded_non_catalog_record": { "const": 0 }
+      }
+    },
+    "mediaManifestFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "catalog": { "$ref": "cornerops-cornermex-catalog-export-v1.schema.json" },
+    "media": { "$ref": "cornerops-cornermex-media-manifest-v1.schema.json" }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "generatedAt",
+    "sourceFingerprint",
+    "total",
+    "validated",
+    "deferred",
+    "failed",
+    "items",
+    "writes"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-media-validation-evidence-v1" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "sourceFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "total": { "type": "integer", "minimum": 0 },
+    "validated": { "type": "integer", "minimum": 0 },
+    "deferred": { "type": "integer", "minimum": 0 },
+    "failed": { "type": "integer", "minimum": 0 },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["validationStatus"],
+        "properties": {
+          "sourceUrl": { "type": "string", "format": "uri" },
+          "stableProductIdentity": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "sourceProductId": { "type": "string" },
+          "objectPath": { "type": "string" },
+          "sourceReferenceChecksum": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "copyStatus": { "const": "pending_manifest_validation" },
+          "validationStatus": { "enum": ["validated", "deferred", "failed"] },
+          "contentSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "contentMime": { "enum": ["image/jpeg", "image/png", "image/webp"] },
+          "contentBytes": { "type": "integer", "minimum": 1, "maximum": 10485760 },
+          "errorCode": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "writes": { "const": false }
+  }
+}

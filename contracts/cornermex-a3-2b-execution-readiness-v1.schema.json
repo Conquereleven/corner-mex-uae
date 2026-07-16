@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "canonicalProject",
+    "sourceCommit",
+    "technicalGates",
+    "declaredReady"
+  ],
+  "properties": {
+    "contractVersion": { "const": "cornermex-a3-2b-execution-readiness-v1" },
+    "canonicalProject": { "const": "wlrfknmrhowldygmvtvn" },
+    "sourceCommit": { "const": "a8a751bdbaf2b12fef3f94c83769bac52fffbaad" },
+    "technicalGates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stalePreviewProtection",
+        "rollbackDbDryRun",
+        "mediaContentValidation",
+        "sourcePinRequired",
+        "railwaySourceIntrospection",
+        "freshLiveReadOnlyPreflight",
+        "independentReviewOfRemediationHead"
+      ],
+      "properties": {
+        "stalePreviewProtection": { "type": "boolean" },
+        "rollbackDbDryRun": { "type": "boolean" },
+        "mediaContentValidation": { "type": "boolean" },
+        "sourcePinRequired": { "type": "boolean" },
+        "railwaySourceIntrospection": { "type": "boolean" },
+        "freshLiveReadOnlyPreflight": { "type": "boolean" },
+        "independentReviewOfRemediationHead": { "type": "boolean" }
+      }
+    },
+    "declaredReady": { "type": "boolean" }
+  }
+}

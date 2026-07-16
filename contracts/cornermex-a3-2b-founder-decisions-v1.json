@@ -1,0 +1,18 @@
+{
+  "contractVersion": "cornermex-a3-2b-founder-decisions-v1",
+  "decidedBy": "Joel / Founder",
+  "decidedAt": "2026-07-16T00:00:00Z",
+  "decisions": {
+    "dnsDomainTiming": "deferred_not_authorized_in_a3_2b",
+    "authBootstrap": "approved_founder_admin_only",
+    "storageCreation": "approved_catalog_infrastructure_and_controlled_media_ingestion",
+    "firstCatalogBatch": "approved_internal_draft_catalog",
+    "physicalInventory": "zero_until_physically_verified",
+    "checkout": "deferred_disabled",
+    "payments": "deferred_disabled",
+    "email": "deferred_disabled",
+    "customerCommunication": "not_authorized",
+    "rollbackOwner": "Joel / Founder",
+    "observationWindow": "48_hours"
+  }
+}

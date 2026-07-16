@@ -13,11 +13,27 @@ create table public.catalog_import_reviews (
   blocking_reasons jsonb not null default '[]', source_fingerprint text not null, publication_state text not null default 'draft' check(publication_state='draft'),
   inventory integer not null default 0 check(inventory=0), created_at timestamptz not null default now(), unique(execution_id,stable_product_identity)
 );
+create table public.catalog_import_product_ownership (
+  execution_id uuid not null references public.catalog_import_executions(id) on delete restrict,
+  product_id uuid not null references public.products(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  primary key (execution_id, product_id), unique(product_id)
+);
+create table public.catalog_import_media_objects (
+  execution_id uuid not null references public.catalog_import_executions(id) on delete restrict,
+  object_path text not null check(object_path !~ '(^|/)\.\.(/|$)'), content_sha256 text not null check(content_sha256 ~ '^[0-9a-f]{64}$'),
+  content_mime text not null check(content_mime in ('image/jpeg','image/png','image/webp')), content_bytes bigint not null check(content_bytes between 1 and 10485760),
+  created_at timestamptz not null default now(), primary key(execution_id,object_path), unique(object_path)
+);
 alter table public.catalog_import_executions enable row level security;
 alter table public.catalog_import_reviews enable row level security;
+alter table public.catalog_import_product_ownership enable row level security;
+alter table public.catalog_import_media_objects enable row level security;
 create policy catalog_import_executions_admin_read on public.catalog_import_executions for select to authenticated using (public.is_admin());
 create policy catalog_import_reviews_admin_read on public.catalog_import_reviews for select to authenticated using (public.is_admin());
-revoke all on public.catalog_import_executions, public.catalog_import_reviews from public, anon;
-grant select on public.catalog_import_executions, public.catalog_import_reviews to authenticated;
+create policy catalog_import_product_ownership_admin_read on public.catalog_import_product_ownership for select to authenticated using (public.is_admin());
+create policy catalog_import_media_objects_admin_read on public.catalog_import_media_objects for select to authenticated using (public.is_admin());
+revoke all on public.catalog_import_executions, public.catalog_import_reviews, public.catalog_import_product_ownership, public.catalog_import_media_objects from public, anon;
+grant select on public.catalog_import_executions, public.catalog_import_reviews, public.catalog_import_product_ownership, public.catalog_import_media_objects to authenticated;
 create index catalog_import_reviews_execution_class_idx on public.catalog_import_reviews(execution_id,classification);
 commit;

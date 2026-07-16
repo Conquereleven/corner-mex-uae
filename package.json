@@ -37,9 +37,16 @@
     "catalog:import:preview": "node scripts/catalog/catalog-import.mjs preview",
     "catalog:import:execute": "node scripts/catalog/catalog-import.mjs execute",
     "catalog:import:verify": "node scripts/catalog/catalog-import.mjs verify",
+    "catalog:media:validate": "node scripts/catalog/catalog-media-validate.mjs",
+    "catalog:rollback:preview": "CATALOG_IMPORT_EXECUTION_ID=00000000-0000-4000-8000-00000000000a CATALOG_ROLLBACK_TARGET_PROJECT=ephemeral-local node scripts/catalog/catalog-rollback.mjs preview",
+    "catalog:rollback:verify": "node scripts/catalog/catalog-rollback.mjs verify",
     "test:catalog-import": "node --test tests/catalog/*.test.mjs",
     "validate:a3-2b:execution": "node scripts/catalog/catalog-import.mjs execution-gate",
-    "test:a3-2b": "node --test tests/catalog/*.test.mjs"
+    "validate:a3-2b:decisions": "node scripts/a3-2b/validate-founder-decisions.mjs",
+    "validate:a3-2b:readiness": "node scripts/a3-2b/validate-execution-readiness.mjs",
+    "validate:a3-2b:railway-source": "node scripts/a3-2b/verify-railway-production-source.mjs",
+    "test:catalog-rollback:db": "node --test tests/catalog/rollback-postgres.test.mjs",
+    "test:a3-2b": "node --test tests/catalog/*.test.mjs tests/a3-2b/*.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
@@ -123,6 +130,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "pg": "^8.16.3",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
