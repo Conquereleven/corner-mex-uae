@@ -48,3 +48,4 @@ auth-manifests/
 *.njsproj
 *.sln
 *.sw?
+.artifacts/

@@ -27,11 +27,19 @@
     "reconcile:a3": "node scripts/a3/reconcile-rehearsal.mjs",
     "privacy:a3": "node scripts/a3/privacy-guard.mjs",
     "validate:a3:target-clean-evidence": "node scripts/a3/validate-target-clean-evidence.mjs",
-    "validate:a3-2a:readiness": "node scripts/a3/validate-production-activation-readiness.mjs",
+    "validate:a3-2a:readiness": "node scripts/a3/validate-production-activation-readiness.mjs --ci-static",
     "validate:a3-2a:callbacks": "node scripts/a3/validate-callback-inventory.mjs",
     "validate:a3-2a:founder-decisions": "node scripts/a3/validate-founder-decisions.mjs",
     "test:a3-2a": "node --test tests/a3-2a/*.test.mjs",
-    "verify:a3:activation-readiness": "node scripts/a3/verify-production-activation-readiness.mjs"
+    "verify:a3:activation-readiness": "node scripts/a3/verify-production-activation-readiness.mjs",
+    "validate:catalog-export": "node scripts/catalog/catalog-import.mjs validate-export",
+    "validate:media-manifest": "node scripts/catalog/catalog-import.mjs validate-media",
+    "catalog:import:preview": "node scripts/catalog/catalog-import.mjs preview",
+    "catalog:import:execute": "node scripts/catalog/catalog-import.mjs execute",
+    "catalog:import:verify": "node scripts/catalog/catalog-import.mjs verify",
+    "test:catalog-import": "node --test tests/catalog/*.test.mjs",
+    "validate:a3-2b:execution": "node scripts/catalog/catalog-import.mjs execution-gate",
+    "test:a3-2b": "node --test tests/catalog/*.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

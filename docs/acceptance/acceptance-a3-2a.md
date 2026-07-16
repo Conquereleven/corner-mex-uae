@@ -43,6 +43,6 @@ Pending decisions: custom domain/DNS timing, Auth bootstrap, Storage creation, f
 - scoped ESLint and `lint:changed`: zero findings/delta
 - typecheck, Vite build, and Railway Node build passed
 - `git diff --check`: passed
-- global lint remains the documented inherited baseline: 4,773 findings; it is not increased by sprint-owned files
+- global lint remains inherited technical debt; counts are environment-dependent and the authoritative inventory belongs to the separate L0 baseline. Sprint-owned files add no changed-file lint findings.
 
 Build output retains pre-existing chunk-size and third-party directive warnings; neither build failed.

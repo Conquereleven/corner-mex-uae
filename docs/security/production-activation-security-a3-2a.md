@@ -15,6 +15,6 @@ A3.2a is read-only hardening. Production, DNS, callbacks, Auth, Storage, checkou
 
 ## Remaining risks
 
-Railway source branch and Lovable runtime metadata are not verified. Performance advisors remain open for a later reviewed migration. All founder decisions and the rollback owner remain unresolved. These conditions block A3.2b.
+At the A3.2a evidence snapshot, Railway source branch and Lovable runtime metadata were not verified and performance advisors remained open. Railway production and the 14-day Lovable rollback policy were subsequently approved for the narrowly scoped A3.2b foundation; other commercial capabilities remain prohibited. Current readiness must be derived from the founder-decision contract and fresh live evidence, not this historical wording.
 
 Any suspected secret disclosure stops activation: revoke/rotate through the owning platform, preserve sanitized evidence, inspect history and artifacts, and rerun the complete gate before review.
