@@ -97,7 +97,7 @@ test("merged-tree verifier accepts only the expected synthetic merge", async () 
     }).trim();
   git("init", "-b", "main");
   git("config", "user.name", "CornerMex CI");
-  git("config", "user.email", "ci@example.invalid");
+  git("config", "user.email", "corner-mex-ci.invalid");
   await writeFile(path.join(directory, "base.txt"), "base\n");
   git("add", "base.txt");
   git("commit", "-m", "base");
