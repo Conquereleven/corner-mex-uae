@@ -1,7 +1,8 @@
 import { execFileSync } from "node:child_process";
 const projectId = "06d2ecdd-3c03-4480-8299-48c539595a94",
-  expectedCommit =
-    process.env.RAILWAY_EXPECTED_COMMIT || "06d1c71d56a4e343dfeda4eaff28b2a7dba828d1";
+  expectedCommit = process.env.RAILWAY_EXPECTED_COMMIT;
+if (!expectedCommit) throw new Error("RAILWAY_EXPECTED_COMMIT_REQUIRED");
+if (!/^[a-f0-9]{40}$/.test(expectedCommit)) throw new Error("RAILWAY_EXPECTED_COMMIT_INVALID");
 const services = JSON.parse(
   execFileSync("railway", ["service", "list", "--environment", "production", "--json"], {
     encoding: "utf8",

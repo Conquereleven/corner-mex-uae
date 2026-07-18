@@ -62,12 +62,17 @@ test("media traversal and executable references are not importable", () => {
 });
 
 test("migration keeps imports admin-only, draft-only and inventory zero", () => {
+  const activeMigration = path.resolve(
+    "supabase/migrations/20260716010000_catalog_import_foundation_a3_2b.sql",
+  );
   const sql = fs.readFileSync(
-    path.resolve("supabase/migrations/20260716010000_catalog_import_foundation_a3_2b.sql"),
+    path.resolve("supabase/pending-canonical/20260716010000_catalog_import_foundation_a3_2b.sql"),
     "utf8",
   );
+  assert.equal(fs.existsSync(activeMigration), false);
   assert.match(sql, /enable row level security/gi);
-  assert.match(sql, /public\.is_admin\(\)/);
+  assert.match(sql, /commerce_private\.is_admin\(auth\.uid\(\)\)/);
+  assert.doesNotMatch(sql, /public\.is_admin\(\)/);
   assert.match(sql, /check\s*\(public_count=0\)/i);
   assert.match(sql, /check\s*\(inventory_total=0\)/i);
   assert.match(sql, /check\s*\(publication_state='draft'\)/i);

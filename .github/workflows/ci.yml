@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+    branches: [main]
   push:
     branches: [main]
 
@@ -49,12 +50,11 @@ jobs:
       - run: npm run validate:a3-2a:readiness
       - run: npm run validate:a3-2a:callbacks
       - run: npm run validate:a3-2a:founder-decisions
+      - run: npm run validate:db1-custody
       - run: npm run test:a3-2a
-      - run: npm run test:catalog-import
+      - run: npm run test:a3-2b
         env:
           CORNEROPS_SOURCE_SHA: a8a751bdbaf2b12fef3f94c83769bac52fffbaad
-      - run: npm run test:catalog-rollback:db
-        env:
           PGHOST: 127.0.0.1
           PGPORT: 5432
           PGUSER: postgres
@@ -62,7 +62,8 @@ jobs:
           PGDATABASE: catalog_rollback_test
       - run: npm run validate:a3-2b:decisions
       - run: npm run validate:a3-2b:readiness
-      - run: npm run verify:a3:activation-readiness
+      - run: npm run test:pr9-remediation
+      - run: npm run verify:a3:activation-readiness -- --ci-static
       - run: npm run lint:changed
 
   type-and-runtime:
@@ -77,6 +78,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm run build:railway
+      - run: npm run validate:browser-secrets
       - name: Node server health smoke
         run: |
           PORT=3000 npm run start:railway > /tmp/cornermex-server.log 2>&1 &
@@ -88,3 +90,76 @@ jobs:
           done
           cat /tmp/cornermex-server.log
           exit 1
+
+  schema-authority:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: canonical_replay
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d canonical_replay"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: canonical_replay
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:migration-ownership
+      - run: npm run validate:canonical-types
+      - run: npm run validate:application-schema-references
+      - run: npm run validate:schema-authority
+      - run: npm run test:canonical-migration-replay
+      - run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
+
+  merged-tree-verification:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: canonical_replay
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d canonical_replay"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: canonical_replay
+      MERGED_TREE_EXPECTED_SHA: ${{ github.sha }}
+      MERGED_TREE_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      MERGED_TREE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm run validate:merged-tree

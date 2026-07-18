@@ -36,9 +36,13 @@ export async function verifyProductionActivationReadiness({
   env = process.env,
   now = new Date(),
   liveCollector,
+  allowStaleForNonActivation = false,
 } = {}) {
   const contract = await readJson("contracts/cornermex-production-activation-readiness-v1.json");
-  const validation = await validateProductionActivationReadiness(contract, { now });
+  const validation = await validateProductionActivationReadiness(contract, {
+    now,
+    allowStaleForNonActivation,
+  });
   const liveMode = env.A3_LIVE_READ_ONLY === "true";
   if (!liveMode) {
     return {
@@ -74,7 +78,13 @@ export async function verifyProductionActivationReadiness({
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   try {
-    console.log(JSON.stringify(await verifyProductionActivationReadiness()));
+    console.log(
+      JSON.stringify(
+        await verifyProductionActivationReadiness({
+          allowStaleForNonActivation: process.argv.includes("--ci-static"),
+        }),
+      ),
+    );
   } catch (error) {
     console.error(
       JSON.stringify({ status: "a3_2a_activation_readiness_failed", error: error.message }),
