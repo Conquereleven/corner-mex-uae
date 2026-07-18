@@ -12,6 +12,71 @@ const root = process.cwd();
 const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
 const clone = (value) => structuredClone(value);
 
+const parseCodeowners = (text) =>
+  text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .map((line) => {
+      const [pattern, ...owners] = line.split(/\s+/u);
+      return { pattern, owners };
+    });
+
+const codeownersPatternMatches = (pattern, file) => {
+  const normalizedPattern = pattern.replace(/^\//u, "");
+  const normalizedFile = file.replace(/^\//u, "");
+  if (normalizedPattern.endsWith("/**")) {
+    return normalizedFile.startsWith(normalizedPattern.slice(0, -2));
+  }
+  if (normalizedPattern.endsWith("/")) return normalizedFile.startsWith(normalizedPattern);
+  return normalizedFile === normalizedPattern;
+};
+
+const resolveCodeowners = (text, file) => {
+  let owners = [];
+  for (const entry of parseCodeowners(text)) {
+    if (codeownersPatternMatches(entry.pattern, file)) owners = entry.owners;
+  }
+  return owners;
+};
+
+const validateCodeowners = (rootText, githubText) => {
+  const errors = [];
+  if (rootText !== githubText) errors.push("root and .github CODEOWNERS must be byte-identical");
+
+  const requiredPatterns = [
+    "/docs/engineering-playbook/**",
+    "/docs/governance/**",
+    "/docs/architecture/**",
+    "/docs/evidence/**",
+  ];
+  const entries = parseCodeowners(rootText);
+  for (const pattern of requiredPatterns) {
+    const entry = entries.find((candidate) => candidate.pattern === pattern);
+    if (!entry || !entry.owners.includes("@Conquereleven")) {
+      errors.push(`${pattern} must be owned by @Conquereleven`);
+    }
+  }
+
+  const protectedPaths = [
+    "docs/engineering-playbook/founder-decisions/FD-CM-LOVABLE-DB1-CUSTODY-001.md",
+    "docs/engineering-playbook/04_Founder_Decision_Registry.md",
+    "docs/governance/example.md",
+    "docs/architecture/03_Current_vs_Target_Architecture.md",
+    "docs/evidence/current-main-remediation-sonnet-packet.md",
+    "supabase/migrations/example.sql",
+    "src/integrations/supabase/types.ts",
+    "contracts/example.json",
+    "scripts/ci/validate-merged-tree.sh",
+  ];
+  for (const file of protectedPaths) {
+    if (!resolveCodeowners(rootText, file).includes("@Conquereleven")) {
+      errors.push(`${file} does not resolve to @Conquereleven`);
+    }
+  }
+  return errors;
+};
+
 test("canonical provenance rejects missing, unknown and inconsistent evidence", async () => {
   const contract = await readJson("contracts/canonical-supabase-schema-fingerprint-v1.json");
   assert.deepEqual(validateCanonicalProvenance(contract), []);
@@ -63,6 +128,27 @@ test("DB1 custody figures cannot be silently removed", async () => {
       decisionPath,
     ).join("\n"),
     /missing products/,
+  );
+});
+
+test("governance CODEOWNERS coverage is explicit and fails closed", async () => {
+  const rootCodeowners = await readFile("CODEOWNERS", "utf8");
+  const githubCodeowners = await readFile(".github/CODEOWNERS", "utf8");
+  assert.deepEqual(validateCodeowners(rootCodeowners, githubCodeowners), []);
+
+  const missingPlaybook = rootCodeowners.replace(
+    "/docs/engineering-playbook/** @Conquereleven\n",
+    "",
+  );
+  assert.match(validateCodeowners(missingPlaybook, missingPlaybook).join("\n"), /playbook/);
+
+  const divergentCopy = `${githubCodeowners}# divergence\n`;
+  assert.match(validateCodeowners(rootCodeowners, divergentCopy).join("\n"), /byte-identical/);
+
+  const laterOverride = `${rootCodeowners}/docs/evidence/** @untrusted-reviewer\n`;
+  assert.match(
+    validateCodeowners(laterOverride, laterOverride).join("\n"),
+    /current-main-remediation-sonnet-packet/,
   );
 });
 

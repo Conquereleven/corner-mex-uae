@@ -5,6 +5,7 @@
 - Base: `a558785d3fc2c1eb2aa9298087bba7f940094bcb`
 - Sonnet prereview head: `14fd13282e7c2da71345d1172433895248aa74cb`
 - Remediation implementation heads: `708f579`, `2bb9172`
+- CODEOWNERS micro-remediation base: `c5a63a6e33889946b51e7082152eb27473a8ff18`
 - Branch: `fix/lovable-schema-authority-main-remediation`
 - Canonical Supabase: `wlrfknmrhowldygmvtvn`
 - Lovable project: `d9495376-339d-44dd-9c8a-db0f7b451f96`
@@ -38,6 +39,10 @@
    reachable values and reject dead values.
 5. CODEOWNERS comments now use one aligned governance explanation without
    changing ownership coverage.
+6. The targeted Sonnet rereview found one new governance gap: founder-decision
+   and evidence documents were outside CODEOWNERS coverage. The micro-remediation
+   adds explicit playbook, governance, architecture and evidence ownership to
+   both byte-identical CODEOWNERS files without changing existing rules.
 
 ## Validation evidence
 
@@ -51,6 +56,9 @@
 - Canonical schema: 20 tables and 2 public functions
 - Application references: 43 classified identities
 - Ruleset evidence: `docs/evidence/main-ruleset-19129376.md`
+- CODEOWNERS adversarial coverage verifies founder decisions, governance,
+  architecture and evidence resolve to `@Conquereleven`; missing coverage,
+  copy divergence and later ownership overrides fail closed.
 
 The evidence-only commit containing this packet necessarily cannot embed its
 own final SHA. The exact final PR head is recorded in PR #9 and the final

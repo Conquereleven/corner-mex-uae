@@ -11,3 +11,7 @@
 /.github/ @Conquereleven
 /package.json @Conquereleven
 /package-lock.json @Conquereleven
+/docs/engineering-playbook/** @Conquereleven
+/docs/governance/** @Conquereleven
+/docs/architecture/** @Conquereleven
+/docs/evidence/** @Conquereleven
