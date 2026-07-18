@@ -3,6 +3,8 @@
 ## Review identity
 
 - Base: `a558785d3fc2c1eb2aa9298087bba7f940094bcb`
+- Sonnet prereview head: `14fd13282e7c2da71345d1172433895248aa74cb`
+- Remediation implementation heads: `708f579`, `2bb9172`
 - Branch: `fix/lovable-schema-authority-main-remediation`
 - Canonical Supabase: `wlrfknmrhowldygmvtvn`
 - Lovable project: `d9495376-339d-44dd-9c8a-db0f7b451f96`
@@ -24,8 +26,41 @@
 8. Confirm the compatible Vite/Cloudflare security updates leave npm audit at
    zero Critical and zero High; one Moderate and one Low remain transitive.
 
+## Sonnet findings closed
+
+1. DB1 custody now records the approved founder decision and aggregate facts in
+   the decision registry, architecture, acceptance and custody evidence.
+2. `merged-tree-verification` is a dedicated GitHub Actions job and a strict
+   required check on protected `main`.
+3. Canonical type provenance now fails closed on project reference, generation
+   method, generator version, timestamp and schema fingerprint drift.
+4. Application schema reference classifications are reduced to the three
+   reachable values and reject dead values.
+5. CODEOWNERS comments now use one aligned governance explanation without
+   changing ownership coverage.
+
+## Validation evidence
+
+- GitHub Actions run: `29630472262`
+- `contract-and-migration`: passed
+- `type-and-runtime`: passed
+- `schema-authority`: passed
+- `merged-tree-verification`: passed against the exact event merge SHA
+- Focused remediation tests: 5/5 passed
+- DB1 custody contract: 8 required facts preserved across 5 documents
+- Canonical schema: 20 tables and 2 public functions
+- Application references: 43 classified identities
+- Ruleset evidence: `docs/evidence/main-ruleset-19129376.md`
+
+The evidence-only commit containing this packet necessarily cannot embed its
+own final SHA. The exact final PR head is recorded in PR #9 and the final
+remediation report after push.
+
 ## Safety
 
 No database, Auth, Storage, Railway, Lovable runtime, DNS, checkout, payment or
 communication write was performed. The proposed PR must remain draft and must
 not be merged before independent review.
+
+The only platform governance write was the approved update to GitHub ruleset
+`19129376`, adding `merged-tree-verification` after its first successful run.
