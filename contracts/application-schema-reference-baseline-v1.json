@@ -1,0 +1,481 @@
+{
+  "contractVersion": "application-schema-reference-baseline-v1",
+  "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
+  "references": [
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "products",
+      "files": [
+        "scripts/seo-products-editorial.mjs",
+        "scripts/seo-products.mjs",
+        "src/lib/admin.functions.ts",
+        "src/lib/catalog-events.functions.ts",
+        "src/lib/catalog.functions.ts",
+        "src/lib/csv-import.functions.ts",
+        "src/lib/live-view.functions.ts",
+        "src/lib/reviews.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/lib/wishlist.functions.ts",
+        "src/routes/api/public/sitemap[.]xml.ts",
+        "src/routes/sitemap[.]xml.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_translations",
+      "files": [
+        "scripts/seo-products.mjs",
+        "src/lib/admin.functions.ts",
+        "src/lib/csv-import.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_images",
+      "files": [
+        "scripts/seo-products.mjs",
+        "src/lib/csv-import.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "profiles",
+      "files": [
+        "src/lib/account.functions.ts",
+        "src/lib/admin.functions.ts",
+        "src/lib/reviews.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "user_roles",
+      "files": [
+        "src/lib/account.functions.ts",
+        "src/lib/admin.functions.ts",
+        "src/lib/anomaly-cases.functions.ts",
+        "src/lib/b2b-leads.functions.ts",
+        "src/lib/catalog-events.functions.ts",
+        "src/lib/coupons.functions.ts",
+        "src/lib/csv-import.functions.ts",
+        "src/lib/live-view.functions.ts",
+        "src/lib/performance.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/routes/api/public/hooks/auto-payouts.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "sellers",
+      "files": [
+        "src/lib/account.functions.ts",
+        "src/lib/admin.functions.ts",
+        "src/lib/catalog.functions.ts",
+        "src/lib/coupons.functions.ts",
+        "src/lib/csv-import.functions.ts",
+        "src/lib/performance.functions.ts",
+        "src/lib/returns.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/lib/shipments.functions.ts",
+        "src/lib/shipping.functions.ts",
+        "src/routes/api/public/hooks/auto-payouts.ts",
+        "src/routes/api/public/sitemap[.]xml.ts",
+        "src/routes/sitemap[.]xml.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "orders",
+      "files": [
+        "src/lib/account.functions.ts",
+        "src/lib/admin.functions.ts",
+        "src/lib/live-view.functions.ts",
+        "src/lib/orders.functions.ts",
+        "src/lib/payments.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/lib/shipments.functions.ts",
+        "src/routes/api/public/stripe-webhook.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "catalog_import_executions",
+      "files": [
+        "src/lib/admin.functions.ts"
+      ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_a3_2b_migration"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "catalog_import_reviews",
+      "files": [
+        "src/lib/admin.functions.ts"
+      ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_a3_2b_migration"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "order_items",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/catalog.functions.ts",
+        "src/lib/notifications.functions.ts",
+        "src/lib/orders.functions.ts",
+        "src/lib/performance.functions.ts",
+        "src/lib/returns.functions.ts",
+        "src/lib/reviews.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/lib/shipments.functions.ts",
+        "src/routes/api/public/hooks/auto-payouts.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_variants",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/csv-import.functions.ts",
+        "src/lib/orders.functions.ts",
+        "src/lib/performance.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/lib/shipping.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "order_events",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "order_notes",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "shipments",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/lib/shipments.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "payments",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/payments.functions.ts",
+        "src/routes/api/public/stripe-webhook.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "b2b_leads",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/b2b-leads.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "seller_payouts",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/routes/api/public/hooks/auto-payouts.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_reviews",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/catalog.functions.ts",
+        "src/lib/reviews.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "returns",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/returns.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "payout-receipts",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "categories",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/catalog.functions.ts",
+        "src/lib/csv-import.functions.ts",
+        "src/lib/seller.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "addresses",
+      "files": [
+        "src/lib/admin.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "seller-kyc",
+      "files": [
+        "src/lib/admin.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "notifications",
+      "files": [
+        "src/lib/admin.functions.ts",
+        "src/lib/notifications.functions.ts",
+        "src/lib/seller.functions.ts",
+        "src/routes/api/public/hooks/auto-payouts.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "anomaly_events",
+      "files": [
+        "src/lib/anomaly-cases.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_status_history",
+      "files": [
+        "src/lib/b2b-leads.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_notes",
+      "files": [
+        "src/lib/b2b-leads.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "promo_banners",
+      "files": [
+        "src/lib/banners.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "catalog_events",
+      "files": [
+        "src/lib/catalog-events.functions.ts",
+        "src/lib/live-view.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_views",
+      "files": [
+        "src/lib/catalog.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "function",
+      "name": "track_product_view",
+      "files": [
+        "src/lib/catalog.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "coupons",
+      "files": [
+        "src/lib/coupons.functions.ts",
+        "src/lib/orders.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "loyalty_accounts",
+      "files": [
+        "src/lib/loyalty.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "loyalty_transactions",
+      "files": [
+        "src/lib/loyalty.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "newsletter_subscribers",
+      "files": [
+        "src/lib/newsletter.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "shipping_zones",
+      "files": [
+        "src/lib/orders.functions.ts",
+        "src/lib/shipping.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "shipping_rates",
+      "files": [
+        "src/lib/orders.functions.ts",
+        "src/lib/shipping.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "coupon_redemptions",
+      "files": [
+        "src/lib/orders.functions.ts"
+      ],
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "order_notifications",
+      "files": [
+        "src/lib/orders.functions.ts",
+        "src/lib/shipments.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "function",
+      "name": "update_verified_review",
+      "files": [
+        "src/lib/reviews.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "function",
+      "name": "create_verified_review",
+      "files": [
+        "src/lib/reviews.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "currency_rates",
+      "files": [
+        "src/lib/seller.functions.ts",
+        "src/routes/api/public/hooks/refresh-rates.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "wishlists",
+      "files": [
+        "src/lib/wishlist.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+# Canonical protected-path ownership rules.
+# @Conquereleven review is required; the protected-main ruleset enforces merge gates.
+/supabase/migrations/ @Conquereleven
+/supabase/legacy-lovable/ @Conquereleven
+/supabase/pending-canonical/ @Conquereleven
+/supabase/functions/ @Conquereleven
+/supabase/config.toml @Conquereleven
+/src/integrations/supabase/types.ts @Conquereleven
+/contracts/ @Conquereleven
+/scripts/ @Conquereleven
+/.github/ @Conquereleven
+/package.json @Conquereleven
+/package-lock.json @Conquereleven
+/docs/engineering-playbook/** @Conquereleven
+/docs/governance/** @Conquereleven
+/docs/architecture/** @Conquereleven
+/docs/evidence/** @Conquereleven

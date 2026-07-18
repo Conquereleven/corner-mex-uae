@@ -1,0 +1,29 @@
+{
+  "rulesetId": 19129376,
+  "name": "CornerMex protected main",
+  "target": "branch",
+  "enforcement": "active",
+  "branchIncludes": [
+    "refs/heads/main"
+  ],
+  "bypassActors": [],
+  "currentUserCanBypass": "never",
+  "protections": {
+    "deletionBlocked": true,
+    "nonFastForwardBlocked": true,
+    "requiredApprovals": 1,
+    "dismissStaleReviews": true,
+    "codeOwnerReviewRequired": true,
+    "lastPushApprovalRequired": true,
+    "reviewThreadResolutionRequired": true,
+    "strictStatusChecks": true
+  },
+  "requiredStatusChecks": [
+    "contract-and-migration",
+    "type-and-runtime",
+    "schema-authority",
+    "merged-tree-verification"
+  ],
+  "updatedAt": "2026-07-17T22:26:49.065-06:00",
+  "source": "https://api.github.com/repos/Conquereleven/corner-mex-uae/rulesets/19129376"
+}

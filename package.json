@@ -39,10 +39,22 @@
     "catalog:import:verify": "node scripts/catalog/catalog-import.mjs verify",
     "test:catalog-import": "node --test tests/catalog/*.test.mjs",
     "validate:a3-2b:execution": "node scripts/catalog/catalog-import.mjs execution-gate",
-    "test:a3-2b": "node --test tests/catalog/*.test.mjs"
+    "test:a3-2b": "node --test tests/catalog/*.test.mjs",
+    "generate:migration-ownership": "node scripts/supabase/generate-migration-ownership.mjs",
+    "generate:application-schema-reference-baseline": "node scripts/supabase/generate-application-schema-reference-baseline.mjs",
+    "generate:canonical-types": "node scripts/supabase/generate-canonical-types.mjs",
+    "validate:migration-ownership": "node scripts/supabase/validate-migration-ownership.mjs",
+    "validate:canonical-types": "node scripts/supabase/validate-canonical-types.mjs",
+    "validate:application-schema-references": "node scripts/supabase/validate-application-schema-references.mjs",
+    "validate:schema-authority": "node scripts/supabase/validate-schema-authority.mjs",
+    "validate:browser-secrets": "node scripts/supabase/scan-browser-secrets.mjs",
+    "test:canonical-migration-replay": "node scripts/supabase/test-canonical-migration-replay.mjs",
+    "validate:db1-custody": "node scripts/governance/validate-db1-custody.mjs",
+    "test:pr9-remediation": "node --test tests/remediation/*.test.mjs",
+    "validate:merged-tree": "bash scripts/ci/validate-merged-tree.sh"
   },
   "dependencies": {
-    "@cloudflare/vite-plugin": "^1.25.5",
+    "@cloudflare/vite-plugin": "^1.45.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -126,6 +138,6 @@
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.6"
   }
 }
