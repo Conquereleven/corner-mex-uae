@@ -49,15 +49,15 @@ npm run validate:a3-2a:callbacks
 npm run validate:a3-2a:founder-decisions
 npm run validate:db1-custody
 npm run test:a3-2a
+npm run validate:schema-authority
+npm run validate:canonical-types
+npm run validate:migration-ownership
+npm run validate:application-schema-references
+npm run test:canonical-migration-replay
 CORNEROPS_SOURCE_SHA=a8a751bdbaf2b12fef3f94c83769bac52fffbaad npm run test:a3-2b
 npm run validate:a3-2b:decisions
 npm run validate:a3-2b:readiness
 npm run test:pr9-remediation
 npm run verify:a3:activation-readiness -- --ci-static
 npm run lint:changed
-npm run validate:schema-authority
-npm run validate:canonical-types
-npm run validate:migration-ownership
-npm run validate:application-schema-references
-npm run test:canonical-migration-replay
 git diff --check "$base_sha...HEAD"
