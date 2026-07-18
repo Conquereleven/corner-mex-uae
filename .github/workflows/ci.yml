@@ -37,7 +37,7 @@ jobs:
       - run: npm run validate:a3-2a:callbacks
       - run: npm run validate:a3-2a:founder-decisions
       - run: npm run test:a3-2a
-      - run: npm run verify:a3:activation-readiness
+      - run: npm run verify:a3:activation-readiness -- --ci-static
       - run: npm run lint:changed
 
   type-and-runtime:
