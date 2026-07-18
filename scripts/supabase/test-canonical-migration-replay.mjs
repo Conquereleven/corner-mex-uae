@@ -3,14 +3,21 @@ import { readdirSync } from "node:fs";
 
 const databaseUrl = process.env.CANONICAL_REPLAY_DATABASE_URL;
 if (!databaseUrl && !process.env.PGDATABASE) {
-  throw new Error("CANONICAL_REPLAY_DATABASE_URL or standard PG* connection variables are required");
+  throw new Error(
+    "CANONICAL_REPLAY_DATABASE_URL or standard PG* connection variables are required",
+  );
 }
 
 const psql = (...args) =>
-  execFileSync("psql", [...(databaseUrl ? [databaseUrl] : []), "-v", "ON_ERROR_STOP=1", ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] }).trim();
+  execFileSync("psql", [...(databaseUrl ? [databaseUrl] : []), "-v", "ON_ERROR_STOP=1", ...args], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "inherit"],
+  }).trim();
 
 psql("-f", "tests/fixtures/supabase-canonical-platform-prelude.sql");
-const migrations = readdirSync("supabase/migrations").filter((name) => name.endsWith(".sql")).sort();
+const migrations = readdirSync("supabase/migrations")
+  .filter((name) => name.endsWith(".sql"))
+  .sort();
 for (const migration of migrations) psql("-f", `supabase/migrations/${migration}`);
 
 const metricsSql = `
@@ -23,7 +30,17 @@ select json_build_object(
 )::text;`;
 const first = JSON.parse(psql("-At", "-c", metricsSql));
 const second = JSON.parse(psql("-At", "-c", metricsSql));
-const expected = { tables: 20, publicFunctions: 2, privateFunctions: 1, rlsTables: 20, policies: 37 };
-if (JSON.stringify(first) !== JSON.stringify(expected)) throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);
-if (JSON.stringify(first) !== JSON.stringify(second)) throw new Error("canonical replay validation is not deterministic");
-console.log(`canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=2, rls=${first.rlsTables}, policies=${first.policies}`);
+const expected = {
+  tables: 20,
+  publicFunctions: 2,
+  privateFunctions: 1,
+  rlsTables: 20,
+  policies: 37,
+};
+if (JSON.stringify(first) !== JSON.stringify(expected))
+  throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);
+if (JSON.stringify(first) !== JSON.stringify(second))
+  throw new Error("canonical replay validation is not deterministic");
+console.log(
+  `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=2, rls=${first.rlsTables}, policies=${first.policies}`,
+);

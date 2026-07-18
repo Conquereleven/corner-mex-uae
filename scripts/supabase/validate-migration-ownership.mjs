@@ -13,13 +13,20 @@ const legacy = await files("supabase/legacy-lovable");
 const pending = await files("supabase/pending-canonical");
 const errors = [];
 const canonical = JSON.parse(
-  await readFile(path.join(root, "contracts/canonical-supabase-schema-fingerprint-v1.json"), "utf8"),
+  await readFile(
+    path.join(root, "contracts/canonical-supabase-schema-fingerprint-v1.json"),
+    "utf8",
+  ),
 );
 
-if (contract.canonicalProjectRef !== "wlrfknmrhowldygmvtvn") errors.push("canonical project mismatch");
-if (JSON.stringify(active) !== JSON.stringify(contract.activeCanonicalMigrations)) errors.push("active migration set drift");
-if (JSON.stringify(pending) !== JSON.stringify(contract.pendingCanonicalMigrations)) errors.push("pending migration set drift");
-if (JSON.stringify(legacy) !== JSON.stringify(contract.migrations.map((item) => item.filename))) errors.push("quarantine set drift");
+if (contract.canonicalProjectRef !== "wlrfknmrhowldygmvtvn")
+  errors.push("canonical project mismatch");
+if (JSON.stringify(active) !== JSON.stringify(contract.activeCanonicalMigrations))
+  errors.push("active migration set drift");
+if (JSON.stringify(pending) !== JSON.stringify(contract.pendingCanonicalMigrations))
+  errors.push("pending migration set drift");
+if (JSON.stringify(legacy) !== JSON.stringify(contract.migrations.map((item) => item.filename)))
+  errors.push("quarantine set drift");
 
 for (const item of contract.migrations) {
   if (item.databaseOwner !== "lovable_cloud_db" || item.mustNotApplyToCanonicalCornerMex !== true) {
@@ -31,12 +38,15 @@ for (const item of contract.migrations) {
   if (hash !== item.sha256) errors.push(`checksum drift: ${item.filename}`);
 }
 
-if (active.length !== 4) errors.push(`expected 4 applied canonical migrations, found ${active.length}`);
+if (active.length !== 4)
+  errors.push(`expected 4 applied canonical migrations, found ${active.length}`);
 if (pending.length !== 1 || !pending[0].includes("catalog_import_foundation_a3_2b")) {
   errors.push("A3.2b pending canonical boundary is missing");
 }
 const activeSql = (
-  await Promise.all(active.map((filename) => readFile(path.join(root, "supabase/migrations", filename), "utf8")))
+  await Promise.all(
+    active.map((filename) => readFile(path.join(root, "supabase/migrations", filename), "utf8")),
+  )
 ).join("\n");
 const createdPublicTables = [...activeSql.matchAll(/create\s+table\s+public\.([a-z0-9_]+)/gi)]
   .map((match) => match[1])
@@ -45,4 +55,6 @@ if (JSON.stringify(createdPublicTables) !== JSON.stringify([...canonical.publicT
   errors.push(`active SQL public table identity mismatch: ${JSON.stringify(createdPublicTables)}`);
 }
 if (errors.length) throw new Error(errors.join("\n"));
-console.log(`migration ownership valid: active=${active.length}, pending=${pending.length}, quarantined=${legacy.length}`);
+console.log(
+  `migration ownership valid: active=${active.length}, pending=${pending.length}, quarantined=${legacy.length}`,
+);

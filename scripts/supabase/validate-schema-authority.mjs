@@ -8,10 +8,23 @@ const checks = [
 ];
 for (const check of checks) execFileSync(process.execPath, [check], { stdio: "inherit" });
 
-const securityDefinerEvidence = JSON.parse(await readFile("contracts/security-definer-evidence-v1.json", "utf8"));
+const securityDefinerEvidence = JSON.parse(
+  await readFile("contracts/security-definer-evidence-v1.json", "utf8"),
+);
 for (const entry of securityDefinerEvidence.functions) {
-  for (const field of ["identity", "owner", "searchPath", "callerIdentitySource", "executionGrants", "mutationScope", "rlsImplications"]) {
-    if (!entry[field]) throw new Error(`incomplete SECURITY DEFINER evidence: ${entry.identity ?? "unknown"}.${field}`);
+  for (const field of [
+    "identity",
+    "owner",
+    "searchPath",
+    "callerIdentitySource",
+    "executionGrants",
+    "mutationScope",
+    "rlsImplications",
+  ]) {
+    if (!entry[field])
+      throw new Error(
+        `incomplete SECURITY DEFINER evidence: ${entry.identity ?? "unknown"}.${field}`,
+      );
   }
 }
 
@@ -20,7 +33,8 @@ const browserFiles = ["src/integrations/supabase/client.ts", "src/integrations/s
 for (const file of browserFiles) {
   const source = await readFile(file, "utf8");
   for (const pattern of sensitivePatterns) {
-    if (pattern.test(source)) throw new Error(`sensitive server credential reference in browser surface: ${file}`);
+    if (pattern.test(source))
+      throw new Error(`sensitive server credential reference in browser surface: ${file}`);
   }
 }
 console.log("schema authority valid: canonical DB2 only; browser secret checks passed");

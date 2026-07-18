@@ -2,10 +2,26 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const canonical = new Set([
-  "addresses", "b2b_leads", "cart_items", "carts", "catalog_events", "categories",
-  "coupon_redemptions", "coupons", "inventory", "inventory_movements", "order_items",
-  "orders", "payments", "product_images", "product_reviews", "product_translations",
-  "product_variants", "products", "profiles", "user_roles",
+  "addresses",
+  "b2b_leads",
+  "cart_items",
+  "carts",
+  "catalog_events",
+  "categories",
+  "coupon_redemptions",
+  "coupons",
+  "inventory",
+  "inventory_movements",
+  "order_items",
+  "orders",
+  "payments",
+  "product_images",
+  "product_reviews",
+  "product_translations",
+  "product_variants",
+  "products",
+  "profiles",
+  "user_roles",
 ]);
 const future = new Set(["catalog_import_executions", "catalog_import_reviews"]);
 const roots = ["src", "scripts"];
@@ -51,7 +67,8 @@ const outputPath = "contracts/application-schema-reference-baseline-v1.json";
 const output = `${JSON.stringify({ contractVersion: "application-schema-reference-baseline-v1", canonicalProjectRef: "wlrfknmrhowldygmvtvn", references }, null, 2)}\n`;
 if (process.argv.includes("--check")) {
   const committed = await readFile(outputPath, "utf8");
-  if (committed !== output) throw new Error("application schema references changed; regenerate and classify deliberately");
+  if (committed !== output)
+    throw new Error("application schema references changed; regenerate and classify deliberately");
   console.log(`application schema reference baseline unchanged: ${references.length} identities`);
 } else {
   await writeFile(outputPath, output);
