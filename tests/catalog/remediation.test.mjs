@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import {
   buildPackages,
   buildPreview,
@@ -159,6 +160,10 @@ const fixture = {
 };
 test("rollback preview scopes exactly one execution and refuses canonical", () => {
   const p = buildRollbackPreview({ executionId: "A", targetProject: "ephemeral-test", ...fixture });
+  assert.equal(p.mode, "synthetic_fixture_preview");
+  assert.equal(p.evidenceClass, "NON_PRODUCTION_SYNTHETIC");
+  assert.equal(p.realDatabaseQueried, false);
+  assert.equal(p.eligibleAsExecutionEvidence, false);
   assert.deepEqual(p.productIds, ["pA"]);
   assert.deepEqual(p.objectPaths, ["a/x.png"]);
   assert.equal(p.untouched.orders, true);
@@ -176,4 +181,24 @@ test("rollback preview scopes exactly one execution and refuses canonical", () =
     () => buildRollbackPreview({ executionId: "A", targetProject: "ephemeral", ...overlap }),
     /OVERLAPPING/,
   );
+});
+
+test("rollback preview command cannot be presented as execution evidence", () => {
+  const output = execFileSync(
+    process.execPath,
+    ["scripts/catalog/catalog-rollback.mjs", "preview"],
+    {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        CATALOG_IMPORT_EXECUTION_ID: "00000000-0000-4000-8000-00000000000a",
+        CATALOG_ROLLBACK_TARGET_PROJECT: "ephemeral-test",
+      },
+    },
+  );
+  const preview = JSON.parse(output);
+  assert.equal(preview.mode, "synthetic_fixture_preview");
+  assert.equal(preview.evidenceClass, "NON_PRODUCTION_SYNTHETIC");
+  assert.equal(preview.realDatabaseQueried, false);
+  assert.equal(preview.eligibleAsExecutionEvidence, false);
 });
