@@ -1,0 +1,14 @@
+{
+  "status": "verified_production_source",
+  "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
+  "environment": "production",
+  "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+  "serviceName": "corner-mex-uae",
+  "sourceRepository": "Conquereleven/corner-mex-uae",
+  "sourceBranch": "main",
+  "sourceCommit": "06d1c71d56a4e343dfeda4eaff28b2a7dba828d1",
+  "deploymentId": "c8128db3-c1de-4f6d-a431-df09d9594765",
+  "deploymentStatus": "SUCCESS",
+  "observedAt": "2026-07-16T01:22:29.420Z",
+  "writes": false
+}

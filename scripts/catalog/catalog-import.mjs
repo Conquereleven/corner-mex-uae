@@ -1,19 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
-import { assertSafePackage, buildPackages, loadSource, resolveSource } from "./catalog-lib.mjs";
+import {
+  assertSafePackage,
+  buildPackages,
+  buildPreview,
+  requirePinnedSource,
+  verifyPreview,
+} from "./catalog-lib.mjs";
 const command = process.argv[2] || "preview",
   root = process.cwd(),
-  source = resolveSource(),
   artifact = path.join(root, ".artifacts", "catalog-import-preview.json");
-const sourceRepo = path.resolve(path.dirname(source), "../..");
-const sourceSha =
-  process.env.CORNEROPS_SOURCE_SHA ||
-  execFileSync("git", ["-C", sourceRepo, "rev-parse", "origin/main"], {
-    encoding: "utf8",
-  }).trim();
-const loaded = loadSource(source);
+const loaded = requirePinnedSource();
+const sourceSha = loaded.sourceSha;
 const packages = buildPackages(loaded.rows, { sourceSha, sourceChecksum: loaded.checksum });
+const freshPreview = buildPreview(packages);
 assertSafePackage(packages.catalog);
 const summary = {
   command,
@@ -32,10 +32,7 @@ if (command === "validate-export") {
     throw new Error("PATH_TRAVERSAL");
 } else if (command === "preview") {
   fs.mkdirSync(path.dirname(artifact), { recursive: true });
-  fs.writeFileSync(
-    artifact,
-    JSON.stringify({ catalog: packages.catalog, media: packages.media }, null, 2),
-  );
+  fs.writeFileSync(artifact, JSON.stringify(freshPreview, null, 2));
 } else if (command === "execute") {
   const required = [
     "CATALOG_IMPORT_EXECUTION_AUTHORIZED",
@@ -51,7 +48,7 @@ if (command === "validate-export") {
 } else if (command === "verify") {
   if (!fs.existsSync(artifact)) throw new Error("PREVIEW_ARTIFACT_MISSING");
   const saved = JSON.parse(fs.readFileSync(artifact));
-  assertSafePackage(saved.catalog);
+  verifyPreview(saved, freshPreview, sourceSha);
 } else if (command === "execution-gate") {
   if (!/^[0-9a-f]{40}$/.test(sourceSha)) throw new Error("CORNEROPS_SOURCE_SHA_REQUIRED");
 } else throw new Error("UNKNOWN_COMMAND");

@@ -12,6 +12,19 @@ permissions:
 jobs:
   contract-and-migration:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: catalog_rollback_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,6 +52,16 @@ jobs:
       - run: npm run validate:a3-2a:founder-decisions
       - run: npm run validate:db1-custody
       - run: npm run test:a3-2a
+      - run: npm run test:a3-2b
+        env:
+          CORNEROPS_SOURCE_SHA: a8a751bdbaf2b12fef3f94c83769bac52fffbaad
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: catalog_rollback_test
+      - run: npm run validate:a3-2b:decisions
+      - run: npm run validate:a3-2b:readiness
       - run: npm run test:pr9-remediation
       - run: npm run verify:a3:activation-readiness -- --ci-static
       - run: npm run lint:changed

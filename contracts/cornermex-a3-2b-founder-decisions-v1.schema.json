@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "decidedBy", "decidedAt", "decisions"],
+  "properties": {
+    "contractVersion": { "const": "cornermex-a3-2b-founder-decisions-v1" },
+    "decidedBy": { "const": "Joel / Founder" },
+    "decidedAt": { "type": "string", "format": "date-time" },
+    "decisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dnsDomainTiming",
+        "authBootstrap",
+        "storageCreation",
+        "firstCatalogBatch",
+        "physicalInventory",
+        "checkout",
+        "payments",
+        "email",
+        "customerCommunication",
+        "rollbackOwner",
+        "observationWindow"
+      ],
+      "properties": {
+        "dnsDomainTiming": { "const": "deferred_not_authorized_in_a3_2b" },
+        "authBootstrap": { "const": "approved_founder_admin_only" },
+        "storageCreation": {
+          "const": "approved_catalog_infrastructure_and_controlled_media_ingestion"
+        },
+        "firstCatalogBatch": { "const": "approved_internal_draft_catalog" },
+        "physicalInventory": { "const": "zero_until_physically_verified" },
+        "checkout": { "const": "deferred_disabled" },
+        "payments": { "const": "deferred_disabled" },
+        "email": { "const": "deferred_disabled" },
+        "customerCommunication": { "const": "not_authorized" },
+        "rollbackOwner": { "const": "Joel / Founder" },
+        "observationWindow": { "const": "48_hours" }
+      }
+    }
+  }
+}
