@@ -52,6 +52,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm run build:railway
+      - run: npm run validate:browser-secrets
       - name: Node server health smoke
         run: |
           PORT=3000 npm run start:railway > /tmp/cornermex-server.log 2>&1 &
@@ -63,3 +64,40 @@ jobs:
           done
           cat /tmp/cornermex-server.log
           exit 1
+
+  schema-authority:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: canonical_replay
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d canonical_replay"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: canonical_replay
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run validate:migration-ownership
+      - run: npm run validate:canonical-types
+      - run: npm run validate:application-schema-references
+      - run: npm run validate:schema-authority
+      - run: npm run test:canonical-migration-replay
+      - run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD

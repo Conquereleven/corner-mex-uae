@@ -1,0 +1,23 @@
+{
+  "contractVersion": "security-definer-evidence-v1",
+  "functions": [
+    {
+      "identity": "public.rls_auto_enable()",
+      "owner": "postgres",
+      "searchPath": "pg_catalog",
+      "callerIdentitySource": "postgres_ddl_event_trigger_context",
+      "executionGrants": "PUBLIC, anon and authenticated revoked by first active migration",
+      "mutationScope": "enables RLS only on newly created public tables",
+      "rlsImplications": "fail-safe platform control; does not grant row access"
+    },
+    {
+      "identity": "commerce_private.is_admin(uuid)",
+      "owner": "postgres",
+      "searchPath": "empty",
+      "callerIdentitySource": "auth.uid() through explicit argument default",
+      "executionGrants": "authenticated and service_role only",
+      "mutationScope": "none; stable authorization read",
+      "rlsImplications": "used by authenticated admin policies; moved out of exposed API schema"
+    }
+  ]
+}

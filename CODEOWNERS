@@ -1,0 +1,12 @@
+# Canonical source is .github/CODEOWNERS; this root copy documents protected paths for external reviewers.
+/supabase/migrations/ @Conquereleven
+/supabase/legacy-lovable/ @Conquereleven
+/supabase/pending-canonical/ @Conquereleven
+/supabase/functions/ @Conquereleven
+/supabase/config.toml @Conquereleven
+/src/integrations/supabase/types.ts @Conquereleven
+/contracts/ @Conquereleven
+/scripts/ @Conquereleven
+/.github/ @Conquereleven
+/package.json @Conquereleven
+/package-lock.json @Conquereleven

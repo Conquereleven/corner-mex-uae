@@ -1,0 +1,49 @@
+{
+  "contractVersion": "canonical-supabase-schema-fingerprint-v1",
+  "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
+  "generationMethod": "supabase_mcp_generate_typescript_types_read_only",
+  "generatedAt": "2026-07-17",
+  "typesSha256": "27280bbb9489a16978678ff8817281297d64e33f6d105be1b94a082ab2c9b2bb",
+  "schemaFingerprintSha256": "f22d3d0db035425ab326aa791ec3de915d8e4e23c522755e84bfacb5eb89e8c5",
+  "publicTableCount": 20,
+  "publicTables": [
+    "addresses",
+    "b2b_leads",
+    "cart_items",
+    "carts",
+    "catalog_events",
+    "categories",
+    "coupon_redemptions",
+    "coupons",
+    "inventory",
+    "inventory_movements",
+    "order_items",
+    "orders",
+    "payments",
+    "product_images",
+    "product_reviews",
+    "product_translations",
+    "product_variants",
+    "products",
+    "profiles",
+    "user_roles"
+  ],
+  "publicFunctions": ["rls_auto_enable", "set_updated_at"],
+  "rlsEnabledTables": 20,
+  "policyCount": 37,
+  "forbiddenLovableOnlyEntities": [
+    "sellers",
+    "seller_payouts",
+    "shipping_zones",
+    "shipping_rates",
+    "shipments",
+    "notifications",
+    "loyalty_accounts",
+    "loyalty_transactions"
+  ],
+  "evidence": {
+    "tables": "Supabase MCP list_tables read-only",
+    "functions": "Supabase MCP pg_catalog read-only query",
+    "types": "Supabase MCP generate_typescript_types read-only"
+  }
+}

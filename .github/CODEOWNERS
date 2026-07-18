@@ -1,0 +1,12 @@
+# Founder review remains required by the protected-main ruleset.
+/supabase/migrations/ @Conquereleven
+/supabase/legacy-lovable/ @Conquereleven
+/supabase/pending-canonical/ @Conquereleven
+/supabase/functions/ @Conquereleven
+/supabase/config.toml @Conquereleven
+/src/integrations/supabase/types.ts @Conquereleven
+/contracts/ @Conquereleven
+/scripts/ @Conquereleven
+/.github/ @Conquereleven
+/package.json @Conquereleven
+/package-lock.json @Conquereleven
