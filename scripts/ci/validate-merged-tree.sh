@@ -25,7 +25,9 @@ else
 fi
 
 echo "verified proposed merge tree: merge=$actual_sha base=$base_sha head=$head_sha"
-[[ "${MERGED_TREE_VERIFY_ONLY:-false}" == "true" ]] && exit 0
+if [[ "${MERGED_TREE_VERIFY_ONLY:-false}" == "true" ]]; then
+  exit 0
+fi
 
 npm ci
 npm run typecheck
