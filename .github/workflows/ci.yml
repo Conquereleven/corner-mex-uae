@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+    branches: [main]
   push:
     branches: [main]
 
@@ -36,7 +37,9 @@ jobs:
       - run: npm run validate:a3-2a:readiness
       - run: npm run validate:a3-2a:callbacks
       - run: npm run validate:a3-2a:founder-decisions
+      - run: npm run validate:db1-custody
       - run: npm run test:a3-2a
+      - run: npm run test:pr9-remediation
       - run: npm run verify:a3:activation-readiness -- --ci-static
       - run: npm run lint:changed
 
@@ -101,3 +104,39 @@ jobs:
       - run: npm run validate:schema-authority
       - run: npm run test:canonical-migration-replay
       - run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
+
+  merged-tree-verification:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: canonical_replay
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d canonical_replay"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: canonical_replay
+      MERGED_TREE_EXPECTED_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      MERGED_TREE_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      MERGED_TREE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm run validate:merged-tree

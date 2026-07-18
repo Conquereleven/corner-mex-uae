@@ -18,6 +18,10 @@
 - Package lock: Lovable config `2.7.6`, dev-server bridge `1.2.0`, HMR gate `1.1.4`.
 - Dependency security: Vite `7.3.6` and Cloudflare Vite plugin `1.45.1`; npm audit reports 0 Critical and 0 High (1 Moderate, 1 Low transitive remain).
 - Lovable retargeting: not verified; published runtime remains at audited SHA.
+- DB1 custody: `live_legacy_production`; Joel / Founder; 150 products, 4 orders,
+  7 Auth users and 1 seller; final disposition deferred; no destructive action authorized.
+- Proposed merge tree: automatic `merged-tree-verification` required check for
+  PRs targeting `main`; exact merge/base/head identities are asserted before gates run.
 
 ## PR #8 gate
 

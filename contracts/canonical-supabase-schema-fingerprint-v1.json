@@ -1,9 +1,12 @@
 {
   "contractVersion": "canonical-supabase-schema-fingerprint-v1",
+  "projectRef": "wlrfknmrhowldygmvtvn",
   "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
-  "generationMethod": "supabase_mcp_generate_typescript_types_read_only",
-  "generatedAt": "2026-07-17",
+  "generationMethod": "canonical_supabase_read_only_generation",
+  "generatorVersion": "supabase-mcp-generate-typescript-types-v1",
+  "generatedAt": "2026-07-17T00:00:00.000Z",
   "typesSha256": "27280bbb9489a16978678ff8817281297d64e33f6d105be1b94a082ab2c9b2bb",
+  "schemaFingerprint": "f22d3d0db035425ab326aa791ec3de915d8e4e23c522755e84bfacb5eb89e8c5",
   "schemaFingerprintSha256": "f22d3d0db035425ab326aa791ec3de915d8e4e23c522755e84bfacb5eb89e8c5",
   "publicTableCount": 20,
   "publicTables": [

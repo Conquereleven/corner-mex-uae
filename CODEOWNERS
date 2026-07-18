@@ -1,4 +1,5 @@
-# Canonical source is .github/CODEOWNERS; this root copy documents protected paths for external reviewers.
+# Canonical protected-path ownership rules.
+# @Conquereleven review is required; the protected-main ruleset enforces merge gates.
 /supabase/migrations/ @Conquereleven
 /supabase/legacy-lovable/ @Conquereleven
 /supabase/pending-canonical/ @Conquereleven

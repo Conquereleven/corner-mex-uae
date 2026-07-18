@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { validateCanonicalProvenance } from "./canonical-provenance.mjs";
 
 const contract = JSON.parse(
   await readFile("contracts/canonical-supabase-schema-fingerprint-v1.json", "utf8"),
@@ -18,7 +19,7 @@ const tables = [...tableBlock.matchAll(/^      ([a-z0-9_]+): \{$/gm)]
   .map((match) => match[1])
   .sort();
 const expected = [...contract.publicTables].sort();
-const errors = [];
+const errors = validateCanonicalProvenance(contract);
 
 if (contract.canonicalProjectRef !== "wlrfknmrhowldygmvtvn")
   errors.push("canonical project ref mismatch");
@@ -36,7 +37,7 @@ const fingerprintPayload = {
 };
 if (
   createHash("sha256").update(JSON.stringify(fingerprintPayload)).digest("hex") !==
-  contract.schemaFingerprintSha256
+  contract.schemaFingerprint
 ) {
   errors.push("canonical schema fingerprint mismatch");
 }
