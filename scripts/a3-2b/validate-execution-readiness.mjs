@@ -16,7 +16,8 @@ export function validateReadiness(
   if (
     contract.contractVersion !== "cornermex-a3-2b-execution-readiness-v1" ||
     contract.canonicalProject !== "wlrfknmrhowldygmvtvn" ||
-    contract.sourceCommit !== "a8a751bdbaf2b12fef3f94c83769bac52fffbaad"
+    contract.sourceCommit !== "a8a751bdbaf2b12fef3f94c83769bac52fffbaad" ||
+    contract.reviewedRemediationHeadSha !== "33f2231443172b1956c5adf2b609a3e0bb02daab"
   )
     throw new Error("A3_2B_READINESS_IDENTITY_MISMATCH");
   if (

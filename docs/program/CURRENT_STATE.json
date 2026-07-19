@@ -1,7 +1,7 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-07-19T00:05:30Z",
+  "generatedAt": "2026-07-19T19:26:37Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
     "expectedMainSha": "bb9386f72197fb20912c328ac912c27894f3db02",
@@ -10,30 +10,34 @@
   },
   "evidence": {
     "class": "verified_live",
-    "source": "GitHub, Railway and Supabase read-only discovery",
-    "sourceIdentity": "github:bb9386f72197fb20912c328ac912c27894f3db02;railway:7e984431-da1b-4bfd-abdf-76e65c1bfe5f,9cb1ba3a-6f44-4eca-99d1-2a624716df71;supabase:wlrfknmrhowldygmvtvn",
-    "observedAt": "2026-07-19T00:05:30Z",
-    "freshUntil": "2026-07-19T01:05:30Z"
+    "source": "GitHub and Railway read-only discovery with committed Supabase identity evidence",
+    "sourceIdentity": "github:bb9386f72197fb20912c328ac912c27894f3db02;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;db1:d9495376-339d-44dd-9c8a-db0f7b451f96;db2:wlrfknmrhowldygmvtvn;db3:nhxpujypqxbjiqqddxqt",
+    "observedAt": "2026-07-19T19:26:37Z",
+    "freshUntil": "2026-07-26T19:26:37Z"
   },
   "platforms": {
     "railway": {
+      "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
       "status": "blocked",
-      "sourceCommit": "bb9386f72197fb20912c328ac912c27894f3db02",
-      "services": [
-        {
-          "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
-          "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
-          "deploymentId": "7e984431-da1b-4bfd-abdf-76e65c1bfe5f",
-          "state": "FAILED"
-        },
-        {
-          "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
-          "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
-          "deploymentId": "9cb1ba3a-6f44-4eca-99d1-2a624716df71",
-          "state": "FAILED"
-        }
-      ]
+      "sourceCommit": "bb9386f72197fb20912c328ac912c27894f3db02"
     },
+    "databases": [
+      {
+        "role": "DB1_LEGACY",
+        "platform": "lovable_cloud",
+        "projectRef": "d9495376-339d-44dd-9c8a-db0f7b451f96"
+      },
+      {
+        "role": "DB2_CANONICAL",
+        "platform": "supabase",
+        "projectRef": "wlrfknmrhowldygmvtvn"
+      },
+      {
+        "role": "DB3_CORNEROPS_SOURCE",
+        "platform": "supabase",
+        "projectRef": "nhxpujypqxbjiqqddxqt"
+      }
+    ],
     "supabase": {
       "status": "ACTIVE_HEALTHY",
       "projectRef": "wlrfknmrhowldygmvtvn",
@@ -48,17 +52,22 @@
   "readiness": {
     "freshLiveReadOnlyPreflight": false,
     "independentReviewOfRemediationHead": true,
+    "reviewedRemediationHeadSha": "33f2231443172b1956c5adf2b609a3e0bb02daab",
     "declaredReady": false,
-    "reviewedHead": "33f2231443172b1956c5adf2b609a3e0bb02daab",
-    "reviewIdentity": "github-pr-review:PRR_kwDOS0HV_c8AAAABGeXgdA"
+    "reviewIdentity": "github-pr-review:PRR_kwDOS0HV_c8AAAABGeXgdA",
+    "currentP0RemediationReview": {
+      "complete": false,
+      "reviewedHeadSha": null,
+      "reviewer": "Sonnet"
+    }
   },
   "program": {
     "activeSprint": "P0",
     "owner": "Codex",
     "reviewer": "Sonnet",
     "blockers": [
-      "Both Railway services fail during Bun frozen-lockfile installation.",
-      "A fresh complete production preflight remains required after a reviewed remediation deployment.",
+      "A failed deployment sequence affected both Railway contexts; no runtime outage is asserted.",
+      "A fresh complete production preflight remains required after an authorized reviewed remediation deployment.",
       "Public commerce capabilities remain unauthorized and disabled."
     ],
     "nextActions": [
