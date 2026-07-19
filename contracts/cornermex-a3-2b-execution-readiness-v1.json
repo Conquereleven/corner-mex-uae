@@ -9,7 +9,7 @@
     "sourcePinRequired": true,
     "railwaySourceIntrospection": true,
     "freshLiveReadOnlyPreflight": false,
-    "independentReviewOfRemediationHead": false
+    "independentReviewOfRemediationHead": true
   },
   "declaredReady": false
 }

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "joint-program-state-v1",
+  "system": "cornermex",
+  "generatedAt": "2026-07-19T00:05:30Z",
+  "authority": {
+    "repository": "Conquereleven/corner-mex-uae",
+    "expectedMainSha": "bb9386f72197fb20912c328ac912c27894f3db02",
+    "observedMainSha": "bb9386f72197fb20912c328ac912c27894f3db02",
+    "mainIdentityStatus": "verified"
+  },
+  "evidence": {
+    "class": "verified_live",
+    "source": "GitHub, Railway and Supabase read-only discovery",
+    "sourceIdentity": "github:bb9386f72197fb20912c328ac912c27894f3db02;railway:7e984431-da1b-4bfd-abdf-76e65c1bfe5f,9cb1ba3a-6f44-4eca-99d1-2a624716df71;supabase:wlrfknmrhowldygmvtvn",
+    "observedAt": "2026-07-19T00:05:30Z",
+    "freshUntil": "2026-07-19T01:05:30Z"
+  },
+  "platforms": {
+    "railway": {
+      "status": "blocked",
+      "sourceCommit": "bb9386f72197fb20912c328ac912c27894f3db02",
+      "services": [
+        {
+          "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+          "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+          "deploymentId": "7e984431-da1b-4bfd-abdf-76e65c1bfe5f",
+          "state": "FAILED"
+        },
+        {
+          "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+          "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+          "deploymentId": "9cb1ba3a-6f44-4eca-99d1-2a624716df71",
+          "state": "FAILED"
+        }
+      ]
+    },
+    "supabase": {
+      "status": "ACTIVE_HEALTHY",
+      "projectRef": "wlrfknmrhowldygmvtvn",
+      "activeMigrationCount": 4,
+      "writePerformed": false
+    },
+    "lovable": {
+      "role": "live_legacy_production_rollback_anchor",
+      "writePerformed": false
+    }
+  },
+  "readiness": {
+    "freshLiveReadOnlyPreflight": false,
+    "independentReviewOfRemediationHead": true,
+    "declaredReady": false,
+    "reviewedHead": "33f2231443172b1956c5adf2b609a3e0bb02daab",
+    "reviewIdentity": "github-pr-review:PRR_kwDOS0HV_c8AAAABGeXgdA"
+  },
+  "program": {
+    "activeSprint": "P0",
+    "owner": "Codex",
+    "reviewer": "Sonnet",
+    "blockers": [
+      "Both Railway services fail during Bun frozen-lockfile installation.",
+      "A fresh complete production preflight remains required after a reviewed remediation deployment.",
+      "Public commerce capabilities remain unauthorized and disabled."
+    ],
+    "nextActions": [
+      "Review the P0 remediation PR at its exact head.",
+      "After review and applicable Founder authorization, verify a Railway deployment without changing DNS or commerce capabilities.",
+      "Repeat the full read-only production preflight against the reviewed deployed SHA."
+    ]
+  },
+  "safety": {
+    "writesBlocked": true,
+    "externalSendsBlocked": true,
+    "customerImpactBlocked": true
+  }
+}
