@@ -33,6 +33,7 @@ test("resolved decisions never override incomplete technical gates", () => {
     contractVersion: "cornermex-a3-2b-execution-readiness-v1",
     canonicalProject: "wlrfknmrhowldygmvtvn",
     sourceCommit: "a8a751bdbaf2b12fef3f94c83769bac52fffbaad",
+    reviewedRemediationHeadSha: "33f2231443172b1956c5adf2b609a3e0bb02daab",
     technicalGates: {
       stalePreviewProtection: true,
       rollbackDbDryRun: false,
@@ -51,6 +52,7 @@ test("readiness rejects an altered source identity or gate set", () => {
     contractVersion: "cornermex-a3-2b-execution-readiness-v1",
     canonicalProject: "wlrfknmrhowldygmvtvn",
     sourceCommit: "a8a751bdbaf2b12fef3f94c83769bac52fffbaad",
+    reviewedRemediationHeadSha: "33f2231443172b1956c5adf2b609a3e0bb02daab",
     technicalGates: {
       stalePreviewProtection: true,
       rollbackDbDryRun: false,
@@ -68,4 +70,26 @@ test("readiness rejects an altered source identity or gate set", () => {
   const extra = structuredClone(base);
   extra.technicalGates.manualOverride = true;
   assert.throws(() => validateReadiness(extra), /GATE_SET/);
+});
+
+test("completed independent review remains bound to the exact remediation head", () => {
+  const contract = JSON.parse(
+    JSON.stringify({
+      contractVersion: "cornermex-a3-2b-execution-readiness-v1",
+      canonicalProject: "wlrfknmrhowldygmvtvn",
+      sourceCommit: "a8a751bdbaf2b12fef3f94c83769bac52fffbaad",
+      reviewedRemediationHeadSha: "f".repeat(40),
+      technicalGates: {
+        stalePreviewProtection: true,
+        rollbackDbDryRun: true,
+        mediaContentValidation: true,
+        sourcePinRequired: true,
+        railwaySourceIntrospection: true,
+        freshLiveReadOnlyPreflight: false,
+        independentReviewOfRemediationHead: true,
+      },
+      declaredReady: false,
+    }),
+  );
+  assert.throws(() => validateReadiness(contract), /IDENTITY_MISMATCH/);
 });

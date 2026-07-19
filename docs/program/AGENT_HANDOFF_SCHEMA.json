@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cornermex.example/schemas/agent-handoff-v1.json",
+  "title": "CornerMex Agent Handoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "repository", "baseSha", "headSha", "branch", "scope", "filesChanged", "testsRun", "ci", "platformReads", "platformWrites", "findings", "blockers", "nextOwner", "finalStatus"],
+  "properties": {
+    "schemaVersion": { "const": "agent-handoff-v1" },
+    "repository": { "const": "Conquereleven/corner-mex-uae" },
+    "baseSha": { "$ref": "#/$defs/sha" },
+    "headSha": { "$ref": "#/$defs/sha" },
+    "branch": { "type": "string", "minLength": 1 },
+    "scope": { "$ref": "#/$defs/stringArray" },
+    "filesChanged": { "$ref": "#/$defs/stringArray" },
+    "testsRun": { "$ref": "#/$defs/stringArray" },
+    "ci": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runId", "requiredChecks", "status"],
+      "properties": {
+        "runId": { "type": ["integer", "null"] },
+        "requiredChecks": { "$ref": "#/$defs/stringArray" },
+        "status": { "enum": ["unknown", "pending", "passing", "failing"] }
+      }
+    },
+    "platformReads": { "$ref": "#/$defs/stringArray" },
+    "platformWrites": { "$ref": "#/$defs/stringArray" },
+    "findings": { "$ref": "#/$defs/stringArray" },
+    "blockers": { "$ref": "#/$defs/stringArray" },
+    "nextOwner": { "type": "string", "minLength": 1 },
+    "finalStatus": { "type": "string", "pattern": "^[a-z0-9_]+$" }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "stringArray": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

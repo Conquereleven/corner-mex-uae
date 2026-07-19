@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "cornermex-deployment-registry-v1",
+  "observedAt": "2026-07-19T19:26:37Z",
+  "repository": "Conquereleven/corner-mex-uae",
+  "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
+  "incidentClassification": "failed_deployment_sequence",
+  "outageVerified": false,
+  "failedSourceCommits": [
+    "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
+    "bb9386f72197fb20912c328ac912c27894f3db02"
+  ],
+  "lastSuccessfulCommit": "a558785d3fc2c1eb2aa9298087bba7f940094bcb",
+  "expectedContexts": [
+    {
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829"
+    },
+    {
+      "context": "CornerMex UAE - corner-mex-uae",
+      "service": "corner-mex-uae",
+      "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+      "environment": "production",
+      "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1"
+    }
+  ],
+  "deployments": [
+    {
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+      "sourceBranch": "main",
+      "sourceCommit": "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
+      "deploymentId": "b3727bdc-f35c-455f-b3f5-1e14496cac5b",
+      "state": "FAILED",
+      "failureStage": "dependency_install",
+      "failureClassification": "package_manager_lockfile_mismatch",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "evidenceClass": "verified_live"
+    },
+    {
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+      "sourceBranch": "main",
+      "sourceCommit": "bb9386f72197fb20912c328ac912c27894f3db02",
+      "deploymentId": "7e984431-da1b-4bfd-abdf-76e65c1bfe5f",
+      "state": "FAILED",
+      "failureStage": "dependency_install",
+      "failureClassification": "package_manager_lockfile_mismatch",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "evidenceClass": "verified_live"
+    },
+    {
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+      "sourceBranch": "main",
+      "sourceCommit": "a558785d3fc2c1eb2aa9298087bba7f940094bcb",
+      "deploymentId": "66abbc09-04d1-4f98-b455-4fa9ac6893b7",
+      "state": "SUCCESS",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "evidenceClass": "verified_live"
+    },
+    {
+      "context": "CornerMex UAE - corner-mex-uae",
+      "service": "corner-mex-uae",
+      "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+      "environment": "production",
+      "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+      "sourceBranch": "main",
+      "sourceCommit": "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
+      "deploymentId": "121381ae-2d2d-46cb-bc44-4c92e6758284",
+      "state": "FAILED",
+      "failureStage": "dependency_install",
+      "failureClassification": "package_manager_lockfile_mismatch",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "evidenceClass": "verified_live"
+    },
+    {
+      "context": "CornerMex UAE - corner-mex-uae",
+      "service": "corner-mex-uae",
+      "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+      "environment": "production",
+      "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+      "sourceBranch": "main",
+      "sourceCommit": "bb9386f72197fb20912c328ac912c27894f3db02",
+      "deploymentId": "9cb1ba3a-6f44-4eca-99d1-2a624716df71",
+      "state": "FAILED",
+      "failureStage": "dependency_install",
+      "failureClassification": "package_manager_lockfile_mismatch",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "evidenceClass": "verified_live"
+    },
+    {
+      "context": "CornerMex UAE - corner-mex-uae",
+      "service": "corner-mex-uae",
+      "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+      "environment": "production",
+      "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+      "sourceBranch": "main",
+      "sourceCommit": "a558785d3fc2c1eb2aa9298087bba7f940094bcb",
+      "deploymentId": "228170ed-3e67-4be5-a39e-8bc07860bd78",
+      "state": "SUCCESS",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "evidenceClass": "verified_live"
+    }
+  ],
+  "remediation": {
+    "category": "repository_build_configuration",
+    "action": "Remove stale bun.lock so Railpack uses the maintained package-lock.json and npm path already exercised by CI.",
+    "railwayWritePerformed": false,
+    "redeployPerformed": false
+  },
+  "rollback": {
+    "repository": "Revert only the remediation commit if npm selection causes a regression.",
+    "platform": "No deployment mutation was performed; the successful a558785d3fc2c1eb2aa9298087bba7f940094bcb deployments remain the runtime anchors.",
+    "productionCutover": "Not authorized. Keep Lovable unchanged as the commercial rollback anchor."
+  }
+}
