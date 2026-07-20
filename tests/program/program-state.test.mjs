@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { validateProgramState } from "../../scripts/program/validate-program-state.mjs";
 
-const FROZEN_NOW = new Date("2026-07-20T00:02:00Z");
+const FROZEN_NOW = new Date("2026-07-20T00:53:00Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
@@ -98,7 +98,7 @@ const cases = [
     "stale freshUntil",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
-      current.evidence.freshUntil = "2026-07-20T00:01:30Z";
+      current.evidence.freshUntil = "2026-07-20T00:52:30Z";
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_STATE_EVIDENCE_STALE/,
@@ -189,6 +189,49 @@ const cases = [
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_DATABASE_ROLE_DUPLICATE/,
+  ],
+  [
+    "current source commit drifts from observed main",
+    ({ read, write }) => {
+      const registry = read("DEPLOYMENT_REGISTRY.json");
+      registry.currentSourceCommit = "f".repeat(40);
+      write("DEPLOYMENT_REGISTRY.json", registry);
+    },
+    /DEPLOYMENT_CURRENT_SOURCE_DRIFT/,
+  ],
+  [
+    "current running deployment missing for a context",
+    ({ read, write }) => {
+      const registry = read("DEPLOYMENT_REGISTRY.json");
+      const currentDeployment = registry.deployments.find(
+        (d) => d.sourceCommit === registry.currentSourceCommit && d.environment === "staging",
+      );
+      currentDeployment.instanceState = "CRASHED";
+      write("DEPLOYMENT_REGISTRY.json", registry);
+    },
+    /DEPLOYMENT_CURRENT_RUNTIME_INVALID/,
+  ],
+  [
+    "historical rollback entry missing for a context",
+    ({ read, write }) => {
+      const registry = read("DEPLOYMENT_REGISTRY.json");
+      const rollbackDeployment = registry.deployments.find(
+        (d) =>
+          d.sourceCommit === registry.historicalSuccessfulCommit && d.environment === "production",
+      );
+      rollbackDeployment.state = "SUCCESS";
+      write("DEPLOYMENT_REGISTRY.json", registry);
+    },
+    /DEPLOYMENT_ROLLBACK_HISTORY_INVALID/,
+  ],
+  [
+    "rollback availability falsely claimed as immediately usable",
+    ({ read, write }) => {
+      const registry = read("DEPLOYMENT_REGISTRY.json");
+      registry.rollback.availability = "immediately_redeployable";
+      write("DEPLOYMENT_REGISTRY.json", registry);
+    },
+    /DEPLOYMENT_ROLLBACK_AVAILABILITY_INVALID/,
   ],
 ];
 

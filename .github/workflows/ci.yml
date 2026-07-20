@@ -34,8 +34,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run validate:no-railway-writes
       - run: npm run validate:deployment-governance
       - run: npm run validate:program-state
+      - run: npm run validate:production-activation-request -- docs/program/PRODUCTION_ACTIVATION_REQUEST.example.json
       - run: node --test tests/program/*.test.mjs
       - run: npm run test:alignment
       - run: npm run validate:a2-migration

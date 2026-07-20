@@ -30,8 +30,10 @@ if [[ "${MERGED_TREE_VERIFY_ONLY:-false}" == "true" ]]; then
 fi
 
 npm ci
+npm run validate:no-railway-writes
 npm run validate:deployment-governance
 npm run validate:program-state
+npm run validate:production-activation-request -- docs/program/PRODUCTION_ACTIVATION_REQUEST.example.json
 node --test tests/program/*.test.mjs
 npm run typecheck
 npm run build

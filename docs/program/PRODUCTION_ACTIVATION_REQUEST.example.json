@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "cornermex-production-activation-request-v1",
+  "requestId": "PAR-2026-07-20-EXAMPLE-TEMPLATE",
+  "founderDecisionId": "FD-CM-EXAMPLE-TEMPLATE-001",
+  "exactSourceSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
+  "requester": "example_template_not_a_real_request",
+  "operator": "example_template_not_a_real_request",
+  "createdAt": "2026-07-20T00:00:00Z",
+  "expiresAt": "2026-07-21T00:00:00Z",
+  "ci": {
+    "runId": 0,
+    "conclusion": "unknown"
+  },
+  "healthEvidence": {
+    "observedAt": "2026-07-20T00:00:00Z",
+    "path": "/api/health",
+    "status": "unknown"
+  },
+  "readinessEvidence": {
+    "observedAt": "2026-07-20T00:00:00Z",
+    "path": "/api/ready",
+    "status": "degraded",
+    "degradedReason": "required_readiness_variables_absent"
+  },
+  "liveGovernanceEvidence": {
+    "observedAt": "2026-07-20T00:00:00Z",
+    "status": "live_governance_credentials_missing"
+  },
+  "rollbackTarget": "a558785d3fc2c1eb2aa9298087bba7f940094bcb",
+  "rollbackAvailability": "historical_removed_rebuild_required",
+  "expectedProductionService": "corner-mex-uae",
+  "expectedEnvironment": "production",
+  "authorizationStatus": "blocked_readiness",
+  "executionStatus": "not_executed"
+}
