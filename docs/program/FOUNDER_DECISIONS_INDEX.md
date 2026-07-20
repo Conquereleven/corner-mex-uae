@@ -1,13 +1,14 @@
 # Founder Decisions Index
 
-Observed: `2026-07-19T00:05:30Z`
+Observed: `2026-07-20T00:01:26Z`
 
-| Decision | Status | Scope | Repository authority | Execution state |
-|---|---|---|---|---|
-| `FD-CM-A3.2B-EXEC-001` | approved with exact gates | A3.2b production foundation | `docs/engineering-playbook/founder-decisions/FD-CM-A3.2B-EXEC-001.md` | blocked pending exact-head review, fresh preflight, green deployment and remaining gates |
-| `FD-CM-LOVABLE-GOV-001` | binding | Lovable governance and authority boundary | `docs/engineering-playbook/founder-decisions/FD-CM-LOVABLE-GOV-001.md` | Lovable remains constrained by the recorded boundary |
-| `FD-CM-LOVABLE-DB1-CUSTODY-001` | binding | legacy DB1 custody | `docs/engineering-playbook/founder-decisions/FD-CM-LOVABLE-DB1-CUSTODY-001.md` | custody only; no movement, deletion, archival or shutdown |
-| `FD-CM-CO-JOINT-P0-001` | approved for controlled implementation | this P0 branch, read-only discovery and PR creation | joint package dated `2026-07-18` | implementation authorized; production mutation not authorized |
+| Decision                                | Status                                 | Scope                                                           | Repository authority                                                           | Execution state                                                                                    |
+| --------------------------------------- | -------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `FD-CM-A3.2B-EXEC-001`                  | approved with exact gates              | A3.2b production foundation                                     | `docs/engineering-playbook/founder-decisions/FD-CM-A3.2B-EXEC-001.md`          | blocked pending exact-head review, fresh preflight, green deployment and remaining gates           |
+| `FD-CM-LOVABLE-GOV-001`                 | binding                                | Lovable governance and authority boundary                       | `docs/engineering-playbook/founder-decisions/FD-CM-LOVABLE-GOV-001.md`         | Lovable remains constrained by the recorded boundary                                               |
+| `FD-CM-LOVABLE-DB1-CUSTODY-001`         | binding                                | legacy DB1 custody                                              | `docs/engineering-playbook/founder-decisions/FD-CM-LOVABLE-DB1-CUSTODY-001.md` | custody only; no movement, deletion, archival or shutdown                                          |
+| `FD-CM-CO-JOINT-P0-001`                 | approved for controlled implementation | this P0 branch, read-only discovery and PR creation             | joint package dated `2026-07-18`                                               | implementation authorized; production mutation not authorized                                      |
+| `FD-CM-PR10-AUTODEPLOY-DISPOSITION-001` | template only; not adopted             | temporary disposition of the already-running PR #10 deployments | response pack dated `2026-07-19`                                               | unavailable until the specified Opus acceptance verdict is recorded; does not authorize deployment |
 
 ## Active prohibitions
 
