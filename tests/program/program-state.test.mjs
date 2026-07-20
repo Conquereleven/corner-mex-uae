@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { validateProgramState } from "../../scripts/program/validate-program-state.mjs";
 
-const FROZEN_NOW = new Date("2026-07-20T00:00:00Z");
+const FROZEN_NOW = new Date("2026-07-20T00:02:00Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
@@ -35,7 +35,8 @@ test("durable program state is internally consistent and fail-closed", () => {
   assert.equal(result.status, "program_state_valid");
   assert.equal(result.railwayContexts, 2);
   assert.equal(result.failedDeployments, 4);
-  assert.equal(result.productionWrites, 0);
+  assert.equal(result.deploymentWrites, 0);
+  assert.equal(result.governanceWrites, 1);
 });
 
 const cases = [
@@ -97,7 +98,7 @@ const cases = [
     "stale freshUntil",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
-      current.evidence.freshUntil = "2026-07-19T20:00:00Z";
+      current.evidence.freshUntil = "2026-07-20T00:01:30Z";
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_STATE_EVIDENCE_STALE/,
@@ -172,13 +173,13 @@ const cases = [
     /PROGRAM_DATABASE_ROLE_UNKNOWN/,
   ],
   [
-    "forbidden platform write claim",
+    "deployment created by governance change",
     ({ read, write }) => {
       const registry = read("DEPLOYMENT_REGISTRY.json");
-      registry.remediation.railwayWritePerformed = true;
+      registry.governance.lastPlatformChange.deploymentCreated = true;
       write("DEPLOYMENT_REGISTRY.json", registry);
     },
-    /RAILWAY_WRITE_FORBIDDEN/,
+    /RAILWAY_REDEPLOY_FORBIDDEN/,
   ],
   [
     "duplicate database role",

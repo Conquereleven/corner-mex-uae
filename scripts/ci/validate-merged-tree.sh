@@ -30,6 +30,7 @@ if [[ "${MERGED_TREE_VERIFY_ONLY:-false}" == "true" ]]; then
 fi
 
 npm ci
+npm run validate:deployment-governance
 npm run validate:program-state
 node --test tests/program/*.test.mjs
 npm run typecheck

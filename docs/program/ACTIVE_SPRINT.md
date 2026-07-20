@@ -1,39 +1,35 @@
-# Active Sprint: CornerMex P0 Production State Reconciliation
+# Active Sprint: PR #10 Railway Auto-Deploy Governance
 
 - Owner: Codex
-- Reviewer: Sonnet
-- Branch: `ops/p0-production-state-reconciliation`
-- Base: `bb9386f72197fb20912c328ac912c27894f3db02`
-- Status: implementation in progress; production execution blocked
+- Reviewer: independent reviewer
+- Branch: `ops/railway-autodeploy-governance`
+- Base: `d470b7b57f6d625a7d60337ad16a59080c1bb37d`
+- Status: governance remediation implemented; review and readiness remediation pending
 
-## Proven root cause
+## Incident and trigger
 
-Both Railway contexts received commits `13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2` and `bb9386f72197fb20912c328ac912c27894f3db02`, read `/railway.json`, and failed before the application build. Railpack selected Bun because the repository contained `bun.lock`; Bun 1.3.14 then rejected that stale lock under `--frozen-lockfile`. The four failures form one `failed_deployment_sequence` caused by the same repository defect, not source-SHA, runtime, health-check, Supabase, or secret failures. No runtime outage is asserted because the last successful deployments at `a558785d3fc2c1eb2aa9298087bba7f940094bcb` remained the observed runtime anchors.
+Merging PR #10 automatically deployed exact commit `d470b7b57f6d625a7d60337ad16a59080c1bb37d` to staging and production. Railway UI discovery confirmed that both services watched `main` with auto-deploy enabled. GitHub merges were therefore implicitly production-authorizing platform events.
 
-The bounded remediation removes the stale Bun lock and retains `package-lock.json` as the single maintained dependency lock. CI already installs with `npm ci`, and Railway's configured build and start commands remain unchanged.
+The two deployments remain `SUCCESS` and `RUNNING`, use npm and have no pre-deploy command. Staging health passes, but staging readiness is degraded because `CORNERMEX_COMMERCE_MODEL` is missing. Production is unexposed and lacks all three variables required by the readiness contract. No outage is asserted, but the runtime is not declared ready.
 
-## Evidence reconciled
+## Governance correction
 
-- `origin/main` equals the expected merge `bb9386f72197fb20912c328ac912c27894f3db02`.
-- PR #8 head `33f2231443172b1956c5adf2b609a3e0bb02daab` received an explicit GitHub approval bound to that commit before merge.
-- Read-only Railway history records four failed deployments across the two expected contexts and two successful runtime anchors at `a558785d3fc2c1eb2aa9298087bba7f940094bcb`.
-- The post-merge audit observed successful GitHub repository checks and a failing Supabase Preview integration caused by remote/local migration-history mismatch. The canonical Supabase project itself is `ACTIVE_HEALTHY` with the four expected active migrations.
-- The A3.2b pending migration remains unapplied.
-- `freshLiveReadOnlyPreflight` remains false because no reviewed remediation deployment has been observed.
-- `independentReviewOfRemediationHead` is true for the merged PR #8 head only; this P0 branch requires a new review.
+Production auto-deploy is disabled while the GitHub repository and `main` branch remain connected. Staging remains automatic. The platform change created no deployment, restart or rollback and preserved both running deployment IDs.
+
+Repository records now define `automatic_staging_manual_production`. CI rejects `production.autoDeploy=true` and rejects a Git push or merge as the production trigger. Future production activation requires an explicit Founder decision ID, exact SHA, green health/readiness and a verified rollback target.
 
 ## Exit checklist
 
-- [x] Verify repository and PR identities.
-- [x] Preserve the dirty primary checkout.
-- [x] Discover and classify the complete Railway failure sequence read-only.
-- [x] Verify canonical Supabase identity and active migration list read-only.
-- [x] Add durable program-state records and deterministic validation.
-- [x] Complete the full local validation suite.
-- [x] Update the focused PR.
-- [ ] Obtain Sonnet review of the exact P0 head.
-- [ ] Obtain any separate production authorization before a Railway write.
+- [x] Verify repository, merge SHA, project, services and environments.
+- [x] Identify the exact shared GitHub auto-deploy trigger.
+- [x] Record source SHA, package manager, instance state and deployment history.
+- [x] Disable production auto-deploy without deploying.
+- [x] Verify staging remains automatic and production is manual.
+- [x] Add durable governance records and a fail-closed CI validator.
+- [ ] Obtain independent review of the exact governance branch head.
+- [ ] Under separate authorization, restore required Railway readiness variables and rerun readiness checks.
+- [ ] Obtain a Founder decision ID before any future production activation.
 
 ## Explicitly not executed
 
-No platform write, redeploy, database change, migration, DNS change, checkout/payment activation, public catalog/inventory activation, media ingestion, or outbound communication.
+No deployment, restart, rollback, Supabase write, migration, DNS change, checkout/payment activation, Lovable publication, DB1 change, live media ingestion, public price/stock activation or external communication was performed.

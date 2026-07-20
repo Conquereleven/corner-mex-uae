@@ -118,7 +118,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   );
 
   assert(
-    registry.schemaVersion === "cornermex-deployment-registry-v1",
+    registry.schemaVersion === "cornermex-deployment-registry-v2",
     "DEPLOYMENT_REGISTRY_VERSION_INVALID",
   );
   assert(registry.repository === EXPECTED_REPOSITORY, "DEPLOYMENT_REPOSITORY_INVALID");
@@ -127,7 +127,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     "DEPLOYMENT_RAILWAY_IDENTITY_INVALID",
   );
   assert(
-    registry.incidentClassification === "failed_deployment_sequence" &&
+    registry.incidentClassification === "unexpected_automated_platform_write" &&
       registry.outageVerified === false,
     "DEPLOYMENT_IMPACT_CLASSIFICATION_INVALID",
   );
@@ -143,13 +143,18 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     registry.failedSourceCommits.every((commit) => SHA.test(commit)),
     "DEPLOYMENT_SHA_INVALID",
   );
-  assert(SHA.test(registry.lastSuccessfulCommit), "DEPLOYMENT_SHA_INVALID");
+  assert(SHA.test(registry.currentSourceCommit), "DEPLOYMENT_SHA_INVALID");
+  assert(SHA.test(registry.historicalSuccessfulCommit), "DEPLOYMENT_SHA_INVALID");
+  assert(
+    registry.currentSourceCommit === current.authority.observedMainSha,
+    "DEPLOYMENT_CURRENT_SOURCE_DRIFT",
+  );
   assert(Array.isArray(registry.deployments), "DEPLOYMENT_HISTORY_REQUIRED");
 
   const deploymentIds = registry.deployments.map(({ deploymentId }) => deploymentId);
   assert(new Set(deploymentIds).size === deploymentIds.length, "DEPLOYMENT_ID_DUPLICATE");
   const expectedHistoryCount =
-    registry.expectedContexts.length * (registry.failedSourceCommits.length + 1);
+    registry.expectedContexts.length * (registry.failedSourceCommits.length + 2);
   assert(registry.deployments.length === expectedHistoryCount, "DEPLOYMENT_HISTORY_INCOMPLETE");
 
   for (const context of registry.expectedContexts) {
@@ -179,11 +184,21 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
         "DEPLOYMENT_ROOT_CAUSE_INVALID",
       );
     }
-    const successful = contextDeployments.filter(
+    const current = contextDeployments.filter(
       (deployment) =>
-        deployment.sourceCommit === registry.lastSuccessfulCommit && deployment.state === "SUCCESS",
+        deployment.sourceCommit === registry.currentSourceCommit &&
+        deployment.state === "SUCCESS" &&
+        deployment.instanceState === "RUNNING" &&
+        deployment.packageManager === "npm",
     );
-    assert(successful.length === 1, "DEPLOYMENT_SUCCESS_ANCHOR_INVALID");
+    assert(current.length === 1, "DEPLOYMENT_CURRENT_RUNTIME_INVALID");
+    const historicalRollback = contextDeployments.filter(
+      (deployment) =>
+        deployment.sourceCommit === registry.historicalSuccessfulCommit &&
+        deployment.state === "REMOVED" &&
+        deployment.originalResult === "SUCCESS",
+    );
+    assert(historicalRollback.length === 1, "DEPLOYMENT_ROLLBACK_HISTORY_INVALID");
   }
 
   for (const deployment of registry.deployments) {
@@ -194,8 +209,14 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     assert(deployment.healthPath === "/api/health", "DEPLOYMENT_HEALTH_PATH_INVALID");
     assert(EVIDENCE_CLASSES.has(deployment.evidenceClass), "DEPLOYMENT_EVIDENCE_CLASS_INVALID");
   }
-  assert(registry.remediation?.railwayWritePerformed === false, "RAILWAY_WRITE_FORBIDDEN");
-  assert(registry.remediation?.redeployPerformed === false, "RAILWAY_REDEPLOY_FORBIDDEN");
+  assert(
+    registry.governance?.lastPlatformChange?.deploymentCreated === false,
+    "RAILWAY_REDEPLOY_FORBIDDEN",
+  );
+  assert(
+    registry.rollback?.availability === "historical_removed_rebuild_required",
+    "DEPLOYMENT_ROLLBACK_AVAILABILITY_INVALID",
+  );
 
   assert(
     handoff.$schema === "https://json-schema.org/draft/2020-12/schema",
@@ -211,7 +232,8 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     main: current.authority.observedMainSha,
     railwayContexts: registry.expectedContexts.length,
     failedDeployments: registry.expectedContexts.length * registry.failedSourceCommits.length,
-    productionWrites: 0,
+    deploymentWrites: 0,
+    governanceWrites: 1,
   };
 }
 

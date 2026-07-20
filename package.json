@@ -58,6 +58,7 @@
     "validate:browser-secrets": "node scripts/supabase/scan-browser-secrets.mjs",
     "test:canonical-migration-replay": "node scripts/supabase/test-canonical-migration-replay.mjs",
     "validate:db1-custody": "node scripts/governance/validate-db1-custody.mjs",
+    "validate:deployment-governance": "node scripts/program/validate-deployment-governance.mjs",
     "validate:program-state": "node scripts/program/validate-program-state.mjs",
     "test:pr9-remediation": "node --test tests/remediation/*.test.mjs",
     "validate:merged-tree": "bash scripts/ci/validate-merged-tree.sh"
