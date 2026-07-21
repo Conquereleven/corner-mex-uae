@@ -1,11 +1,11 @@
 {
   "schemaVersion": "cornermex-deployment-registry-v2",
-  "observedAt": "2026-07-20T00:01:26Z",
+  "observedAt": "2026-07-20T00:52:00Z",
   "repository": "Conquereleven/corner-mex-uae",
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
   "outageVerified": false,
-  "currentSourceCommit": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
+  "currentSourceCommit": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
   "failedSourceCommits": [
     "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
     "bb9386f72197fb20912c328ac912c27894f3db02"
@@ -35,8 +35,8 @@
       "environment": "staging",
       "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
       "sourceBranch": "main",
-      "sourceCommit": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
-      "deploymentId": "1efd468e-8449-4495-a1f2-442984943b40",
+      "sourceCommit": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
+      "deploymentId": "7051fc17-56f0-456a-b547-bbf2f468e489",
       "state": "SUCCESS",
       "instanceState": "RUNNING",
       "packageManager": "npm",
@@ -46,7 +46,8 @@
       "healthState": "ok",
       "readinessPath": "/api/ready",
       "readinessState": "degraded_missing_CORNERMEX_COMMERCE_MODEL",
-      "evidenceClass": "verified_live"
+      "evidenceClass": "verified_live",
+      "note": "Deployed automatically by the PR #11 merge to main (a173dfc). Predecessor deployment 1efd468e (d470b7b5) is now superseded and REMOVED in Railway; it is no longer tracked here since it is neither an active current entry nor the historical rollback anchor."
     },
     {
       "context": "CornerMex UAE - cornermex-web",
@@ -181,7 +182,7 @@
         "autoDeploy": true,
         "trigger": "github_push_main",
         "waitForCI": false,
-        "currentSourceSha": "d470b7b57f6d625a7d60337ad16a59080c1bb37d"
+        "currentSourceSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373"
       },
       {
         "environment": "production",

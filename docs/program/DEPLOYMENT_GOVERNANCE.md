@@ -1,5 +1,13 @@
 # Railway Deployment Governance
 
+## Validator scope — read this before trusting a green CI run
+
+`npm run validate:deployment-governance` and `npm run validate:program-state` validate **repository consistency only**. They read `docs/program/DEPLOYMENT_REGISTRY.json` and the other committed program-state files and check that those documents are internally consistent, correctly shaped, and declare the intended model. **They never query Railway.** A green CI run on these two checks proves the _documentation_ is self-consistent — it does not, by itself, prove that Railway's actual live configuration matches what the documentation claims.
+
+The current code is a fixture-driven `railway_live_governance_comparator_contract`; it does not claim an active live monitor. The network client and schedule are disabled until the official contract is verified with a dedicated OAuth `project:viewer` response. See `RAILWAY_LIVE_GOVERNANCE_CONTRACT.md`.
+
+The no-write scanner is a defense-in-depth static check. It is not a sandbox, proof of absence, complete mutation detector, substitute for least-privileged credentials, or substitute for code review.
+
 ## Binding model
 
 CornerMex uses `automatic_staging_manual_production`.
@@ -50,6 +58,16 @@ The previous successful source is `a558785d3fc2c1eb2aa9298087bba7f940094bcb`:
 
 Railway currently reports both entries as `REMOVED`. They are historical evidence, not an immediately available rollback button. Recovery to that source therefore requires a controlled rebuild from the exact commit after authorization. Lovable remains unchanged as the commercial rollback anchor.
 
+## Railway Live Drift Guard
+
+`scripts/program/check-railway-live-governance.mjs` is an injectable comparator. It does not currently read live Railway state.
+
+- On every pull request touching governance files, and on `workflow_dispatch`, only the **static** checks run (`validate:deployment-governance`, `validate:program-state`, the guard's own unit tests against injected fixtures, and a static scan rejecting any Railway write operation in the guard's own code). No live Railway call happens here.
+- There is no daily schedule. Manual dispatch remains gated by repository variable `RAILWAY_LIVE_MONITORING_ENABLED == true`; this sprint does not enable it.
+- It compares live Railway state per environment (project/environment/service identifiers, connected repository, watched branch, auto-deploy state, current deployment ID and source SHA, deployment/instance status — never variable values) against `docs/program/DEPLOYMENT_REGISTRY.json`.
+- It reports exactly one of five states; **only `live_governance_verified` is green**: `live_governance_verified`, `live_governance_drift_detected`, `live_governance_probe_unavailable`, `live_governance_response_malformed`, `live_governance_credentials_missing`. A failed or unreachable live query is never reported as verified.
+- Live access would require a dedicated Railway OAuth access token with `openid project:viewer`, restricted to this project. No such credential exists. Until a sanitized live response verifies the remaining contract, status is `live_monitoring_deferred` and manual read-only verification is required.
+
 ## Change procedure
 
-Any future change to this model must update the deployment registry and this document in the same pull request. CI rejects production auto-deploy, a Git push/merge production trigger, missing production preconditions, or any claim that the governance-only change created a deployment, restart or rollback.
+Any future change to this model must update the deployment registry and this document in the same pull request. CI rejects production auto-deploy, a Git push/merge production trigger, missing production preconditions, or any claim that the governance-only change created a deployment, restart or rollback. Any change to the live drift guard's scripts or workflow must keep passing the write-operation scan in `scripts/program/assert-no-railway-writes.mjs`.

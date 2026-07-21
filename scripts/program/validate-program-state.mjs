@@ -184,9 +184,19 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
         "DEPLOYMENT_ROOT_CAUSE_INVALID",
       );
     }
+    // Staging and production are allowed to legitimately run different source SHAs (staging
+    // auto-deploys, production does not), so "current" is compared per context against the
+    // governance-declared currentSourceSha for that environment, not a single registry-wide
+    // value. registry.currentSourceCommit remains the most recently reconciled main SHA overall
+    // (checked above against CURRENT_STATE.json) but is not assumed to equal every context's
+    // actual running SHA.
+    const declaredContext = registry.governance.contexts.find(
+      (c) => c.environment === context.environment,
+    );
+    assert(SHA.test(declaredContext?.currentSourceSha), "DEPLOYMENT_SHA_INVALID");
     const current = contextDeployments.filter(
       (deployment) =>
-        deployment.sourceCommit === registry.currentSourceCommit &&
+        deployment.sourceCommit === declaredContext.currentSourceSha &&
         deployment.state === "SUCCESS" &&
         deployment.instanceState === "RUNNING" &&
         deployment.packageManager === "npm",
