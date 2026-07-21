@@ -1,6 +1,6 @@
 # Staging Readiness Evidence — CM-RDY-0
 
-Collected 2026-07-21, read-only. No Railway or Supabase write performed to produce this document. No secret or variable value is recorded anywhere in this file.
+Collected 2026-07-21, read-only. No Railway or Supabase write performed to produce this document. No secret or variable value is recorded anywhere in this file. Finalized in micro-sprint `CM-RDY-0A` once the post-merge staging deployment reached a terminal state.
 
 ## Identity
 
@@ -10,27 +10,27 @@ Collected 2026-07-21, read-only. No Railway or Supabase write performed to produ
 - Staging: service `cornermex-web` (`5a6b85da-3156-4fc1-828d-ec9e4019de7e`), environment `385b8cb8-878b-4d83-ad46-2bc831fed829`, public domain `cornermex-web-staging.up.railway.app`
 - Production: service `corner-mex-uae` (`6702af28-5689-46fb-8896-b5a8b1fbba94`), environment `8f35b59c-7446-4514-a307-0b329ec62bd1` (not publicly exposed; not probed live this sprint)
 
-## Deployment state
+## Deployment state — final (CM-RDY-0A)
 
-|                                        | Staging                                                                                                                                                          | Production                                                                          |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Currently live deployment              | `7051fc17-56f0-456a-b547-bbf2f468e489` @ `a173dfc6d5b0d8b62710a1ce604d6df9ea63c373`                                                                              | `bac2a5b3-0b8a-4243-8046-531113a4ca18` @ `d470b7b57f6d625a7d60337ad16a59080c1bb37d` |
-| Pending deployment (post PR #12 merge) | `ab629441-4104-4b9c-b65d-66eafa6ba1af` @ `73790cb3724fc1f19bedd157fc237f07a46e4314`, status `QUEUED` at evidence-collection time — **not yet confirmed SUCCESS** | none — no new deployment created                                                    |
-| Auto-deploy                            | `true` (per `docs/program/DEPLOYMENT_REGISTRY.json`)                                                                                                             | `false` (per same, and per PR #11/#12 governance verification)                      |
+|                       | Staging                                                                                             | Production                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Active deployment** | `ab629441-4104-4b9c-b65d-66eafa6ba1af` @ `73790cb3724fc1f19bedd157fc237f07a46e4314` — **`SUCCESS`** | `bac2a5b3-0b8a-4243-8046-531113a4ca18` @ `d470b7b57f6d625a7d60337ad16a59080c1bb37d` |
+| Previous deployment   | `7051fc17-56f0-456a-b547-bbf2f468e489` @ `a173dfc6d5b0d8b62710a1ce604d6df9ea63c373` — now `REMOVED` | unchanged — no new deployment created                                               |
+| Auto-deploy           | `true` (per `docs/program/DEPLOYMENT_REGISTRY.json`)                                                | `false` (per same, and per PR #11/#12 governance verification)                      |
 
-The staging health check below was therefore run against the **currently live** instance (`7051fc17` @ `a173dfc6`), not the pending one. This is disclosed explicitly rather than assumed to be the newest commit.
+The staging deployment that PR #12's merge triggered (`ab629441` @ `73790cb`) progressed `QUEUED` → `BUILDING` → `SUCCESS` and is now the active, live instance, confirmed by both the Railway deployment record and by the `commit` field in a live `GET /api/health` response below. The record of it being observed mid-flight (`QUEUED`) during the original CM-RDY-0 evidence pass is preserved lower in this document as historical evidence, not presented as current. Production is confirmed unchanged throughout — no deployment, restart, or rollback occurred at any point across CM-RDY-0 or CM-RDY-0A.
 
-## Live health result
+## Live health result (final, against the active deployment)
 
 ```
 GET https://cornermex-web-staging.up.railway.app/api/health
 HTTP 200
-{"status":"ok","service":"cornermex-web","runtime":"node","commerceModel":"single_merchant_with_internal_supplier_network","version":"unversioned","commit":"a173dfc6d5b0"}
+{"status":"ok","service":"cornermex-web","runtime":"node","commerceModel":"single_merchant_with_internal_supplier_network","version":"unversioned","commit":"73790cb3724f"}
 ```
 
-`commerceModel` in this payload is a **hardcoded string literal in `src/routes/api/health.ts`**, not read from the environment — its presence here does not indicate the `CORNERMEX_COMMERCE_MODEL` environment variable is correctly set. See the readiness result below for the actual environment-driven check.
+`commit` now reports `73790cb3724f`, confirming this response came from the new, active deployment (`ab629441`), not the removed prior one. `commerceModel` in this payload is a **hardcoded string literal in `src/routes/api/health.ts`**, not read from the environment — its presence here does not indicate the `CORNERMEX_COMMERCE_MODEL` environment variable is correctly set. See the readiness result below for the actual environment-driven check.
 
-## Live readiness result
+## Live readiness result (final, against the active deployment)
 
 ```
 GET https://cornermex-web-staging.up.railway.app/api/ready
@@ -38,7 +38,23 @@ HTTP 503
 {"status":"degraded","service":"cornermex-web","target":"unavailable","missing":[],"errors":["CORNERMEX_COMMERCE_MODEL"]}
 ```
 
-`missing: []` — `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (the only two variables the code checks via explicit presence) are present. `errors: ["CORNERMEX_COMMERCE_MODEL"]` — this variable failed Zod schema validation, meaning **it is present but its value does not equal the required literal**. Because the environment schema (`environmentSchema.safeParse`) fails before `getReadinessResponse` ever reaches the Supabase reachability probe (`checkSupabaseReadiness`), **Supabase connectivity from staging was not and could not be exercised by this check** — that remains unknown, not confirmed either way.
+**Identical in substance to the CM-RDY-0 result against the prior deployment** — the blocker did not change when the new deployment went live, which is expected: the deployment carried code changes only, no variable change was made or was in scope. `missing: []` — `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (the only two variables the code checks via explicit presence) are present. `errors: ["CORNERMEX_COMMERCE_MODEL"]` — this variable failed Zod schema validation, meaning **it is present but its value does not equal the required literal**. Because the environment schema (`environmentSchema.safeParse`) fails before `getReadinessResponse` ever reaches the Supabase reachability probe (`checkSupabaseReadiness`), **Supabase connectivity from staging was not and could not be exercised by this check** — that remains unknown, not confirmed either way.
+
+## Historical evidence (CM-RDY-0, superseded — not current)
+
+At original evidence-collection time, `ab629441` was still `QUEUED` and the live instance was the prior deployment:
+
+```
+GET https://cornermex-web-staging.up.railway.app/api/health  (against 7051fc17 @ a173dfc6)
+HTTP 200
+{"status":"ok","service":"cornermex-web","runtime":"node","commerceModel":"single_merchant_with_internal_supplier_network","version":"unversioned","commit":"a173dfc6d5b0"}
+
+GET https://cornermex-web-staging.up.railway.app/api/ready  (against 7051fc17 @ a173dfc6)
+HTTP 503
+{"status":"degraded","service":"cornermex-web","target":"unavailable","missing":[],"errors":["CORNERMEX_COMMERCE_MODEL"]}
+```
+
+Kept for audit trail only. The "Deployment state — final" and "final, against the active deployment" sections above are current; this section is not.
 
 ## Code-level contract (source of truth — not inferred from variable names)
 
@@ -93,7 +109,7 @@ Correct `CORNERMEX_COMMERCE_MODEL` in the **staging** environment of service `co
 
 - **Blast radius:** staging only, by construction (per-environment variable scoping, confirmed).
 - **Reversibility:** high — a variable value revert plus a restart, no data migration or schema change involved.
-- **Unknowns carried forward:** whether Supabase is actually reachable from staging once the schema check passes; production's current variable presence/values (not re-probed this sprint); whether the pending deployment (`ab629441`) reaches `SUCCESS` and what its own health/readiness look like once live.
+- **Unknowns carried forward:** whether Supabase is actually reachable from staging once the schema check passes; production's current variable presence/values (not re-probed this sprint). Resolved in CM-RDY-0A: `ab629441` reached `SUCCESS` and its health/readiness are now confirmed live (see above) — the readiness blocker is unchanged from the prior deployment.
 
 ## Actions not performed in producing this document
 

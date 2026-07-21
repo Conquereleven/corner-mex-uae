@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { validateProgramState } from "../../scripts/program/validate-program-state.mjs";
 
-const FROZEN_NOW = new Date("2026-07-21T18:21:00Z");
+const FROZEN_NOW = new Date("2026-07-21T18:56:00Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
@@ -98,7 +98,7 @@ const cases = [
     "stale freshUntil",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
-      current.evidence.freshUntil = "2026-07-21T18:20:30Z";
+      current.evidence.freshUntil = "2026-07-21T18:55:30Z";
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_STATE_EVIDENCE_STALE/,

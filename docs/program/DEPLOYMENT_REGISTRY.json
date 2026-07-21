@@ -1,6 +1,6 @@
 {
   "schemaVersion": "cornermex-deployment-registry-v2",
-  "observedAt": "2026-07-21T18:20:00Z",
+  "observedAt": "2026-07-21T18:55:00Z",
   "repository": "Conquereleven/corner-mex-uae",
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
@@ -35,8 +35,8 @@
       "environment": "staging",
       "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
       "sourceBranch": "main",
-      "sourceCommit": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
-      "deploymentId": "7051fc17-56f0-456a-b547-bbf2f468e489",
+      "sourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+      "deploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
       "state": "SUCCESS",
       "instanceState": "RUNNING",
       "packageManager": "npm",
@@ -45,9 +45,9 @@
       "healthPath": "/api/health",
       "healthState": "ok",
       "readinessPath": "/api/ready",
-      "readinessState": "degraded_missing_CORNERMEX_COMMERCE_MODEL",
+      "readinessState": "degraded_invalid_value_CORNERMEX_COMMERCE_MODEL",
       "evidenceClass": "verified_live",
-      "note": "Deployed automatically by the PR #11 merge to main (a173dfc). Predecessor deployment 1efd468e (d470b7b5) is now superseded and REMOVED in Railway; it is no longer tracked here since it is neither an active current entry nor the historical rollback anchor."
+      "note": "Deployed automatically by the PR #12 merge to main (73790cb), confirmed SUCCESS/RUNNING live in CM-RDY-0A after being observed QUEUED/BUILDING mid-flight in CM-RDY-0. Predecessor deployment 7051fc17 (a173dfc6) is now superseded and REMOVED in Railway; it is no longer tracked here since it is neither an active current entry nor the historical rollback anchor."
     },
     {
       "context": "CornerMex UAE - cornermex-web",
@@ -182,7 +182,7 @@
         "autoDeploy": true,
         "trigger": "github_push_main",
         "waitForCI": false,
-        "currentSourceSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373"
+        "currentSourceSha": "73790cb3724fc1f19bedd157fc237f07a46e4314"
       },
       {
         "environment": "production",

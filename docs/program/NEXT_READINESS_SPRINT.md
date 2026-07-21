@@ -1,6 +1,6 @@
 # Next Readiness Sprint — handoff note, not authorization
 
-This document enumerates future work. It does not authorize, schedule, or execute any of it. No Railway variable, Supabase configuration, DNS record, or commercial capability is changed by this note or by the sprint that produced it (`CM-RDY-0 — Post-Merge Reconciliation + Staging Readiness Evidence`).
+This document enumerates future work. It does not authorize, schedule, or execute any of it. No Railway variable, Supabase configuration, DNS record, or commercial capability is changed by this note or by the sprint that produced it (`CM-RDY-0 / CM-RDY-0A — Post-Merge Reconciliation + Staging Readiness Evidence`).
 
 ## Current blocked state (verified live 2026-07-21; see `docs/program/STAGING_READINESS_EVIDENCE.md`)
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-07-21T18:20:00Z",
+  "generatedAt": "2026-07-21T18:55:00Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
     "expectedMainSha": "73790cb3724fc1f19bedd157fc237f07a46e4314",
@@ -10,26 +10,27 @@
   },
   "evidence": {
     "class": "verified_live",
-    "source": "GitHub read-only discovery, Railway read-only deployment/variable-presence discovery, and a direct live GET against the staging /api/health and /api/ready endpoints. No Railway or Supabase write performed.",
-    "sourceIdentity": "github:73790cb3724fc1f19bedd157fc237f07a46e4314;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-live-deployment:7051fc17-56f0-456a-b547-bbf2f468e489;staging-pending-deployment:ab629441-4104-4b9c-b65d-66eafa6ba1af;production-deployment:bac2a5b3-0b8a-4243-8046-531113a4ca18;db1:d9495376-339d-44dd-9c8a-db0f7b451f96;db2:wlrfknmrhowldygmvtvn;db3:nhxpujypqxbjiqqddxqt",
-    "observedAt": "2026-07-21T18:20:00Z",
-    "freshUntil": "2026-07-28T18:20:00Z"
+    "source": "GitHub read-only discovery, Railway read-only deployment discovery, and direct live GETs against the staging /api/health and /api/ready endpoints, re-confirmed against the final active deployment in CM-RDY-0A. No Railway or Supabase write performed.",
+    "sourceIdentity": "github:73790cb3724fc1f19bedd157fc237f07a46e4314;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-active-deployment:ab629441-4104-4b9c-b65d-66eafa6ba1af;production-deployment:bac2a5b3-0b8a-4243-8046-531113a4ca18;db1:d9495376-339d-44dd-9c8a-db0f7b451f96;db2:wlrfknmrhowldygmvtvn;db3:nhxpujypqxbjiqqddxqt",
+    "observedAt": "2026-07-21T18:55:00Z",
+    "freshUntil": "2026-07-28T18:55:00Z"
   },
   "platforms": {
     "railway": {
       "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
-      "status": "postmerge_staging_deployment_in_progress_readiness_still_degraded",
-      "stagingLiveSourceCommit": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
-      "stagingPendingSourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
-      "stagingPendingDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
-      "stagingPendingDeploymentStatusAtEvidenceTime": "QUEUED",
+      "status": "postmerge_staging_deployment_reconciled_readiness_still_degraded",
+      "stagingActiveSourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+      "stagingActiveDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+      "stagingActiveDeploymentStatus": "SUCCESS",
+      "stagingPreviousDeploymentId": "7051fc17-56f0-456a-b547-bbf2f468e489",
+      "stagingPreviousDeploymentState": "REMOVED",
       "productionSourceCommit": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
       "productionDeploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
       "governanceModel": "automatic_staging_manual_production",
       "stagingAutoDeploy": true,
       "productionAutoDeploy": false,
       "deploymentCreatedByThisSprint": false,
-      "note": "Merging PR #12 auto-triggered a new staging deployment (ab629441) from 73790cb, exactly as the governance model intends. It was still QUEUED at evidence-collection time; the currently live staging instance is still the prior deployment (7051fc17 @ a173dfc6). Production correctly created no deployment and remains unchanged. This sprint performed zero Railway writes and did not trigger, restart, or roll back anything."
+      "note": "Merging PR #12 auto-triggered staging deployment ab629441 from 73790cb, exactly as the governance model intends. It progressed QUEUED -> BUILDING -> SUCCESS during CM-RDY-0A and is now the active, live instance (confirmed via the Railway deployment record and via the commit field in a live GET /api/health response). The prior deployment (7051fc17 @ a173dfc6) is now REMOVED. Production correctly created no deployment and remains unchanged throughout. Zero Railway writes were performed by CM-RDY-0 or CM-RDY-0A; nothing was triggered, restarted, or rolled back."
     },
     "databases": [
       {
@@ -89,20 +90,19 @@
     },
     "runtime": {
       "stagingHealth": "ok",
-      "stagingHealthObservedCommit": "a173dfc6d5b0",
+      "stagingHealthObservedCommit": "73790cb3724f",
       "stagingReadiness": "degraded_invalid_value_CORNERMEX_COMMERCE_MODEL",
-      "stagingReadinessDetail": "Live GET /api/ready returned 503 with missing:[] and errors:[\"CORNERMEX_COMMERCE_MODEL\"]. SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are present (missing:[] confirms this). CORNERMEX_COMMERCE_MODEL is present as a variable name but its value does not satisfy the exact literal required by src/config/commerce-env.ts. This corrects the prior 'missing_CORNERMEX_COMMERCE_MODEL' label, which was stale relative to current live evidence and current code (the schema treats a present-but-absent var as defaulted, not as this specific error path).",
+      "stagingReadinessDetail": "Live GET /api/ready against the active deployment (ab629441 @ 73790cb) returned 503 with missing:[] and errors:[\"CORNERMEX_COMMERCE_MODEL\"] -- identical in substance to the result observed against the prior deployment, confirming the blocker is unrelated to the deployment itself. SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are present (missing:[] confirms this). CORNERMEX_COMMERCE_MODEL is present as a variable name but its value does not satisfy the exact literal required by src/config/commerce-env.ts.",
       "productionInstance": "RUNNING",
       "productionReadiness": "not_reverified_this_sprint_out_of_scope"
     }
   },
   "program": {
-    "activeSprint": "CM-RDY-0_STAGING_READINESS_EVIDENCE",
+    "activeSprint": "CM-RDY-0A_FINAL_STAGING_DEPLOYMENT_RECONCILIATION",
     "owner": "Codex",
     "reviewer": "Sonnet",
     "blockers": [
       "Staging readiness is degraded because CORNERMEX_COMMERCE_MODEL's live value does not match the exact required literal in src/config/commerce-env.ts; the canonical value is known from code, but changing the live variable is a platform write not authorized in this sprint.",
-      "The pending staging deployment (ab629441 @ 73790cb) had not completed at evidence-collection time; its post-deploy health/readiness are not yet confirmed.",
       "Production readiness was not re-verified this sprint (staging-first principle; production explicitly out of scope) and remains degraded per prior evidence.",
       "Live Railway monitoring remains deferred (Route B, unchanged from CM-GOV-2-R2); no OAuth project:viewer credential exists.",
       "Public commerce capabilities remain unauthorized and disabled.",
@@ -112,7 +112,6 @@
       "Independent review of this exact branch head (docs-and-evidence-only, zero platform writes).",
       "Founder decision on the docs/program/STAGING_READINESS_CHANGE_REQUEST.example.json proposal: authorize a staging-only correction of CORNERMEX_COMMERCE_MODEL's value to the exact literal in src/config/commerce-env.ts.",
       "Only after that authorization: execute the staging-only variable change under separate tooling, then re-verify /api/health and /api/ready live before any production consideration.",
-      "Re-verify the pending staging deployment (ab629441) reaches SUCCESS/RUNNING before treating 73790cb as staging's confirmed live commit in DEPLOYMENT_REGISTRY.json.",
       "Production readiness repair remains a separate, later, separately authorized action."
     ]
   },
