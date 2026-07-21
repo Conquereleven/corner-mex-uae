@@ -94,7 +94,7 @@ const validateProduction = (value) => {
 
 export function validateStagingReadinessExecutionEvidence(
   evidence,
-  { now = () => new Date() } = {},
+  { now = () => new Date(), clockSkewSeconds = 300 } = {},
 ) {
   assertOnlyKeys(evidence, ALLOWED_KEYS, "SRE_UNKNOWN_FIELD");
   assert(
@@ -159,11 +159,21 @@ export function validateStagingReadinessExecutionEvidence(
   assert(
     evidence.readinessBefore.statusCode === 503 &&
       evidence.readinessBefore.status === "degraded" &&
+      Array.isArray(evidence.readinessBefore.missing) &&
+      Array.isArray(evidence.readinessBefore.errors) &&
       evidence.readinessBefore.errors.includes("CORNERMEX_COMMERCE_MODEL"),
     "SRE_READINESS_BEFORE_INVALID",
   );
+  // Real src/routes/api/ready.ts responses only include `missing`/`errors` keys on the
+  // environment-schema-invalid path (readinessBefore's shape here). Once the schema itself
+  // passes -- both the 200 "ready" success path and the 503 "Supabase unreachable" degraded
+  // path -- neither key is present in the actual payload at all. readinessAfter must therefore
+  // tolerate their absence rather than require them, or every real evidence capture would need
+  // to fabricate fields the live API never returns.
+  const readinessAfterErrors = evidence.readinessAfter.errors ?? [];
+  assert(Array.isArray(readinessAfterErrors), "SRE_READINESS_AFTER_INVALID");
   assert(
-    !evidence.readinessAfter.errors.includes("CORNERMEX_COMMERCE_MODEL"),
+    !readinessAfterErrors.includes("CORNERMEX_COMMERCE_MODEL"),
     "SRE_COMMERCE_MODEL_NOT_CORRECTED",
   );
 
@@ -187,10 +197,15 @@ export function validateStagingReadinessExecutionEvidence(
       evidence.maximumEvidenceAgeSeconds <= 604800,
     "SRE_MAXIMUM_AGE_INVALID",
   );
-  assert(
-    now().getTime() - verifiedAt <= evidence.maximumEvidenceAgeSeconds * 1000,
-    "SRE_EVIDENCE_STALE",
-  );
+  const nowMs = now().getTime();
+  const skewMs = clockSkewSeconds * 1000;
+  // A verifiedAt (or changeAppliedAt) set in the future must be rejected outright, not merely
+  // treated as "not stale" — without this, now() - verifiedAt goes negative and is trivially
+  // below any positive maximumEvidenceAgeSeconds, letting fabricated future timestamps pass the
+  // staleness check entirely.
+  assert(appliedAt <= nowMs + skewMs, "SRE_CHANGE_TIMESTAMP_IN_FUTURE");
+  assert(verifiedAt <= nowMs + skewMs, "SRE_VERIFIED_TIMESTAMP_IN_FUTURE");
+  assert(nowMs - verifiedAt <= evidence.maximumEvidenceAgeSeconds * 1000, "SRE_EVIDENCE_STALE");
   const requiredActions = new Set(REQUIRED_UNEXECUTED_ACTIONS);
   if (evidence.result === "rolled_back") {
     requiredActions.delete("no_rollback");
@@ -208,8 +223,8 @@ export function validateStagingReadinessExecutionEvidence(
       evidence.readinessAfter.statusCode === 200 &&
         evidence.readinessAfter.status === "ready" &&
         evidence.readinessAfter.target === "reachable" &&
-        evidence.readinessAfter.missing.length === 0 &&
-        evidence.readinessAfter.errors.length === 0,
+        (evidence.readinessAfter.missing ?? []).length === 0 &&
+        readinessAfterErrors.length === 0,
       "SRE_VERIFIED_READINESS_INVALID",
     );
     assert(
@@ -221,12 +236,27 @@ export function validateStagingReadinessExecutionEvidence(
     assert(evidence.remainingBlocker === null, "SRE_UNEXPECTED_REMAINING_BLOCKER");
   } else if (evidence.result === "executed_degraded") {
     assert(
-      evidence.readinessAfter.statusCode === 503 && evidence.readinessAfter.status === "degraded",
+      evidence.readinessAfter.statusCode === 503 &&
+        evidence.readinessAfter.status === "degraded" &&
+        evidence.readinessAfter.target === "unavailable",
       "SRE_DEGRADED_READINESS_INVALID",
     );
     assert(
       typeof evidence.remainingBlocker === "string" && evidence.remainingBlocker.length > 0,
       "SRE_REMAINING_BLOCKER_REQUIRED",
+    );
+    // CORNERMEX_COMMERCE_MODEL is guaranteed absent from readinessAfter.errors by the assertion
+    // above (SRE_COMMERCE_MODEL_NOT_CORRECTED, checked unconditionally for every result). Per the
+    // real code path (src/routes/api/ready.ts), once environment schema validation passes the
+    // Supabase reachability probe always runs — so a "degraded" result after the fix can only be
+    // explained by that probe having executed and found Supabase unreachable. A document claiming
+    // "degraded" while also claiming the Supabase probe was never executed, or claiming it
+    // succeeded, is self-contradictory and must be rejected rather than accepted as a plausible
+    // "new blocker" story.
+    assert(
+      evidence.supabaseReadiness.executed === true &&
+        evidence.supabaseReadiness.result === "unreachable",
+      "SRE_DEGRADED_SUPABASE_STATE_CONTRADICTORY",
     );
     assert(evidence.rollback.performed === false, "SRE_UNEXPECTED_ROLLBACK");
   } else {

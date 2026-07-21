@@ -32,9 +32,7 @@
   "readinessAfter": {
     "statusCode": 200,
     "status": "ready",
-    "target": "reachable",
-    "missing": [],
-    "errors": []
+    "target": "reachable"
   },
   "supabaseReadiness": {
     "executed": true,

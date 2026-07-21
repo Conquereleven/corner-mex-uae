@@ -78,7 +78,10 @@ const assert = (condition, code) => {
   if (!condition) throw new Error(code);
 };
 
-export function validateStagingReadinessChangeRequest(request, { now = () => new Date() } = {}) {
+export function validateStagingReadinessChangeRequest(
+  request,
+  { now = () => new Date(), baseDir = process.cwd() } = {},
+) {
   assert(request && typeof request === "object" && !Array.isArray(request), "SRC_REQUEST_INVALID");
   for (const key of Object.keys(request)) {
     assert(ALLOWED_KEYS.has(key), `SRC_UNKNOWN_FIELD:${key}`);
@@ -207,6 +210,39 @@ export function validateStagingReadinessChangeRequest(request, { now = () => new
       "SRC_DECISION_SCOPE_INVALID",
     );
     assert(request.exactMainSha === RECONCILED_MAIN_SHA, "SRC_EXECUTION_MAIN_SHA_DRIFT");
+
+    // The change request and its referenced execution-evidence document are two separate files
+    // that can drift apart silently if only one is edited. Cross-check the fields that must agree
+    // between them, rather than trusting request.executionStatus/preChangeDeploymentId/
+    // preChangeSourceSha in isolation.
+    let referencedEvidence;
+    try {
+      referencedEvidence = JSON.parse(
+        fs.readFileSync(path.resolve(baseDir, request.executionEvidenceFile), "utf8"),
+      );
+    } catch {
+      throw new Error("SRC_EXECUTION_EVIDENCE_UNREADABLE");
+    }
+    assert(
+      referencedEvidence.requestId === request.requestId,
+      "SRC_EXECUTION_EVIDENCE_MISMATCH:requestId",
+    );
+    assert(
+      referencedEvidence.founderDecisionId === request.founderDecisionId,
+      "SRC_EXECUTION_EVIDENCE_MISMATCH:founderDecisionId",
+    );
+    assert(
+      referencedEvidence.result === request.executionStatus,
+      "SRC_EXECUTION_EVIDENCE_MISMATCH:result",
+    );
+    assert(
+      referencedEvidence.preChangeDeploymentId === request.preChangeDeploymentId,
+      "SRC_EXECUTION_EVIDENCE_MISMATCH:preChangeDeploymentId",
+    );
+    assert(
+      referencedEvidence.sourceSha === request.preChangeSourceSha,
+      "SRC_EXECUTION_EVIDENCE_MISMATCH:sourceSha",
+    );
   } else {
     assert(request.executionEvidenceFile === undefined, "SRC_UNEXECUTED_EVIDENCE_FORBIDDEN");
   }

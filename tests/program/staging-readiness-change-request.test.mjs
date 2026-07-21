@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
   validateStagingReadinessChangeRequest,
   validateStagingReadinessChangeRequestFile,
@@ -173,14 +176,31 @@ test("rejects unknown fields", () => {
 
 for (const executionStatus of ["executed_verified", "executed_degraded", "rolled_back"]) {
   test(`accepts authorized ${executionStatus} with durable evidence`, () => {
+    const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "cornermex-src-evidence-accept-"));
+    const evidenceRelative = "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json";
+    fs.mkdirSync(path.dirname(path.join(baseDir, evidenceRelative)), { recursive: true });
+    const realEvidence = JSON.parse(
+      fs.readFileSync("docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json", "utf8"),
+    );
     const request = {
       ...baseRequest(),
+      requestId: realEvidence.requestId,
       founderDecisionId: "FD-CM-STAGING-READINESS-001",
       authorizationStatus: "approved_executed",
       executionStatus,
-      executionEvidenceFile: "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json",
+      executionEvidenceFile: evidenceRelative,
+      preChangeDeploymentId: realEvidence.preChangeDeploymentId,
+      preChangeSourceSha: realEvidence.sourceSha,
     };
-    assert.equal(validateStagingReadinessChangeRequest(request).executionStatus, executionStatus);
+    fs.writeFileSync(
+      path.join(baseDir, evidenceRelative),
+      JSON.stringify({ ...realEvidence, result: executionStatus }),
+    );
+    assert.equal(
+      validateStagingReadinessChangeRequest(request, { baseDir }).executionStatus,
+      executionStatus,
+    );
+    fs.rmSync(baseDir, { recursive: true, force: true });
   });
 }
 
@@ -203,4 +223,64 @@ test("the committed example records the verified authorized execution", () => {
   );
   assert.equal(result.authorizationStatus, "approved_executed");
   assert.equal(result.executionStatus, "executed_verified");
+});
+
+test("rejects an executed request whose referenced evidence file disagrees on result", () => {
+  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "cornermex-src-evidence-mismatch-"));
+  const evidenceRelative = "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json";
+  fs.mkdirSync(path.dirname(path.join(baseDir, evidenceRelative)), { recursive: true });
+  const realEvidence = JSON.parse(
+    fs.readFileSync("docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json", "utf8"),
+  );
+  fs.writeFileSync(
+    path.join(baseDir, evidenceRelative),
+    JSON.stringify({ ...realEvidence, result: "executed_degraded" }),
+  );
+  const request = {
+    ...baseRequest(),
+    requestId: realEvidence.requestId,
+    founderDecisionId: "FD-CM-STAGING-READINESS-001",
+    authorizationStatus: "approved_executed",
+    executionStatus: "executed_verified",
+    executionEvidenceFile: evidenceRelative,
+    preChangeDeploymentId: realEvidence.preChangeDeploymentId,
+    preChangeSourceSha: realEvidence.sourceSha,
+  };
+  assert.throws(
+    () => validateStagingReadinessChangeRequest(request, { baseDir }),
+    /SRC_EXECUTION_EVIDENCE_MISMATCH:result/,
+  );
+  fs.rmSync(baseDir, { recursive: true, force: true });
+});
+
+test("rejects an executed request whose referenced evidence file disagrees on preChangeDeploymentId", () => {
+  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "cornermex-src-evidence-mismatch-"));
+  const evidenceRelative = "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json";
+  fs.mkdirSync(path.dirname(path.join(baseDir, evidenceRelative)), { recursive: true });
+  const realEvidence = JSON.parse(
+    fs.readFileSync("docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json", "utf8"),
+  );
+  fs.writeFileSync(path.join(baseDir, evidenceRelative), JSON.stringify(realEvidence));
+  const request = {
+    ...baseRequest(),
+    founderDecisionId: "FD-CM-STAGING-READINESS-001",
+    authorizationStatus: "approved_executed",
+    executionStatus: realEvidence.result,
+    executionEvidenceFile: evidenceRelative,
+    requestId: realEvidence.requestId,
+    preChangeDeploymentId: "00000000-0000-4000-8000-000000000000",
+    preChangeSourceSha: realEvidence.sourceSha,
+  };
+  assert.throws(
+    () => validateStagingReadinessChangeRequest(request, { baseDir }),
+    /SRC_EXECUTION_EVIDENCE_MISMATCH:preChangeDeploymentId/,
+  );
+  fs.rmSync(baseDir, { recursive: true, force: true });
+});
+
+test("the committed change request and execution evidence agree with each other", () => {
+  const result = validateStagingReadinessChangeRequestFile(
+    "docs/program/STAGING_READINESS_CHANGE_REQUEST.example.json",
+  );
+  assert.equal(result.status, "staging_readiness_change_request_valid");
 });

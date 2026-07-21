@@ -48,8 +48,8 @@
     "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "healthBefore": { "$ref": "#/$defs/probe" },
     "healthAfter": { "$ref": "#/$defs/probe" },
-    "readinessBefore": { "$ref": "#/$defs/readinessProbe" },
-    "readinessAfter": { "$ref": "#/$defs/readinessProbe" },
+    "readinessBefore": { "$ref": "#/$defs/readinessProbeInvalidSchema" },
+    "readinessAfter": { "$ref": "#/$defs/readinessProbeSchemaValid" },
     "supabaseReadiness": {
       "type": "object",
       "additionalProperties": false,
@@ -95,12 +95,26 @@
         "observedCommit": { "type": "string", "pattern": "^[0-9a-f]{12}$" }
       }
     },
-    "readinessProbe": {
+    "readinessProbeInvalidSchema": {
+      "description": "Shape of a live /api/ready response when environment schema validation itself failed (missing/malformed variables). This is the only path where src/routes/api/ready.ts includes `missing`/`errors` keys.",
       "type": "object",
       "additionalProperties": false,
       "required": ["statusCode", "status", "target", "missing", "errors"],
       "properties": {
-        "statusCode": { "type": "integer" },
+        "statusCode": { "const": 503 },
+        "status": { "const": "degraded" },
+        "target": { "const": "unavailable" },
+        "missing": { "type": "array", "items": { "type": "string" } },
+        "errors": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      }
+    },
+    "readinessProbeSchemaValid": {
+      "description": "Shape of a live /api/ready response once environment schema validation passes -- both the 200 ready path and the 503 Supabase-unreachable degraded path. Neither path returns `missing`/`errors` keys, so they must not be required here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statusCode", "status", "target"],
+      "properties": {
+        "statusCode": { "enum": [200, 503] },
         "status": { "enum": ["ready", "degraded"] },
         "target": { "enum": ["reachable", "unavailable"] },
         "missing": { "type": "array", "items": { "type": "string" } },
