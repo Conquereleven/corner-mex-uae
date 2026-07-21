@@ -1,31 +1,35 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-07-20T00:52:00Z",
+  "generatedAt": "2026-07-21T18:20:00Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
-    "observedMainSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
+    "expectedMainSha": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+    "observedMainSha": "73790cb3724fc1f19bedd157fc237f07a46e4314",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
     "class": "verified_live",
-    "source": "GitHub and Railway read-only discovery following the reviewed PR #11 merge; no Supabase, Lovable, DNS or variable re-verification performed in this sprint",
-    "sourceIdentity": "github:a173dfc6d5b0d8b62710a1ce604d6df9ea63c373;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:7051fc17-56f0-456a-b547-bbf2f468e489;production-deployment:bac2a5b3-0b8a-4243-8046-531113a4ca18;db1:d9495376-339d-44dd-9c8a-db0f7b451f96;db2:wlrfknmrhowldygmvtvn;db3:nhxpujypqxbjiqqddxqt",
-    "observedAt": "2026-07-20T00:52:00Z",
-    "freshUntil": "2026-07-27T00:52:00Z"
+    "source": "GitHub read-only discovery, Railway read-only deployment/variable-presence discovery, and a direct live GET against the staging /api/health and /api/ready endpoints. No Railway or Supabase write performed.",
+    "sourceIdentity": "github:73790cb3724fc1f19bedd157fc237f07a46e4314;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-live-deployment:7051fc17-56f0-456a-b547-bbf2f468e489;staging-pending-deployment:ab629441-4104-4b9c-b65d-66eafa6ba1af;production-deployment:bac2a5b3-0b8a-4243-8046-531113a4ca18;db1:d9495376-339d-44dd-9c8a-db0f7b451f96;db2:wlrfknmrhowldygmvtvn;db3:nhxpujypqxbjiqqddxqt",
+    "observedAt": "2026-07-21T18:20:00Z",
+    "freshUntil": "2026-07-28T18:20:00Z"
   },
   "platforms": {
     "railway": {
       "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
-      "status": "governance_remediated_readiness_degraded",
-      "stagingSourceCommit": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
+      "status": "postmerge_staging_deployment_in_progress_readiness_still_degraded",
+      "stagingLiveSourceCommit": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
+      "stagingPendingSourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+      "stagingPendingDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+      "stagingPendingDeploymentStatusAtEvidenceTime": "QUEUED",
       "productionSourceCommit": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
+      "productionDeploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
       "governanceModel": "automatic_staging_manual_production",
       "stagingAutoDeploy": true,
       "productionAutoDeploy": false,
-      "deploymentCreatedByGovernanceChange": false,
-      "note": "Staging and production intentionally run different source SHAs after PR #11: staging auto-deployed the merge, production correctly did not. This divergence is the governance model working as intended, not drift."
+      "deploymentCreatedByThisSprint": false,
+      "note": "Merging PR #12 auto-triggered a new staging deployment (ab629441) from 73790cb, exactly as the governance model intends. It was still QUEUED at evidence-collection time; the currently live staging instance is still the prior deployment (7051fc17 @ a173dfc6). Production correctly created no deployment and remains unchanged. This sprint performed zero Railway writes and did not trigger, restart, or roll back anything."
     },
     "databases": [
       {
@@ -73,33 +77,43 @@
       "mergedAs": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373"
     },
     "currentGovernanceDriftGuardReview": {
+      "complete": true,
+      "reviewedHeadSha": "2d3d45501c63983c2a0639088fd71dc0083da5e7",
+      "reviewer": "Sonnet",
+      "mergedAs": "73790cb3724fc1f19bedd157fc237f07a46e4314"
+    },
+    "currentStagingReadinessReview": {
       "complete": false,
       "reviewedHeadSha": null,
       "reviewer": "Sonnet"
     },
     "runtime": {
       "stagingHealth": "ok",
-      "stagingReadiness": "degraded_missing_CORNERMEX_COMMERCE_MODEL",
+      "stagingHealthObservedCommit": "a173dfc6d5b0",
+      "stagingReadiness": "degraded_invalid_value_CORNERMEX_COMMERCE_MODEL",
+      "stagingReadinessDetail": "Live GET /api/ready returned 503 with missing:[] and errors:[\"CORNERMEX_COMMERCE_MODEL\"]. SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are present (missing:[] confirms this). CORNERMEX_COMMERCE_MODEL is present as a variable name but its value does not satisfy the exact literal required by src/config/commerce-env.ts. This corrects the prior 'missing_CORNERMEX_COMMERCE_MODEL' label, which was stale relative to current live evidence and current code (the schema treats a present-but-absent var as defaulted, not as this specific error path).",
       "productionInstance": "RUNNING",
-      "productionReadiness": "degraded_required_variables_absent"
+      "productionReadiness": "not_reverified_this_sprint_out_of_scope"
     }
   },
   "program": {
-    "activeSprint": "CM-GOV-2-R2_RAILWAY_CONTRACT_RESOLUTION",
+    "activeSprint": "CM-RDY-0_STAGING_READINESS_EVIDENCE",
     "owner": "Codex",
     "reviewer": "Sonnet",
     "blockers": [
-      "Runtime readiness is degraded: staging reports missing CORNERMEX_COMMERCE_MODEL and production lacks all three readiness variables.",
-      "The prior successful Railway deployments are REMOVED history entries, so rollback requires a controlled rebuild from the recorded SHA.",
-      "Live monitoring is deferred: no OAuth project:viewer credential or sanitized complete Railway contract response is available; manual read-only verification is required.",
-      "This drift-guard branch requires independent review before merge.",
-      "Public commerce capabilities remain unauthorized and disabled."
+      "Staging readiness is degraded because CORNERMEX_COMMERCE_MODEL's live value does not match the exact required literal in src/config/commerce-env.ts; the canonical value is known from code, but changing the live variable is a platform write not authorized in this sprint.",
+      "The pending staging deployment (ab629441 @ 73790cb) had not completed at evidence-collection time; its post-deploy health/readiness are not yet confirmed.",
+      "Production readiness was not re-verified this sprint (staging-first principle; production explicitly out of scope) and remains degraded per prior evidence.",
+      "Live Railway monitoring remains deferred (Route B, unchanged from CM-GOV-2-R2); no OAuth project:viewer credential exists.",
+      "Public commerce capabilities remain unauthorized and disabled.",
+      "This staging-readiness-evidence branch requires independent review before any variable change is authorized."
     ],
     "nextActions": [
-      "Review the drift-guard PR at its exact head.",
-      "Under separate authorization, provision a dedicated OAuth project:viewer identity and verify a sanitized complete Railway response before enabling monitoring.",
-      "Under separate authorization, restore the required Railway readiness variables and repeat health/readiness verification (see docs/program/NEXT_READINESS_SPRINT.md).",
-      "Before any future production activation, record a docs/program/PRODUCTION_ACTIVATION_REQUEST.schema.json instance with every completeness element genuinely green."
+      "Independent review of this exact branch head (docs-and-evidence-only, zero platform writes).",
+      "Founder decision on the docs/program/STAGING_READINESS_CHANGE_REQUEST.example.json proposal: authorize a staging-only correction of CORNERMEX_COMMERCE_MODEL's value to the exact literal in src/config/commerce-env.ts.",
+      "Only after that authorization: execute the staging-only variable change under separate tooling, then re-verify /api/health and /api/ready live before any production consideration.",
+      "Re-verify the pending staging deployment (ab629441) reaches SUCCESS/RUNNING before treating 73790cb as staging's confirmed live commit in DEPLOYMENT_REGISTRY.json.",
+      "Production readiness repair remains a separate, later, separately authorized action."
     ]
   },
   "safety": {

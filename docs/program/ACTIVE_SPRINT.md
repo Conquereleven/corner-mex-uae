@@ -1,51 +1,49 @@
-# Active Sprint: CM-GOV-2-R2 — Railway Contract Resolution + Activation Hardening
+# Active Sprint: CM-RDY-0 — Post-Merge Reconciliation + Staging Readiness Evidence
 
 - Owner: Codex
 - Reviewer: Sonnet
-- Branch: `ops/railway-live-drift-guard`
-- Base: `a173dfc6d5b0d8b62710a1ce604d6df9ea63c373` (PR #11 merge SHA)
-- Status: Route B implemented; independent review pending
+- Branch: `ops/staging-readiness-evidence`
+- Base: `73790cb3724fc1f19bedd157fc237f07a46e4314` (PR #12 merge SHA)
+- Status: evidence gathered and documented; independent review pending; no repair executed
 
-## PR #11 closure
+## PR #12 closure
 
-PR #11 (`fix: require manual Railway production deployment`, head `153d88702d951d45bfae1a411a50eadfc29d0b40`) was independently reviewed (Sonnet: `APPROVE_EXACT_HEAD`), manually approved by a human reviewer bound to the exact head, and merged by the repository owner as merge commit `a173dfc6d5b0d8b62710a1ce604d6df9ea63c373`.
+PR #12 (`feat: add Railway governance comparator and activation safeguards`, head `2d3d45501c63983c2a0639088fd71dc0083da5e7`) was independently reviewed (Sonnet: `APPROVE_WITH_LOW_FINDINGS`), merged by the repository owner as merge commit `73790cb3724fc1f19bedd157fc237f07a46e4314`. `origin/main` confirmed at this exact SHA before this sprint began.
 
-Post-merge, read-only observation confirmed the governance model worked exactly as designed:
+## Post-merge Railway observation (read-only)
 
-- staging created a new deployment (`7051fc17-56f0-456a-b547-bbf2f468e489`) from the merge SHA, used `npm`, and passed its healthcheck;
-- production created **no** new deployment and remains on its pre-merge deployment (`bac2a5b3-0b8a-4243-8046-531113a4ca18`, SHA `d470b7b57f6d625a7d60337ad16a59080c1bb37d`);
-- no restart, rollback, or variable change occurred anywhere.
+- Staging (`cornermex-web`, service `5a6b85da-3156-4fc1-828d-ec9e4019de7e`): the merge auto-triggered a new deployment (`ab629441-4104-4b9c-b65d-66eafa6ba1af`, source `73790cb`), as the governance model intends. It was still `QUEUED` at evidence-collection time — not yet confirmed `SUCCESS`. The currently live staging instance (confirmed via a direct `GET /api/health`) is still the prior deployment (`7051fc17`, commit `a173dfc6`).
+- Production (`corner-mex-uae`, service `6702af28-5689-46fb-8896-b5a8b1fbba94`): confirmed unchanged — still deployment `bac2a5b3-0b8a-4243-8046-531113a4ca18` at source `d470b7b57f6d625a7d60337ad16a59080c1bb37d`. No new deployment, restart, or rollback.
+- Zero Railway writes performed by this sprint or observed as a side effect of the merge beyond the expected staging auto-deploy.
 
-Staging and production intentionally run different source SHAs as a result. This divergence is the intended governance outcome, not drift — see `platforms.railway.note` in `docs/program/CURRENT_STATE.json` and the per-context comparison logic in `scripts/program/validate-program-state.mjs`.
+## Staging readiness — corrected finding
+
+Live `GET /api/health` → `200 ok`. Live `GET /api/ready` → `503`, body `{"missing":[],"errors":["CORNERMEX_COMMERCE_MODEL"]}`.
+
+This **corrects** the readiness label carried in prior program-state documents (`degraded_missing_CORNERMEX_COMMERCE_MODEL`). Read-only variable-name discovery (names only, no values requested or received) confirms `CORNERMEX_COMMERCE_MODEL`, `SUPABASE_URL`, and `SUPABASE_PUBLISHABLE_KEY` are all **present** in staging. The actual blocker, per `src/config/commerce-env.ts`, is that `CORNERMEX_COMMERCE_MODEL`'s current value does not satisfy the schema's exact literal (`single_merchant_with_internal_supplier_network`) — an `errors` case, not a `missing` case. Full detail in `docs/program/STAGING_READINESS_EVIDENCE.md`.
 
 ## This sprint's work
 
-Addresses Sonnet's residual findings (F1–F3) from the PR #11 review and builds the previously-missing live verification layer:
-
-- **F1:** retained a dependency-injectable comparator, disabled the incomplete live client and daily schedule, and documented Route B until an OAuth `project:viewer` response verifies the complete contract.
-- **F2 (Founder-decision-ID enforcement is procedural only):** added `docs/program/PRODUCTION_ACTIVATION_REQUEST.schema.json` + a deliberately-blocked `.example.json`, and `scripts/program/validate-production-activation-request.mjs`, which refuses to accept `authorizationStatus: "approved_not_executed"` unless every completeness element (Founder decision ID, exact SHA, green CI, green health, green readiness, `live_governance_verified`, usable rollback target, unexpired evidence) is genuinely present. This is a checkable policy artifact with no deployment executor.
-- **F3 (missing negative tests):** added the four assertions Sonnet named (`DEPLOYMENT_CURRENT_SOURCE_DRIFT`, `DEPLOYMENT_CURRENT_RUNTIME_INVALID`, `DEPLOYMENT_ROLLBACK_HISTORY_INVALID`, `DEPLOYMENT_ROLLBACK_AVAILABILITY_INVALID`) to `tests/program/program-state.test.mjs`, plus a full fixture-based suite for the new live drift guard covering: verified match, production auto-deploy unexpectedly live, push/merge-shaped trigger, wrong repository, wrong branch, malformed/incomplete/non-object Railway responses, unreachable API, missing credential, staging/production identity swap, live SHA drift, and an unexpected production deployment. None call the network or require secrets.
-
-Also added `scripts/program/assert-no-railway-writes.mjs`, a static scan rejecting any Railway write operation (`railway up/deploy/redeploy/restart/down`, known write mutations, the `mutation` keyword) inside the drift-guard scripts or workflow, run as its own CI step and its own test.
-
-## Live credential posture
-
-No dedicated Railway OAuth `project:viewer` credential exists. Route B keeps live monitoring deferred, removes the daily schedule, and requires manual read-only verification. `RAILWAY_LIVE_MONITORING_ENABLED` remains unset; no repository variable or secret was changed.
+1. Reconciled durable state (`CURRENT_STATE.json`) to the real PR #12 merge SHA and the corrected readiness finding above.
+2. Documented the exact code-level health/readiness contract (`docs/program/STAGING_READINESS_EVIDENCE.md`), sourced only from `src/routes/api/{health,ready}.ts` and `src/config/commerce-env.ts` — not inferred from variable names.
+3. Built a sanitized variable-presence matrix (names only, never values) for staging.
+4. Authored a non-executable staging change-request contract (`docs/program/STAGING_READINESS_CHANGE_REQUEST.schema.json` + a `pending_founder_decision` example) proposing the minimal staging-only correction, with no value invented — the required value is already the literal defined in code.
+5. Added a validator + focused tests enforcing: production targets rejected, missing Founder decision blocks approval, unknown variables rejected, off-contract values rejected, invalid/mismatched main SHA rejected, stale evidence rejected, degraded health blocks approval, an explicit readiness-verification step is required in the validation plan, `valuesRedacted` must be `true`, and `executionStatus` can never leave `not_executed`.
 
 ## Exit checklist
 
-- [x] Merge PR #11 at its exact reviewed head.
-- [x] Verify staging deployed and production did not, read-only.
-- [x] Create `ops/railway-live-drift-guard` from the merge SHA.
-- [x] Declare validator scope (registry-only vs. live) near the top of `DEPLOYMENT_GOVERNANCE.md`.
-- [x] Add the four missing negative tests plus the live-drift-guard and activation-request test suites.
-- [x] Implement the read-only, dependency-injectable Railway Live Drift Guard.
-- [x] Gate manual monitoring on `RAILWAY_LIVE_MONITORING_ENABLED`; remove the daily schedule.
-- [x] Add the declarative, non-executable production activation request contract.
-- [x] Preserve the readiness block; add `docs/program/NEXT_READINESS_SPRINT.md` as an enumeration, not an execution.
+- [x] Verify `origin/main` matches the exact expected merge SHA before starting.
+- [x] Work in an isolated worktree/branch; leave the primary checkout's stash and untracked evidence untouched.
+- [x] Observe staging/production post-merge state, read-only.
+- [x] Re-verify staging readiness live rather than propagate a prior claim; correct it where evidence disagreed.
+- [x] Build the sanitized variable matrix (names only).
+- [x] Produce the evidence artifact and the non-executable change-request contract.
+- [x] Add focused tests; run full local validation once.
 - [ ] Obtain independent review of this exact branch head.
-- [ ] Provision a dedicated OAuth `project:viewer` credential and verify the live contract (separate authorization).
+- [ ] Obtain Founder authorization for the proposed staging-only value correction (separate from this sprint).
+- [ ] Execute the staging variable correction (separate, later, separately authorized sprint).
+- [ ] Re-verify staging readiness live after that correction.
 
 ## Explicitly not executed
 
-No production deployment, restart, or rollback; no Railway configuration or variable change beyond what PR #11 already made; no Supabase write; no migration; no DNS change; no Lovable action; no payment, checkout, or commercial activation; no catalog/inventory change; no A3.2b execution; no external communication.
+No Railway variable create/update/delete; no manual deployment, redeploy, restart, or rollback; no Railway mutation; no Supabase write; no migration; no DNS change; no Lovable action; no payment, checkout, or commercial/product/inventory activation; no A3.2b execution; no email/WhatsApp/customer/supplier communication; no production activation; no Railway credential provisioning.

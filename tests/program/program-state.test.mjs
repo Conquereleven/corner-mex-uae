@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { validateProgramState } from "../../scripts/program/validate-program-state.mjs";
 
-const FROZEN_NOW = new Date("2026-07-20T00:53:00Z");
+const FROZEN_NOW = new Date("2026-07-21T18:21:00Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
@@ -98,7 +98,7 @@ const cases = [
     "stale freshUntil",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
-      current.evidence.freshUntil = "2026-07-20T00:52:30Z";
+      current.evidence.freshUntil = "2026-07-21T18:20:30Z";
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_STATE_EVIDENCE_STALE/,
@@ -203,8 +203,11 @@ const cases = [
     "current running deployment missing for a context",
     ({ read, write }) => {
       const registry = read("DEPLOYMENT_REGISTRY.json");
+      const stagingSha = registry.governance.contexts.find(
+        (c) => c.environment === "staging",
+      ).currentSourceSha;
       const currentDeployment = registry.deployments.find(
-        (d) => d.sourceCommit === registry.currentSourceCommit && d.environment === "staging",
+        (d) => d.sourceCommit === stagingSha && d.environment === "staging",
       );
       currentDeployment.instanceState = "CRASHED";
       write("DEPLOYMENT_REGISTRY.json", registry);
