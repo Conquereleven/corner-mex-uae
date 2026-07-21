@@ -14,6 +14,7 @@
     "operator",
     "createdAt",
     "expiresAt",
+    "maximumEvidenceAgeSeconds",
     "ci",
     "healthEvidence",
     "readinessEvidence",
@@ -24,6 +25,18 @@
     "expectedEnvironment",
     "authorizationStatus",
     "executionStatus"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "rollbackAvailability": { "const": "historical_removed_rebuild_required" } }
+      },
+      "then": { "required": ["rollbackRebuildPlan"] }
+    },
+    {
+      "if": { "properties": { "rollbackAvailability": { "const": "immediately_redeployable" } } },
+      "then": { "required": ["rollbackArtifact"] }
+    }
   ],
   "properties": {
     "schemaVersion": { "const": "cornermex-production-activation-request-v1" },
@@ -45,12 +58,18 @@
     "ci": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["runId", "conclusion"],
+      "required": ["runId", "conclusion", "completedAt", "sourceSha"],
       "properties": {
         "runId": { "type": "integer" },
-        "conclusion": { "enum": ["success", "failure", "cancelled", "pending", "unknown"] }
+        "conclusion": { "enum": ["success", "failure", "cancelled", "pending", "unknown"] },
+        "completedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
       }
     },
+    "maximumEvidenceAgeSeconds": { "type": "integer", "minimum": 1, "maximum": 86400 },
     "healthEvidence": {
       "type": "object",
       "additionalProperties": false,
@@ -81,7 +100,7 @@
     "liveGovernanceEvidence": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["observedAt", "status"],
+      "required": ["observedAt", "status", "contractStatus"],
       "properties": {
         "observedAt": {
           "type": "string",
@@ -95,12 +114,54 @@
             "live_governance_response_malformed",
             "live_governance_credentials_missing"
           ]
+        },
+        "contractStatus": {
+          "enum": ["railway_live_contract_verified", "railway_live_contract_deferred"]
         }
       }
     },
     "rollbackTarget": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "rollbackAvailability": {
       "enum": ["immediately_redeployable", "historical_removed_rebuild_required", "unknown"]
+    },
+    "rollbackRebuildPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference",
+        "exactSourceSha",
+        "expectedRecoveryMinutes",
+        "tested",
+        "testedAt",
+        "independentlyVerified",
+        "verifiedAt"
+      ],
+      "properties": {
+        "reference": { "type": "string", "minLength": 1 },
+        "exactSourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "expectedRecoveryMinutes": { "type": "integer", "minimum": 0 },
+        "tested": { "type": "boolean" },
+        "testedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
+        "independentlyVerified": { "type": "boolean" },
+        "verifiedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        }
+      }
+    },
+    "rollbackArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deploymentId", "exactSourceSha", "verifiedAt", "independentlyVerified"],
+      "properties": {
+        "deploymentId": { "type": "string", "minLength": 1 },
+        "exactSourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "verifiedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+        },
+        "independentlyVerified": { "type": "boolean" }
+      }
     },
     "expectedProductionService": { "type": "string", "minLength": 1 },
     "expectedEnvironment": { "const": "production" },

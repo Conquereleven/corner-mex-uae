@@ -13,6 +13,7 @@ export const LIVE_GOVERNANCE_STATES = Object.freeze({
   PROBE_UNAVAILABLE: "live_governance_probe_unavailable",
   MALFORMED: "live_governance_response_malformed",
   CREDENTIALS_MISSING: "live_governance_credentials_missing",
+  NOT_ACTIVATED: "railway_live_monitoring_not_activated",
 });
 
 const REQUIRED_LIVE_STRING_FIELDS = Object.freeze([
@@ -107,8 +108,16 @@ function driftReasons({ live, declared, expectedContext, railwayProjectId }) {
 export async function checkRailwayLiveGovernance({
   baseDir = process.cwd(),
   fetchLiveContext,
-  hasCredentials = () => Boolean(process.env.RAILWAY_VIEWER_TOKEN),
+  hasCredentials = () => Boolean(process.env.RAILWAY_OAUTH_PROJECT_VIEWER_TOKEN),
+  monitoringEnabled = true,
+  allowLiveVerified = true,
 } = {}) {
+  if (!monitoringEnabled)
+    return {
+      status: LIVE_GOVERNANCE_STATES.NOT_ACTIVATED,
+      reason: "railway_live_monitoring_not_activated",
+      contexts: [],
+    };
   if (!hasCredentials()) {
     return {
       status: LIVE_GOVERNANCE_STATES.CREDENTIALS_MISSING,
@@ -231,5 +240,12 @@ export async function checkRailwayLiveGovernance({
     statusPriority.find((state) => results.some((r) => r.status === state)) ||
     LIVE_GOVERNANCE_STATES.VERIFIED;
 
+  if (overall === LIVE_GOVERNANCE_STATES.VERIFIED && !allowLiveVerified) {
+    return {
+      status: LIVE_GOVERNANCE_STATES.MALFORMED,
+      reason: "railway_live_autodeploy_observation_not_supported",
+      contexts: results,
+    };
+  }
   return { status: overall, contexts: results };
 }

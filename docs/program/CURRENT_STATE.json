@@ -85,19 +85,19 @@
     }
   },
   "program": {
-    "activeSprint": "CM-GOV-2_RAILWAY_LIVE_DRIFT_GUARD",
+    "activeSprint": "CM-GOV-2-R2_RAILWAY_CONTRACT_RESOLUTION",
     "owner": "Codex",
     "reviewer": "Sonnet",
     "blockers": [
       "Runtime readiness is degraded: staging reports missing CORNERMEX_COMMERCE_MODEL and production lacks all three readiness variables.",
       "The prior successful Railway deployments are REMOVED history entries, so rollback requires a controlled rebuild from the recorded SHA.",
-      "The live Railway drift guard has no dedicated credential configured yet (RAILWAY_VIEWER_TOKEN), so live governance verification is currently blocked, not passing.",
+      "Live monitoring is deferred: no OAuth project:viewer credential or sanitized complete Railway contract response is available; manual read-only verification is required.",
       "This drift-guard branch requires independent review before merge.",
       "Public commerce capabilities remain unauthorized and disabled."
     ],
     "nextActions": [
       "Review the drift-guard PR at its exact head.",
-      "Provision a dedicated Railway Viewer-role read-only credential as a GitHub Actions secret before the live probe can ever report live_governance_verified.",
+      "Under separate authorization, provision a dedicated OAuth project:viewer identity and verify a sanitized complete Railway response before enabling monitoring.",
       "Under separate authorization, restore the required Railway readiness variables and repeat health/readiness verification (see docs/program/NEXT_READINESS_SPRINT.md).",
       "Before any future production activation, record a docs/program/PRODUCTION_ACTIVATION_REQUEST.schema.json instance with every completeness element genuinely green."
     ]

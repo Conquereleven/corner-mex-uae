@@ -7,8 +7,8 @@ name: Railway Governance Drift Guard
 #
 # On pull_request and workflow_dispatch without a live credential, this only runs the static
 # validators and the write-operation scan (no Railway network access, no secrets required).
-# The live Railway probe only runs on `schedule` or an explicit `workflow_dispatch` input, and
-# only if the dedicated RAILWAY_VIEWER_TOKEN secret is configured — see
+# Route B removes the schedule. A future manual probe remains doubly gated by the repository
+# variable and a dedicated OAuth project:viewer secret — see
 # docs/program/DEPLOYMENT_GOVERNANCE.md ("Validator scope") for why this is a separate job from
 # the static repository-consistency checks in ci.yml.
 
@@ -27,12 +27,9 @@ on:
   workflow_dispatch:
     inputs:
       run_live_probe:
-        description: "Run the live Railway probe (requires RAILWAY_VIEWER_TOKEN secret)"
+        description: "Run the deferred probe (requires explicit activation and OAuth project:viewer)"
         type: boolean
         default: false
-  schedule:
-    # Once daily, outside peak hours (03:17 UTC).
-    - cron: "17 3 * * *"
 
 permissions:
   contents: read
@@ -51,11 +48,17 @@ jobs:
       - run: npm run validate:deployment-governance
       - run: npm run validate:program-state
       - run: node --test tests/program/*.test.mjs
+      - name: Monitoring activation summary
+        if: vars.RAILWAY_LIVE_MONITORING_ENABLED != 'true'
+        run: |
+          echo "## Railway governance monitoring" >> "$GITHUB_STEP_SUMMARY"
+          echo "Result: **monitoring_not_activated**" >> "$GITHUB_STEP_SUMMARY"
+          echo "The comparator and static checks ran; no live Railway request was attempted." >> "$GITHUB_STEP_SUMMARY"
 
   live-drift-guard:
     needs: static-governance-checks
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_live_probe == 'true')
+    if: vars.RAILWAY_LIVE_MONITORING_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && github.event.inputs.run_live_probe == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,5 +69,5 @@ jobs:
       - run: node scripts/program/assert-no-railway-writes.mjs
       - name: Run live drift guard (fails closed; missing credential is honestly reported, not silently green)
         env:
-          RAILWAY_VIEWER_TOKEN: ${{ secrets.RAILWAY_VIEWER_TOKEN }}
+          RAILWAY_OAUTH_PROJECT_VIEWER_TOKEN: ${{ secrets.RAILWAY_OAUTH_PROJECT_VIEWER_TOKEN }}
         run: node scripts/program/run-railway-live-governance.mjs

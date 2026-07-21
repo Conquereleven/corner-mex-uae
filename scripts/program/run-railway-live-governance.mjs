@@ -7,7 +7,7 @@ import { createRailwayLiveContextFetcher } from "./railway-live-client.mjs";
 import { assertNoRailwayWrites } from "./assert-no-railway-writes.mjs";
 
 // CLI entrypoint for the Railway Live Drift Guard. Intentionally fails closed:
-// - missing RAILWAY_VIEWER_TOKEN -> live_governance_credentials_missing, non-zero exit
+// - missing OAuth project:viewer token -> live_governance_credentials_missing, non-zero exit
 // - any non-VERIFIED result -> non-zero exit
 // - VERIFIED -> zero exit
 //
@@ -16,7 +16,7 @@ import { assertNoRailwayWrites } from "./assert-no-railway-writes.mjs";
 
 assertNoRailwayWrites();
 
-const token = process.env.RAILWAY_VIEWER_TOKEN;
+const token = process.env.RAILWAY_OAUTH_PROJECT_VIEWER_TOKEN;
 
 const summaryLines = [];
 const writeSummary = (line) => summaryLines.push(line);
@@ -33,8 +33,8 @@ async function main() {
     writeSummary(`Result: **${result.status}**`);
     writeSummary("");
     writeSummary(
-      "No `RAILWAY_VIEWER_TOKEN` is configured. This job requires a dedicated read-only " +
-        "(Viewer-role, no deploy, no variable access) Railway credential stored only as a GitHub " +
+      "No dedicated OAuth project:viewer credential is configured. It must be restricted to this " +
+        "project and stored only as a GitHub " +
         "Actions secret. It has not been provisioned yet, so live verification is honestly blocked " +
         "rather than reported as passing.",
     );
@@ -45,7 +45,7 @@ async function main() {
   }
 
   const fetchLiveContext = createRailwayLiveContextFetcher({ token });
-  const result = await checkRailwayLiveGovernance({ fetchLiveContext });
+  const result = await checkRailwayLiveGovernance({ fetchLiveContext, allowLiveVerified: false });
 
   writeSummary("# Railway Live Governance Drift Guard");
   writeSummary("");

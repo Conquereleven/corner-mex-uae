@@ -7,9 +7,12 @@
   "operator": "example_template_not_a_real_request",
   "createdAt": "2026-07-20T00:00:00Z",
   "expiresAt": "2026-07-21T00:00:00Z",
+  "maximumEvidenceAgeSeconds": 3600,
   "ci": {
     "runId": 0,
-    "conclusion": "unknown"
+    "conclusion": "unknown",
+    "completedAt": "2026-07-20T00:00:00Z",
+    "sourceSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373"
   },
   "healthEvidence": {
     "observedAt": "2026-07-20T00:00:00Z",
@@ -24,10 +27,20 @@
   },
   "liveGovernanceEvidence": {
     "observedAt": "2026-07-20T00:00:00Z",
-    "status": "live_governance_credentials_missing"
+    "status": "live_governance_credentials_missing",
+    "contractStatus": "railway_live_contract_deferred"
   },
   "rollbackTarget": "a558785d3fc2c1eb2aa9298087bba7f940094bcb",
   "rollbackAvailability": "historical_removed_rebuild_required",
+  "rollbackRebuildPlan": {
+    "reference": "manual_read_only_verification_required",
+    "exactSourceSha": "a558785d3fc2c1eb2aa9298087bba7f940094bcb",
+    "expectedRecoveryMinutes": 0,
+    "tested": false,
+    "testedAt": "2026-07-20T00:00:00Z",
+    "independentlyVerified": false,
+    "verifiedAt": "2026-07-20T00:00:00Z"
+  },
   "expectedProductionService": "corner-mex-uae",
   "expectedEnvironment": "production",
   "authorizationStatus": "blocked_readiness",

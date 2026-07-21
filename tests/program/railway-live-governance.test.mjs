@@ -7,6 +7,7 @@ import {
   checkRailwayLiveGovernance,
   LIVE_GOVERNANCE_STATES,
 } from "../../scripts/program/check-railway-live-governance.mjs";
+import { createRailwayLiveContextFetcher } from "../../scripts/program/railway-live-client.mjs";
 
 const PROJECT_ID = "06d2ecdd-3c03-4480-8299-48c539595a94";
 const STAGING_SHA = "a".repeat(40);
@@ -70,8 +71,15 @@ const withRegistry = async (mutateRegistry, liveByEnvironment, assertion) => {
     return live;
   };
   try {
-    await assertion(() =>
-      checkRailwayLiveGovernance({ baseDir, fetchLiveContext, hasCredentials: () => true }),
+    await assertion(
+      () => checkRailwayLiveGovernance({ baseDir, fetchLiveContext, hasCredentials: () => true }),
+      (options = {}) =>
+        checkRailwayLiveGovernance({
+          baseDir,
+          fetchLiveContext,
+          hasCredentials: () => true,
+          ...options,
+        }),
     );
   } finally {
     fs.rmSync(baseDir, { recursive: true, force: true });
@@ -363,4 +371,41 @@ test("never calls the live probe for credentials_missing and never returns VERIF
   fs.rmSync(baseDir, { recursive: true, force: true });
   assert.equal(result.status, LIVE_GOVERNANCE_STATES.CREDENTIALS_MISSING);
   assert.equal(result.reason, "no_live_probe_configured");
+});
+
+test("Route B reports monitoring_not_activated without invoking a probe", async () => {
+  let called = false;
+  const result = await checkRailwayLiveGovernance({
+    monitoringEnabled: false,
+    fetchLiveContext: async () => {
+      called = true;
+    },
+    hasCredentials: () => true,
+  });
+  assert.equal(result.status, "railway_live_monitoring_not_activated");
+  assert.equal(called, false);
+});
+
+test("Route B cannot claim verified from an injected comparator", async () => {
+  await withRegistry(
+    null,
+    { staging: liveFor("staging"), production: liveFor("production") },
+    async (_run, runRoute) => {
+      const result = await runRoute({ allowLiveVerified: false });
+      assert.notEqual(result.status, LIVE_GOVERNANCE_STATES.VERIFIED);
+      assert.equal(result.reason, "railway_live_autodeploy_observation_not_supported");
+    },
+  );
+});
+
+test("Route B disables the unverified network client and schedule", () => {
+  assert.throws(() => createRailwayLiveContextFetcher(), /OAUTH_PROJECT_VIEWER_TOKEN_REQUIRED/);
+  assert.throws(
+    () => createRailwayLiveContextFetcher({ token: "sanitized-test-token" }),
+    /AUTODEPLOY_OBSERVATION_NOT_SUPPORTED/,
+  );
+  const workflow = fs.readFileSync(".github/workflows/railway-governance-drift.yml", "utf8");
+  assert.doesNotMatch(workflow, /^\s*schedule:/m);
+  assert.match(workflow, /RAILWAY_LIVE_MONITORING_ENABLED == 'true'/);
+  assert.match(workflow, /RAILWAY_OAUTH_PROJECT_VIEWER_TOKEN/);
 });

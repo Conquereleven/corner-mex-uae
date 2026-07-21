@@ -1,9 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  PRODUCTION_ACTIVATION_ALLOWED_FIELDS,
+  PRODUCTION_ACTIVATION_NESTED_FIELDS,
   validateProductionActivationRequest,
   validateProductionActivationRequestFile,
 } from "../../scripts/program/validate-production-activation-request.mjs";
+import fs from "node:fs";
 
 const SHA_A = "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373";
 const SHA_ROLLBACK = "a558785d3fc2c1eb2aa9298087bba7f940094bcb";
@@ -17,15 +20,26 @@ const baseRequest = () => ({
   operator: "joel",
   createdAt: "2026-07-20T00:00:00Z",
   expiresAt: "2099-01-01T00:00:00Z",
-  ci: { runId: 1, conclusion: "success" },
+  maximumEvidenceAgeSeconds: 86400,
+  ci: { runId: 1, conclusion: "success", completedAt: "2026-07-20T00:00:00Z", sourceSha: SHA_A },
   healthEvidence: { observedAt: "2026-07-20T00:00:00Z", path: "/api/health", status: "ok" },
   readinessEvidence: { observedAt: "2026-07-20T00:00:00Z", path: "/api/ready", status: "ok" },
   liveGovernanceEvidence: {
     observedAt: "2026-07-20T00:00:00Z",
     status: "live_governance_verified",
+    contractStatus: "railway_live_contract_verified",
   },
   rollbackTarget: SHA_ROLLBACK,
   rollbackAvailability: "historical_removed_rebuild_required",
+  rollbackRebuildPlan: {
+    reference: "RB-TEST",
+    exactSourceSha: SHA_ROLLBACK,
+    expectedRecoveryMinutes: 30,
+    tested: true,
+    testedAt: "2026-07-20T00:00:00Z",
+    independentlyVerified: true,
+    verifiedAt: "2026-07-20T00:00:00Z",
+  },
   expectedProductionService: "corner-mex-uae",
   expectedEnvironment: "production",
   authorizationStatus: "draft",
@@ -40,7 +54,9 @@ test("accepts a well-formed draft request", () => {
 
 test("accepts approved_not_executed only when every completeness element is green", () => {
   const request = { ...baseRequest(), authorizationStatus: "approved_not_executed" };
-  const result = validateProductionActivationRequest(request);
+  const result = validateProductionActivationRequest(request, {
+    now: () => new Date("2026-07-20T01:00:00Z"),
+  });
   assert.equal(result.authorizationStatus, "approved_not_executed");
 });
 
@@ -57,7 +73,7 @@ test("rejects approved_not_executed when CI is not green", () => {
   const request = {
     ...baseRequest(),
     authorizationStatus: "approved_not_executed",
-    ci: { runId: 1, conclusion: "failure" },
+    ci: { ...baseRequest().ci, conclusion: "failure" },
   };
   assert.throws(
     () => validateProductionActivationRequest(request),
@@ -96,11 +112,30 @@ test("rejects approved_not_executed when live governance evidence is not verifie
     liveGovernanceEvidence: {
       observedAt: "2026-07-20T00:00:00Z",
       status: "live_governance_credentials_missing",
+      contractStatus: "railway_live_contract_deferred",
     },
   };
   assert.throws(
     () => validateProductionActivationRequest(request),
     /PAR_APPROVED_NOT_EXECUTED_INCOMPLETE:.*live_governance_green/,
+  );
+});
+
+test("Route B deferred contract blocks approved_not_executed even with a claimed green status", () => {
+  const request = {
+    ...baseRequest(),
+    authorizationStatus: "approved_not_executed",
+    liveGovernanceEvidence: {
+      ...baseRequest().liveGovernanceEvidence,
+      contractStatus: "railway_live_contract_deferred",
+    },
+  };
+  assert.throws(
+    () =>
+      validateProductionActivationRequest(request, {
+        now: () => new Date("2026-07-20T01:00:00Z"),
+      }),
+    /live_governance_contract_verified/,
   );
 });
 
@@ -162,4 +197,67 @@ test("the committed example is a blocked template, not an approved request", () 
     "docs/program/PRODUCTION_ACTIVATION_REQUEST.example.json",
   );
   assert.notEqual(result.authorizationStatus, "approved_not_executed");
+});
+
+test("rejects unknown top-level and nested fields with schema parity", () => {
+  assert.throws(
+    () => validateProductionActivationRequest({ ...baseRequest(), unknown: true }),
+    /PAR_UNKNOWN_FIELD/,
+  );
+  assert.throws(
+    () =>
+      validateProductionActivationRequest({
+        ...baseRequest(),
+        ci: { ...baseRequest().ci, unknown: true },
+      }),
+    /PAR_UNKNOWN_FIELD/,
+  );
+});
+
+test("JSON Schema and JavaScript enumerate the same allowed fields", () => {
+  const schema = JSON.parse(
+    fs.readFileSync("docs/program/PRODUCTION_ACTIVATION_REQUEST.schema.json", "utf8"),
+  );
+  assert.deepEqual(
+    Object.keys(schema.properties).sort(),
+    [...PRODUCTION_ACTIVATION_ALLOWED_FIELDS].sort(),
+  );
+  for (const [key, fields] of Object.entries(PRODUCTION_ACTIVATION_NESTED_FIELDS)) {
+    assert.equal(schema.properties[key].additionalProperties, false);
+    assert.deepEqual(Object.keys(schema.properties[key].properties).sort(), [...fields].sort());
+  }
+});
+
+test("removed rollback requires a tested independently verified rebuild plan", () => {
+  const request = { ...baseRequest(), authorizationStatus: "approved_not_executed" };
+  delete request.rollbackRebuildPlan;
+  assert.throws(
+    () =>
+      validateProductionActivationRequest(request, { now: () => new Date("2026-07-20T01:00:00Z") }),
+    /PAR_ROLLBACK_REBUILD_PLAN/,
+  );
+});
+
+test("rejects stale and future evidence independently", () => {
+  const approved = {
+    ...baseRequest(),
+    authorizationStatus: "approved_not_executed",
+    maximumEvidenceAgeSeconds: 3600,
+  };
+  assert.throws(
+    () =>
+      validateProductionActivationRequest(approved, {
+        now: () => new Date("2026-07-21T00:00:00Z"),
+      }),
+    /health_evidence_fresh/,
+  );
+  const future = {
+    ...approved,
+    healthEvidence: { ...approved.healthEvidence, observedAt: "2026-07-21T02:00:00Z" },
+  };
+  assert.throws(
+    () =>
+      validateProductionActivationRequest(future, { now: () => new Date("2026-07-21T00:00:00Z") }),
+    /health_evidence_fresh/,
+  );
 });

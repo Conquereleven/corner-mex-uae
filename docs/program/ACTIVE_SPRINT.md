@@ -1,10 +1,10 @@
-# Active Sprint: CM-GOV-2 — Governance Closure + Railway Live Drift Guard
+# Active Sprint: CM-GOV-2-R2 — Railway Contract Resolution + Activation Hardening
 
 - Owner: Codex
 - Reviewer: Sonnet
 - Branch: `ops/railway-live-drift-guard`
 - Base: `a173dfc6d5b0d8b62710a1ce604d6df9ea63c373` (PR #11 merge SHA)
-- Status: implementation complete; independent review pending
+- Status: Route B implemented; independent review pending
 
 ## PR #11 closure
 
@@ -22,7 +22,7 @@ Staging and production intentionally run different source SHAs as a result. This
 
 Addresses Sonnet's residual findings (F1–F3) from the PR #11 review and builds the previously-missing live verification layer:
 
-- **F1 (validator can only attest to the committed registry, never live Railway):** built `scripts/program/check-railway-live-governance.mjs`, a dependency-injectable, read-only comparator, wired into a separate `.github/workflows/railway-governance-drift.yml` (daily schedule + manual dispatch; PR-triggered runs stay static/fixture-only, no live credential). `docs/program/DEPLOYMENT_GOVERNANCE.md` now states this scope distinction near the top, not in a footnote.
+- **F1:** retained a dependency-injectable comparator, disabled the incomplete live client and daily schedule, and documented Route B until an OAuth `project:viewer` response verifies the complete contract.
 - **F2 (Founder-decision-ID enforcement is procedural only):** added `docs/program/PRODUCTION_ACTIVATION_REQUEST.schema.json` + a deliberately-blocked `.example.json`, and `scripts/program/validate-production-activation-request.mjs`, which refuses to accept `authorizationStatus: "approved_not_executed"` unless every completeness element (Founder decision ID, exact SHA, green CI, green health, green readiness, `live_governance_verified`, usable rollback target, unexpired evidence) is genuinely present. This is a checkable policy artifact with no deployment executor.
 - **F3 (missing negative tests):** added the four assertions Sonnet named (`DEPLOYMENT_CURRENT_SOURCE_DRIFT`, `DEPLOYMENT_CURRENT_RUNTIME_INVALID`, `DEPLOYMENT_ROLLBACK_HISTORY_INVALID`, `DEPLOYMENT_ROLLBACK_AVAILABILITY_INVALID`) to `tests/program/program-state.test.mjs`, plus a full fixture-based suite for the new live drift guard covering: verified match, production auto-deploy unexpectedly live, push/merge-shaped trigger, wrong repository, wrong branch, malformed/incomplete/non-object Railway responses, unreachable API, missing credential, staging/production identity swap, live SHA drift, and an unexpected production deployment. None call the network or require secrets.
 
@@ -30,7 +30,7 @@ Also added `scripts/program/assert-no-railway-writes.mjs`, a static scan rejecti
 
 ## Live credential posture
 
-No dedicated Railway read-only credential exists yet. `RAILWAY_VIEWER_TOKEN` is required, must be Viewer-role only (no deploy, no variable-value access), and must be stored only as a GitHub Actions secret. Until it is provisioned, `live-drift-guard` runs on schedule/dispatch, honestly reports `live_governance_credentials_missing`, and fails closed (non-zero exit) rather than silently passing. This sprint does not add a broader existing token as a substitute.
+No dedicated Railway OAuth `project:viewer` credential exists. Route B keeps live monitoring deferred, removes the daily schedule, and requires manual read-only verification. `RAILWAY_LIVE_MONITORING_ENABLED` remains unset; no repository variable or secret was changed.
 
 ## Exit checklist
 
@@ -40,11 +40,11 @@ No dedicated Railway read-only credential exists yet. `RAILWAY_VIEWER_TOKEN` is 
 - [x] Declare validator scope (registry-only vs. live) near the top of `DEPLOYMENT_GOVERNANCE.md`.
 - [x] Add the four missing negative tests plus the live-drift-guard and activation-request test suites.
 - [x] Implement the read-only, dependency-injectable Railway Live Drift Guard.
-- [x] Add the scheduled/dispatch-only GitHub Actions workflow with a sanitized job summary.
+- [x] Gate manual monitoring on `RAILWAY_LIVE_MONITORING_ENABLED`; remove the daily schedule.
 - [x] Add the declarative, non-executable production activation request contract.
 - [x] Preserve the readiness block; add `docs/program/NEXT_READINESS_SPRINT.md` as an enumeration, not an execution.
 - [ ] Obtain independent review of this exact branch head.
-- [ ] Provision the dedicated `RAILWAY_VIEWER_TOKEN` credential (separate authorization, not part of this sprint).
+- [ ] Provision a dedicated OAuth `project:viewer` credential and verify the live contract (separate authorization).
 
 ## Explicitly not executed
 

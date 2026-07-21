@@ -9,6 +9,54 @@ const SHA = /^[0-9a-f]{40}$/;
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const DECISION_ID = /^FD-CM-[A-Z0-9.-]+$/;
 const REQUEST_ID = /^PAR-\d{4}-\d{2}-\d{2}-[A-Za-z0-9-]+$/;
+const TOP_LEVEL_FIELDS = new Set([
+  "schemaVersion",
+  "requestId",
+  "founderDecisionId",
+  "exactSourceSha",
+  "requester",
+  "operator",
+  "createdAt",
+  "expiresAt",
+  "maximumEvidenceAgeSeconds",
+  "ci",
+  "healthEvidence",
+  "readinessEvidence",
+  "liveGovernanceEvidence",
+  "rollbackTarget",
+  "rollbackAvailability",
+  "rollbackRebuildPlan",
+  "rollbackArtifact",
+  "expectedProductionService",
+  "expectedEnvironment",
+  "authorizationStatus",
+  "executionStatus",
+]);
+const NESTED_FIELDS = {
+  ci: new Set(["runId", "conclusion", "completedAt", "sourceSha"]),
+  healthEvidence: new Set(["observedAt", "path", "status"]),
+  readinessEvidence: new Set(["observedAt", "path", "status", "degradedReason"]),
+  liveGovernanceEvidence: new Set(["observedAt", "status", "contractStatus"]),
+  rollbackRebuildPlan: new Set([
+    "reference",
+    "exactSourceSha",
+    "expectedRecoveryMinutes",
+    "tested",
+    "testedAt",
+    "independentlyVerified",
+    "verifiedAt",
+  ]),
+  rollbackArtifact: new Set([
+    "deploymentId",
+    "exactSourceSha",
+    "verifiedAt",
+    "independentlyVerified",
+  ]),
+};
+export const PRODUCTION_ACTIVATION_ALLOWED_FIELDS = Object.freeze([...TOP_LEVEL_FIELDS]);
+export const PRODUCTION_ACTIVATION_NESTED_FIELDS = Object.freeze(
+  Object.fromEntries(Object.entries(NESTED_FIELDS).map(([key, value]) => [key, [...value]])),
+);
 
 const AUTHORIZATION_STATES = new Set([
   "draft",
@@ -31,7 +79,22 @@ const assert = (condition, code) => {
   if (!condition) throw new Error(code);
 };
 
-export function validateProductionActivationRequest(request) {
+export function validateProductionActivationRequest(
+  request,
+  { now = () => new Date(), clockSkewSeconds = 300 } = {},
+) {
+  assert(request && typeof request === "object" && !Array.isArray(request), "PAR_REQUEST_INVALID");
+  for (const key of Object.keys(request))
+    assert(TOP_LEVEL_FIELDS.has(key), `PAR_UNKNOWN_FIELD:${key}`);
+  for (const [key, allowed] of Object.entries(NESTED_FIELDS)) {
+    if (request[key] === undefined) continue;
+    assert(
+      request[key] && typeof request[key] === "object" && !Array.isArray(request[key]),
+      `PAR_${key.toUpperCase()}_INVALID`,
+    );
+    for (const nested of Object.keys(request[key]))
+      assert(allowed.has(nested), `PAR_UNKNOWN_FIELD:${key}.${nested}`);
+  }
   assert(
     request?.schemaVersion === "cornermex-production-activation-request-v1",
     "PAR_SCHEMA_VERSION_INVALID",
@@ -50,11 +113,19 @@ export function validateProductionActivationRequest(request) {
   assert(TIMESTAMP.test(request.createdAt || ""), "PAR_CREATED_AT_INVALID");
   assert(TIMESTAMP.test(request.expiresAt || ""), "PAR_EXPIRES_AT_INVALID");
   assert(
+    Number.isInteger(request.maximumEvidenceAgeSeconds) &&
+      request.maximumEvidenceAgeSeconds > 0 &&
+      request.maximumEvidenceAgeSeconds <= 86400,
+    "PAR_MAXIMUM_EVIDENCE_AGE_INVALID",
+  );
+  assert(
     Date.parse(request.expiresAt) >= Date.parse(request.createdAt),
     "PAR_EXPIRY_BEFORE_CREATION",
   );
 
   assert(Number.isInteger(request.ci?.runId), "PAR_CI_RUN_ID_INVALID");
+  assert(TIMESTAMP.test(request.ci?.completedAt || ""), "PAR_CI_COMPLETED_AT_INVALID");
+  assert(SHA.test(request.ci?.sourceSha || ""), "PAR_CI_SOURCE_SHA_INVALID");
   assert(
     ["success", "failure", "cancelled", "pending", "unknown"].includes(request.ci?.conclusion),
     "PAR_CI_CONCLUSION_INVALID",
@@ -88,6 +159,12 @@ export function validateProductionActivationRequest(request) {
     LIVE_GOVERNANCE_STATES.has(request.liveGovernanceEvidence?.status),
     "PAR_LIVE_GOVERNANCE_STATUS_INVALID",
   );
+  assert(
+    ["railway_live_contract_verified", "railway_live_contract_deferred"].includes(
+      request.liveGovernanceEvidence?.contractStatus,
+    ),
+    "PAR_LIVE_GOVERNANCE_CONTRACT_STATUS_INVALID",
+  );
 
   assert(SHA.test(request.rollbackTarget || ""), "PAR_ROLLBACK_TARGET_INVALID");
   assert(
@@ -96,6 +173,37 @@ export function validateProductionActivationRequest(request) {
     ),
     "PAR_ROLLBACK_AVAILABILITY_INVALID",
   );
+  if (request.rollbackAvailability === "historical_removed_rebuild_required") {
+    const plan = request.rollbackRebuildPlan;
+    assert(
+      typeof plan?.reference === "string" && plan.reference.length > 0,
+      "PAR_ROLLBACK_REBUILD_PLAN_INVALID",
+    );
+    assert(SHA.test(plan?.exactSourceSha || ""), "PAR_ROLLBACK_REBUILD_PLAN_INVALID");
+    assert(
+      Number.isInteger(plan?.expectedRecoveryMinutes) && plan.expectedRecoveryMinutes >= 0,
+      "PAR_ROLLBACK_REBUILD_PLAN_INVALID",
+    );
+    assert(
+      typeof plan?.tested === "boolean" && typeof plan?.independentlyVerified === "boolean",
+      "PAR_ROLLBACK_REBUILD_PLAN_INVALID",
+    );
+    assert(
+      TIMESTAMP.test(plan?.testedAt || "") && TIMESTAMP.test(plan?.verifiedAt || ""),
+      "PAR_ROLLBACK_REBUILD_PLAN_INVALID",
+    );
+  }
+  if (request.rollbackAvailability === "immediately_redeployable") {
+    const artifact = request.rollbackArtifact;
+    assert(
+      typeof artifact?.deploymentId === "string" &&
+        artifact.deploymentId.length > 0 &&
+        SHA.test(artifact?.exactSourceSha || "") &&
+        TIMESTAMP.test(artifact?.verifiedAt || "") &&
+        typeof artifact?.independentlyVerified === "boolean",
+      "PAR_ROLLBACK_ARTIFACT_INVALID",
+    );
+  }
 
   assert(
     typeof request.expectedProductionService === "string" &&
@@ -117,15 +225,61 @@ export function validateProductionActivationRequest(request) {
     if (request.liveGovernanceEvidence?.status !== "live_governance_verified") {
       missing.push("live_governance_green");
     }
+    if (request.liveGovernanceEvidence?.contractStatus !== "railway_live_contract_verified") {
+      missing.push("live_governance_contract_verified");
+    }
     if (
       request.rollbackAvailability !== "immediately_redeployable" &&
       request.rollbackAvailability !== "historical_removed_rebuild_required"
     ) {
       missing.push("rollback_target_usable");
     }
-    const freshnessWindowMs = Date.parse(request.expiresAt) - Date.now();
-    if (!Number.isFinite(freshnessWindowMs) || freshnessWindowMs <= 0)
-      missing.push("fresh_evidence");
+    const nowMs = now().getTime();
+    const maxAgeMs = request.maximumEvidenceAgeSeconds * 1000;
+    const fresh = (label, value) => {
+      const observed = Date.parse(value);
+      if (
+        !Number.isFinite(observed) ||
+        observed > nowMs + clockSkewSeconds * 1000 ||
+        nowMs - observed > maxAgeMs ||
+        observed > Date.parse(request.expiresAt) ||
+        observed < Date.parse(request.createdAt) - clockSkewSeconds * 1000
+      )
+        missing.push(`${label}_fresh`);
+    };
+    fresh("health_evidence", request.healthEvidence?.observedAt);
+    fresh("readiness_evidence", request.readinessEvidence?.observedAt);
+    fresh("live_governance_evidence", request.liveGovernanceEvidence?.observedAt);
+    fresh("ci_evidence", request.ci?.completedAt);
+    if (request.ci?.sourceSha !== request.exactSourceSha) missing.push("ci_source_sha_match");
+    if (request.rollbackAvailability === "historical_removed_rebuild_required") {
+      const plan = request.rollbackRebuildPlan;
+      if (
+        !plan ||
+        plan.tested !== true ||
+        plan.independentlyVerified !== true ||
+        plan.exactSourceSha !== request.rollbackTarget ||
+        !TIMESTAMP.test(plan.testedAt || "") ||
+        !TIMESTAMP.test(plan.verifiedAt || "")
+      )
+        missing.push("rollback_rebuild_plan");
+      else {
+        fresh("rollback_test", plan.testedAt);
+        fresh("rollback_verification", plan.verifiedAt);
+      }
+    }
+    if (request.rollbackAvailability === "immediately_redeployable") {
+      const artifact = request.rollbackArtifact;
+      if (
+        !artifact?.deploymentId ||
+        artifact.exactSourceSha !== request.rollbackTarget ||
+        artifact.independentlyVerified !== true ||
+        !TIMESTAMP.test(artifact.verifiedAt || "")
+      )
+        missing.push("rollback_artifact_verified");
+      else fresh("rollback_verification", artifact.verifiedAt);
+    }
+    if (Date.parse(request.expiresAt) <= nowMs) missing.push("fresh_evidence");
 
     if (missing.length > 0) {
       throw new Error(`PAR_APPROVED_NOT_EXECUTED_INCOMPLETE:${missing.join(",")}`);

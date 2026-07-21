@@ -4,9 +4,9 @@
 
 `npm run validate:deployment-governance` and `npm run validate:program-state` validate **repository consistency only**. They read `docs/program/DEPLOYMENT_REGISTRY.json` and the other committed program-state files and check that those documents are internally consistent, correctly shaped, and declare the intended model. **They never query Railway.** A green CI run on these two checks proves the _documentation_ is self-consistent — it does not, by itself, prove that Railway's actual live configuration matches what the documentation claims.
 
-Live Railway configuration (auto-deploy state, connected repository, watched branch, current source SHA, deployment/instance status) is verified separately by the **Railway Live Drift Guard** (`scripts/program/check-railway-live-governance.mjs`, run via `.github/workflows/railway-governance-drift.yml`). That guard is the only component in this repository that reads live platform state, and it does so strictly read-only — it has no ability to deploy, restart, roll back, or modify Railway configuration or variables (this is enforced by a static source-scan that rejects the presence of any Railway write operation in the guard's own code).
+The current code is a fixture-driven `railway_live_governance_comparator_contract`; it does not claim an active live monitor. The network client and schedule are disabled until the official contract is verified with a dedicated OAuth `project:viewer` response. See `RAILWAY_LIVE_GOVERNANCE_CONTRACT.md`.
 
-Any difference between the committed registry and live Railway state is a **drift**, and the guard fails closed on drift, on an unreachable/unauthenticated Railway API, and on a malformed or unrecognized API response — a failed or unavailable live probe is never treated as a passing result. See "Railway Live Drift Guard" below for the exact states it can report.
+The no-write scanner is a defense-in-depth static check. It is not a sandbox, proof of absence, complete mutation detector, substitute for least-privileged credentials, or substitute for code review.
 
 ## Binding model
 
@@ -60,13 +60,13 @@ Railway currently reports both entries as `REMOVED`. They are historical evidenc
 
 ## Railway Live Drift Guard
 
-`scripts/program/check-railway-live-governance.mjs` is the only component that reads live Railway state. It is invoked by `.github/workflows/railway-governance-drift.yml`, separately from the repository-consistency checks in `ci.yml`.
+`scripts/program/check-railway-live-governance.mjs` is an injectable comparator. It does not currently read live Railway state.
 
 - On every pull request touching governance files, and on `workflow_dispatch`, only the **static** checks run (`validate:deployment-governance`, `validate:program-state`, the guard's own unit tests against injected fixtures, and a static scan rejecting any Railway write operation in the guard's own code). No live Railway call happens here.
-- The **live** probe only runs on a daily `schedule` (03:17 UTC) or an explicit `workflow_dispatch` with `run_live_probe: true`, and only reads — it never deploys, restarts, rolls back, or writes variables.
+- There is no daily schedule. Manual dispatch remains gated by repository variable `RAILWAY_LIVE_MONITORING_ENABLED == true`; this sprint does not enable it.
 - It compares live Railway state per environment (project/environment/service identifiers, connected repository, watched branch, auto-deploy state, current deployment ID and source SHA, deployment/instance status — never variable values) against `docs/program/DEPLOYMENT_REGISTRY.json`.
 - It reports exactly one of five states; **only `live_governance_verified` is green**: `live_governance_verified`, `live_governance_drift_detected`, `live_governance_probe_unavailable`, `live_governance_response_malformed`, `live_governance_credentials_missing`. A failed or unreachable live query is never reported as verified.
-- Live access requires a dedicated `RAILWAY_VIEWER_TOKEN` GitHub Actions secret bound to a Viewer/read-only Railway identity with no deploy and no variable-value access. That secret does not exist yet. Until it is provisioned, the live job runs, honestly reports `live_governance_credentials_missing`, and fails closed (non-zero exit) rather than silently passing. Do not satisfy this by reusing a broader existing token.
+- Live access would require a dedicated Railway OAuth access token with `openid project:viewer`, restricted to this project. No such credential exists. Until a sanitized live response verifies the remaining contract, status is `live_monitoring_deferred` and manual read-only verification is required.
 
 ## Change procedure
 
