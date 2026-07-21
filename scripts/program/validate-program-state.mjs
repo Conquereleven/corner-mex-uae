@@ -154,7 +154,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   const deploymentIds = registry.deployments.map(({ deploymentId }) => deploymentId);
   assert(new Set(deploymentIds).size === deploymentIds.length, "DEPLOYMENT_ID_DUPLICATE");
   const expectedHistoryCount =
-    registry.expectedContexts.length * (registry.failedSourceCommits.length + 2);
+    registry.expectedContexts.length * (registry.failedSourceCommits.length + 2) + 1;
   assert(registry.deployments.length === expectedHistoryCount, "DEPLOYMENT_HISTORY_INCOMPLETE");
 
   for (const context of registry.expectedContexts) {
@@ -219,13 +219,31 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     assert(deployment.healthPath === "/api/health", "DEPLOYMENT_HEALTH_PATH_INVALID");
     assert(EVIDENCE_CLASSES.has(deployment.evidenceClass), "DEPLOYMENT_EVIDENCE_CLASS_INVALID");
   }
+  const lastPlatformChange = registry.governance?.lastPlatformChange;
   assert(
-    registry.governance?.lastPlatformChange?.deploymentCreated === false,
-    "RAILWAY_REDEPLOY_FORBIDDEN",
+    lastPlatformChange?.category === "staging_readiness_variable_correction" &&
+      lastPlatformChange.founderDecisionId === "FD-CM-STAGING-READINESS-001" &&
+      lastPlatformChange.environment === "staging" &&
+      lastPlatformChange.service === "cornermex-web" &&
+      lastPlatformChange.variableName === "CORNERMEX_COMMERCE_MODEL" &&
+      lastPlatformChange.deploymentCreated === true &&
+      lastPlatformChange.deploymentId === current.platforms.railway.stagingActiveDeploymentId &&
+      lastPlatformChange.restartPerformed === false &&
+      lastPlatformChange.rollbackPerformed === false &&
+      lastPlatformChange.productionChanged === false,
+    "RAILWAY_STAGING_READINESS_CHANGE_INVALID",
   );
   assert(
     registry.rollback?.availability === "historical_removed_rebuild_required",
     "DEPLOYMENT_ROLLBACK_AVAILABILITY_INVALID",
+  );
+  assert(
+    registry.rollback.stagingReadinessTargetDeploymentId ===
+      current.platforms.railway.stagingPreviousDeploymentId &&
+      registry.rollback.stagingReadinessMechanism ===
+        "railway_deployment_rollback_restores_custom_variables" &&
+      registry.rollback.stagingReadinessRollbackPerformed === false,
+    "STAGING_READINESS_ROLLBACK_INVALID",
   );
 
   assert(
@@ -242,7 +260,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     main: current.authority.observedMainSha,
     railwayContexts: registry.expectedContexts.length,
     failedDeployments: registry.expectedContexts.length * registry.failedSourceCommits.length,
-    deploymentWrites: 0,
+    deploymentWrites: 1,
     governanceWrites: 1,
   };
 }

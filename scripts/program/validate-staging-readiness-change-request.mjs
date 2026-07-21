@@ -9,6 +9,31 @@ const SHA = /^[0-9a-f]{40}$/;
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const DECISION_ID = /^FD-CM-[A-Z0-9.-]+$/;
 const REQUEST_ID = /^SRC-\d{4}-\d{2}-\d{2}-[A-Za-z0-9-]+$/;
+const EXECUTION_EVIDENCE_FILE = "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json";
+const ALLOWED_KEYS = new Set([
+  "schemaVersion",
+  "requestId",
+  "founderDecisionId",
+  "exactMainSha",
+  "targetEnvironment",
+  "targetService",
+  "variableNames",
+  "proposedContractValues",
+  "valuesRedacted",
+  "preChangeDeploymentId",
+  "preChangeSourceSha",
+  "preChangeHealth",
+  "preChangeReadiness",
+  "expectedRedeployBehavior",
+  "validationPlan",
+  "rollbackPlan",
+  "createdAt",
+  "expiresAt",
+  "maximumEvidenceAgeSeconds",
+  "authorizationStatus",
+  "executionStatus",
+  "executionEvidenceFile",
+]);
 
 // The exact reconciled main SHA this sprint's evidence is bound to. A request proposing changes
 // against a different SHA cannot be approved without fresh evidence collection first.
@@ -55,6 +80,9 @@ const assert = (condition, code) => {
 
 export function validateStagingReadinessChangeRequest(request, { now = () => new Date() } = {}) {
   assert(request && typeof request === "object" && !Array.isArray(request), "SRC_REQUEST_INVALID");
+  for (const key of Object.keys(request)) {
+    assert(ALLOWED_KEYS.has(key), `SRC_UNKNOWN_FIELD:${key}`);
+  }
   assert(
     request.schemaVersion === "cornermex-staging-readiness-change-request-v1",
     "SRC_SCHEMA_VERSION_INVALID",
@@ -73,7 +101,7 @@ export function validateStagingReadinessChangeRequest(request, { now = () => new
     "SRC_TARGET_SERVICE_INVALID",
   );
   assert(
-    Array.isArray(request.variableNames) && request.variableNames.length > 0,
+    Array.isArray(request.variableNames) && request.variableNames.length === 1,
     "SRC_VARIABLE_NAMES_INVALID",
   );
   for (const name of request.variableNames) {
@@ -84,6 +112,11 @@ export function validateStagingReadinessChangeRequest(request, { now = () => new
       typeof request.proposedContractValues === "object" &&
       !Array.isArray(request.proposedContractValues),
     "SRC_CONTRACT_VALUES_INVALID",
+  );
+  assert(
+    Object.keys(request.proposedContractValues).length === 1 &&
+      Object.hasOwn(request.proposedContractValues, request.variableNames[0]),
+    "SRC_EXACTLY_ONE_CONTRACT_VALUE_REQUIRED",
   );
   for (const name of request.variableNames) {
     const reference = request.proposedContractValues[name];
@@ -150,11 +183,33 @@ export function validateStagingReadinessChangeRequest(request, { now = () => new
     "blocked_contract",
     "blocked_evidence",
     "approved_not_executed",
+    "approved_executed",
     "expired",
     "cancelled",
   ]);
   assert(AUTHORIZATION_STATES.has(request.authorizationStatus), "SRC_AUTHORIZATION_STATUS_INVALID");
-  assert(request.executionStatus === "not_executed", "SRC_EXECUTION_STATUS_INVALID");
+  const EXECUTION_STATES = new Set([
+    "not_executed",
+    "executed_verified",
+    "executed_degraded",
+    "rolled_back",
+  ]);
+  assert(EXECUTION_STATES.has(request.executionStatus), "SRC_EXECUTION_STATUS_INVALID");
+
+  if (request.executionStatus !== "not_executed") {
+    assert(request.authorizationStatus === "approved_executed", "SRC_EXECUTED_NOT_AUTHORIZED");
+    assert(
+      request.executionEvidenceFile === EXECUTION_EVIDENCE_FILE,
+      "SRC_EXECUTION_EVIDENCE_REQUIRED",
+    );
+    assert(
+      request.founderDecisionId === "FD-CM-STAGING-READINESS-001",
+      "SRC_DECISION_SCOPE_INVALID",
+    );
+    assert(request.exactMainSha === RECONCILED_MAIN_SHA, "SRC_EXECUTION_MAIN_SHA_DRIFT");
+  } else {
+    assert(request.executionEvidenceFile === undefined, "SRC_UNEXECUTED_EVIDENCE_FORBIDDEN");
+  }
 
   if (request.authorizationStatus === "approved_not_executed") {
     const missing = [];
@@ -177,6 +232,7 @@ export function validateStagingReadinessChangeRequest(request, { now = () => new
   return {
     status: "staging_readiness_change_request_valid",
     authorizationStatus: request.authorizationStatus,
+    executionStatus: request.executionStatus,
   };
 }
 

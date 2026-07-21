@@ -1,6 +1,6 @@
 {
   "schemaVersion": "cornermex-deployment-registry-v2",
-  "observedAt": "2026-07-21T18:55:00Z",
+  "observedAt": "2026-07-21T23:05:57Z",
   "repository": "Conquereleven/corner-mex-uae",
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
@@ -36,7 +36,7 @@
       "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
       "sourceBranch": "main",
       "sourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
-      "deploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+      "deploymentId": "43872f13-25bc-46ed-bc2d-7e8cddcebcb0",
       "state": "SUCCESS",
       "instanceState": "RUNNING",
       "packageManager": "npm",
@@ -45,9 +45,30 @@
       "healthPath": "/api/health",
       "healthState": "ok",
       "readinessPath": "/api/ready",
+      "readinessState": "ready_supabase_reachable",
+      "evidenceClass": "verified_live",
+      "note": "Created automatically after the single Founder-authorized staging variable correction. Source SHA remained 73790cb. Live health returned 200 and live readiness returned 200 with Supabase target reachable."
+    },
+    {
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+      "sourceBranch": "main",
+      "sourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+      "deploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+      "state": "REMOVED",
+      "originalResult": "SUCCESS",
+      "packageManager": "npm",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "healthState": "ok",
+      "readinessPath": "/api/ready",
       "readinessState": "degraded_invalid_value_CORNERMEX_COMMERCE_MODEL",
       "evidenceClass": "verified_live",
-      "note": "Deployed automatically by the PR #12 merge to main (73790cb), confirmed SUCCESS/RUNNING live in CM-RDY-0A after being observed QUEUED/BUILDING mid-flight in CM-RDY-0. Predecessor deployment 7051fc17 (a173dfc6) is now superseded and REMOVED in Railway; it is no longer tracked here since it is neither an active current entry nor the historical rollback anchor."
+      "note": "Immediate pre-change deployment and verified native Railway rollback target. Railway rollback restores this deployment's image and custom variables."
     },
     {
       "context": "CornerMex UAE - cornermex-web",
@@ -210,14 +231,26 @@
       "githubAdministratorBypassAllowed": true,
       "githubWorkflowReferencesProductionEnvironment": false
     },
-    "lastPlatformChange": {
+    "productionAutoDeployControl": {
       "verifiedAt": "2026-07-20T00:01:26Z",
-      "category": "production_auto_deploy_control",
       "productionAutoDeployBefore": true,
       "productionAutoDeployAfter": false,
       "deploymentCreated": false,
       "restartPerformed": false,
       "rollbackPerformed": false
+    },
+    "lastPlatformChange": {
+      "verifiedAt": "2026-07-21T23:05:57Z",
+      "category": "staging_readiness_variable_correction",
+      "founderDecisionId": "FD-CM-STAGING-READINESS-001",
+      "environment": "staging",
+      "service": "cornermex-web",
+      "variableName": "CORNERMEX_COMMERCE_MODEL",
+      "deploymentCreated": true,
+      "deploymentId": "43872f13-25bc-46ed-bc2d-7e8cddcebcb0",
+      "restartPerformed": false,
+      "rollbackPerformed": false,
+      "productionChanged": false
     }
   },
   "rollback": {
@@ -226,6 +259,9 @@
     "productionDeploymentId": "228170ed-3e67-4be5-a39e-8bc07860bd78",
     "historyState": "REMOVED",
     "availability": "historical_removed_rebuild_required",
-    "productionCutover": "not_authorized_keep_lovable_unchanged"
+    "productionCutover": "not_authorized_keep_lovable_unchanged",
+    "stagingReadinessTargetDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+    "stagingReadinessMechanism": "railway_deployment_rollback_restores_custom_variables",
+    "stagingReadinessRollbackPerformed": false
   }
 }

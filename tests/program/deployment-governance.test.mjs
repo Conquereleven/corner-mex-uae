@@ -53,7 +53,7 @@ test("rejects merge or push as the production trigger", () => {
 test("rejects a governance change that created a deployment", () => {
   withRegistry(
     (registry) => {
-      registry.governance.lastPlatformChange.deploymentCreated = true;
+      registry.governance.productionAutoDeployControl.deploymentCreated = true;
     },
     (validate) => assert.throws(validate, /GOVERNANCE_CHANGE_DEPLOYED/),
   );

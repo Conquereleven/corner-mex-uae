@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://cornermex.example/schemas/staging-readiness-change-request-v1.json",
   "title": "CornerMex Staging Readiness Change Request",
-  "description": "Declarative, non-executable record of a proposed staging-only environment variable value correction. This schema describes a policy artifact only. It has no deployment or variable-write capability of its own, and it can never target production.",
+  "description": "Declarative, non-executable record of a staging-only environment variable value correction. It records proposal and externally executed outcomes, but has no deployment or variable-write capability of its own and can never target production.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -38,6 +38,8 @@
     "variableNames": {
       "type": "array",
       "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
       "items": { "type": "string", "minLength": 1 }
     },
     "proposedContractValues": {
@@ -72,13 +74,31 @@
         "blocked_contract",
         "blocked_evidence",
         "approved_not_executed",
+        "approved_executed",
         "expired",
         "cancelled"
       ]
     },
     "executionStatus": {
-      "description": "This contract does not implement a variable-write executor. executionStatus other than not_executed has no meaning under the current tooling and must not be produced by any script in this repository.",
-      "enum": ["not_executed"]
+      "description": "Records the outcome of an externally executed, Founder-authorized staging change. Repository tooling remains validation-only and never performs the write.",
+      "enum": ["not_executed", "executed_verified", "executed_degraded", "rolled_back"]
+    },
+    "executionEvidenceFile": {
+      "const": "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "executionStatus": { "enum": ["executed_verified", "executed_degraded", "rolled_back"] }
+        },
+        "required": ["executionStatus"]
+      },
+      "then": {
+        "required": ["executionEvidenceFile"],
+        "properties": { "authorizationStatus": { "const": "approved_executed" } }
+      }
+    }
+  ]
 }

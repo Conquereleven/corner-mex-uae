@@ -145,7 +145,7 @@ test("requires valuesRedacted to be true", () => {
   );
 });
 
-test("rejects any executionStatus other than not_executed", () => {
+test("rejects an unknown executionStatus", () => {
   const request = { ...baseRequest(), executionStatus: "executed" };
   assert.throws(
     () => validateStagingReadinessChangeRequest(request),
@@ -153,9 +153,54 @@ test("rejects any executionStatus other than not_executed", () => {
   );
 });
 
-test("the committed example remains pending_founder_decision, never approved or executed", () => {
+test("rejects more than one variable", () => {
+  const request = {
+    ...baseRequest(),
+    variableNames: ["CORNERMEX_COMMERCE_MODEL", "SUPABASE_URL"],
+    proposedContractValues: {
+      CORNERMEX_COMMERCE_MODEL:
+        "exact literal from src/config/commerce-env.ts: single_merchant_with_internal_supplier_network",
+      SUPABASE_URL: "src/config/commerce-env.ts",
+    },
+  };
+  assert.throws(() => validateStagingReadinessChangeRequest(request), /SRC_VARIABLE_NAMES_INVALID/);
+});
+
+test("rejects unknown fields", () => {
+  const request = { ...baseRequest(), surprise: true };
+  assert.throws(() => validateStagingReadinessChangeRequest(request), /SRC_UNKNOWN_FIELD:surprise/);
+});
+
+for (const executionStatus of ["executed_verified", "executed_degraded", "rolled_back"]) {
+  test(`accepts authorized ${executionStatus} with durable evidence`, () => {
+    const request = {
+      ...baseRequest(),
+      founderDecisionId: "FD-CM-STAGING-READINESS-001",
+      authorizationStatus: "approved_executed",
+      executionStatus,
+      executionEvidenceFile: "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json",
+    };
+    assert.equal(validateStagingReadinessChangeRequest(request).executionStatus, executionStatus);
+  });
+}
+
+test("rejects an executed request without its evidence file", () => {
+  const request = {
+    ...baseRequest(),
+    founderDecisionId: "FD-CM-STAGING-READINESS-001",
+    authorizationStatus: "approved_executed",
+    executionStatus: "executed_verified",
+  };
+  assert.throws(
+    () => validateStagingReadinessChangeRequest(request),
+    /SRC_EXECUTION_EVIDENCE_REQUIRED/,
+  );
+});
+
+test("the committed example records the verified authorized execution", () => {
   const result = validateStagingReadinessChangeRequestFile(
     "docs/program/STAGING_READINESS_CHANGE_REQUEST.example.json",
   );
-  assert.equal(result.authorizationStatus, "pending_founder_decision");
+  assert.equal(result.authorizationStatus, "approved_executed");
+  assert.equal(result.executionStatus, "executed_verified");
 });

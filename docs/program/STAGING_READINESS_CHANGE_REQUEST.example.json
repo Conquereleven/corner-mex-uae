@@ -1,7 +1,7 @@
 {
   "schemaVersion": "cornermex-staging-readiness-change-request-v1",
   "requestId": "SRC-2026-07-21-commerce-model-literal-fix",
-  "founderDecisionId": "FD-CM-EXAMPLE-TEMPLATE-002",
+  "founderDecisionId": "FD-CM-STAGING-READINESS-001",
   "exactMainSha": "73790cb3724fc1f19bedd157fc237f07a46e4314",
   "targetEnvironment": "staging",
   "targetService": "cornermex-web",
@@ -16,10 +16,11 @@
   "preChangeReadiness": "degraded",
   "expectedRedeployBehavior": "restart_required",
   "validationPlan": "After the change, GET https://cornermex-web-staging.up.railway.app/api/ready and confirm CORNERMEX_COMMERCE_MODEL no longer appears in the errors array; also GET /api/health and confirm it still returns 200 ready/ok. A 503 with a different, new error (e.g. Supabase reachability) is a separate finding, not a validation failure of this specific change.",
-  "rollbackPlan": "Operator notes the exact pre-change value out-of-band (outside this repository, not read by this contract) before applying the change, then restores that exact value and allows Railway to restart the service if the post-change verification fails or reveals an unexpected regression.",
+  "rollbackPlan": "Use Railway deployment rollback to restore deployment ab629441-4104-4b9c-b65d-66eafa6ba1af, including its custom variables; never persist or expose the prior value.",
   "createdAt": "2026-07-21T18:55:00Z",
   "expiresAt": "2026-07-28T18:55:00Z",
   "maximumEvidenceAgeSeconds": 604800,
-  "authorizationStatus": "pending_founder_decision",
-  "executionStatus": "not_executed"
+  "authorizationStatus": "approved_executed",
+  "executionStatus": "executed_verified",
+  "executionEvidenceFile": "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json"
 }
