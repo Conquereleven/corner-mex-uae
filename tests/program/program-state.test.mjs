@@ -39,6 +39,17 @@ test("durable program state is internally consistent and fail-closed", () => {
   assert.equal(result.governanceWrites, 1);
 });
 
+test("runtime commits are exact 12-character lowercase prefixes of active sources", () => {
+  const current = JSON.parse(fs.readFileSync("docs/program/CURRENT_STATE.json", "utf8"));
+  const { railway } = current.platforms;
+  const { runtime } = current.readiness;
+
+  assert.match(runtime.stagingHealthObservedCommit, /^[0-9a-f]{12}$/);
+  assert.equal(runtime.stagingHealthObservedCommit, railway.stagingActiveSourceCommit.slice(0, 12));
+  assert.match(runtime.productionHealthObservedCommit, /^[0-9a-f]{12}$/);
+  assert.equal(runtime.productionHealthObservedCommit, railway.productionSourceCommit.slice(0, 12));
+});
+
 const cases = [
   [
     "wrong main SHA",
@@ -250,6 +261,54 @@ const cases = [
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
       current.readiness.runtime.productionHealthObservedCommit = "d470b7b57f6d";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE/,
+  ],
+  ...[
+    ["an empty string", ""],
+    ["a short prefix", "068b9ba"],
+    ["a full SHA", "068b9babacbadf0e786579e056e3363d7afb641c"],
+    ["uppercase characters", "068B9BABACBA"],
+    ["non-hexadecimal characters", "068b9babacbz"],
+  ].map(([description, observedCommit]) => [
+    `staging runtime evidence with ${description}`,
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.stagingHealthObservedCommit = observedCommit;
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_STAGING_COMMIT_FORMAT_INVALID/,
+  ]),
+  [
+    "staging runtime evidence with a valid but mismatched prefix",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.stagingHealthObservedCommit = "ffffffffffff";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_STAGING_COMMIT_STALE/,
+  ],
+  ...[
+    ["an empty string", ""],
+    ["a short prefix", "068b9ba"],
+    ["a full SHA", "068b9babacbadf0e786579e056e3363d7afb641c"],
+    ["uppercase characters", "068B9BABACBA"],
+    ["non-hexadecimal characters", "068b9babacbz"],
+  ].map(([description, observedCommit]) => [
+    `production runtime evidence with ${description}`,
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.productionHealthObservedCommit = observedCommit;
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_PRODUCTION_COMMIT_FORMAT_INVALID/,
+  ]),
+  [
+    "production runtime evidence with a valid but mismatched prefix",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.productionHealthObservedCommit = "ffffffffffff";
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE/,

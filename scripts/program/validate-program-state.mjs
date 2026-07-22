@@ -10,6 +10,7 @@ const EXPECTED_DATABASE_IDENTITIES = Object.freeze({
 });
 const REVIEWED_A3_2B_REMEDIATION_HEAD = "33f2231443172b1956c5adf2b609a3e0bb02daab";
 const SHA = /^[0-9a-f]{40}$/;
+const SHA_PREFIX_12 = /^[0-9a-f]{12}$/;
 const ISO_UTC_SECONDS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const EVIDENCE_CLASSES = new Set([
   "verified_live",
@@ -122,17 +123,21 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   // describes a deployment that has since been removed.
   const runtime = current.readiness?.runtime;
   assert(
-    typeof runtime?.stagingHealthObservedCommit === "string" &&
-      current.platforms.railway.stagingActiveSourceCommit.startsWith(
-        runtime.stagingHealthObservedCommit,
-      ),
+    SHA_PREFIX_12.test(runtime?.stagingHealthObservedCommit || ""),
+    "PROGRAM_RUNTIME_STAGING_COMMIT_FORMAT_INVALID",
+  );
+  assert(
+    runtime.stagingHealthObservedCommit ===
+      current.platforms.railway.stagingActiveSourceCommit.slice(0, 12),
     "PROGRAM_RUNTIME_STAGING_COMMIT_STALE",
   );
   assert(
-    typeof runtime?.productionHealthObservedCommit === "string" &&
-      current.platforms.railway.productionSourceCommit.startsWith(
-        runtime.productionHealthObservedCommit,
-      ),
+    SHA_PREFIX_12.test(runtime?.productionHealthObservedCommit || ""),
+    "PROGRAM_RUNTIME_PRODUCTION_COMMIT_FORMAT_INVALID",
+  );
+  assert(
+    runtime.productionHealthObservedCommit ===
+      current.platforms.railway.productionSourceCommit.slice(0, 12),
     "PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE",
   );
 
