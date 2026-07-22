@@ -173,12 +173,13 @@
         "blocked_governance",
         "approved_not_executed",
         "expired",
-        "cancelled"
+        "cancelled",
+        "approved_executed"
       ]
     },
     "executionStatus": {
-      "description": "This contract does not implement a deployment executor. executionStatus other than not_executed has no meaning under the current tooling and must not be produced by any script in this repository.",
-      "enum": ["not_executed"]
+      "description": "Declarative outcome recorded by an operator; this contract never executes a deployment.",
+      "enum": ["not_executed", "executed"]
     }
   }
 }

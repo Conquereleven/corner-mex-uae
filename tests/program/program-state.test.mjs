@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { validateProgramState } from "../../scripts/program/validate-program-state.mjs";
 
-const FROZEN_NOW = new Date("2026-07-21T23:06:00Z");
+const FROZEN_NOW = new Date("2026-07-22T00:44:00Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
@@ -98,7 +98,7 @@ const cases = [
     "stale freshUntil",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
-      current.evidence.freshUntil = "2026-07-21T23:05:58Z";
+      current.evidence.freshUntil = "2026-07-22T00:43:50Z";
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_STATE_EVIDENCE_STALE/,
@@ -173,10 +173,10 @@ const cases = [
     /PROGRAM_DATABASE_ROLE_UNKNOWN/,
   ],
   [
-    "production impact in the staging readiness change",
+    "missing production impact in the controlled launch record",
     ({ read, write }) => {
       const registry = read("DEPLOYMENT_REGISTRY.json");
-      registry.governance.lastPlatformChange.productionChanged = true;
+      registry.governance.lastPlatformChange.productionChanged = false;
       write("DEPLOYMENT_REGISTRY.json", registry);
     },
     /RAILWAY_STAGING_READINESS_CHANGE_INVALID/,

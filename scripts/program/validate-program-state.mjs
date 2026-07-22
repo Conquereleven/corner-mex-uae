@@ -154,7 +154,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   const deploymentIds = registry.deployments.map(({ deploymentId }) => deploymentId);
   assert(new Set(deploymentIds).size === deploymentIds.length, "DEPLOYMENT_ID_DUPLICATE");
   const expectedHistoryCount =
-    registry.expectedContexts.length * (registry.failedSourceCommits.length + 2) + 1;
+    registry.expectedContexts.length * (registry.failedSourceCommits.length + 3) + 1;
   assert(registry.deployments.length === expectedHistoryCount, "DEPLOYMENT_HISTORY_INCOMPLETE");
 
   for (const context of registry.expectedContexts) {
@@ -221,16 +221,18 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   }
   const lastPlatformChange = registry.governance?.lastPlatformChange;
   assert(
-    lastPlatformChange?.category === "staging_readiness_variable_correction" &&
-      lastPlatformChange.founderDecisionId === "FD-CM-STAGING-READINESS-001" &&
-      lastPlatformChange.environment === "staging" &&
-      lastPlatformChange.service === "cornermex-web" &&
-      lastPlatformChange.variableName === "CORNERMEX_COMMERCE_MODEL" &&
+    lastPlatformChange?.category === "controlled_production_frontend_launch" &&
+      lastPlatformChange.founderDecisionId === "FD-CM-PROD-LAUNCH-001" &&
+      lastPlatformChange.environment === "production" &&
+      lastPlatformChange.service === "corner-mex-uae" &&
+      Array.isArray(lastPlatformChange.variableNames) &&
+      lastPlatformChange.variableNames.join(",") ===
+        "SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,CORNERMEX_COMMERCE_MODEL" &&
       lastPlatformChange.deploymentCreated === true &&
-      lastPlatformChange.deploymentId === current.platforms.railway.stagingActiveDeploymentId &&
+      lastPlatformChange.deploymentId === current.platforms.railway.productionDeploymentId &&
       lastPlatformChange.restartPerformed === false &&
       lastPlatformChange.rollbackPerformed === false &&
-      lastPlatformChange.productionChanged === false,
+      lastPlatformChange.productionChanged === true,
     "RAILWAY_STAGING_READINESS_CHANGE_INVALID",
   );
   assert(
