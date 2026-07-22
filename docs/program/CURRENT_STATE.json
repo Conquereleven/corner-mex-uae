@@ -93,9 +93,9 @@
     },
     "runtime": {
       "stagingHealth": "ok",
-      "stagingHealthObservedCommit": "73790cb3724f",
+      "stagingHealthObservedCommit": "068b9babacba",
       "stagingReadiness": "ready",
-      "stagingReadinessDetail": "Live GET /api/ready against deployment 43872f13 @ 73790cb returned 200 with status:ready and target:reachable. CORNERMEX_COMMERCE_MODEL is no longer in errors and the Supabase reachability probe executed successfully.",
+      "stagingReadinessDetail": "Live GET /api/ready against deployment 3ab57504 @ 068b9bab returned 200 with status:ready and target:reachable. CORNERMEX_COMMERCE_MODEL is no longer in errors and the Supabase reachability probe executed successfully.",
       "productionInstance": "RUNNING",
       "productionHealth": "ok",
       "productionHealthObservedCommit": "068b9babacba",

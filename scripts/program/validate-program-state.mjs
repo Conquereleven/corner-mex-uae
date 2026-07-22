@@ -117,6 +117,25 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     "PROGRAM_SAFETY_GATE_OPEN",
   );
 
+  // A deployment rotation (new active source/deployment ID under platforms.railway) must be
+  // reflected in the runtime evidence it was derived from, or the durable record silently
+  // describes a deployment that has since been removed.
+  const runtime = current.readiness?.runtime;
+  assert(
+    typeof runtime?.stagingHealthObservedCommit === "string" &&
+      current.platforms.railway.stagingActiveSourceCommit.startsWith(
+        runtime.stagingHealthObservedCommit,
+      ),
+    "PROGRAM_RUNTIME_STAGING_COMMIT_STALE",
+  );
+  assert(
+    typeof runtime?.productionHealthObservedCommit === "string" &&
+      current.platforms.railway.productionSourceCommit.startsWith(
+        runtime.productionHealthObservedCommit,
+      ),
+    "PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE",
+  );
+
   assert(
     registry.schemaVersion === "cornermex-deployment-registry-v2",
     "DEPLOYMENT_REGISTRY_VERSION_INVALID",

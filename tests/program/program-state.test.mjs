@@ -236,6 +236,24 @@ const cases = [
     },
     /DEPLOYMENT_ROLLBACK_AVAILABILITY_INVALID/,
   ],
+  [
+    "staging runtime evidence still describes a removed deployment",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.stagingHealthObservedCommit = "73790cb3724f";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_STAGING_COMMIT_STALE/,
+  ],
+  [
+    "production runtime evidence still describes a removed deployment",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.productionHealthObservedCommit = "d470b7b57f6d";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE/,
+  ],
 ];
 
 for (const [name, mutate, expected] of cases) {
