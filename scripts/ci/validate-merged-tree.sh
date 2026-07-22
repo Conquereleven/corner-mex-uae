@@ -34,6 +34,7 @@ npm run validate:no-railway-writes
 npm run validate:deployment-governance
 npm run validate:program-state
 npm run validate:production-activation-request -- docs/program/PRODUCTION_ACTIVATION_REQUEST.example.json
+npm run validate:staging-readiness-change-request -- docs/program/STAGING_READINESS_CHANGE_REQUEST.example.json
 node --test tests/program/*.test.mjs
 npm run typecheck
 npm run build

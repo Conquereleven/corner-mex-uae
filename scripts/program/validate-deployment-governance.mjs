@@ -46,7 +46,7 @@ export function validateDeploymentGovernance({ baseDir = process.cwd() } = {}) {
     "PRODUCTION_PRECONDITIONS_INCOMPLETE",
   );
 
-  const change = governance.lastPlatformChange;
+  const change = governance.productionAutoDeployControl;
   assert(change?.productionAutoDeployBefore === true, "GOVERNANCE_PRESTATE_INVALID");
   assert(change?.productionAutoDeployAfter === false, "GOVERNANCE_POSTSTATE_INVALID");
   assert(change?.deploymentCreated === false, "GOVERNANCE_CHANGE_DEPLOYED");

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "cornermex-staging-readiness-execution-evidence-v1",
+  "requestId": "SRC-2026-07-21-commerce-model-literal-fix",
+  "founderDecisionId": "FD-CM-STAGING-READINESS-001",
+  "result": "executed_verified",
+  "targetEnvironment": "staging",
+  "targetService": "cornermex-web",
+  "variableName": "CORNERMEX_COMMERCE_MODEL",
+  "appliedContractValue": "single_merchant_with_internal_supplier_network",
+  "priorValue": "[REDACTED]",
+  "valuesRedacted": true,
+  "preChangeDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+  "postChangeDeploymentId": "43872f13-25bc-46ed-bc2d-7e8cddcebcb0",
+  "sourceSha": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+  "healthBefore": {
+    "statusCode": 200,
+    "status": "ok",
+    "observedCommit": "73790cb3724f"
+  },
+  "healthAfter": {
+    "statusCode": 200,
+    "status": "ok",
+    "observedCommit": "73790cb3724f"
+  },
+  "readinessBefore": {
+    "statusCode": 503,
+    "status": "degraded",
+    "target": "unavailable",
+    "missing": [],
+    "errors": ["CORNERMEX_COMMERCE_MODEL"]
+  },
+  "readinessAfter": {
+    "statusCode": 200,
+    "status": "ready",
+    "target": "reachable"
+  },
+  "supabaseReadiness": {
+    "executed": true,
+    "result": "reachable"
+  },
+  "rollback": {
+    "mechanism": "railway_deployment_rollback_restores_custom_variables",
+    "targetDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+    "availabilityVerified": true,
+    "performed": false
+  },
+  "productionBefore": {
+    "deploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
+    "sourceSha": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
+    "deploymentCreated": false,
+    "restartPerformed": false,
+    "rollbackPerformed": false,
+    "variableModified": false
+  },
+  "productionAfter": {
+    "deploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
+    "sourceSha": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
+    "deploymentCreated": false,
+    "restartPerformed": false,
+    "rollbackPerformed": false,
+    "variableModified": false
+  },
+  "changeAppliedAt": "2026-07-21T23:01:45Z",
+  "verifiedAt": "2026-07-21T23:05:57Z",
+  "maximumEvidenceAgeSeconds": 604800,
+  "remainingBlocker": null,
+  "actionsNotExecuted": [
+    "no_production_change",
+    "no_manual_restart",
+    "no_manual_redeploy",
+    "no_rollback",
+    "no_supabase_write",
+    "no_migration",
+    "no_commercial_activation",
+    "no_external_communication"
+  ]
+}

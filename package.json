@@ -61,6 +61,8 @@
     "validate:deployment-governance": "node scripts/program/validate-deployment-governance.mjs",
     "validate:program-state": "node scripts/program/validate-program-state.mjs",
     "validate:production-activation-request": "node scripts/program/validate-production-activation-request.mjs",
+    "validate:staging-readiness-change-request": "node scripts/program/validate-staging-readiness-change-request.mjs",
+    "validate:staging-readiness-execution-evidence": "node scripts/program/validate-staging-readiness-execution-evidence.mjs",
     "validate:no-railway-writes": "node scripts/program/assert-no-railway-writes.mjs",
     "check:railway-live-governance": "node scripts/program/run-railway-live-governance.mjs",
     "test:pr9-remediation": "node --test tests/remediation/*.test.mjs",

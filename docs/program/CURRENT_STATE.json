@@ -1,31 +1,36 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-07-20T00:52:00Z",
+  "generatedAt": "2026-07-21T23:05:57Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
-    "observedMainSha": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
+    "expectedMainSha": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+    "observedMainSha": "73790cb3724fc1f19bedd157fc237f07a46e4314",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
     "class": "verified_live",
-    "source": "GitHub and Railway read-only discovery following the reviewed PR #11 merge; no Supabase, Lovable, DNS or variable re-verification performed in this sprint",
-    "sourceIdentity": "github:a173dfc6d5b0d8b62710a1ce604d6df9ea63c373;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:7051fc17-56f0-456a-b547-bbf2f468e489;production-deployment:bac2a5b3-0b8a-4243-8046-531113a4ca18;db1:d9495376-339d-44dd-9c8a-db0f7b451f96;db2:wlrfknmrhowldygmvtvn;db3:nhxpujypqxbjiqqddxqt",
-    "observedAt": "2026-07-20T00:52:00Z",
-    "freshUntil": "2026-07-27T00:52:00Z"
+    "source": "Founder-authorized Railway staging variable correction, Railway deployment observation, direct live GETs against staging /api/health and /api/ready, and production read-only non-impact verification. No Supabase write was performed.",
+    "sourceIdentity": "github:73790cb3724fc1f19bedd157fc237f07a46e4314;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-active-deployment:43872f13-25bc-46ed-bc2d-7e8cddcebcb0;production-deployment:bac2a5b3-0b8a-4243-8046-531113a4ca18;db1:d9495376-339d-44dd-9c8a-db0f7b451f96;db2:wlrfknmrhowldygmvtvn;db3:nhxpujypqxbjiqqddxqt",
+    "observedAt": "2026-07-21T23:05:57Z",
+    "freshUntil": "2026-07-28T23:05:57Z"
   },
   "platforms": {
     "railway": {
       "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
-      "status": "governance_remediated_readiness_degraded",
-      "stagingSourceCommit": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373",
+      "status": "staging_readiness_corrected_verified",
+      "stagingActiveSourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
+      "stagingActiveDeploymentId": "43872f13-25bc-46ed-bc2d-7e8cddcebcb0",
+      "stagingActiveDeploymentStatus": "SUCCESS",
+      "stagingPreviousDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+      "stagingPreviousDeploymentState": "REMOVED",
       "productionSourceCommit": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
+      "productionDeploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
       "governanceModel": "automatic_staging_manual_production",
       "stagingAutoDeploy": true,
       "productionAutoDeploy": false,
-      "deploymentCreatedByGovernanceChange": false,
-      "note": "Staging and production intentionally run different source SHAs after PR #11: staging auto-deployed the merge, production correctly did not. This divergence is the governance model working as intended, not drift."
+      "deploymentCreatedByThisSprint": true,
+      "note": "FD-CM-STAGING-READINESS-001 authorized exactly one staging variable correction. Railway applied one change to staging/cornermex-web and automatically created deployment 43872f13 from unchanged source 73790cb. It reached SUCCESS/RUNNING; health and readiness both returned 200, and readiness confirmed Supabase target reachable. No manual restart, redeploy, rollback, or production mutation occurred."
     },
     "databases": [
       {
@@ -45,7 +50,7 @@
       }
     ],
     "supabase": {
-      "status": "NOT_REVERIFIED_NO_WRITE",
+      "status": "STAGING_READINESS_REACHABLE_NO_WRITE",
       "projectRef": "wlrfknmrhowldygmvtvn",
       "activeMigrationCount": 4,
       "writePerformed": false
@@ -73,33 +78,39 @@
       "mergedAs": "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373"
     },
     "currentGovernanceDriftGuardReview": {
+      "complete": true,
+      "reviewedHeadSha": "2d3d45501c63983c2a0639088fd71dc0083da5e7",
+      "reviewer": "Sonnet",
+      "mergedAs": "73790cb3724fc1f19bedd157fc237f07a46e4314"
+    },
+    "currentStagingReadinessReview": {
       "complete": false,
       "reviewedHeadSha": null,
       "reviewer": "Sonnet"
     },
     "runtime": {
       "stagingHealth": "ok",
-      "stagingReadiness": "degraded_missing_CORNERMEX_COMMERCE_MODEL",
+      "stagingHealthObservedCommit": "73790cb3724f",
+      "stagingReadiness": "ready",
+      "stagingReadinessDetail": "Live GET /api/ready against deployment 43872f13 @ 73790cb returned 200 with status:ready and target:reachable. CORNERMEX_COMMERCE_MODEL is no longer in errors and the Supabase reachability probe executed successfully.",
       "productionInstance": "RUNNING",
-      "productionReadiness": "degraded_required_variables_absent"
+      "productionReadiness": "not_reverified_this_sprint_out_of_scope"
     }
   },
   "program": {
-    "activeSprint": "CM-GOV-2-R2_RAILWAY_CONTRACT_RESOLUTION",
+    "activeSprint": "CM-RDY-1_STAGING_READINESS_CORRECTION_VERIFIED_CLOSURE",
     "owner": "Codex",
     "reviewer": "Sonnet",
     "blockers": [
-      "Runtime readiness is degraded: staging reports missing CORNERMEX_COMMERCE_MODEL and production lacks all three readiness variables.",
-      "The prior successful Railway deployments are REMOVED history entries, so rollback requires a controlled rebuild from the recorded SHA.",
-      "Live monitoring is deferred: no OAuth project:viewer credential or sanitized complete Railway contract response is available; manual read-only verification is required.",
-      "This drift-guard branch requires independent review before merge.",
-      "Public commerce capabilities remain unauthorized and disabled."
+      "Production readiness was not re-verified this sprint (staging-first principle; production explicitly out of scope) and remains degraded per prior evidence.",
+      "Live Railway monitoring remains deferred (Route B, unchanged from CM-GOV-2-R2); no OAuth project:viewer credential exists.",
+      "Public commerce capabilities remain unauthorized and disabled.",
+      "This exact CM-RDY-1 delta requires independent Sonnet review before merge."
     ],
     "nextActions": [
-      "Review the drift-guard PR at its exact head.",
-      "Under separate authorization, provision a dedicated OAuth project:viewer identity and verify a sanitized complete Railway response before enabling monitoring.",
-      "Under separate authorization, restore the required Railway readiness variables and repeat health/readiness verification (see docs/program/NEXT_READINESS_SPRINT.md).",
-      "Before any future production activation, record a docs/program/PRODUCTION_ACTIVATION_REQUEST.schema.json instance with every completeness element genuinely green."
+      "Sonnet independent delta-only review of the exact CM-RDY-1 commit range.",
+      "Preserve staging readiness and the verified rollback target; make no further Railway changes without new authorization.",
+      "Production readiness repair remains a separate, later, separately authorized action."
     ]
   },
   "safety": {
