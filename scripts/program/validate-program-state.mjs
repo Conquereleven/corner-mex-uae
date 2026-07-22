@@ -10,6 +10,7 @@ const EXPECTED_DATABASE_IDENTITIES = Object.freeze({
 });
 const REVIEWED_A3_2B_REMEDIATION_HEAD = "33f2231443172b1956c5adf2b609a3e0bb02daab";
 const SHA = /^[0-9a-f]{40}$/;
+const SHA_PREFIX_12 = /^[0-9a-f]{12}$/;
 const ISO_UTC_SECONDS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const EVIDENCE_CLASSES = new Set([
   "verified_live",
@@ -117,6 +118,29 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     "PROGRAM_SAFETY_GATE_OPEN",
   );
 
+  // A deployment rotation (new active source/deployment ID under platforms.railway) must be
+  // reflected in the runtime evidence it was derived from, or the durable record silently
+  // describes a deployment that has since been removed.
+  const runtime = current.readiness?.runtime;
+  assert(
+    SHA_PREFIX_12.test(runtime?.stagingHealthObservedCommit || ""),
+    "PROGRAM_RUNTIME_STAGING_COMMIT_FORMAT_INVALID",
+  );
+  assert(
+    runtime.stagingHealthObservedCommit ===
+      current.platforms.railway.stagingActiveSourceCommit.slice(0, 12),
+    "PROGRAM_RUNTIME_STAGING_COMMIT_STALE",
+  );
+  assert(
+    SHA_PREFIX_12.test(runtime?.productionHealthObservedCommit || ""),
+    "PROGRAM_RUNTIME_PRODUCTION_COMMIT_FORMAT_INVALID",
+  );
+  assert(
+    runtime.productionHealthObservedCommit ===
+      current.platforms.railway.productionSourceCommit.slice(0, 12),
+    "PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE",
+  );
+
   assert(
     registry.schemaVersion === "cornermex-deployment-registry-v2",
     "DEPLOYMENT_REGISTRY_VERSION_INVALID",
@@ -154,7 +178,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   const deploymentIds = registry.deployments.map(({ deploymentId }) => deploymentId);
   assert(new Set(deploymentIds).size === deploymentIds.length, "DEPLOYMENT_ID_DUPLICATE");
   const expectedHistoryCount =
-    registry.expectedContexts.length * (registry.failedSourceCommits.length + 2) + 1;
+    registry.expectedContexts.length * (registry.failedSourceCommits.length + 3) + 1;
   assert(registry.deployments.length === expectedHistoryCount, "DEPLOYMENT_HISTORY_INCOMPLETE");
 
   for (const context of registry.expectedContexts) {
@@ -221,16 +245,18 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   }
   const lastPlatformChange = registry.governance?.lastPlatformChange;
   assert(
-    lastPlatformChange?.category === "staging_readiness_variable_correction" &&
-      lastPlatformChange.founderDecisionId === "FD-CM-STAGING-READINESS-001" &&
-      lastPlatformChange.environment === "staging" &&
-      lastPlatformChange.service === "cornermex-web" &&
-      lastPlatformChange.variableName === "CORNERMEX_COMMERCE_MODEL" &&
+    lastPlatformChange?.category === "controlled_production_frontend_launch" &&
+      lastPlatformChange.founderDecisionId === "FD-CM-PROD-LAUNCH-001" &&
+      lastPlatformChange.environment === "production" &&
+      lastPlatformChange.service === "corner-mex-uae" &&
+      Array.isArray(lastPlatformChange.variableNames) &&
+      lastPlatformChange.variableNames.join(",") ===
+        "SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,CORNERMEX_COMMERCE_MODEL" &&
       lastPlatformChange.deploymentCreated === true &&
-      lastPlatformChange.deploymentId === current.platforms.railway.stagingActiveDeploymentId &&
+      lastPlatformChange.deploymentId === current.platforms.railway.productionDeploymentId &&
       lastPlatformChange.restartPerformed === false &&
       lastPlatformChange.rollbackPerformed === false &&
-      lastPlatformChange.productionChanged === false,
+      lastPlatformChange.productionChanged === true,
     "RAILWAY_STAGING_READINESS_CHANGE_INVALID",
   );
   assert(

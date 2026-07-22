@@ -66,6 +66,7 @@ const AUTHORIZATION_STATES = new Set([
   "approved_not_executed",
   "expired",
   "cancelled",
+  "approved_executed",
 ]);
 const LIVE_GOVERNANCE_STATES = new Set([
   "live_governance_verified",
@@ -213,7 +214,15 @@ export function validateProductionActivationRequest(
   assert(request.expectedEnvironment === "production", "PAR_EXPECTED_ENVIRONMENT_INVALID");
 
   assert(AUTHORIZATION_STATES.has(request.authorizationStatus), "PAR_AUTHORIZATION_STATUS_INVALID");
-  assert(request.executionStatus === "not_executed", "PAR_EXECUTION_STATUS_INVALID");
+  assert(
+    ["not_executed", "executed"].includes(request.executionStatus),
+    "PAR_EXECUTION_STATUS_INVALID",
+  );
+  assert(
+    (request.authorizationStatus === "approved_executed") ===
+      (request.executionStatus === "executed"),
+    "PAR_EXECUTION_AUTHORIZATION_MISMATCH",
+  );
 
   if (request.authorizationStatus === "approved_not_executed") {
     const missing = [];

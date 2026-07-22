@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { validateProgramState } from "../../scripts/program/validate-program-state.mjs";
 
-const FROZEN_NOW = new Date("2026-07-21T23:06:00Z");
+const FROZEN_NOW = new Date("2026-07-22T00:44:00Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
@@ -37,6 +37,17 @@ test("durable program state is internally consistent and fail-closed", () => {
   assert.equal(result.failedDeployments, 4);
   assert.equal(result.deploymentWrites, 1);
   assert.equal(result.governanceWrites, 1);
+});
+
+test("runtime commits are exact 12-character lowercase prefixes of active sources", () => {
+  const current = JSON.parse(fs.readFileSync("docs/program/CURRENT_STATE.json", "utf8"));
+  const { railway } = current.platforms;
+  const { runtime } = current.readiness;
+
+  assert.match(runtime.stagingHealthObservedCommit, /^[0-9a-f]{12}$/);
+  assert.equal(runtime.stagingHealthObservedCommit, railway.stagingActiveSourceCommit.slice(0, 12));
+  assert.match(runtime.productionHealthObservedCommit, /^[0-9a-f]{12}$/);
+  assert.equal(runtime.productionHealthObservedCommit, railway.productionSourceCommit.slice(0, 12));
 });
 
 const cases = [
@@ -98,7 +109,7 @@ const cases = [
     "stale freshUntil",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
-      current.evidence.freshUntil = "2026-07-21T23:05:58Z";
+      current.evidence.freshUntil = "2026-07-22T00:43:50Z";
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_STATE_EVIDENCE_STALE/,
@@ -173,10 +184,10 @@ const cases = [
     /PROGRAM_DATABASE_ROLE_UNKNOWN/,
   ],
   [
-    "production impact in the staging readiness change",
+    "missing production impact in the controlled launch record",
     ({ read, write }) => {
       const registry = read("DEPLOYMENT_REGISTRY.json");
-      registry.governance.lastPlatformChange.productionChanged = true;
+      registry.governance.lastPlatformChange.productionChanged = false;
       write("DEPLOYMENT_REGISTRY.json", registry);
     },
     /RAILWAY_STAGING_READINESS_CHANGE_INVALID/,
@@ -235,6 +246,72 @@ const cases = [
       write("DEPLOYMENT_REGISTRY.json", registry);
     },
     /DEPLOYMENT_ROLLBACK_AVAILABILITY_INVALID/,
+  ],
+  [
+    "staging runtime evidence still describes a removed deployment",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.stagingHealthObservedCommit = "73790cb3724f";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_STAGING_COMMIT_STALE/,
+  ],
+  [
+    "production runtime evidence still describes a removed deployment",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.productionHealthObservedCommit = "d470b7b57f6d";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE/,
+  ],
+  ...[
+    ["an empty string", ""],
+    ["a short prefix", "068b9ba"],
+    ["a full SHA", "068b9babacbadf0e786579e056e3363d7afb641c"],
+    ["uppercase characters", "068B9BABACBA"],
+    ["non-hexadecimal characters", "068b9babacbz"],
+  ].map(([description, observedCommit]) => [
+    `staging runtime evidence with ${description}`,
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.stagingHealthObservedCommit = observedCommit;
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_STAGING_COMMIT_FORMAT_INVALID/,
+  ]),
+  [
+    "staging runtime evidence with a valid but mismatched prefix",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.stagingHealthObservedCommit = "ffffffffffff";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_STAGING_COMMIT_STALE/,
+  ],
+  ...[
+    ["an empty string", ""],
+    ["a short prefix", "068b9ba"],
+    ["a full SHA", "068b9babacbadf0e786579e056e3363d7afb641c"],
+    ["uppercase characters", "068B9BABACBA"],
+    ["non-hexadecimal characters", "068b9babacbz"],
+  ].map(([description, observedCommit]) => [
+    `production runtime evidence with ${description}`,
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.productionHealthObservedCommit = observedCommit;
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_PRODUCTION_COMMIT_FORMAT_INVALID/,
+  ]),
+  [
+    "production runtime evidence with a valid but mismatched prefix",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.readiness.runtime.productionHealthObservedCommit = "ffffffffffff";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RUNTIME_PRODUCTION_COMMIT_STALE/,
   ],
 ];
 

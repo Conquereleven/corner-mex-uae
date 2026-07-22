@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "cornermex-production-activation-request-v1",
+  "requestId": "PAR-2026-07-22-CM-PROD-1",
+  "founderDecisionId": "FD-CM-PROD-LAUNCH-001",
+  "exactSourceSha": "068b9babacbadf0e786579e056e3363d7afb641c",
+  "requester": "Founder",
+  "operator": "Codex",
+  "createdAt": "2026-07-21T23:55:00Z",
+  "expiresAt": "2026-07-22T23:55:00Z",
+  "maximumEvidenceAgeSeconds": 86400,
+  "ci": {
+    "runId": 29878795393,
+    "conclusion": "success",
+    "completedAt": "2026-07-22T00:00:46Z",
+    "sourceSha": "068b9babacbadf0e786579e056e3363d7afb641c"
+  },
+  "healthEvidence": {
+    "observedAt": "2026-07-22T00:43:30Z",
+    "path": "/api/health",
+    "status": "ok"
+  },
+  "readinessEvidence": {
+    "observedAt": "2026-07-22T00:43:35Z",
+    "path": "/api/ready",
+    "status": "ok"
+  },
+  "liveGovernanceEvidence": {
+    "observedAt": "2026-07-22T00:43:40Z",
+    "status": "live_governance_verified",
+    "contractStatus": "railway_live_contract_verified"
+  },
+  "rollbackTarget": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
+  "rollbackAvailability": "immediately_redeployable",
+  "rollbackArtifact": {
+    "deploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
+    "exactSourceSha": "d470b7b57f6d625a7d60337ad16a59080c1bb37d",
+    "verifiedAt": "2026-07-22T00:25:00Z",
+    "independentlyVerified": false
+  },
+  "expectedProductionService": "corner-mex-uae",
+  "expectedEnvironment": "production",
+  "authorizationStatus": "approved_executed",
+  "executionStatus": "executed"
+}

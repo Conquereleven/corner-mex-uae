@@ -179,9 +179,21 @@ test("rejects a malformed source SHA", () => {
   assert.throws(() => validateProductionActivationRequest(request), /PAR_SOURCE_SHA_INVALID/);
 });
 
-test("rejects executionStatus other than not_executed (no executor exists)", () => {
-  const request = { ...baseRequest(), executionStatus: "executed" };
-  assert.throws(() => validateProductionActivationRequest(request), /PAR_EXECUTION_STATUS_INVALID/);
+test("accepts a declarative executed outcome only with matching authorization", () => {
+  const request = {
+    ...baseRequest(),
+    authorizationStatus: "approved_executed",
+    executionStatus: "executed",
+  };
+  assert.equal(
+    validateProductionActivationRequest(request).authorizationStatus,
+    "approved_executed",
+  );
+  assert.throws(
+    () =>
+      validateProductionActivationRequest({ ...request, authorizationStatus: "blocked_readiness" }),
+    /PAR_EXECUTION_AUTHORIZATION_MISMATCH/,
+  );
 });
 
 test("rejects an unrecognized authorizationStatus", () => {

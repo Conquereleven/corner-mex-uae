@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "cornermex-production-frontend-launch-evidence-v1",
+  "observedAt": "2026-07-22T00:43:40Z",
+  "founderDecisionId": "FD-CM-PROD-LAUNCH-001",
+  "repository": "Conquereleven/corner-mex-uae",
+  "exactSourceSha": "068b9babacbadf0e786579e056e3363d7afb641c",
+  "railway": {
+    "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
+    "environment": "production",
+    "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+    "service": "corner-mex-uae",
+    "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+    "previousDeploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
+    "deploymentId": "b3184cee-67b7-4506-969b-bf18fead3292",
+    "deploymentStatus": "SUCCESS",
+    "instanceState": "RUNNING",
+    "region": "asia-southeast1-eqsg3a",
+    "publicUrl": "https://corner-mex-uae-production.up.railway.app",
+    "productionAutoDeploy": false
+  },
+  "variablesChanged": ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "CORNERMEX_COMMERCE_MODEL"],
+  "secretValues": "redacted_not_recorded",
+  "checks": {
+    "root": { "httpStatus": 200, "htmlNonEmpty": true, "runtimeErrorVisible": false },
+    "health": { "httpStatus": 200, "status": "ok", "commit": "068b9babacba" },
+    "readiness": { "httpStatus": 200, "status": "ready", "target": "reachable" },
+    "publicRoutes": ["/", "/shop", "/about", "/b2b", "/legal", "/privacy", "/terms"]
+  },
+  "capabilities": {
+    "marketplaceEnabled": false,
+    "sellerAuthEnabled": false,
+    "sellerPayoutsEnabled": false,
+    "commissionsEnabled": false,
+    "checkoutEnabled": false,
+    "externalEmailEnabled": false,
+    "externalMessagesEnabled": false,
+    "realPaymentExecutionEnabled": false,
+    "automaticImportEnabled": false,
+    "automaticInventorySyncEnabled": false,
+    "openClawEnabled": false,
+    "cornerOpsWriteEnabled": false
+  },
+  "rollback": {
+    "targetDeploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
+    "available": true,
+    "performed": false
+  },
+  "actionsNotExecuted": [
+    "supabase_write",
+    "migration",
+    "credential_creation_or_rotation",
+    "custom_domain_or_dns",
+    "checkout_or_payment",
+    "marketplace_or_commissions",
+    "order_or_inventory_mutation",
+    "external_message",
+    "a3_2b"
+  ],
+  "outcome": "cornermex_production_frontend_live_ready_commercial_flags_off"
+}
