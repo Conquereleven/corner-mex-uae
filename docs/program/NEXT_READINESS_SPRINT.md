@@ -18,13 +18,13 @@ This handoff records roadmap direction only. It does not authorize Railway, Supa
 
 Primary workstreams:
 
-1. Implement `MexGlass v1` in staging for the header, search, categories, filters, cart shell, selectors, modals and mobile navigation.
+1. Implement `Desert Glass v1` in staging for the header, search, categories, filters, cart shell, selectors, modals and mobile navigation.
 2. Keep product cards, prices, ingredients, quantity controls and future checkout surfaces solid and highly legible.
 3. Expose the approved initial catalog through read-only storefront views.
 4. Validate category discovery, AED pricing presentation, delivery coverage and UAE trust messaging.
 5. Define the first controlled order path without activating checkout, payment or external messaging.
 
-## MexGlass guardrails
+## Desert Glass guardrails
 
 - staging-first implementation and founder visual approval;
 - warm CornerMex palette, not generic blue glass;
@@ -37,7 +37,7 @@ Primary workstreams:
 
 ## Exit criteria
 
-- approved MexGlass design system and reusable components;
+- approved Desert Glass design system and reusable components;
 - responsive header, search, filters, cart shell and mobile navigation;
 - readable catalog and product detail surfaces;
 - read-only initial catalog visible in staging;
