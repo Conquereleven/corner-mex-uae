@@ -15,9 +15,9 @@ This roadmap prioritizes visible commercial progress. It records direction only 
 
 Turn the live technical frontend into a polished, product-led storefront that is ready for catalog discovery and controlled commercial testing.
 
-### MexGlass v1
+### Desert Glass v1
 
-Adopt a CornerMex-specific Liquid Glass-inspired visual system, internally named `MexGlass v1`.
+Adopt a CornerMex-specific Liquid Glass-inspired visual system, officially named `Desert Glass v1`.
 
 Use glass selectively for the interaction layer:
 
@@ -61,7 +61,7 @@ Keep the commerce content layer solid and highly legible:
 
 ### Acceptance criteria
 
-- Header, search, category controls, cart shell and mobile navigation use the approved MexGlass system.
+- Header, search, category controls, cart shell and mobile navigation use the approved Desert Glass system.
 - Product cards and critical commerce information remain solid and easy to scan.
 - Desktop and mobile navigation remain fully usable.
 - Reduced-motion and no-blur fallbacks work.
@@ -107,6 +107,6 @@ Keep the commerce content layer solid and highly legible:
 
 ## Priority order
 
-`MexGlass + catalog visibility → domain and trust → controlled order intake → payments and fulfilment → B2B growth`
+`Desert Glass + catalog visibility → domain and trust → controlled order intake → payments and fulfilment → B2B growth`
 
 The next implementation sprint is `CM-COM-1`. Its purpose is to make CornerMex look and behave like a credible UAE storefront while keeping production commerce execution safely off until separately authorized.
