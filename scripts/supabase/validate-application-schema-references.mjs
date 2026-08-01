@@ -6,7 +6,7 @@ const path = "contracts/application-schema-reference-baseline-v1.json";
 execFileSync(
   process.execPath,
   ["scripts/supabase/generate-application-schema-reference-baseline.mjs", "--check"],
-  { stdio: "ignore" },
+  { stdio: "inherit" },
 );
 const contract = JSON.parse(await readFile(path, "utf8"));
 const errors = validateApplicationSchemaReferenceContract(contract);
