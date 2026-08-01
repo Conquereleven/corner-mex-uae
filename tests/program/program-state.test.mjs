@@ -5,7 +5,12 @@ import os from "node:os";
 import path from "node:path";
 import { validateProgramState } from "../../scripts/program/validate-program-state.mjs";
 
-const FROZEN_NOW = new Date("2026-07-22T00:44:00Z");
+const CURRENT_EVIDENCE = JSON.parse(
+  fs.readFileSync("docs/program/CURRENT_STATE.json", "utf8"),
+).evidence;
+const FROZEN_NOW = new Date(Date.parse(CURRENT_EVIDENCE.observedAt) + 60_000);
+const toUtcSeconds = (milliseconds) =>
+  new Date(milliseconds).toISOString().replace(".000Z", "Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
@@ -109,7 +114,8 @@ const cases = [
     "stale freshUntil",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
-      current.evidence.freshUntil = "2026-07-22T00:43:50Z";
+      current.evidence.observedAt = toUtcSeconds(FROZEN_NOW.getTime() - 60_000);
+      current.evidence.freshUntil = toUtcSeconds(FROZEN_NOW.getTime() - 10_000);
       write("CURRENT_STATE.json", current);
     },
     /PROGRAM_STATE_EVIDENCE_STALE/,
