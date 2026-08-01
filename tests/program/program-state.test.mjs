@@ -9,8 +9,7 @@ const CURRENT_EVIDENCE = JSON.parse(
   fs.readFileSync("docs/program/CURRENT_STATE.json", "utf8"),
 ).evidence;
 const FROZEN_NOW = new Date(Date.parse(CURRENT_EVIDENCE.observedAt) + 60_000);
-const toUtcSeconds = (milliseconds) =>
-  new Date(milliseconds).toISOString().replace(".000Z", "Z");
+const toUtcSeconds = (milliseconds) => new Date(milliseconds).toISOString().replace(".000Z", "Z");
 const FIXTURE_FILES = [
   "CURRENT_STATE.json",
   "DEPLOYMENT_REGISTRY.json",
