@@ -1,11 +1,11 @@
 {
   "schemaVersion": "cornermex-deployment-registry-v2",
-  "observedAt": "2026-07-22T00:43:40Z",
+  "observedAt": "2026-08-01T01:34:29Z",
   "repository": "Conquereleven/corner-mex-uae",
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
   "outageVerified": false,
-  "currentSourceCommit": "068b9babacbadf0e786579e056e3363d7afb641c",
+  "currentSourceCommit": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29",
   "failedSourceCommits": [
     "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
     "bb9386f72197fb20912c328ac912c27894f3db02"
@@ -37,27 +37,6 @@
       "sourceBranch": "main",
       "sourceCommit": "068b9babacbadf0e786579e056e3363d7afb641c",
       "deploymentId": "3ab57504-ba6d-48de-8476-c16943acad9a",
-      "state": "SUCCESS",
-      "instanceState": "RUNNING",
-      "packageManager": "npm",
-      "buildCommand": "npm run build:railway",
-      "startCommand": "npm run start:railway",
-      "healthPath": "/api/health",
-      "healthState": "ok",
-      "readinessPath": "/api/ready",
-      "readinessState": "ready_supabase_reachable",
-      "evidenceClass": "verified_live",
-      "note": "Automatic staging deployment after PR #13 merge; exact source, health, readiness, target reachability and commercial-off capabilities verified read-only."
-    },
-    {
-      "context": "CornerMex UAE - cornermex-web",
-      "service": "cornermex-web",
-      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
-      "environment": "staging",
-      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
-      "sourceBranch": "main",
-      "sourceCommit": "73790cb3724fc1f19bedd157fc237f07a46e4314",
-      "deploymentId": "43872f13-25bc-46ed-bc2d-7e8cddcebcb0",
       "state": "REMOVED",
       "originalResult": "SUCCESS",
       "packageManager": "npm",
@@ -68,7 +47,28 @@
       "readinessPath": "/api/ready",
       "readinessState": "ready_supabase_reachable",
       "evidenceClass": "verified_live",
-      "note": "Created automatically after the single Founder-authorized staging variable correction. Source SHA remained 73790cb. Live health returned 200 and live readiness returned 200 with Supabase target reachable."
+      "note": "Automatic staging deployment after PR #13 merge; exact source, health, readiness, target reachability and commercial-off capabilities were previously verified read-only. Superseded by staging deployment db16f728-1b30-485d-a556-0c19fc4f8975 after PR #15 merged."
+    },
+    {
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+      "sourceBranch": "main",
+      "sourceCommit": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29",
+      "deploymentId": "db16f728-1b30-485d-a556-0c19fc4f8975",
+      "state": "SUCCESS",
+      "instanceState": "RUNNING",
+      "packageManager": "npm",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "healthState": "not_reverified",
+      "readinessPath": "/api/ready",
+      "readinessState": "not_reverified",
+      "evidenceClass": "verified_repository",
+      "note": "GitHub's Railway status context reported this automatic staging deployment successful for PR #15 merge commit 064a5355d8e860fdef0fa4cf7f2c48ae5d798d29. Direct health and readiness GETs were not re-fetched during CM-COM-1A-F1."
     },
     {
       "context": "CornerMex UAE - cornermex-web",
@@ -162,7 +162,7 @@
       "region": "asia-southeast1-eqsg3a",
       "publicUrl": "https://corner-mex-uae-production.up.railway.app",
       "evidenceClass": "verified_live",
-      "note": "Founder-authorized CM-PROD-1 deployment. Root, health, readiness, assets and public navigation passed; all reported commercial execution capabilities were false."
+      "note": "Founder-authorized CM-PROD-1 deployment. Root, health, readiness, assets and public navigation previously passed; all reported commercial execution capabilities were false. CM-COM-1A-F1 observed the unchanged successful Railway status target but did not re-fetch health or readiness."
     },
     {
       "context": "CornerMex UAE - corner-mex-uae",
@@ -247,7 +247,7 @@
         "autoDeploy": true,
         "trigger": "github_push_main",
         "waitForCI": false,
-        "currentSourceSha": "068b9babacbadf0e786579e056e3363d7afb641c"
+        "currentSourceSha": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29"
       },
       {
         "environment": "production",
@@ -289,7 +289,11 @@
       "founderDecisionId": "FD-CM-PROD-LAUNCH-001",
       "environment": "production",
       "service": "corner-mex-uae",
-      "variableNames": ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "CORNERMEX_COMMERCE_MODEL"],
+      "variableNames": [
+        "SUPABASE_URL",
+        "SUPABASE_PUBLISHABLE_KEY",
+        "CORNERMEX_COMMERCE_MODEL"
+      ],
       "deploymentCreated": true,
       "deploymentId": "b3184cee-67b7-4506-969b-bf18fead3292",
       "restartPerformed": false,
