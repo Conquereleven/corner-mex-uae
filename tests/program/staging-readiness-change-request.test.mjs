@@ -10,6 +10,7 @@ import {
 
 const MAIN_SHA = "73790cb3724fc1f19bedd157fc237f07a46e4314";
 const PRE_CHANGE_SHA = "a173dfc6d5b0d8b62710a1ce604d6df9ea63c373";
+const HISTORICAL_NOW = () => new Date("2026-07-21T18:21:00Z");
 
 const baseRequest = () => ({
   schemaVersion: "cornermex-staging-readiness-change-request-v1",
@@ -46,7 +47,7 @@ test("accepts a well-formed draft request", () => {
 
 test("accepts approved_not_executed only when completeness elements are satisfied", () => {
   const request = { ...baseRequest(), authorizationStatus: "approved_not_executed" };
-  const result = validateStagingReadinessChangeRequest(request);
+  const result = validateStagingReadinessChangeRequest(request, { now: HISTORICAL_NOW });
   assert.equal(result.authorizationStatus, "approved_not_executed");
 });
 
