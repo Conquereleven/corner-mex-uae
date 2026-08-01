@@ -1,110 +1,126 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Input } from "@/components/ui/input";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { subscribeNewsletter } from "@/lib/newsletter.functions";
-import { toast } from "sonner";
 import { openCookiePreferences } from "@/lib/cookie-consent";
 
 export function Footer() {
   const { t } = useTranslation();
-  const subscribe = useServerFn(subscribeNewsletter);
-  const [email, setEmail] = useState("");
-  const [busy, setBusy] = useState(false);
-  async function onSubscribe(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email) return;
-    setBusy(true);
-    try {
-      await subscribe({ data: { email, locale: "en", source: "footer" } });
-      toast.success("You're subscribed!");
-      setEmail("");
-    } catch (err: any) {
-      toast.error(err?.message ?? "Could not subscribe");
-    } finally { setBusy(false); }
-  }
   return (
-    <footer className="mt-24 border-t border-border/60 bg-secondary/40">
+    <footer className="mt-24 border-t border-border/60 bg-secondary/40 pb-24 md:pb-0">
       <div className="mx-auto max-w-7xl border-b border-border/60 px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+        <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <h3 className="font-display text-2xl tracking-tight">Get Mexican news & offers</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              New drops, promo codes and HORECA deals — once a month. By subscribing you agree to our{" "}
-              <Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="underline">Privacy Policy</Link>.
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              Commercial preview
+            </p>
+            <h3 className="mt-2 font-display text-2xl tracking-tight">
+              Exploring Mexican pantry supply for the UAE
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              This catalogue is for discovery only. Ordering, checkout, payment, live stock and
+              automated messages are not available. Business enquiries are reviewed manually by
+              CornerMex before any quote is issued.
             </p>
           </div>
-          <form onSubmit={onSubscribe} className="flex w-full max-w-md gap-2">
-            <Input type="email" required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Button type="submit" disabled={busy} className="rounded-full bg-foreground text-background hover:bg-foreground/90">
-              {busy ? "..." : "Subscribe"}
+          <a href="mailto:b2b@cornermex.ae?subject=CornerMex%20manual%20quote%20request">
+            <Button variant="outline" className="rounded-full">
+              <Mail className="me-2 h-4 w-4" /> Request a manual quote
             </Button>
-          </form>
+          </a>
         </div>
       </div>
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 md:grid-cols-5 lg:px-8">
+
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
           <div className="font-display text-2xl font-semibold tracking-tight">
             Corner<span className="text-primary">Mex</span>
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">{t("footer.tagline")}</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            AED is the primary display currency. Prices and availability shown in preview are not
+            offers and must be confirmed manually.
+          </p>
         </div>
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">{t("footer.shop")}</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-widest">Explore</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/shop" className="hover:text-foreground">{t("nav.shop")}</Link></li>
-            <li><Link to="/b2b" className="hover:text-foreground">{t("nav.b2b")}</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">{t("footer.company")}</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/about" className="hover:text-foreground">{t("nav.about")}</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">{t("footer.legal")}</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/legal" className="hover:text-foreground">Legal Center</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="hover:text-foreground">Terms & Conditions</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="hover:text-foreground">Privacy Policy</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "returns-refunds" }} className="hover:text-foreground">Returns & Refunds</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="hover:text-foreground">Cookie Policy</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "ai-transparency" }} className="hover:text-foreground">AI Transparency</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "acceptable-use" }} className="hover:text-foreground">Acceptable Use</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "security" }} className="hover:text-foreground">Security</Link></li>
-            <li><a href="mailto:complaints@cornermex.ae" className="hover:text-foreground">Submit a complaint</a></li>
             <li>
-              <button type="button" onClick={openCookiePreferences} className="text-left hover:text-foreground">
+              <Link to="/shop" className="hover:text-foreground">
+                Catalogue
+              </Link>
+            </li>
+            <li>
+              <Link to="/b2b" className="hover:text-foreground">
+                Business enquiries
+              </Link>
+            </li>
+            <li>
+              <Link to="/about" className="hover:text-foreground">
+                About CornerMex
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-widest">Policies</h4>
+          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+            <li>
+              <Link to="/shipping" className="hover:text-foreground">
+                Shipping
+              </Link>
+            </li>
+            <li>
+              <Link to="/returns" className="hover:text-foreground">
+                Returns
+              </Link>
+            </li>
+            <li>
+              <Link to="/privacy" className="hover:text-foreground">
+                Privacy
+              </Link>
+            </li>
+            <li>
+              <Link to="/terms" className="hover:text-foreground">
+                Terms
+              </Link>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={openCookiePreferences}
+                className="text-left hover:text-foreground"
+              >
                 Cookie preferences
               </button>
             </li>
           </ul>
         </div>
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">Business & Future Marketplace</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-widest">Contact</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/legal/$slug" params={{ slug: "product-sourcing-compliance" }} className="hover:text-foreground">Product Sourcing</Link></li>
-            <li><Link to="/legal/$slug" params={{ slug: "intellectual-property" }} className="hover:text-foreground">IP Policy</Link></li>
             <li>
-              <Link to="/legal/$slug" params={{ slug: "seller-agreement" }} className="hover:text-foreground">
-                Future Seller Agreement <span className="text-[10px] uppercase tracking-widest text-muted-foreground">(Phase 2)</span>
-              </Link>
+              <a href="mailto:b2b@cornermex.ae" className="hover:text-foreground">
+                b2b@cornermex.ae
+              </a>
+            </li>
+            <li>
+              <a href="mailto:privacy@cornermex.ae" className="hover:text-foreground">
+                privacy@cornermex.ae
+              </a>
+            </li>
+            <li>
+              <a href="mailto:complaints@cornermex.ae" className="hover:text-foreground">
+                complaints@cornermex.ae
+              </a>
             </li>
           </ul>
         </div>
       </div>
+
       <div className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        <p>
-          Complaints: <a href="mailto:complaints@cornermex.ae" className="hover:text-foreground">complaints@cornermex.ae</a>
-          {" · "}
-          Support: <a href="mailto:support@cornermex.ae" className="hover:text-foreground">support@cornermex.ae</a>
-        </p>
-        <p className="mt-2">
-          © {new Date().getFullYear()} CornerMex, a trading brand of RodMor TradeCo LLC · Sharjah Media City, UAE · Trade license 2647014.01 · {t("footer.rights")}
-        </p>
+        © {new Date().getFullYear()} CornerMex, a trading brand of RodMor TradeCo LLC · Sharjah
+        Media City, UAE · Trade license 2647014.01 · {t("footer.rights")}
       </div>
     </footer>
   );

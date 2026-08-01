@@ -13,7 +13,9 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as SellersRouteImport } from './routes/sellers'
+import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as LoginRouteImport } from './routes/login'
@@ -113,9 +115,19 @@ const ShopRoute = ShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShippingRoute = ShippingRouteImport.update({
+  id: '/shipping',
+  path: '/shipping',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SellersRoute = SellersRouteImport.update({
   id: '/sellers',
   path: '/sellers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReturnsRoute = ReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -571,7 +583,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
+  '/returns': typeof ReturnsRoute
   '/sellers': typeof SellersRouteWithChildren
+  '/shipping': typeof ShippingRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -654,7 +668,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
+  '/returns': typeof ReturnsRoute
   '/sellers': typeof SellersRouteWithChildren
+  '/shipping': typeof ShippingRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -732,7 +748,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
+  '/returns': typeof ReturnsRoute
   '/sellers': typeof SellersRouteWithChildren
+  '/shipping': typeof ShippingRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -818,7 +836,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/order-confirmed'
     | '/privacy'
+    | '/returns'
     | '/sellers'
+    | '/shipping'
     | '/shop'
     | '/signup'
     | '/sitemap.xml'
@@ -901,7 +921,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/order-confirmed'
     | '/privacy'
+    | '/returns'
     | '/sellers'
+    | '/shipping'
     | '/shop'
     | '/signup'
     | '/sitemap.xml'
@@ -978,7 +1000,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/order-confirmed'
     | '/privacy'
+    | '/returns'
     | '/sellers'
+    | '/shipping'
     | '/shop'
     | '/signup'
     | '/sitemap.xml'
@@ -1064,7 +1088,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
   PrivacyRoute: typeof PrivacyRoute
+  ReturnsRoute: typeof ReturnsRoute
   SellersRoute: typeof SellersRouteWithChildren
+  ShippingRoute: typeof ShippingRoute
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1109,11 +1135,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shipping': {
+      id: '/shipping'
+      path: '/shipping'
+      fullPath: '/shipping'
+      preLoaderRoute: typeof ShippingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sellers': {
       id: '/sellers'
       path: '/sellers'
       fullPath: '/sellers'
       preLoaderRoute: typeof SellersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/returns': {
+      id: '/returns'
+      path: '/returns'
+      fullPath: '/returns'
+      preLoaderRoute: typeof ReturnsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1953,7 +1993,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,
   PrivacyRoute: PrivacyRoute,
+  ReturnsRoute: ReturnsRoute,
   SellersRoute: SellersRouteWithChildren,
+  ShippingRoute: ShippingRoute,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
