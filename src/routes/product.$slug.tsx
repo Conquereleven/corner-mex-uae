@@ -134,6 +134,7 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
+  const checkoutEnabled = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
   const { slug } = Route.useParams();
   const initialProduct = Route.useLoaderData();
   const { i18n } = useTranslation();
@@ -177,10 +178,11 @@ function ProductPage() {
     throw notFound();
   }
   const p = product;
-  const gallery = p.images && p.images.length > 0 ? p.images : (p.image ? [p.image] : []);
+  const gallery = p.images && p.images.length > 0 ? p.images : p.image ? [p.image] : [];
   const safeIndex = gallery.length > 0 ? Math.min(activeImg, gallery.length - 1) : 0;
   const currentImg = gallery[safeIndex];
-  const goPrev = () => gallery.length > 0 && setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
+  const goPrev = () =>
+    gallery.length > 0 && setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
   const goNext = () => gallery.length > 0 && setActiveImg((i) => (i + 1) % gallery.length);
   const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
   const hasDiscount =
@@ -380,10 +382,13 @@ function ProductPage() {
               </div>
               <Button
                 onClick={addToCart}
+                disabled={!checkoutEnabled}
                 size="lg"
                 className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90"
               >
-                Add to cart · AED {((variant?.price_aed ?? 0) * qty).toFixed(0)}
+                {checkoutEnabled
+                  ? `Add to cart · AED ${((variant?.price_aed ?? 0) * qty).toFixed(0)}`
+                  : "Ordering coming soon"}
               </Button>
               <WishlistButton productId={p.id} size="lg" />
             </div>
