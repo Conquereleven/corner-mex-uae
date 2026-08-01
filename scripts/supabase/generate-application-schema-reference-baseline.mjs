@@ -67,8 +67,12 @@ const outputPath = "contracts/application-schema-reference-baseline-v1.json";
 const output = `${JSON.stringify({ contractVersion: "application-schema-reference-baseline-v1", canonicalProjectRef: "wlrfknmrhowldygmvtvn", references }, null, 2)}\n`;
 if (process.argv.includes("--check")) {
   const committed = await readFile(outputPath, "utf8");
-  if (committed !== output)
+  if (committed !== output) {
+    console.error("APPLICATION_SCHEMA_REFERENCE_BASELINE_EXPECTED_BEGIN");
+    console.error(output);
+    console.error("APPLICATION_SCHEMA_REFERENCE_BASELINE_EXPECTED_END");
     throw new Error("application schema references changed; regenerate and classify deliberately");
+  }
   console.log(`application schema reference baseline unchanged: ${references.length} identities`);
 } else {
   await writeFile(outputPath, output);
