@@ -4,6 +4,7 @@ const CURRENT_POLICIES = {
   "terms-and-conditions": "/terms",
   "privacy-policy": "/privacy",
   "returns-refunds": "/returns",
+  "cookie-policy": "/privacy",
 } as const;
 
 export const Route = createFileRoute("/legal/$slug")({

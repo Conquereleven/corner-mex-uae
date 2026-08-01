@@ -115,3 +115,27 @@ test("checkout is fail-closed and public sitemaps exclude seller routes", async 
   assert.doesNotMatch(checkout.match(/beforeLoad:[\s\S]*?\n\s*},/)?.[0] ?? "", /CHECKOUT_ENABLED/);
   assert.doesNotMatch(`${sitemap}\n${publicSitemap}`, /loc: `\$\{origin\}\/sellers|"\/sellers"/);
 });
+
+test("public legal links only reference slugs supported by legal.$slug", async () => {
+  const [legalSlug, cookieConsent] = await Promise.all([
+    source("src/routes/legal.$slug.tsx"),
+    source("src/components/site/CookieConsent.tsx"),
+  ]);
+
+  // Supported slugs are the keys of the CURRENT_POLICIES map; anything else 404s.
+  const supported = new Set(
+    [...legalSlug.matchAll(/"([a-z-]+)":\s*"\/[a-z-]+"/g)].map((m) => m[1]),
+  );
+  assert.ok(supported.size > 0, "expected CURRENT_POLICIES to declare supported slugs");
+
+  // The cookie banner renders on every public page; its policy link must resolve.
+  assert.ok(supported.has("cookie-policy"), "cookie-policy must be a supported legal slug");
+  assert.match(legalSlug, /"cookie-policy":\s*"\/privacy"/);
+
+  // No public-chrome legal link may point at an unsupported (404) slug.
+  const referenced = [...cookieConsent.matchAll(/slug:\s*"([a-z-]+)"/g)].map((m) => m[1]);
+  assert.ok(referenced.length > 0, "expected CookieConsent to link to a legal slug");
+  for (const slug of referenced) {
+    assert.ok(supported.has(slug), `CookieConsent links to unsupported legal slug: ${slug}`);
+  }
+});

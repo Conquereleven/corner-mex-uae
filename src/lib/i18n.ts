@@ -382,7 +382,6 @@ const en = {
       lede: "CornerMex is preparing a curated Mexican pantry experience for the UAE. This commercial preview supports catalogue discovery and manual, human-approved B2B quotes; it does not accept online orders.",
       ctaShop: "Browse the catalogue",
       ctaB2B: "For business",
-      ctaSellers: "Meet the sellers",
     },
   },
 };
@@ -769,7 +768,6 @@ const es = {
       lede: "CornerMex prepara una experiencia curada de despensa mexicana para EAU. Esta vista previa permite explorar el catálogo y solicitar cotizaciones B2B manuales; no acepta pedidos en línea.",
       ctaShop: "Ver catálogo",
       ctaB2B: "Para negocios",
-      ctaSellers: "Conoce a los vendedores",
     },
   },
 };
@@ -1151,7 +1149,6 @@ const ar = {
       lede: "تُعد CornerMex تجربة مختارة للمؤن المكسيكية في الإمارات. تتيح هذه المعاينة استكشاف الكتالوج وطلب عروض أعمال يدوية، ولا تقبل الطلبات عبر الإنترنت.",
       ctaShop: "تصفح الكتالوج",
       ctaB2B: "للأعمال",
-      ctaSellers: "تعرّف على البائعين",
     },
   },
 };

@@ -22,11 +22,6 @@ export const Route = createFileRoute("/sitemap.xml")({
           .select("slug, updated_at")
           .eq("status", "active")
           .limit(5000);
-        await supabaseAdmin
-          .from("sellers")
-          .select("slug, updated_at")
-          .eq("status", "active")
-          .limit(1000);
         const items = [
           ...urls.map((u) => ({ loc: `${origin}${u}`, lastmod: new Date().toISOString() })),
           ...(products ?? []).map((p) => ({
