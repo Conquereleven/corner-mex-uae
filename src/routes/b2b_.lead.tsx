@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/b2b_/lead")({
   head: () => ({
@@ -33,9 +34,9 @@ function ManualEnquiry() {
           delivery and commercial terms are confirmed only in a human-approved written quote.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <a href="mailto:b2b@cornermex.ae?subject=CornerMex%20manual%20quote%20request">
+          <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
             <Button className="rounded-full">
-              <Mail className="me-2 h-4 w-4" /> Email b2b@cornermex.ae
+              <Mail className="me-2 h-4 w-4" /> Email {PUBLIC_CONTACT.b2b}
             </Button>
           </a>
           <Link to="/b2b">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ClipboardList, Mail, BadgeCheck } from "lucide-react";
 import i18n from "@/lib/i18n";
 import { siteUrl } from "@/lib/site-url";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/b2b")({
   head: () => {
@@ -38,7 +39,7 @@ function B2B() {
         <h1 className="mt-4 font-display text-5xl tracking-tight">{t("pages.b2b.title")}</h1>
         <p className="mt-6 text-lg text-muted-foreground">{t("pages.b2b.lede")}</p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <a href="mailto:b2b@cornermex.ae?subject=CornerMex%20manual%20quote%20request">
+          <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
             <Button size="lg" className="rounded-full">
               <Mail className="me-2 h-4 w-4" /> {t("pages.b2b.ctaQuote")}
             </Button>

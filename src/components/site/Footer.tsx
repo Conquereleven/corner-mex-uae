@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { openCookiePreferences } from "@/lib/cookie-consent";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export function Footer() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export function Footer() {
               CornerMex before any quote is issued.
             </p>
           </div>
-          <a href="mailto:b2b@cornermex.ae?subject=CornerMex%20manual%20quote%20request">
+          <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
             <Button variant="outline" className="rounded-full">
               <Mail className="me-2 h-4 w-4" /> Request a manual quote
             </Button>
@@ -100,18 +101,18 @@ export function Footer() {
           <h4 className="text-xs font-semibold uppercase tracking-widest">Contact</h4>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
             <li>
-              <a href="mailto:b2b@cornermex.ae" className="hover:text-foreground">
-                b2b@cornermex.ae
+              <a href={mailto(PUBLIC_CONTACT.b2b)} className="hover:text-foreground">
+                {PUBLIC_CONTACT.b2b}
               </a>
             </li>
             <li>
-              <a href="mailto:privacy@cornermex.ae" className="hover:text-foreground">
-                privacy@cornermex.ae
+              <a href={mailto(PUBLIC_CONTACT.privacy)} className="hover:text-foreground">
+                {PUBLIC_CONTACT.privacy}
               </a>
             </li>
             <li>
-              <a href="mailto:complaints@cornermex.ae" className="hover:text-foreground">
-                complaints@cornermex.ae
+              <a href={mailto(PUBLIC_CONTACT.complaints)} className="hover:text-foreground">
+                {PUBLIC_CONTACT.complaints}
               </a>
             </li>
           </ul>

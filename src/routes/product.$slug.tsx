@@ -7,6 +7,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { getProduct, type ProductDetail } from "@/lib/catalog.functions";
 import { siteOrigin, siteUrl } from "@/lib/site-url";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 function productUrl(slug: string) {
   return siteUrl(`/product/${encodeURIComponent(slug)}`);
@@ -290,9 +291,7 @@ function ProductPage() {
                 Commercial preview: cart, checkout, payment and live stock are disabled. For a
                 business requirement, request a human-reviewed quote.
               </p>
-              <a
-                href={`mailto:b2b@cornermex.ae?subject=${encodeURIComponent(`CornerMex quote enquiry: ${p.name}`)}`}
-              >
+              <a href={mailto(PUBLIC_CONTACT.b2b, `CornerMex quote enquiry: ${p.name}`)}>
                 <Button size="lg" className="mt-4 rounded-full">
                   <Mail className="me-2 h-4 w-4" /> Request manual quote
                 </Button>

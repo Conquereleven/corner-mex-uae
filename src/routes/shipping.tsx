@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/shipping")({
   head: () => ({ meta: [{ title: "Shipping — Corner Mex commercial preview" }] }),
@@ -26,8 +27,8 @@ function Shipping() {
           </p>
           <p>
             Questions may be sent to{" "}
-            <a className="underline" href="mailto:b2b@cornermex.ae">
-              b2b@cornermex.ae
+            <a className="underline" href={mailto(PUBLIC_CONTACT.b2b)}>
+              {PUBLIC_CONTACT.b2b}
             </a>
             . Sending an enquiry does not create an order.
           </p>

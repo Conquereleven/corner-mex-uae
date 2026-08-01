@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({ meta: [{ title: "Terms — Corner Mex commercial preview" }] }),
@@ -32,8 +33,8 @@ function Terms() {
           </p>
           <p>
             Questions:{" "}
-            <a className="underline" href="mailto:legal@cornermex.ae">
-              legal@cornermex.ae
+            <a className="underline" href={mailto(PUBLIC_CONTACT.legal)}>
+              {PUBLIC_CONTACT.legal}
             </a>
             .
           </p>

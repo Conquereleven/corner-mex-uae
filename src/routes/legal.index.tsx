@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileText, ShieldCheck } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { siteUrl } from "@/lib/site-url";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 const POLICIES = [
   {
@@ -73,8 +74,8 @@ function LegalIndex() {
         </div>
         <p className="mt-10 text-sm text-muted-foreground">
           Legal questions:{" "}
-          <a className="underline" href="mailto:legal@cornermex.ae">
-            legal@cornermex.ae
+          <a className="underline" href={mailto(PUBLIC_CONTACT.legal)}>
+            {PUBLIC_CONTACT.legal}
           </a>
         </p>
       </section>
