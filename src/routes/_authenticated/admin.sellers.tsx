@@ -5,8 +5,21 @@ import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Store } from "lucide-react";
 import { adminListSellers, adminSetSellerStatus } from "@/lib/admin.functions";
@@ -16,7 +29,9 @@ import { PageHeader } from "@/components/site/PageHeader";
 import { EmptyState } from "@/components/site/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/admin/sellers")({
-  beforeLoad: () => { throw redirect({ to: "/admin" }); },
+  beforeLoad: () => {
+    throw redirect({ to: "/admin" });
+  },
   head: () => ({ meta: [{ title: "Admin — Sellers" }] }),
   component: Sellers,
 });
@@ -30,7 +45,10 @@ function Sellers() {
   const q = useQuery({ queryKey: ["admin-sellers"], queryFn: () => fn({}) });
   const m = useMutation({
     mutationFn: (input: { sellerId: string; status: string }) => upd({ data: input }),
-    onSuccess: () => { toast.success("Updated"); qc.invalidateQueries({ queryKey: ["admin-sellers"] }); },
+    onSuccess: () => {
+      toast.success("Updated");
+      qc.invalidateQueries({ queryKey: ["admin-sellers"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -43,9 +61,11 @@ function Sellers() {
       if (statusFilter !== "all" && s.status !== statusFilter) return false;
       if (!search) return true;
       const t = search.toLowerCase();
-      return (s.store_name ?? "").toLowerCase().includes(t)
-        || (s.contact_email ?? "").toLowerCase().includes(t)
-        || (s.trn ?? "").toLowerCase().includes(t);
+      return (
+        (s.store_name ?? "").toLowerCase().includes(t) ||
+        (s.contact_email ?? "").toLowerCase().includes(t) ||
+        (s.trn ?? "").toLowerCase().includes(t)
+      );
     });
   }, [q.data, search, statusFilter]);
 
@@ -62,21 +82,40 @@ function Sellers() {
         <CardHeader className="flex flex-row flex-wrap items-center gap-3 space-y-0">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search store, email, TRN…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input
+              placeholder="Search store, email, TRN…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
-              {STATUSES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
+              {STATUSES.map((s) => (
+                <SelectItem key={s} value={s} className="capitalize">
+                  {s}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </CardHeader>
         <CardContent className="p-0">
           {q.isLoading ? (
-            <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
+            <div className="space-y-2 p-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12" />
+              ))}
+            </div>
           ) : rows.length === 0 ? (
-            <EmptyState icon={Store} title="No sellers found" description="Third-party sellers activate in Phase 2. For MVP, all inventory is sold directly by CornerMex." />
+            <EmptyState
+              icon={Store}
+              title="No sellers found"
+              description="Third-party sellers activate in Phase 2. For MVP, all inventory is sold directly by CornerMex."
+            />
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -100,14 +139,38 @@ function Sellers() {
                         <p>{s.contact_email ?? "—"}</p>
                         <p className="text-xs">{s.contact_phone ?? "—"}</p>
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">{Number(s.commission_rate)}%</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {Number(s.commission_rate)}%
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(s.created_at).toLocaleDateString()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="capitalize" style={{ borderColor: statusColor(s.status), color: statusColor(s.status) }}>{s.status}</Badge>
-                          <Select value={s.status} onValueChange={(v) => m.mutate({ sellerId: s.id, status: v })}>
-                            <SelectTrigger className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
-                            <SelectContent>{STATUSES.map((x) => <SelectItem key={x} value={x} className="capitalize">{x}</SelectItem>)}</SelectContent>
+                          <Badge
+                            variant="outline"
+                            className="capitalize"
+                            style={{
+                              borderColor: statusColor(s.status),
+                              color: statusColor(s.status),
+                            }}
+                          >
+                            {s.status}
+                          </Badge>
+                          <Select
+                            value={s.status}
+                            onValueChange={(v) => m.mutate({ sellerId: s.id, status: v })}
+                          >
+                            <SelectTrigger className="h-8 w-32 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {STATUSES.map((x) => (
+                                <SelectItem key={x} value={x} className="capitalize">
+                                  {x}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
                           </Select>
                         </div>
                       </TableCell>

@@ -7,9 +7,9 @@ import { CookieConsent } from "./CookieConsent";
 export function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <LanguageProvider>
-      <div className="flex min-h-screen flex-col bg-background">
+      <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
         <Header />
-        <main className="flex-1 pb-20 md:pb-0">{children}</main>
+        <main className="flex-1">{children}</main>
         <Footer />
         <Toaster position="bottom-right" />
         <CookieConsent />

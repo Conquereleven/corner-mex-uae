@@ -488,14 +488,8 @@ function AdminHome() {
       </Card>
 
       {/* Footer summary */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <MiniStat icon={Users} label="Registered buyers" value={N(d.buyers)} />
-        <MiniStat
-          icon={Store}
-          label="Pending applications"
-          value={N(d.pendingSellers)}
-          tone={d.pendingSellers > 0 ? "warn" : "default"}
-        />
         <MiniStat icon={DollarSign} label="Lifetime GMV" value={AED(d.gmv)} />
       </div>
     </div>

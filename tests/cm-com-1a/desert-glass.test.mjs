@@ -46,7 +46,16 @@ test("direct Phase 2 admin routes redirect before rendering or querying", async 
 test("admin overview contains seven first-party KPIs and no seller KPI", async () => {
   const overview = await read("src/routes/_authenticated/admin.index.tsx");
   assert.equal((overview.match(/<Kpi\b/g) ?? []).length, 7);
-  assert.doesNotMatch(overview, /Commission earned|Active sellers|Top sellers/);
+  assert.doesNotMatch(
+    overview,
+    /Commission earned|Active sellers|Top sellers|Pending applications/,
+  );
+});
+
+test("admin overview never references the removed Phase 2 sellers fields it no longer imports", async () => {
+  const overview = await read("src/routes/_authenticated/admin.index.tsx");
+  assert.doesNotMatch(overview, /\bStore\b/);
+  assert.doesNotMatch(overview, /d\.pendingSellers/);
 });
 
 test("checkout controls fail closed while the capability is off", async () => {
