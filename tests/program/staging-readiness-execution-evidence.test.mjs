@@ -1,19 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import {
-  validateStagingReadinessExecutionEvidence,
-  validateStagingReadinessExecutionEvidenceFile,
-} from "../../scripts/program/validate-staging-readiness-execution-evidence.mjs";
+import { validateStagingReadinessExecutionEvidence } from "../../scripts/program/validate-staging-readiness-execution-evidence.mjs";
 
 const FROZEN_NOW = () => new Date("2026-07-21T23:06:00Z");
 const baseEvidence = () =>
   JSON.parse(fs.readFileSync("docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json", "utf8"));
 
-test("accepts the committed executed_verified evidence", () => {
-  const result = validateStagingReadinessExecutionEvidenceFile(
-    "docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json",
-  );
+test("accepts the committed executed_verified evidence at its historical verification time", () => {
+  const result = validateStagingReadinessExecutionEvidence(baseEvidence(), { now: FROZEN_NOW });
   assert.equal(result.result, "executed_verified");
 });
 

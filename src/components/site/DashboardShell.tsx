@@ -7,15 +7,29 @@ import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
-  SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton,
-  SidebarMenuItem, SidebarProvider, SidebarTrigger,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LANGS } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { DesertGlassHeader } from "@/components/site/DesertGlass";
 
 export type DashNavItem = {
   to?: string;
@@ -56,22 +70,35 @@ export function DashboardShell({
   );
 }
 
-function DashSidebar({ title, subtitle, nav }: { title: string; subtitle?: string; nav: DashNavGroup[] }) {
+function DashSidebar({
+  title,
+  subtitle,
+  nav,
+}: {
+  title: string;
+  subtitle?: string;
+  nav: DashNavGroup[];
+}) {
   const location = useRouterState({ select: (s) => s.location });
   const { t } = useTranslation();
   const isActive = (item: DashNavItem) => {
     if (!item.to) return false;
-    const pathMatches = location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+    const pathMatches =
+      location.pathname === item.to || location.pathname.startsWith(item.to + "/");
     if (!pathMatches) return false;
     if (!item.search) return true;
-    return Object.entries(item.search).every(([key, value]) => (location.search as Record<string, unknown>)[key] === value);
+    return Object.entries(item.search).every(
+      ([key, value]) => (location.search as Record<string, unknown>)[key] === value,
+    );
   };
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border/60">
         <Link to="/" className="flex items-center gap-2 px-2 py-2">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground font-display text-lg">C</span>
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground font-display text-lg">
+            C
+          </span>
           <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
             <p className="truncate font-display text-base leading-tight tracking-tight">{title}</p>
             {subtitle && <p className="truncate text-[11px] text-muted-foreground">{subtitle}</p>}
@@ -87,10 +114,19 @@ function DashSidebar({ title, subtitle, nav }: { title: string; subtitle?: strin
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.label}>
                     {item.soon || !item.to ? (
-                      <SidebarMenuButton tooltip={`${item.label} · ${t("dash.soon")}`} className="cursor-not-allowed opacity-55" disabled>
+                      <SidebarMenuButton
+                        tooltip={`${item.label} · ${t("dash.soon")}`}
+                        className="cursor-not-allowed opacity-55"
+                        disabled
+                      >
                         <item.icon />
                         <span>{item.label}</span>
-                        <Badge variant="outline" className="ml-auto h-4 px-1 text-[9px] font-normal uppercase tracking-wider group-data-[collapsible=icon]:hidden">soon</Badge>
+                        <Badge
+                          variant="outline"
+                          className="ml-auto h-4 px-1 text-[9px] font-normal uppercase tracking-wider group-data-[collapsible=icon]:hidden"
+                        >
+                          soon
+                        </Badge>
                       </SidebarMenuButton>
                     ) : (
                       <SidebarMenuButton asChild isActive={isActive(item)} tooltip={item.label}>
@@ -148,7 +184,9 @@ function TopBar({ title, nav }: { title: string; nav: DashNavGroup[] }) {
       const pathMatches = location.pathname === i.to || location.pathname.startsWith(i.to + "/");
       if (!pathMatches) return false;
       if (!i.search) return true;
-      return Object.entries(i.search).every(([key, value]) => (location.search as Record<string, unknown>)[key] === value);
+      return Object.entries(i.search).every(
+        ([key, value]) => (location.search as Record<string, unknown>)[key] === value,
+      );
     });
 
   const signOut = async () => {
@@ -157,7 +195,7 @@ function TopBar({ title, nav }: { title: string; nav: DashNavGroup[] }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur sm:px-4">
+    <DesertGlassHeader className="sticky top-2 z-30 mx-2 flex min-h-14 items-center gap-2 rounded-2xl px-3 sm:top-3 sm:mx-3 sm:px-4">
       <SidebarTrigger className="-ml-1" />
       <nav className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
         <span className="truncate font-medium text-foreground/80">{title}</span>
@@ -188,6 +226,6 @@ function TopBar({ title, nav }: { title: string; nav: DashNavGroup[] }) {
           <span className="hidden sm:inline">{t("dash.signOut")}</span>
         </Button>
       </div>
-    </header>
+    </DesertGlassHeader>
   );
 }

@@ -46,29 +46,49 @@ for (const file of files.sort()) {
   }
 }
 
-const references = [...found.values()].map((reference) => ({
-  ...reference,
-  files: [...new Set(reference.files)].sort(),
-  classification:
-    reference.kind !== "function" && canonical.has(reference.name)
-      ? "canonical_supported"
-      : future.has(reference.name)
-        ? "requires_future_migration"
-        : "lovable_live_only",
-  rationale:
-    reference.kind !== "function" && canonical.has(reference.name)
-      ? "present_in_canonical_db2_inventory"
-      : future.has(reference.name)
-        ? "owned_by_pending_canonical_a3_2b_migration"
-        : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
-}));
-
 const outputPath = "contracts/application-schema-reference-baseline-v1.json";
+const committed = await readFile(outputPath, "utf8").catch(() => null);
+const committedContract = committed ? JSON.parse(committed) : null;
+const committedOrder = new Map(
+  (committedContract?.references ?? []).map((reference, index) => [
+    `${reference.kind}:${reference.name}`,
+    index,
+  ]),
+);
+
+const references = [...found.values()]
+  .map((reference) => ({
+    ...reference,
+    files: [...new Set(reference.files)].sort(),
+    classification:
+      reference.kind !== "function" && canonical.has(reference.name)
+        ? "canonical_supported"
+        : future.has(reference.name)
+          ? "requires_future_migration"
+          : "lovable_live_only",
+    rationale:
+      reference.kind !== "function" && canonical.has(reference.name)
+        ? "present_in_canonical_db2_inventory"
+        : future.has(reference.name)
+          ? "owned_by_pending_canonical_a3_2b_migration"
+          : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
+  }))
+  .sort((left, right) => {
+    const leftKey = `${left.kind}:${left.name}`;
+    const rightKey = `${right.kind}:${right.name}`;
+    const leftIndex = committedOrder.get(leftKey) ?? Number.MAX_SAFE_INTEGER;
+    const rightIndex = committedOrder.get(rightKey) ?? Number.MAX_SAFE_INTEGER;
+    return leftIndex - rightIndex || leftKey.localeCompare(rightKey);
+  });
+
 const output = `${JSON.stringify({ contractVersion: "application-schema-reference-baseline-v1", canonicalProjectRef: "wlrfknmrhowldygmvtvn", references }, null, 2)}\n`;
 if (process.argv.includes("--check")) {
-  const committed = await readFile(outputPath, "utf8");
-  if (committed !== output)
+  if (committed !== output) {
+    console.error("APPLICATION_SCHEMA_REFERENCE_BASELINE_EXPECTED_BEGIN");
+    console.error(output);
+    console.error("APPLICATION_SCHEMA_REFERENCE_BASELINE_EXPECTED_END");
     throw new Error("application schema references changed; regenerate and classify deliberately");
+  }
   console.log(`application schema reference baseline unchanged: ${references.length} identities`);
 } else {
   await writeFile(outputPath, output);

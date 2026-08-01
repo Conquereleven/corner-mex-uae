@@ -84,30 +84,24 @@ export const adminOverview = createServerFn({ method: "GET" })
     const since7 = new Date(now.getTime() - 7 * day).toISOString();
     const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
-    const [orders, sellers, products, pendingSellers, items, buyers, recent, lowStock] =
-      await Promise.all([
-        supabaseAdmin
-          .from("orders")
-          .select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id")
-          .gte("created_at", since60),
-        supabaseAdmin.from("sellers").select("id, status, store_name, created_at"),
-        supabaseAdmin.from("products").select("id, status"),
-        supabaseAdmin
-          .from("sellers")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "pending"),
-        supabaseAdmin
-          .from("order_items")
-          .select("seller_id, product_id, product_name, qty, line_total_aed, commission_aed")
-          .limit(5000),
-        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-        supabaseAdmin
-          .from("orders")
-          .select("id, order_number, total_aed, status, payment_status, created_at")
-          .order("created_at", { ascending: false })
-          .limit(8),
-        supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
-      ]);
+    const [orders, products, items, buyers, recent, lowStock] = await Promise.all([
+      supabaseAdmin
+        .from("orders")
+        .select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id")
+        .gte("created_at", since60),
+      supabaseAdmin.from("products").select("id, status"),
+      supabaseAdmin
+        .from("order_items")
+        .select("seller_id, product_id, product_name, qty, line_total_aed, commission_aed")
+        .limit(5000),
+      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
+      supabaseAdmin
+        .from("orders")
+        .select("id, order_number, total_aed, status, payment_status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
+    ]);
 
     const allOrders = (orders.data ?? []) as any[];
     const sum = (xs: any[], k: string) =>
@@ -161,42 +155,20 @@ export const adminOverview = createServerFn({ method: "GET" })
       }, {}),
     ).map(([method, count]) => ({ method, count: count as number }));
 
-    // Top sellers by GMV (from order_items)
-    const sellerMap = new Map((sellers.data ?? []).map((s: any) => [s.id, s.store_name]));
-    const sellerAgg = new Map<string, { gmv: number; units: number; commission: number }>();
     const productAgg = new Map<string, { name: string; units: number; gmv: number }>();
     for (const it of (items.data ?? []) as any[]) {
-      const cur = sellerAgg.get(it.seller_id) ?? { gmv: 0, units: 0, commission: 0 };
-      cur.gmv += Number(it.line_total_aed ?? 0);
-      cur.units += Number(it.qty ?? 0);
-      cur.commission += Number(it.commission_aed ?? 0);
-      sellerAgg.set(it.seller_id, cur);
       const p = productAgg.get(it.product_id) ?? { name: it.product_name, units: 0, gmv: 0 };
       p.units += Number(it.qty ?? 0);
       p.gmv += Number(it.line_total_aed ?? 0);
       productAgg.set(it.product_id, p);
     }
-    const topSellers = Array.from(sellerAgg.entries())
-      .map(([id, v]) => ({
-        id,
-        name: String(sellerMap.get(id) ?? "—"),
-        gmv: +v.gmv.toFixed(2),
-        units: v.units,
-        commission: +v.commission.toFixed(2),
-      }))
-      .sort((a, b) => b.gmv - a.gmv)
-      .slice(0, 5);
     const topProducts = Array.from(productAgg.entries())
       .map(([id, v]) => ({ id, name: v.name, units: v.units, gmv: +v.gmv.toFixed(2) }))
       .sort((a, b) => b.gmv - a.gmv)
       .slice(0, 5);
 
-    const allSellers = sellers.data ?? [];
     const allProducts = products.data ?? [];
     const uniqueBuyers30 = new Set(o30.map((o: any) => o.buyer_id)).size;
-    const totalCommission = +(items.data ?? [])
-      .reduce((a: number, it: any) => a + Number(it.commission_aed ?? 0), 0)
-      .toFixed(2);
 
     return {
       // KPI cards
@@ -210,12 +182,8 @@ export const adminOverview = createServerFn({ method: "GET" })
       orders7: o7.length,
       ordersToday: oToday.length,
       aov: o30.length ? +(gmv30 / o30.length).toFixed(2) : 0,
-      commission: totalCommission,
       buyers: buyers.count ?? 0,
       uniqueBuyers30,
-      sellers: allSellers.length,
-      activeSellers: allSellers.filter((s: any) => s.status === "active").length,
-      pendingSellers: pendingSellers.count ?? 0,
       products: allProducts.length,
       activeProducts: allProducts.filter((p: any) => p.status === "active").length,
       draftProducts: allProducts.filter((p: any) => p.status === "draft").length,
@@ -227,7 +195,6 @@ export const adminOverview = createServerFn({ method: "GET" })
       statusBreakdown,
       paymentBreakdown,
       methodBreakdown,
-      topSellers,
       topProducts,
       recentOrders: recent.data ?? [],
     };
@@ -506,71 +473,51 @@ export const adminDashboardCounts = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<AdminDashCounts> => {
     await assertAdmin(context.userId);
     const head = (q: any) => q.then((r: any) => r.count ?? 0).catch(() => 0);
-    const [
-      ordersPending,
-      shipmentsPending,
-      leadsNew,
-      kycPending,
-      payoutsPending,
-      reviewsPending,
-      returnsPending,
-      lowStock,
-    ] = await Promise.all([
-      head(
-        supabaseAdmin
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["pending", "preparing"]),
-      ),
-      head(
-        supabaseAdmin
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "preparing"),
-      ),
-      head(
-        supabaseAdmin
-          .from("b2b_leads")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "new"),
-      ),
-      head(
-        supabaseAdmin
-          .from("sellers")
-          .select("id", { count: "exact", head: true })
-          .eq("kyc_status", "pending"),
-      ),
-      head(
-        supabaseAdmin
-          .from("seller_payouts")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "pending"),
-      ),
-      head(
-        supabaseAdmin
-          .from("product_reviews")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "pending"),
-      ),
-      head(
-        supabaseAdmin
-          .from("returns")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "requested"),
-      ),
-      head(
-        supabaseAdmin
-          .from("product_variants")
-          .select("id", { count: "exact", head: true })
-          .lte("stock", 5),
-      ),
-    ]);
+    const [ordersPending, shipmentsPending, leadsNew, reviewsPending, returnsPending, lowStock] =
+      await Promise.all([
+        head(
+          supabaseAdmin
+            .from("orders")
+            .select("id", { count: "exact", head: true })
+            .in("status", ["pending", "preparing"]),
+        ),
+        head(
+          supabaseAdmin
+            .from("orders")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "preparing"),
+        ),
+        head(
+          supabaseAdmin
+            .from("b2b_leads")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "new"),
+        ),
+        head(
+          supabaseAdmin
+            .from("product_reviews")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "pending"),
+        ),
+        head(
+          supabaseAdmin
+            .from("returns")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "requested"),
+        ),
+        head(
+          supabaseAdmin
+            .from("product_variants")
+            .select("id", { count: "exact", head: true })
+            .lte("stock", 5),
+        ),
+      ]);
     return {
       orders_pending: ordersPending,
       shipments_pending: shipmentsPending,
       leads_new: leadsNew,
-      kyc_pending: kycPending,
-      payouts_pending: payoutsPending,
+      kyc_pending: 0,
+      payouts_pending: 0,
       reviews_pending: reviewsPending,
       returns_pending: returnsPending,
       low_stock: lowStock,

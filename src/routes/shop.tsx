@@ -12,6 +12,11 @@ import type { ProductListPage } from "@/lib/catalog.functions";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, Search } from "lucide-react";
+import {
+  DesertGlassBadge,
+  DesertGlassControl,
+  DesertGlassSurface,
+} from "@/components/site/DesertGlass";
 
 const shopSearchSchema = z.object({
   category: fallback(z.string().optional(), undefined),
@@ -23,7 +28,9 @@ const shopSearchSchema = z.object({
   inStock: fallback(z.boolean().optional(), undefined),
   bulk: fallback(z.boolean().optional(), undefined),
   spice: fallback(z.number().int().min(0).max(4).optional(), undefined),
-  sort: fallback(z.enum(["newest", "price_asc", "price_desc", "most_viewed"]), "newest").default("newest"),
+  sort: fallback(z.enum(["newest", "price_asc", "price_desc", "most_viewed"]), "newest").default(
+    "newest",
+  ),
 });
 
 export const Route = createFileRoute("/shop")({
@@ -31,7 +38,11 @@ export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
       { title: "Shop — Corner Mex" },
-      { name: "description", content: "Browse Mexican chiles, salsas, masa, snacks and pantry staples — delivered across the UAE." },
+      {
+        name: "description",
+        content:
+          "Browse Mexican chiles, salsas, masa, snacks and pantry staples — delivered across the UAE.",
+      },
     ],
   }),
   component: Shop,
@@ -72,7 +83,13 @@ function Shop() {
     queryFn: () => listProductFacets(),
     staleTime: 5 * 60_000,
   });
-  const products = useInfiniteQuery<ProductListPage, Error, InfiniteData<ProductListPage, string | undefined>, readonly unknown[], string | undefined>({
+  const products = useInfiniteQuery<
+    ProductListPage,
+    Error,
+    InfiniteData<ProductListPage, string | undefined>,
+    readonly unknown[],
+    string | undefined
+  >({
     queryKey: ["products", lang, search],
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
@@ -120,24 +137,61 @@ function Shop() {
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="font-display text-4xl tracking-tight sm:text-5xl">Shop</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Authentic Mexican pantry, sourced for the UAE.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Authentic Mexican pantry, sourced for the UAE.
+            </p>
           </div>
-          <div className="relative w-full md:w-80">
+          <DesertGlassControl className="relative w-full rounded-full md:w-80">
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               value={qInput}
               onChange={(e) => setQInput(e.target.value)}
               placeholder="Search products…"
-              className="w-full rounded-full border border-border bg-card ps-9 pe-4 py-2.5 text-sm outline-none transition-colors focus:border-primary"
+              className="min-h-11 w-full rounded-full border-0 bg-transparent ps-9 pe-4 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Search products"
             />
-          </div>
+          </DesertGlassControl>
         </header>
+
+        {categories.length > 0 && (
+          <nav
+            aria-label="Product categories"
+            className="mt-5 flex max-w-full gap-2 overflow-x-auto pb-2"
+          >
+            <button
+              type="button"
+              onClick={() => update({ category: undefined })}
+              className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
+            >
+              <DesertGlassBadge
+                className={!filterState.category ? "border-primary/50 text-primary" : ""}
+              >
+                All
+              </DesertGlassBadge>
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => update({ category: category.slug })}
+                className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
+              >
+                <DesertGlassBadge
+                  className={
+                    filterState.category === category.slug ? "border-primary/50 text-primary" : ""
+                  }
+                >
+                  {category.name}
+                </DesertGlassBadge>
+              </button>
+            ))}
+          </nav>
+        )}
 
         <div className="mt-6 lg:grid lg:grid-cols-[260px_1fr] lg:gap-8">
           {/* Desktop sidebar */}
           <aside className="hidden lg:block">
-            <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <DesertGlassSurface className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl p-5">
               <ShopFilters
                 state={filterState}
                 update={update}
@@ -147,7 +201,7 @@ function Shop() {
                 brands={brands}
                 resultCount={resultCount}
               />
-            </div>
+            </DesertGlassSurface>
           </aside>
 
           <div className="min-w-0">
@@ -158,14 +212,26 @@ function Shop() {
                   <Button variant="outline" size="sm" className="rounded-full gap-2">
                     <SlidersHorizontal className="h-4 w-4" />
                     Filters
-                    {(filterState.category || filterState.brand || filterState.origin || filterState.priceMin != null || filterState.priceMax != null || filterState.inStock || filterState.bulk || filterState.spice != null) && (
+                    {(filterState.category ||
+                      filterState.brand ||
+                      filterState.origin ||
+                      filterState.priceMin != null ||
+                      filterState.priceMax != null ||
+                      filterState.inStock ||
+                      filterState.bulk ||
+                      filterState.spice != null) && (
                       <span className="ms-1 h-1.5 w-1.5 rounded-full bg-primary" />
                     )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-full max-w-sm overflow-y-auto p-5 sm:max-w-sm">
+                <SheetContent
+                  side="left"
+                  className="desert-glass desert-glass--elevated w-full max-w-sm overflow-y-auto p-5 sm:max-w-sm"
+                >
                   <SheetHeader className="mb-4 p-0">
-                    <SheetTitle className="text-left font-display text-xl tracking-tight">Filters</SheetTitle>
+                    <SheetTitle className="text-left font-display text-xl tracking-tight">
+                      Filters
+                    </SheetTitle>
                   </SheetHeader>
                   <ShopFilters
                     state={filterState}
@@ -207,16 +273,27 @@ function Shop() {
               <p className="text-xs text-muted-foreground">{resultCount ?? 0} products</p>
             </div>
 
-            <div id="shop-results" className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            <div
+              id="shop-results"
+              className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
+            >
               {products.isLoading
-                ? Array.from({ length: 8 }).map((_, i) => <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-muted" />)
+                ? Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-muted" />
+                  ))
                 : productItems.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 4} />)}
             </div>
             {!products.isLoading && productItems.length === 0 && (
-              <div className="mt-16 text-center">
-                <p className="text-sm text-muted-foreground">No products match your filters.</p>
-                <Button variant="outline" className="mt-4 rounded-full" onClick={resetAll}>Clear filters</Button>
-              </div>
+              <DesertGlassSurface className="mt-16 rounded-3xl px-6 py-12 text-center">
+                <p className="font-display text-2xl">The pantry is being curated</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                  No products match this view yet. Adjust the filters or return soon for the next
+                  CornerMex selection.
+                </p>
+                <Button variant="outline" className="mt-4 rounded-full" onClick={resetAll}>
+                  Clear filters
+                </Button>
+              </DesertGlassSurface>
             )}
             {products.hasNextPage && (
               <>
