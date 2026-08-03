@@ -83,6 +83,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run test:cm-com-1b
       - run: npm run typecheck
       - run: npm run build
       - run: npm run build:railway

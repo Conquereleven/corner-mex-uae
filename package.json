@@ -19,6 +19,7 @@
     "build:railway": "NITRO_PRESET=node_server vite build",
     "start:railway": "node .output/server/index.mjs",
     "lint:changed": "node scripts/lint-changed-a2.mjs",
+    "test:cm-com-1b": "node --test tests/cm-com-1b/*.test.mjs",
     "test:a2": "node --test tests/a2/*.test.mjs",
     "test:a3": "node --test tests/a3/*.test.mjs",
     "validate:a3:inventory": "node scripts/a3/validate-canonical-baseline-inventory.mjs",

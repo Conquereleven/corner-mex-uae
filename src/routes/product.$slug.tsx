@@ -1,21 +1,16 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Flame, MapPin, ShieldCheck, Star } from "lucide-react";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, Flame, MapPin, Mail } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
-import { ProductReviews } from "@/components/site/ProductReviews";
-import { WishlistButton } from "@/components/site/WishlistButton";
-import { getProduct, trackProductView, type ProductDetail } from "@/lib/catalog.functions";
-import { useCart } from "@/lib/cart";
-import { toast } from "sonner";
-import { trackEvent } from "@/lib/track";
-
-const SITE_ORIGIN = "https://corner-mex-uae.lovable.app";
+import { getProduct, type ProductDetail } from "@/lib/catalog.functions";
+import { siteOrigin, siteUrl } from "@/lib/site-url";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 function productUrl(slug: string) {
-  return `${SITE_ORIGIN}/product/${encodeURIComponent(slug)}`;
+  return siteUrl(`/product/${encodeURIComponent(slug)}`);
 }
 
 function buildStructuredData(product: ProductDetail) {
@@ -34,27 +29,11 @@ function buildStructuredData(product: ProductDetail) {
         ...(product.brand && { brand: { "@type": "Brand", name: product.brand } }),
         ...(defaultVariant?.sku && { sku: defaultVariant.sku }),
         ...(product.category?.name && { category: product.category.name }),
-        offers: {
-          "@type": "Offer",
-          url,
-          priceCurrency: "AED",
-          price: defaultVariant?.price_aed ?? product.price_aed,
-          availability:
-            (defaultVariant?.stock ?? 0) > 0
-              ? "https://schema.org/InStock"
-              : "https://schema.org/OutOfStock",
-          itemCondition: "https://schema.org/NewCondition",
-          ...(product.seller?.name && {
-            seller: { "@type": "Organization", name: product.seller.name },
-          }),
+        additionalProperty: {
+          "@type": "PropertyValue",
+          name: "Commercial status",
+          value: "Preview only; availability and price require manual confirmation",
         },
-        ...(product.rating_count > 0 && {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: product.rating_avg,
-            reviewCount: product.rating_count,
-          },
-        }),
       },
       {
         "@type": "BreadcrumbList",
@@ -63,13 +42,13 @@ function buildStructuredData(product: ProductDetail) {
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: SITE_ORIGIN,
+            item: siteOrigin(),
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Shop",
-            item: `${SITE_ORIGIN}/shop`,
+            item: siteUrl("/shop"),
           },
           {
             "@type": "ListItem",
@@ -94,7 +73,7 @@ export const Route = createFileRoute("/product/$slug")({
     const description =
       product?.seo?.meta_description ||
       product?.description ||
-      "Shop Mexican groceries with delivery across the UAE.";
+      "Explore this Mexican pantry item in the CornerMex UAE commercial preview.";
     const image = product?.image;
     return {
       meta: [
@@ -134,15 +113,12 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function ProductPage() {
-  const checkoutEnabled = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
   const { slug } = Route.useParams();
   const initialProduct = Route.useLoaderData();
   const { i18n } = useTranslation();
   const lang = i18n.language as "en" | "es" | "ar";
-  const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
   const [activeImg, setActiveImg] = useState(0);
-  const add = useCart((s) => s.add);
 
   const { data: product, isLoading } = useQuery<ProductDetail | null>({
     queryKey: ["product", slug, lang],
@@ -150,20 +126,6 @@ function ProductPage() {
     initialData: lang === "en" ? initialProduct : undefined,
     staleTime: 60_000,
   });
-
-  useEffect(() => {
-    if (!product?.id) return;
-    let sessionHash: string | undefined;
-    try {
-      sessionHash = window.localStorage.getItem("cmx-sid") ?? undefined;
-      if (!sessionHash) {
-        sessionHash = crypto.randomUUID();
-        window.localStorage.setItem("cmx-sid", sessionHash);
-      }
-    } catch {}
-    trackProductView({ data: { productId: product.id, sessionHash } }).catch(() => {});
-    trackEvent("product_view", { productId: product.id, source: "product_detail" });
-  }, [product?.id]);
 
   if (isLoading) {
     return (
@@ -185,30 +147,6 @@ function ProductPage() {
     gallery.length > 0 && setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
   const goNext = () => gallery.length > 0 && setActiveImg((i) => (i + 1) % gallery.length);
   const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
-  const hasDiscount =
-    variant?.compare_at_price_aed && variant.compare_at_price_aed > variant.price_aed;
-
-  function addToCart() {
-    if (!variant || !p.seller) return;
-    add(
-      {
-        productId: p.id,
-        variantId: variant.id,
-        slug: p.slug,
-        name: p.name,
-        variantLabel: variant.label,
-        image: p.image,
-        unitPrice: variant.price_aed,
-        sellerId: p.seller.id,
-        sellerSlug: p.seller.slug,
-        sellerName: p.seller.name,
-        stock: variant.stock,
-      },
-      qty,
-    );
-    trackEvent("add_to_cart", { productId: p.id, source: "product_detail", metadata: { qty } });
-    toast.success(`${p.name} added to cart`);
-  }
 
   return (
     <SiteLayout>
@@ -297,25 +235,10 @@ function ProductPage() {
               {product.name}
             </h1>
 
-            {product.rating_count > 0 && (
-              <div className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Star className="h-4 w-4 fill-primary text-primary" />
-                <span className="font-medium text-foreground">{product.rating_avg.toFixed(1)}</span>
-                <span>
-                  · {product.rating_count} review{product.rating_count === 1 ? "" : "s"}
-                </span>
-              </div>
-            )}
-
             <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {product.origin_region && (
                 <span className="inline-flex items-center gap-1">
                   <MapPin className="h-3 w-3" /> {product.origin_region}
-                </span>
-              )}
-              {product.is_halal && (
-                <span className="inline-flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3" /> Halal-friendly
                 </span>
               )}
               {product.spice_level && product.spice_level > 0 && (
@@ -331,12 +254,11 @@ function ProductPage() {
               <span className="font-display text-3xl font-semibold">
                 AED {variant?.price_aed.toFixed(0)}
               </span>
-              {hasDiscount && (
-                <span className="text-base text-muted-foreground line-through">
-                  AED {variant!.compare_at_price_aed!.toFixed(0)}
-                </span>
-              )}
             </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Indicative preview amount only; final AED pricing and availability require manual
+              confirmation.
+            </p>
             {variant?.label && (
               <p className="mt-1 text-sm text-muted-foreground">
                 {variant.label} · SKU {variant.sku}
@@ -364,37 +286,17 @@ function ProductPage() {
               </div>
             )}
 
-            <div className="mt-8 flex items-center gap-3">
-              <div className="inline-flex items-center gap-3 rounded-full border border-border px-4 py-2">
-                <button
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  −
-                </button>
-                <span className="min-w-6 text-center text-sm font-medium">{qty}</span>
-                <button
-                  onClick={() => setQty((q) => Math.min(variant?.stock ?? 99, q + 1))}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  +
-                </button>
-              </div>
-              <Button
-                onClick={addToCart}
-                disabled={!checkoutEnabled}
-                size="lg"
-                className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90"
-              >
-                {checkoutEnabled
-                  ? `Add to cart · AED ${((variant?.price_aed ?? 0) * qty).toFixed(0)}`
-                  : "Ordering coming soon"}
-              </Button>
-              <WishlistButton productId={p.id} size="lg" />
+            <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+              <p className="text-sm leading-6 text-muted-foreground">
+                Commercial preview: cart, checkout, payment and live stock are disabled. For a
+                business requirement, request a human-reviewed quote.
+              </p>
+              <a href={mailto(PUBLIC_CONTACT.b2b, `CornerMex quote enquiry: ${p.name}`)}>
+                <Button size="lg" className="mt-4 rounded-full">
+                  <Mail className="me-2 h-4 w-4" /> Request manual quote
+                </Button>
+              </a>
             </div>
-            {variant && variant.stock < 20 && variant.stock > 0 && (
-              <p className="mt-3 text-xs text-primary">Only {variant.stock} left in stock.</p>
-            )}
           </div>
         </div>
 
@@ -429,8 +331,6 @@ function ProductPage() {
             )}
           </dl>
         </section>
-
-        <ProductReviews productId={p.id} />
       </section>
     </SiteLayout>
   );

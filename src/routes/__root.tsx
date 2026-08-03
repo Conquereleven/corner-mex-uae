@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppErrorBoundary } from "@/components/site/AppErrorBoundary";
 import { installRuntimeErrorLogger } from "@/lib/runtime-error-logger";
+import { siteOrigin } from "@/lib/site-url";
 
 function NotFoundComponent() {
   return (
@@ -77,18 +78,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Corner Mex — Authentic Mexican pantry in the UAE" },
-      { name: "description", content: "Authentic Mexican chiles, salsas, masa and snacks — sourced for the UAE. Shop retail or order in bulk for your venue, directly from CornerMex." },
-      { property: "og:title", content: "Corner Mex — Authentic Mexican pantry in the UAE" },
-      { property: "og:description", content: "Authentic Mexican chiles, salsas, masa and snacks — sourced for the UAE. Shop retail or order in bulk for your venue, directly from CornerMex." },
+      { title: "Corner Mex — UAE commercial preview" },
+      {
+        name: "description",
+        content:
+          "Explore a curated Mexican pantry catalogue for the UAE. Online ordering is off and business quotes are reviewed manually.",
+      },
+      { property: "og:title", content: "Corner Mex — UAE commercial preview" },
+      {
+        property: "og:description",
+        content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+      },
       { property: "og:site_name", content: "Corner Mex" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Corner Mex — Authentic Mexican pantry in the UAE" },
-      { name: "twitter:description", content: "Authentic Mexican chiles, salsas, masa and snacks — sourced for the UAE. Shop retail or order in bulk for your venue, directly from CornerMex." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b2277b16-0b12-4d15-b3f6-5c84ef869cf3/id-preview-35b8fda6--d9495376-339d-44dd-9c8a-db0f7b451f96.lovable.app-1780958276716.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b2277b16-0b12-4d15-b3f6-5c84ef869cf3/id-preview-35b8fda6--d9495376-339d-44dd-9c8a-db0f7b451f96.lovable.app-1780958276716.png" },
-      { name: "keywords", content: "Mexican groceries Dubai, Mexican food Abu Dhabi, Latin products UAE, Mexican products Sharjah, authentic Mexican products UAE, productos mexicanos Dubai, productos latinos EAU, tortillas UAE, salsa Mexico Dubai" },
+      { name: "twitter:title", content: "Corner Mex — UAE commercial preview" },
+      {
+        name: "twitter:description",
+        content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+      },
+      {
+        name: "keywords",
+        content:
+          "Mexican groceries Dubai, Mexican food Abu Dhabi, Latin products UAE, Mexican products Sharjah, authentic Mexican products UAE, productos mexicanos Dubai, productos latinos EAU, tortillas UAE, salsa Mexico Dubai",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -107,19 +120,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "OnlineStore",
+          "@type": "WebSite",
           name: "Corner Mex",
-          url: "https://corner-mex-uae.lovable.app",
-          description: "CornerMex — authentic Mexican pantry sold directly to customers across the UAE.",
-          areaServed: [
-            { "@type": "City", name: "Dubai", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
-            { "@type": "City", name: "Abu Dhabi", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
-            { "@type": "City", name: "Sharjah", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
-            { "@type": "City", name: "Ajman", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
-            { "@type": "City", name: "Ras Al Khaimah", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
-            { "@type": "City", name: "Fujairah", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
-            { "@type": "City", name: "Umm Al Quwain", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
-          ],
+          url: siteOrigin(),
+          description:
+            "CornerMex commercial preview for catalogue discovery and manual B2B quote enquiries in the UAE.",
           currenciesAccepted: "AED",
           knowsLanguage: ["en", "es", "ar"],
         }),
@@ -148,7 +153,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { installRuntimeErrorLogger(); }, []);
+  useEffect(() => {
+    installRuntimeErrorLogger();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -164,7 +171,9 @@ function AuthSync() {
   const router = useRouter();
   const queryClient = useQueryClient();
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       router.invalidate();
       queryClient.invalidateQueries();
     });

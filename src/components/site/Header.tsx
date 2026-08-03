@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { ShoppingBag, User, Globe, DollarSign, Home, Search, Building2 } from "lucide-react";
+import { Globe, DollarSign, Home, Search, Building2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,17 +9,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LANGS } from "@/lib/i18n";
-import { useCart } from "@/lib/cart";
-import { useSession } from "@/lib/use-session";
-import { NotificationsBell } from "@/components/site/NotificationsBell";
 import { useCurrency, CURRENCIES } from "@/lib/use-currency";
-import { DesertGlassControl, DesertGlassHeader } from "@/components/site/DesertGlass";
+import {
+  DesertGlassBadge,
+  DesertGlassControl,
+  DesertGlassHeader,
+} from "@/components/site/DesertGlass";
 
 export function Header() {
   const { t, i18n } = useTranslation();
   const change = (code: string) => i18n.changeLanguage(code);
-  const cartCount = useCart((s) => s.items.reduce((a, i) => a + i.qty, 0));
-  const { user } = useSession();
   const cur = useCurrency();
 
   return (
@@ -48,6 +47,9 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-0.5">
+            <DesertGlassBadge className="me-1 hidden border-primary/40 bg-primary/10 text-primary sm:inline-flex">
+              Commercial preview
+            </DesertGlassBadge>
             <Link to="/shop" search={{ sort: "newest" }} className="hidden sm:block">
               <Button variant="ghost" size="icon" aria-label="Search products">
                 <Search className="h-4 w-4" />
@@ -87,38 +89,11 @@ export function Header() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/account">
-              <Button variant="ghost" size="icon" aria-label="Account">
-                <User className="h-4 w-4" />
+            <Link to="/b2b" className="ms-1 hidden sm:block">
+              <Button size="sm" variant="outline" className="rounded-full">
+                Manual quote
               </Button>
             </Link>
-            <NotificationsBell />
-            <Link to="/cart">
-              <Button variant="ghost" size="icon" aria-label="Cart" className="relative">
-                <ShoppingBag className="h-4 w-4" />
-                {cartCount > 0 && (
-                  <span className="absolute -end-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
-            {user ? (
-              <Link to="/account" className="ms-2 hidden sm:block">
-                <Button size="sm" variant="outline" className="rounded-full">
-                  Mi cuenta
-                </Button>
-              </Link>
-            ) : (
-              <Link to="/signup" className="ms-2 hidden sm:block">
-                <Button
-                  size="sm"
-                  className="rounded-full bg-foreground text-background hover:bg-foreground/90"
-                >
-                  {t("nav.signup")}
-                </Button>
-              </Link>
-            )}
           </div>
         </div>
       </DesertGlassHeader>
@@ -130,11 +105,7 @@ export function Header() {
         <MobileLink to="/" label="Home" icon={Home} />
         <MobileLink to="/shop" label="Shop" icon={Search} />
         <MobileLink to="/b2b" label="B2B" icon={Building2} />
-        <MobileLink
-          to="/cart"
-          label={`Cart${cartCount ? ` (${cartCount})` : ""}`}
-          icon={ShoppingBag}
-        />
+        <MobileLink to="/about" label="About" icon={Info} />
       </DesertGlassControl>
     </>
   );
@@ -145,7 +116,7 @@ function MobileLink({
   label,
   icon: Icon,
 }: {
-  to: "/" | "/shop" | "/b2b" | "/cart";
+  to: "/" | "/shop" | "/b2b" | "/about";
   label: string;
   icon: typeof Home;
 }) {
