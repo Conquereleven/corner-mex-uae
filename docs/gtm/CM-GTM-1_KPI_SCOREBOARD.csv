@@ -1,0 +1,6 @@
+"metric_id","metric","target","current","remaining","status","evidence_source","last_updated","notes"
+"CM-GTM-KPI-01","accounts","30","0","30","NOT_STARTED","UNKNOWN","UNKNOWN","Thirty sourced and provenance-backed accounts; empty pipeline slots do not count."
+"CM-GTM-KPI-02","conversations","10","0","10","NOT_STARTED","UNKNOWN","UNKNOWN","A two-way human conversation with a recorded date and source evidence."
+"CM-GTM-KPI-03","meetings","5","0","5","NOT_STARTED","UNKNOWN","UNKNOWN","A completed human meeting with an internal outcome note."
+"CM-GTM-KPI-04","quotes","3","0","3","NOT_STARTED","UNKNOWN","UNKNOWN","A Founder-approved AED quote manually sent and recorded as SENT."
+"CM-GTM-KPI-05","orders","1","0","1","NOT_STARTED","UNKNOWN","UNKNOWN","A separately evidenced customer commitment; this system does not create or process orders."
