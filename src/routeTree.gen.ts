@@ -30,6 +30,7 @@ import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
+import { Route as B2bQuoteRouteImport } from './routes/b2b_.quote'
 import { Route as B2bLeadRouteImport } from './routes/b2b_.lead'
 import { Route as B2bCatalogRouteImport } from './routes/b2b_.catalog'
 import { Route as ApiReadyRouteImport } from './routes/api/ready'
@@ -199,6 +200,11 @@ const LegalSlugRoute = LegalSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => LegalRoute,
+} as any)
+const B2bQuoteRoute = B2bQuoteRouteImport.update({
+  id: '/b2b_/quote',
+  path: '/b2b/quote',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const B2bLeadRoute = B2bLeadRouteImport.update({
   id: '/b2b_/lead',
@@ -603,6 +609,7 @@ export interface FileRoutesByFullPath {
   '/api/ready': typeof ApiReadyRoute
   '/b2b/catalog': typeof B2bCatalogRoute
   '/b2b/lead': typeof B2bLeadRoute
+  '/b2b/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
@@ -687,6 +694,7 @@ export interface FileRoutesByTo {
   '/api/ready': typeof ApiReadyRoute
   '/b2b/catalog': typeof B2bCatalogRoute
   '/b2b/lead': typeof B2bLeadRoute
+  '/b2b/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
@@ -770,6 +778,7 @@ export interface FileRoutesById {
   '/api/ready': typeof ApiReadyRoute
   '/b2b_/catalog': typeof B2bCatalogRoute
   '/b2b_/lead': typeof B2bLeadRoute
+  '/b2b_/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
@@ -859,6 +868,7 @@ export interface FileRouteTypes {
     | '/api/ready'
     | '/b2b/catalog'
     | '/b2b/lead'
+    | '/b2b/quote'
     | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
@@ -943,6 +953,7 @@ export interface FileRouteTypes {
     | '/api/ready'
     | '/b2b/catalog'
     | '/b2b/lead'
+    | '/b2b/quote'
     | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
@@ -1025,6 +1036,7 @@ export interface FileRouteTypes {
     | '/api/ready'
     | '/b2b_/catalog'
     | '/b2b_/lead'
+    | '/b2b_/quote'
     | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
@@ -1111,6 +1123,7 @@ export interface RootRouteChildren {
   ApiReadyRoute: typeof ApiReadyRoute
   B2bCatalogRoute: typeof B2bCatalogRoute
   B2bLeadRoute: typeof B2bLeadRoute
+  B2bQuoteRoute: typeof B2bQuoteRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -1266,6 +1279,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/legal/$slug'
       preLoaderRoute: typeof LegalSlugRouteImport
       parentRoute: typeof LegalRoute
+    }
+    '/b2b_/quote': {
+      id: '/b2b_/quote'
+      path: '/b2b/quote'
+      fullPath: '/b2b/quote'
+      preLoaderRoute: typeof B2bQuoteRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/b2b_/lead': {
       id: '/b2b_/lead'
@@ -2024,6 +2044,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReadyRoute: ApiReadyRoute,
   B2bCatalogRoute: B2bCatalogRoute,
   B2bLeadRoute: B2bLeadRoute,
+  B2bQuoteRoute: B2bQuoteRoute,
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,

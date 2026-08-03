@@ -21,7 +21,7 @@ export function B2bQuoteBar({ selectedCount }: { selectedCount: number }) {
         </div>
       </div>
       {selectedCount > 0 ? (
-        <Link to="/b2b">
+        <Link to="/b2b/quote">
           <Button className="min-h-11 rounded-xl px-4">
             Continue <ArrowRight className="ms-2 h-4 w-4" />
           </Button>

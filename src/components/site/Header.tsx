@@ -89,7 +89,7 @@ export function Header() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link to="/b2b" className="ms-1 hidden sm:block">
+            <Link to="/b2b/quote" className="ms-1 hidden sm:block">
               <Button size="sm" variant="outline" className="rounded-full">
                 Manual quote
               </Button>

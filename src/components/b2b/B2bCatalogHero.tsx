@@ -36,7 +36,7 @@ export function B2bCatalogHero({ selectedCount }: { selectedCount: number }) {
                 Explore products <ArrowDown className="ms-2 h-4 w-4" />
               </Button>
             </a>
-            <Link to="/b2b">
+            <Link to="/b2b/quote">
               <Button
                 size="lg"
                 variant="outline"
