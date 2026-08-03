@@ -27,16 +27,16 @@ For all 15 rows:
 
 ## UNKNOWN counts
 
-| Field | UNKNOWN rows |
-| --- | ---: |
-| cost | 15 |
-| cost_currency | 15 |
-| aed_price | 15 |
-| availability | 15 |
-| compliance_registration | 15 |
-| gross_margin | 15 |
-| moq | 15 |
-| **Mandatory commercial UNKNOWN total** | **105** |
+| Field                                  | UNKNOWN rows |
+| -------------------------------------- | -----------: |
+| cost                                   |           15 |
+| cost_currency                          |           15 |
+| aed_price                              |           15 |
+| availability                           |           15 |
+| compliance_registration                |           15 |
+| gross_margin                           |           15 |
+| moq                                    |           15 |
+| **Mandatory commercial UNKNOWN total** |      **105** |
 
 Additional conservative UNKNOWN fields: `product_name`, `brand`, `category`, `presentation`, `supplier_source`, and `media_status` each have 15 UNKNOWN rows.
 

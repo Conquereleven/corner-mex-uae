@@ -30,7 +30,12 @@ export const REQUIRED_COLUMNS = Object.freeze([
   "next_action",
 ]);
 
-const EXPECTED_CANDIDATE_NUMBERS = Object.freeze([1, 2, 3, ...Array.from({ length: 12 }, (_, i) => i + 9)]);
+const EXPECTED_CANDIDATE_NUMBERS = Object.freeze([
+  1,
+  2,
+  3,
+  ...Array.from({ length: 12 }, (_, i) => i + 9),
+]);
 const COMMERCIAL_UNKNOWN_FIELDS = Object.freeze([
   "cost",
   "cost_currency",
@@ -137,8 +142,14 @@ function validateProvenance(baseDir, row, rowNumber) {
   assert(row.source_file, `CM_CAT_1_PROVENANCE_FILE_REQUIRED:${rowNumber}`);
   assert(row.source_line_or_record, `CM_CAT_1_PROVENANCE_RECORD_REQUIRED:${rowNumber}`);
   assert(!path.isAbsolute(row.source_file), `CM_CAT_1_PROVENANCE_PATH_INVALID:${rowNumber}`);
-  assert(!row.source_file.split("/").includes(".."), `CM_CAT_1_PROVENANCE_PATH_INVALID:${rowNumber}`);
-  assert(!/products-template\.csv/i.test(row.source_file), `CM_CAT_1_TEMPLATE_SOURCE_FORBIDDEN:${rowNumber}`);
+  assert(
+    !row.source_file.split("/").includes(".."),
+    `CM_CAT_1_PROVENANCE_PATH_INVALID:${rowNumber}`,
+  );
+  assert(
+    !/products-template\.csv/i.test(row.source_file),
+    `CM_CAT_1_TEMPLATE_SOURCE_FORBIDDEN:${rowNumber}`,
+  );
 
   const expectedSource = SOURCE_CONTRACTS[row.source_class];
   assert(expectedSource === row.source_file, `CM_CAT_1_SOURCE_CLASS_MISMATCH:${rowNumber}`);
@@ -157,7 +168,10 @@ function validateRow(baseDir, row, index) {
   assert(row.candidate_id, `CM_CAT_1_CANDIDATE_ID_REQUIRED:${rowNumber}`);
 
   for (const field of COMMERCIAL_UNKNOWN_FIELDS) {
-    assert(row[field] === "UNKNOWN", `CM_CAT_1_COMMERCIAL_FIELD_MUST_BE_UNKNOWN:${field}:${rowNumber}`);
+    assert(
+      row[field] === "UNKNOWN",
+      `CM_CAT_1_COMMERCIAL_FIELD_MUST_BE_UNKNOWN:${field}:${rowNumber}`,
+    );
   }
   assert(row.publish_ready === "false", `CM_CAT_1_PUBLISH_READY_FORBIDDEN:${rowNumber}`);
   assert(row.commercial_priority === "founder_required", `CM_CAT_1_PRIORITY_INVALID:${rowNumber}`);
@@ -168,11 +182,20 @@ function validateRow(baseDir, row, index) {
   );
 
   for (const field of NON_OPERATIONAL_REFERENCE_FIELDS) {
-    assert(row[field] === "UNKNOWN", `CM_CAT_1_REFERENCE_DATA_IN_OPERATIONAL_FIELD:${field}:${rowNumber}`);
+    assert(
+      row[field] === "UNKNOWN",
+      `CM_CAT_1_REFERENCE_DATA_IN_OPERATIONAL_FIELD:${field}:${rowNumber}`,
+    );
   }
 
-  assert(row.evidence_notes.startsWith("NON-OPERATIVE "), `CM_CAT_1_EVIDENCE_QUARANTINE_REQUIRED:${rowNumber}`);
-  assert(!/example\.com/i.test(row.evidence_notes), `CM_CAT_1_TEMPLATE_EVIDENCE_FORBIDDEN:${rowNumber}`);
+  assert(
+    row.evidence_notes.startsWith("NON-OPERATIVE "),
+    `CM_CAT_1_EVIDENCE_QUARANTINE_REQUIRED:${rowNumber}`,
+  );
+  assert(
+    !/example\.com/i.test(row.evidence_notes),
+    `CM_CAT_1_TEMPLATE_EVIDENCE_FORBIDDEN:${rowNumber}`,
+  );
   assert(
     UNSUPPORTED_EXTERNAL_CLAIMS.every((pattern) => !pattern.test(row.evidence_notes)),
     `CM_CAT_1_EXTERNAL_KNOWLEDGE_FORBIDDEN:${rowNumber}`,
@@ -182,7 +205,10 @@ function validateRow(baseDir, row, index) {
   validateProvenance(baseDir, row, rowNumber);
 }
 
-export function validateCatalogReadiness({ baseDir = process.cwd(), matrixPath = MATRIX_PATH } = {}) {
+export function validateCatalogReadiness({
+  baseDir = process.cwd(),
+  matrixPath = MATRIX_PATH,
+} = {}) {
   const absoluteMatrixPath = path.resolve(baseDir, matrixPath);
   const { headers, records } = parseCsv(fs.readFileSync(absoluteMatrixPath, "utf8"));
   assert(
@@ -198,17 +224,26 @@ export function validateCatalogReadiness({ baseDir = process.cwd(), matrixPath =
     candidateNumbers.every((number, index) => number === EXPECTED_CANDIDATE_NUMBERS[index]),
     "CM_CAT_1_SHORTLIST_INVALID",
   );
-  assert(new Set(records.map((row) => row.candidate_id)).size === records.length, "CM_CAT_1_CANDIDATE_DUPLICATE");
+  assert(
+    new Set(records.map((row) => row.candidate_id)).size === records.length,
+    "CM_CAT_1_CANDIDATE_DUPLICATE",
+  );
 
   const unknownCounts = Object.fromEntries(
-    COMMERCIAL_UNKNOWN_FIELDS.map((field) => [field, records.filter((row) => row[field] === "UNKNOWN").length]),
+    COMMERCIAL_UNKNOWN_FIELDS.map((field) => [
+      field,
+      records.filter((row) => row[field] === "UNKNOWN").length,
+    ]),
   );
   return {
     status: "cm_cat_1_readiness_valid",
     candidates: records.length,
     publishReady: records.filter((row) => row.publish_ready === "true").length,
     unknownCounts,
-    mandatoryCommercialUnknownTotal: Object.values(unknownCounts).reduce((sum, count) => sum + count, 0),
+    mandatoryCommercialUnknownTotal: Object.values(unknownCounts).reduce(
+      (sum, count) => sum + count,
+      0,
+    ),
   };
 }
 

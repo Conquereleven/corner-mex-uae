@@ -67,51 +67,30 @@ test("commercial numerics, stock, halal/compliance, MOQ, and margin inference ar
 });
 
 test("publish_ready=true is rejected for every current Wave 1 row", () => {
-  withMutation(
-    (records) => {
-      records[4].publish_ready = "true";
-    },
-    /CM_CAT_1_PUBLISH_READY_FORBIDDEN/,
-  );
+  withMutation((records) => {
+    records[4].publish_ready = "true";
+  }, /CM_CAT_1_PUBLISH_READY_FORBIDDEN/);
 });
 
 test("missing, template, or mismatched provenance is rejected", () => {
-  withMutation(
-    (records) => {
-      records[0].source_file = "";
-    },
-    /CM_CAT_1_PROVENANCE_FILE_REQUIRED/,
-  );
-  withMutation(
-    (records) => {
-      records[0].source_line_or_record = "";
-    },
-    /CM_CAT_1_PROVENANCE_RECORD_REQUIRED/,
-  );
-  withMutation(
-    (records) => {
-      records[0].source_class = "";
-    },
-    /CM_CAT_1_SOURCE_CLASS_INVALID/,
-  );
-  withMutation(
-    (records) => {
-      records[0].blocker = "";
-    },
-    /CM_CAT_1_BLOCKER_REQUIRED/,
-  );
-  withMutation(
-    (records) => {
-      records[0].source_file = "public/templates/products-template.csv";
-    },
-    /CM_CAT_1_TEMPLATE_SOURCE_FORBIDDEN/,
-  );
-  withMutation(
-    (records) => {
-      records[0].source_line_or_record = "line 37; wrong record";
-    },
-    /CM_CAT_1_PROVENANCE_ID_MISMATCH/,
-  );
+  withMutation((records) => {
+    records[0].source_file = "";
+  }, /CM_CAT_1_PROVENANCE_FILE_REQUIRED/);
+  withMutation((records) => {
+    records[0].source_line_or_record = "";
+  }, /CM_CAT_1_PROVENANCE_RECORD_REQUIRED/);
+  withMutation((records) => {
+    records[0].source_class = "";
+  }, /CM_CAT_1_SOURCE_CLASS_INVALID/);
+  withMutation((records) => {
+    records[0].blocker = "";
+  }, /CM_CAT_1_BLOCKER_REQUIRED/);
+  withMutation((records) => {
+    records[0].source_file = "public/templates/products-template.csv";
+  }, /CM_CAT_1_TEMPLATE_SOURCE_FORBIDDEN/);
+  withMutation((records) => {
+    records[0].source_line_or_record = "line 37; wrong record";
+  }, /CM_CAT_1_PROVENANCE_ID_MISMATCH/);
 });
 
 test("demo and SEO references cannot become operational identity or supplier data", () => {
@@ -133,18 +112,12 @@ test("demo and SEO references cannot become operational identity or supplier dat
 });
 
 test("external-knowledge and template claims cannot enter evidence notes", () => {
-  withMutation(
-    (records) => {
-      records[3].evidence_notes = "NON-OPERATIVE confirmed in stock based on brand reputation.";
-    },
-    /CM_CAT_1_EXTERNAL_KNOWLEDGE_FORBIDDEN/,
-  );
-  withMutation(
-    (records) => {
-      records[3].evidence_notes = "NON-OPERATIVE template image at example.com.";
-    },
-    /CM_CAT_1_TEMPLATE_EVIDENCE_FORBIDDEN/,
-  );
+  withMutation((records) => {
+    records[3].evidence_notes = "NON-OPERATIVE confirmed in stock based on brand reputation.";
+  }, /CM_CAT_1_EXTERNAL_KNOWLEDGE_FORBIDDEN/);
+  withMutation((records) => {
+    records[3].evidence_notes = "NON-OPERATIVE template image at example.com.";
+  }, /CM_CAT_1_TEMPLATE_EVIDENCE_FORBIDDEN/);
 });
 
 test("the validator is local, read-only, and contains no publication path", () => {
