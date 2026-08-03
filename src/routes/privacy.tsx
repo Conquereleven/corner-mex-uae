@@ -1,36 +1,50 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/privacy")({
-  head: () => ({
-    meta: [
-      { title: "Privacy Policy — Corner Mex" },
-      { name: "description", content: "How Corner Mex collects, uses and protects your personal data." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Privacy — Corner Mex commercial preview" }] }),
   component: Privacy,
 });
 
 function Privacy() {
   return (
     <SiteLayout>
-      <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
-        <h1 className="font-display text-5xl tracking-tight">Privacy Policy</h1>
-        <p className="mt-3 text-sm text-muted-foreground">Last updated: {new Date().toLocaleDateString("en-AE")}</p>
-        <div className="prose prose-neutral mt-8 max-w-none text-foreground">
+      <section className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          Commercial preview
+        </p>
+        <h1 className="mt-3 font-display text-5xl tracking-tight">Privacy</h1>
+        <div className="mt-8 space-y-6 text-base leading-7 text-muted-foreground">
+          <section>
+            <h2 className="font-display text-2xl text-foreground">This preview</h2>
+            <p className="mt-2">
+              The public catalogue can be browsed without creating an account. Newsletter signup,
+              lead forms, checkout and payment collection are disabled.
+            </p>
+          </section>
+          <section>
+            <h2 className="font-display text-2xl text-foreground">Technical data</h2>
+            <p className="mt-2">
+              The site may process essential technical information needed for security, reliability
+              and language or cookie preferences. Non-essential cookies remain subject to your
+              preferences.
+            </p>
+          </section>
+          <section>
+            <h2 className="font-display text-2xl text-foreground">Manual enquiries</h2>
+            <p className="mt-2">
+              If you email CornerMex, the information you choose to provide is used to review and
+              respond to that enquiry. It is not treated as an order or account registration.
+            </p>
+          </section>
           <p>
-            This is a legacy summary. The current, versioned Privacy Policy lives in the{" "}
-            <a href="/legal/privacy-policy">Legal Center</a>.
+            Privacy requests:{" "}
+            <a className="underline" href={mailto(PUBLIC_CONTACT.privacy)}>
+              {PUBLIC_CONTACT.privacy}
+            </a>
+            .
           </p>
-          <p>We collect only the data we need to run your account, process your orders and keep the service secure. CornerMex is the seller of record and controller for personal data processed through this site.</p>
-          <h2>1. What we collect</h2>
-          <p>Account details (name, email, phone), delivery addresses, order history, and basic device/browser data for security and analytics.</p>
-          <h2>2. How we use it</h2>
-          <p>To process orders, communicate about your purchases, prevent fraud, and improve the service. We never sell your personal data.</p>
-          <h2>3. Sharing</h2>
-          <p>Order details are shared with the logistics partner needed to deliver your purchase. Payment data is handled by our PCI-compliant payment partners.</p>
-          <h2>4. Your rights</h2>
-          <p>You can request access, correction or deletion of your personal data at <a href="mailto:privacy@cornermex.ae">privacy@cornermex.ae</a>.</p>
         </div>
       </section>
     </SiteLayout>

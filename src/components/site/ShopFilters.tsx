@@ -13,7 +13,6 @@ export type ShopFilterState = {
   brand?: string;
   priceMin?: number;
   priceMax?: number;
-  inStock?: boolean;
   bulk?: boolean;
   spice?: number;
   sort: "newest" | "price_asc" | "price_desc" | "most_viewed";
@@ -58,7 +57,7 @@ export function ShopFilters({
   const hasFilters =
     !!state.category || !!state.q || !!state.origin || !!state.brand ||
     state.priceMin != null || state.priceMax != null ||
-    !!state.inStock || !!state.bulk || state.spice != null ||
+    !!state.bulk || state.spice != null ||
     state.sort !== "newest";
 
   return (
@@ -113,10 +112,8 @@ export function ShopFilters({
           </div>
         </Section>
 
-        <Section value="availability" title="Availability">
+        <Section value="format" title="Format">
           <div className="space-y-2">
-            <CheckRow id="instock" label="In stock only" checked={!!state.inStock}
-              onChange={(v) => update({ inStock: v || undefined })} />
             <CheckRow id="bulk" label="HORECA / Bulk" checked={!!state.bulk}
               onChange={(v) => update({ bulk: v || undefined })} />
           </div>
@@ -249,7 +246,6 @@ function ActiveChips({
   if (state.origin) chips.push({ label: state.origin, clear: () => update({ origin: undefined }) });
   if (state.priceMin != null) chips.push({ label: `Min AED ${state.priceMin}`, clear: () => update({ priceMin: undefined }) });
   if (state.priceMax != null) chips.push({ label: `Max AED ${state.priceMax}`, clear: () => update({ priceMax: undefined }) });
-  if (state.inStock) chips.push({ label: "In stock", clear: () => update({ inStock: undefined }) });
   if (state.bulk) chips.push({ label: "HORECA / Bulk", clear: () => update({ bulk: undefined }) });
   if (state.spice != null) chips.push({ label: `Spice ${state.spice}`, clear: () => update({ spice: undefined }) });
   if (chips.length === 0) return null;

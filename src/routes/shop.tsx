@@ -25,7 +25,6 @@ const shopSearchSchema = z.object({
   brand: fallback(z.string().optional(), undefined),
   priceMin: fallback(z.number().optional(), undefined),
   priceMax: fallback(z.number().optional(), undefined),
-  inStock: fallback(z.boolean().optional(), undefined),
   bulk: fallback(z.boolean().optional(), undefined),
   spice: fallback(z.number().int().min(0).max(4).optional(), undefined),
   sort: fallback(z.enum(["newest", "price_asc", "price_desc", "most_viewed"]), "newest").default(
@@ -41,7 +40,7 @@ export const Route = createFileRoute("/shop")({
       {
         name: "description",
         content:
-          "Browse Mexican chiles, salsas, masa, snacks and pantry staples — delivered across the UAE.",
+          "Browse a commercial preview of Mexican chiles, salsas, masa, snacks and pantry staples for the UAE.",
       },
     ],
   }),
@@ -103,7 +102,6 @@ function Shop() {
           brand: search.brand,
           priceMin: search.priceMin,
           priceMax: search.priceMax,
-          inStock: search.inStock,
           bulk: search.bulk,
           spice: search.spice,
           sort: search.sort,
@@ -120,7 +118,6 @@ function Shop() {
     brand: search.brand,
     priceMin: search.priceMin,
     priceMax: search.priceMax,
-    inStock: search.inStock,
     bulk: search.bulk,
     spice: search.spice,
     sort: search.sort,
@@ -136,9 +133,12 @@ function Shop() {
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="font-display text-4xl tracking-tight sm:text-5xl">Shop</h1>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+              Commercial preview
+            </p>
+            <h1 className="mt-1 font-display text-4xl tracking-tight sm:text-5xl">Catalogue</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Authentic Mexican pantry, sourced for the UAE.
+              Product discovery only. AED amounts and availability require manual confirmation.
             </p>
           </div>
           <DesertGlassControl className="relative w-full rounded-full md:w-80">
@@ -217,7 +217,6 @@ function Shop() {
                       filterState.origin ||
                       filterState.priceMin != null ||
                       filterState.priceMax != null ||
-                      filterState.inStock ||
                       filterState.bulk ||
                       filterState.spice != null) && (
                       <span className="ms-1 h-1.5 w-1.5 rounded-full bg-primary" />

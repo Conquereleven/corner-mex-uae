@@ -6,15 +6,25 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import heroChiles from "@/assets/hero-chiles.jpg";
 import featureSalsa from "@/assets/feature-salsa.jpg";
 import b2bKitchen from "@/assets/b2b-kitchen.jpg";
+import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Corner Mex — Authentic Mexican supply across the UAE" },
-      { name: "description", content: "A curated range of Mexican chiles, salsas, masa and snacks for households, restaurants, hotels, caterers and supermarkets across the United Arab Emirates — sold directly by CornerMex." },
-      { property: "og:title", content: "Corner Mex — Mexican pantry, delivered across the Emirates" },
-      { property: "og:description", content: "Wholesale and retail Mexican products, sold directly by CornerMex across the UAE." },
+      { title: "Corner Mex — UAE commercial preview" },
+      {
+        name: "description",
+        content:
+          "Explore a curated Mexican pantry catalogue for the UAE. Online ordering is off; business quotes are reviewed manually.",
+      },
+      { property: "og:title", content: "Corner Mex — UAE commercial preview" },
+      {
+        property: "og:description",
+        content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+      },
+      { property: "og:url", content: siteUrl("/") },
     ],
+    links: [{ rel: "canonical", href: siteUrl("/") }],
   }),
   component: Index,
 });
@@ -47,7 +57,10 @@ function Hero() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/shop">
-              <Button size="lg" className="group rounded-full bg-foreground text-background hover:bg-foreground/90">
+              <Button
+                size="lg"
+                className="group rounded-full bg-foreground text-background hover:bg-foreground/90"
+              >
                 {t("hero.ctaShop")}
                 <ArrowRight className="ms-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
@@ -64,7 +77,7 @@ function Hero() {
           <div className="overflow-hidden rounded-[2rem] border border-border shadow-2xl shadow-primary/10">
             <img
               src={heroChiles}
-              alt="Curated dried Mexican chiles delivered across the UAE"
+              alt="Curated dried Mexican chiles presented in the CornerMex preview"
               width={960}
               height={1200}
               decoding="async"
@@ -98,8 +111,13 @@ function Categories() {
     <section className="border-y border-border/60 bg-card/40">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between">
-          <h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl">{t("categories.title")}</h2>
-          <Link to="/shop" className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-flex items-center gap-1">
+          <h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl">
+            {t("categories.title")}
+          </h2>
+          <Link
+            to="/shop"
+            className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-flex items-center gap-1"
+          >
             View all <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -140,12 +158,18 @@ function Features() {
           />
         </div>
         <div>
-          <h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl md:text-5xl">{t("features.title")}</h2>
+          <h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl md:text-5xl">
+            {t("features.title")}
+          </h2>
           <div className="mt-8 space-y-6">
             {feats.map((k) => (
               <div key={k} className="border-t border-border pt-6">
-                <h3 className="text-base font-semibold text-foreground">{t(`features.${k}.title`)}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(`features.${k}.body`)}</p>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t(`features.${k}.title`)}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {t(`features.${k}.body`)}
+                </p>
               </div>
             ))}
           </div>
@@ -171,13 +195,20 @@ function B2BBlock() {
         />
         <div className="relative grid gap-8 p-10 md:grid-cols-2 md:items-center md:p-16">
           <div>
-            <span className="text-[11px] uppercase tracking-[0.18em] text-background/70">{t("b2b.eyebrow")}</span>
-            <h2 className="mt-4 font-display text-4xl tracking-tight sm:text-5xl">{t("b2b.title")}</h2>
+            <span className="text-[11px] uppercase tracking-[0.18em] text-background/70">
+              {t("b2b.eyebrow")}
+            </span>
+            <h2 className="mt-4 font-display text-4xl tracking-tight sm:text-5xl">
+              {t("b2b.title")}
+            </h2>
           </div>
           <div>
             <p className="text-base leading-relaxed text-background/80">{t("b2b.body")}</p>
             <Link to="/b2b" className="mt-6 inline-block">
-              <Button size="lg" className="rounded-full bg-background text-foreground hover:bg-background/90">
+              <Button
+                size="lg"
+                className="rounded-full bg-background text-foreground hover:bg-background/90"
+              >
                 {t("b2b.cta")} <ArrowRight className="ms-2 h-4 w-4" />
               </Button>
             </Link>
