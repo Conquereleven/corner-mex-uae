@@ -33,6 +33,8 @@ npm ci
 npm run validate:no-railway-writes
 npm run validate:deployment-governance
 npm run validate:program-state
+npm run validate:cm-cat-1
+npm run test:cm-cat-1
 npm run validate:cm-gtm-1
 npm run test:cm-gtm-1
 npm run validate:production-activation-request -- docs/program/PRODUCTION_ACTIVATION_REQUEST.example.json
