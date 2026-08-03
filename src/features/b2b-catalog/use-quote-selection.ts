@@ -1,8 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { readQuoteSelection, writeQuoteSelection } from "./quote-selection";
 
 export function useQuoteSelection() {
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>(readQuoteSelection);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedProductIds(readQuoteSelection());
+  }, []);
 
   const commit = useCallback((nextProductIds: ReadonlyArray<string>) => {
     const safeIds = writeQuoteSelection(nextProductIds);

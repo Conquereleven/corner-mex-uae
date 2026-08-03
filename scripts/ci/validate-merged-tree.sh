@@ -40,6 +40,8 @@ npm run test:cm-gtm-1
 npm run validate:production-activation-request -- docs/program/PRODUCTION_ACTIVATION_REQUEST.example.json
 npm run validate:staging-readiness-change-request -- docs/program/STAGING_READINESS_CHANGE_REQUEST.example.json
 node --test tests/program/*.test.mjs
+npm run test:cm-com-1b
+npm run test:cm-com-1c
 npm run typecheck
 npm run build
 npm run build:railway

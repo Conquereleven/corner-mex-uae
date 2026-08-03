@@ -1,4 +1,4 @@
-import { WAVE_1_PRODUCTS, WAVE_1_PRODUCT_IDS } from "./wave1-products";
+import { WAVE_1_PRODUCTS, WAVE_1_PRODUCT_IDS } from "./wave1-products.ts";
 
 export const QUOTE_SELECTION_STORAGE_KEY = "cm.quoteSelection";
 
