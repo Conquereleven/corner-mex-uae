@@ -66,6 +66,8 @@
     "validate:no-railway-writes": "node scripts/program/assert-no-railway-writes.mjs",
     "check:railway-live-governance": "node scripts/program/run-railway-live-governance.mjs",
     "test:pr9-remediation": "node --test tests/remediation/*.test.mjs",
+    "validate:cm-gtm-1": "node scripts/gtm/validate-cm-gtm-1.mjs",
+    "test:cm-gtm-1": "node --test tests/gtm/cm-gtm-1.test.mjs",
     "validate:merged-tree": "bash scripts/ci/validate-merged-tree.sh"
   },
   "dependencies": {
