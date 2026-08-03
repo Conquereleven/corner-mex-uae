@@ -51,7 +51,7 @@ test("rejects invented or placeholder public contacts", async () => {
       owner: "Founder",
       next_action: "Manual review",
       source_url: "https://verified.invalid/source",
-      public_contact: "test@example.com",
+      public_contact: "https://example.com/contact",
       notes: "BUSINESS_SOURCE_VERIFIED CONTACT_SOURCE_VERIFIED",
     }),
   );
