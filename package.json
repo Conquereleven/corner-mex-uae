@@ -43,6 +43,8 @@
     "catalog:rollback:preview": "npm run catalog:rollback:preview:synthetic",
     "catalog:rollback:verify": "node scripts/catalog/catalog-rollback.mjs verify",
     "test:catalog-import": "node --test tests/catalog/*.test.mjs",
+    "test:cm-cat-1": "node --test tests/catalog/cm-cat-1-readiness.test.mjs",
+    "validate:cm-cat-1": "node scripts/catalog/validate-cm-cat-1-readiness.mjs",
     "validate:a3-2b:execution": "node scripts/catalog/catalog-import.mjs execution-gate",
     "validate:a3-2b:decisions": "node scripts/a3-2b/validate-founder-decisions.mjs",
     "validate:a3-2b:readiness": "node scripts/a3-2b/validate-execution-readiness.mjs",
