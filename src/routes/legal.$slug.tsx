@@ -1,34 +1,17 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { LegalDocPage } from "@/components/site/LegalDocPage";
-import { getLegalDoc } from "@/lib/legal-docs";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+
+const CURRENT_POLICIES = {
+  "terms-and-conditions": "/terms",
+  "privacy-policy": "/privacy",
+  "returns-refunds": "/returns",
+  "cookie-policy": "/privacy",
+} as const;
 
 export const Route = createFileRoute("/legal/$slug")({
   loader: ({ params }) => {
-    const doc = getLegalDoc(params.slug);
-    if (!doc) throw notFound();
-    return { doc };
+    const destination = CURRENT_POLICIES[params.slug as keyof typeof CURRENT_POLICIES];
+    if (!destination) throw notFound();
+    throw redirect({ to: destination });
   },
-  head: ({ loaderData, params }) => {
-    const d = loaderData?.doc;
-    const title = d ? `${d.title} — Corner Mex` : "Legal — Corner Mex";
-    const desc = d?.summary ?? "Corner Mex legal documents.";
-    const url = `https://corner-mex-uae.lovable.app/legal/${params.slug}`;
-    return {
-      meta: [
-        { title },
-        { name: "description", content: desc },
-        { property: "og:title", content: title },
-        { property: "og:description", content: desc },
-        { property: "og:url", content: url },
-        { property: "og:type", content: "article" },
-      ],
-      links: [{ rel: "canonical", href: url }],
-    };
-  },
-  component: LegalSlug,
+  component: () => null,
 });
-
-function LegalSlug() {
-  const { slug } = Route.useParams();
-  return <LegalDocPage slug={slug} />;
-}

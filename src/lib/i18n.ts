@@ -13,12 +13,12 @@ const en = {
     signup: "Get started",
   },
   hero: {
-    eyebrow: "Authentic Mexican supply · UAE",
-    title: "The pantry of Mexico,",
-    titleAccent: "delivered across the Emirates.",
-    sub: "A curated selection of chiles, salsas, masa and snacks sold directly by CornerMex to restaurants, hotels, caterers and supermarkets.",
+    eyebrow: "Commercial preview · UAE",
+    title: "Discover the pantry of Mexico,",
+    titleAccent: "curated for the UAE.",
+    sub: "Explore a preview catalogue of chiles, salsas, masa and snacks. Online ordering and live availability are not active; business quotes are reviewed manually.",
     ctaShop: "Browse the catalogue",
-    ctaB2B: "Open a business account",
+    ctaB2B: "Request a manual quote",
   },
   categories: {
     title: "Shop by category",
@@ -32,23 +32,23 @@ const en = {
   features: {
     title: "Built for the UAE's mexican kitchen",
     a: {
-      title: "Verified producers",
-      body: "Every brand is vetted for quality, origin and halal-friendly handling where applicable.",
+      title: "Catalogue discovery",
+      body: "Explore product information without creating an account or placing an order.",
     },
     b: {
-      title: "One trusted merchant",
-      body: "Order directly from CornerMex with clear AED pricing and a single accountable seller.",
+      title: "AED-first presentation",
+      body: "Indicative amounts are shown in AED and are confirmed only in a written quote.",
     },
     c: {
-      title: "B2B pricing & quotes",
-      body: "Volume tiers, custom catalogues and same-day quotes for restaurants & hotels.",
+      title: "Human-reviewed B2B quotes",
+      body: "CornerMex reviews requirements, availability and commercial terms manually.",
     },
   },
   b2b: {
     eyebrow: "For restaurants, hotels & caterings",
     title: "Stock your kitchen with the real thing.",
-    body: "Open a business account to unlock wholesale pricing, dedicated account managers and consolidated monthly invoicing across the Emirates.",
-    cta: "Request access",
+    body: "Tell CornerMex what your business needs. Availability, AED pricing, delivery and terms are confirmed in a human-approved written quote.",
+    cta: "Business preview",
   },
   footer: {
     tagline: "Mexican corner. Emirati table.",
@@ -350,39 +350,38 @@ const en = {
       meta: {
         title: "For Business — Wholesale Mexican supply in the UAE | Corner Mex",
         description:
-          "Wholesale Mexican food for restaurants, hotels, caterings and supermarkets across Dubai, Abu Dhabi, Sharjah and all 7 Emirates.",
+          "Commercial preview for UAE businesses seeking a manually reviewed Mexican pantry quote.",
       },
       eyebrow: "For business",
-      title: "Wholesale Mexican supply for the UAE.",
-      lede: "Open a verified business account to access wholesale pricing, custom catalogues, monthly invoicing and dedicated account managers across all 7 Emirates — Dubai, Abu Dhabi, Sharjah, Ajman, Ras Al Khaimah, Fujairah and Umm Al Quwain.",
-      ctaQuote: "Request a quote",
-      ctaContact: "Contact sales",
+      title: "A manual quote path for UAE businesses.",
+      lede: "Browse the preview catalogue, then email your product, volume and destination requirements. CornerMex reviews each enquiry before confirming availability, AED pricing, delivery options or terms.",
+      ctaQuote: "Request a manual quote",
+      ctaContact: "Email CornerMex",
       perks: {
         catalogues: {
           title: "Tailored catalogues",
-          body: "Tell us what you need; we curate from trusted Mexican producers.",
+          body: "Tell us what you need; catalogue suggestions are prepared for review.",
         },
         emirates: {
-          title: "All 7 Emirates",
-          body: "Shipping zones and SLAs covering UAE-wide delivery.",
+          title: "Confirmation before commitment",
+          body: "Availability, destination and delivery options are confirmed in writing.",
         },
         manager: {
-          title: "Account manager",
-          body: "A single point of contact handles your monthly orders.",
+          title: "Human review",
+          body: "A CornerMex representative reviews each enquiry; the website does not create an order.",
         },
       },
     },
     about: {
       meta: {
-        title: "About Corner Mex — Authentic Mexican marketplace in the UAE",
+        title: "About Corner Mex — UAE commercial preview",
         description:
-          "Corner Mex connects trusted Mexican producers with restaurants, hotels and homes across the UAE.",
+          "CornerMex is preparing a curated Mexican pantry discovery and manual B2B quote experience for the UAE.",
       },
       title: "A Mexican corner in the Emirates.",
-      lede: "Corner Mex is a curated marketplace bringing authentic Mexican pantry — chiles, moles, masa, snacks and drinks — to the UAE's restaurants, hotels, caterings, supermarkets and homes.",
-      ctaShop: "Shop the marketplace",
+      lede: "CornerMex is preparing a curated Mexican pantry experience for the UAE. This commercial preview supports catalogue discovery and manual, human-approved B2B quotes; it does not accept online orders.",
+      ctaShop: "Browse the catalogue",
       ctaB2B: "For business",
-      ctaSellers: "Meet the sellers",
     },
   },
 };
@@ -399,12 +398,12 @@ const es = {
     signup: "Empezar",
   },
   hero: {
-    eyebrow: "Insumos mexicanos auténticos · EAU",
-    title: "La despensa de México,",
-    titleAccent: "entregada en todos los Emiratos.",
-    sub: "Una selección curada de chiles, salsas, masa y snacks vendidos directamente por CornerMex a restaurantes, hoteles, caterings y supermercados.",
+    eyebrow: "Vista previa comercial · EAU",
+    title: "Descubre la despensa de México,",
+    titleAccent: "curada para EAU.",
+    sub: "Explora un catálogo preliminar de chiles, salsas, masa y snacks. Los pedidos y la disponibilidad en vivo no están activos; las cotizaciones se revisan manualmente.",
     ctaShop: "Ver catálogo",
-    ctaB2B: "Abrir cuenta de negocio",
+    ctaB2B: "Solicitar cotización manual",
   },
   categories: {
     title: "Compra por categoría",
@@ -418,23 +417,23 @@ const es = {
   features: {
     title: "Hecho para la cocina mexicana en EAU",
     a: {
-      title: "Productores verificados",
-      body: "Cada marca pasa por revisión de calidad, origen y manejo halal-friendly cuando aplica.",
+      title: "Exploración del catálogo",
+      body: "Consulta información de productos sin crear una cuenta ni realizar un pedido.",
     },
     b: {
-      title: "Un comercio confiable",
-      body: "Compra directamente a CornerMex con precios claros en AED y un único vendedor responsable.",
+      title: "Presentación en AED",
+      body: "Los importes indicativos se muestran en AED y solo se confirman por escrito.",
     },
     c: {
-      title: "Precios B2B y cotizaciones",
-      body: "Niveles por volumen, catálogos a medida y cotizaciones el mismo día.",
+      title: "Cotizaciones B2B revisadas",
+      body: "CornerMex revisa manualmente requisitos, disponibilidad y condiciones comerciales.",
     },
   },
   b2b: {
     eyebrow: "Para restaurantes, hoteles y caterings",
     title: "Surte tu cocina con lo auténtico.",
-    body: "Abre una cuenta de negocio para acceder a precios mayoristas, gerentes dedicados y facturación mensual consolidada.",
-    cta: "Solicitar acceso",
+    body: "Cuéntanos qué necesita tu negocio. Disponibilidad, precios en AED, entrega y condiciones se confirman en una cotización escrita aprobada por una persona.",
+    cta: "Vista previa B2B",
   },
   footer: {
     tagline: "Esquina mexicana. Mesa emiratí.",
@@ -735,41 +734,40 @@ const es = {
   pages: {
     b2b: {
       meta: {
-        title: "Para negocios — Mayoreo mexicano en EAU | Corner Mex",
+        title: "Para negocios — Vista previa comercial | Corner Mex",
         description:
-          "Insumos mexicanos al mayoreo para restaurantes, hoteles, caterings y supermercados en Dubái, Abu Dabi, Sharjah y los 7 Emiratos.",
+          "Vista previa para negocios en EAU que buscan una cotización manual de despensa mexicana.",
       },
       eyebrow: "Para negocios",
-      title: "Mayoreo mexicano para los Emiratos.",
-      lede: "Abre una cuenta de negocio verificada para acceder a precios de mayoreo, catálogos personalizados, facturación mensual y un gerente de cuenta dedicado en los 7 Emiratos — Dubái, Abu Dabi, Sharjah, Ajman, Ras Al Khaimah, Fujairah y Umm Al Quwain.",
-      ctaQuote: "Solicitar cotización",
-      ctaContact: "Contactar ventas",
+      title: "Una ruta de cotización manual para negocios en EAU.",
+      lede: "Explora el catálogo y envía por correo los productos, volumen y destino. CornerMex revisa cada consulta antes de confirmar disponibilidad, precios en AED, entrega o condiciones.",
+      ctaQuote: "Solicitar cotización manual",
+      ctaContact: "Escribir a CornerMex",
       perks: {
         catalogues: {
           title: "Catálogos a medida",
-          body: "Cuéntanos qué necesitas; lo curamos con productores mexicanos de confianza.",
+          body: "Cuéntanos qué necesitas; preparamos sugerencias para revisión.",
         },
         emirates: {
-          title: "Los 7 Emiratos",
-          body: "Zonas de envío y SLAs con cobertura en todo EAU.",
+          title: "Confirmación previa",
+          body: "Disponibilidad, destino y opciones de entrega se confirman por escrito.",
         },
         manager: {
-          title: "Gerente de cuenta",
-          body: "Un único punto de contacto gestiona tus pedidos mensuales.",
+          title: "Revisión humana",
+          body: "Una persona revisa cada consulta; el sitio web no crea pedidos.",
         },
       },
     },
     about: {
       meta: {
-        title: "Nosotros — Corner Mex, marketplace mexicano en EAU",
+        title: "Nosotros — Vista previa comercial de Corner Mex en EAU",
         description:
-          "Corner Mex conecta a productores mexicanos de confianza con restaurantes, hoteles y hogares en EAU.",
+          "CornerMex prepara una experiencia curada de descubrimiento y cotización B2B manual para EAU.",
       },
       title: "Un rincón mexicano en los Emiratos.",
-      lede: "Corner Mex es un marketplace curado que lleva la despensa mexicana auténtica — chiles, moles, masa, snacks y bebidas — a restaurantes, hoteles, caterings, supermercados y hogares en EAU.",
-      ctaShop: "Ir a la tienda",
+      lede: "CornerMex prepara una experiencia curada de despensa mexicana para EAU. Esta vista previa permite explorar el catálogo y solicitar cotizaciones B2B manuales; no acepta pedidos en línea.",
+      ctaShop: "Ver catálogo",
       ctaB2B: "Para negocios",
-      ctaSellers: "Conoce a los vendedores",
     },
   },
 };
@@ -786,12 +784,12 @@ const ar = {
     signup: "ابدأ الآن",
   },
   hero: {
-    eyebrow: "مؤن مكسيكية أصيلة · الإمارات",
-    title: "مخزن المكسيك،",
-    titleAccent: "يُسلَّم في جميع أنحاء الإمارات.",
-    sub: "سوق مختار للفلفل والصلصات والذرة والوجبات الخفيفة للمطاعم والفنادق وشركات تموين الطعام والسوبر ماركت — من منتجين مكسيكيين موثوقين.",
+    eyebrow: "معاينة تجارية · الإمارات",
+    title: "اكتشف مؤن المكسيك،",
+    titleAccent: "مختارة لدولة الإمارات.",
+    sub: "استكشف كتالوجاً أولياً. الطلب عبر الإنترنت والتوفر المباشر غير مفعلين، وتُراجع عروض الأعمال يدوياً.",
     ctaShop: "تصفّح الكتالوج",
-    ctaB2B: "فتح حساب أعمال",
+    ctaB2B: "طلب عرض يدوي",
   },
   categories: {
     title: "تسوّق حسب الفئة",
@@ -805,20 +803,23 @@ const ar = {
   features: {
     title: "مصمَّم لمطبخ المكسيك في الإمارات",
     a: {
-      title: "منتجون موثوقون",
-      body: "كل علامة تجارية تُراجع للجودة والمنشأ والتعامل المتوافق مع الحلال عند الاقتضاء.",
+      title: "استكشاف الكتالوج",
+      body: "تصفح معلومات المنتجات دون إنشاء حساب أو تقديم طلب.",
     },
     b: {
-      title: "سلة متعددة البائعين",
-      body: "اطلب من عدة موردين مكسيكيين في عملية شراء واحدة بالدرهم.",
+      title: "عرض بالدرهم الإماراتي",
+      body: "المبالغ إرشادية ولا تُؤكد إلا في عرض مكتوب.",
     },
-    c: { title: "أسعار وعروض B2B", body: "أسعار جملة وكتالوجات مخصصة وعروض في نفس اليوم." },
+    c: {
+      title: "عروض أعمال بمراجعة بشرية",
+      body: "تراجع CornerMex المتطلبات والتوفر والشروط التجارية يدوياً.",
+    },
   },
   b2b: {
     eyebrow: "للمطاعم والفنادق وشركات التموين",
     title: "زوّد مطبخك بالأصيل.",
-    body: "افتح حساب أعمال للحصول على أسعار الجملة ومديري حسابات مخصصين وفوترة شهرية موحدة.",
-    cta: "طلب الوصول",
+    body: "أخبر CornerMex باحتياجات عملك. يؤكد التوفر والسعر بالدرهم والتسليم والشروط في عرض مكتوب يوافق عليه شخص.",
+    cta: "معاينة الأعمال",
   },
   footer: {
     tagline: "ركن مكسيكي. مائدة إماراتية.",
@@ -1118,38 +1119,36 @@ const ar = {
   pages: {
     b2b: {
       meta: {
-        title: "للأعمال — توريد مكسيكي بالجملة في الإمارات | كورنر ميكس",
-        description:
-          "منتجات مكسيكية بالجملة للمطاعم والفنادق وشركات التموين والسوبر ماركت في دبي وأبوظبي والشارقة وكل الإمارات السبع.",
+        title: "للأعمال — معاينة CornerMex التجارية",
+        description: "معاينة تجارية للشركات في الإمارات التي تطلب عرضاً يدوياً لمؤن مكسيكية.",
       },
       eyebrow: "للأعمال",
-      title: "توريد مكسيكي بالجملة لدولة الإمارات.",
-      lede: "افتح حساب أعمال موثَّقاً للحصول على أسعار الجملة، وكتالوجات مخصصة، وفوترة شهرية، ومدير حساب متخصص في الإمارات السبع — دبي، أبوظبي، الشارقة، عجمان، رأس الخيمة، الفجيرة وأم القيوين.",
-      ctaQuote: "اطلب عرض سعر",
-      ctaContact: "تواصل مع المبيعات",
+      title: "مسار عرض يدوي للشركات في الإمارات.",
+      lede: "تصفح الكتالوج ثم أرسل المنتجات والحجم والوجهة المطلوبة. تراجع CornerMex كل استفسار قبل تأكيد التوفر أو السعر بالدرهم أو التسليم أو الشروط.",
+      ctaQuote: "اطلب عرضاً يدوياً",
+      ctaContact: "راسل CornerMex",
       perks: {
         catalogues: {
           title: "كتالوجات مخصصة",
-          body: "أخبرنا باحتياجاتك وسنختار من منتجين مكسيكيين موثوقين.",
+          body: "أخبرنا باحتياجاتك وسنجهز اقتراحات للمراجعة.",
         },
         emirates: {
-          title: "الإمارات السبع",
-          body: "مناطق شحن واتفاقيات خدمة تغطي كل أنحاء الإمارات.",
+          title: "التأكيد قبل الالتزام",
+          body: "يُؤكد التوفر والوجهة وخيارات التسليم كتابةً.",
         },
-        manager: { title: "مدير حساب", body: "نقطة تواصل واحدة تتولى طلباتك الشهرية." },
+        manager: { title: "مراجعة بشرية", body: "يراجع ممثل كل استفسار؛ الموقع لا ينشئ طلباً." },
       },
     },
     about: {
       meta: {
-        title: "من نحن — كورنر ميكس، سوق مكسيكي في الإمارات",
+        title: "من نحن — معاينة CornerMex التجارية في الإمارات",
         description:
-          "يربط كورنر ميكس بين منتجين مكسيكيين موثوقين والمطاعم والفنادق والمنازل في جميع أنحاء الإمارات.",
+          "تُعد CornerMex تجربة مختارة لاكتشاف المؤن المكسيكية وطلب عروض أعمال يدوية في الإمارات.",
       },
       title: "ركن مكسيكي في الإمارات.",
-      lede: "كورنر ميكس سوق مختار يقدّم المؤن المكسيكية الأصيلة — الفلفل والمولي والماسا والوجبات الخفيفة والمشروبات — لمطاعم وفنادق وشركات تموين وسوبر ماركت ومنازل الإمارات.",
-      ctaShop: "تسوّق في السوق",
+      lede: "تُعد CornerMex تجربة مختارة للمؤن المكسيكية في الإمارات. تتيح هذه المعاينة استكشاف الكتالوج وطلب عروض أعمال يدوية، ولا تقبل الطلبات عبر الإنترنت.",
+      ctaShop: "تصفح الكتالوج",
       ctaB2B: "للأعمال",
-      ctaSellers: "تعرّف على البائعين",
     },
   },
 };

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import i18n from "@/lib/i18n";
+import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/about")({
   head: () => {
@@ -15,11 +16,11 @@ export const Route = createFileRoute("/about")({
         { name: "description", content: description },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
-        { property: "og:url", content: "https://corner-mex-uae.lovable.app/about" },
+        { property: "og:url", content: siteUrl("/about") },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
       ],
-      links: [{ rel: "canonical", href: "https://corner-mex-uae.lovable.app/about" }],
+      links: [{ rel: "canonical", href: siteUrl("/about") }],
     };
   },
   component: About,
@@ -30,12 +31,22 @@ function About() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          Commercial preview
+        </p>
         <h1 className="font-display text-5xl tracking-tight">{t("pages.about.title")}</h1>
         <p className="mt-6 text-lg text-muted-foreground">{t("pages.about.lede")}</p>
         <div className="mt-10 flex flex-wrap gap-3">
-          <Link to="/shop"><Button size="lg" className="rounded-full">{t("pages.about.ctaShop")}</Button></Link>
-          <Link to="/b2b"><Button size="lg" variant="outline" className="rounded-full">{t("pages.about.ctaB2B")}</Button></Link>
-          <Link to="/sellers"><Button size="lg" variant="ghost" className="rounded-full">{t("pages.about.ctaSellers")}</Button></Link>
+          <Link to="/shop">
+            <Button size="lg" className="rounded-full">
+              {t("pages.about.ctaShop")}
+            </Button>
+          </Link>
+          <Link to="/b2b">
+            <Button size="lg" variant="outline" className="rounded-full">
+              {t("pages.about.ctaB2B")}
+            </Button>
+          </Link>
         </div>
       </section>
     </SiteLayout>
