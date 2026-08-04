@@ -3,7 +3,6 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { EMIRATE_FORM_TO_DB } from "@/lib/shipping.functions";
-import { tplOrderPlaced } from "@/lib/email-templates";
 import { createNotification, notifyOrderSellers } from "@/lib/notifications.functions";
 import { awardOrderPoints } from "@/lib/loyalty.functions";
 import { evaluateCoupon } from "@/lib/coupons.functions";
@@ -200,37 +199,6 @@ export const placeOrder = createServerFn({ method: "POST" })
         .update({ stock: v.stock - it.qty })
         .eq("id", it.variantId);
     }
-
-    // Best-effort order_placed email
-    try {
-      const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-      const RESEND_API_KEY = process.env.RESEND_API_KEY;
-      const { data: u } = await supabaseAdmin.auth.admin.getUserById(userId);
-      const buyerEmail = u?.user?.email;
-      if (buyerEmail && LOVABLE_API_KEY && RESEND_API_KEY) {
-        const publicOrigin = process.env.PUBLIC_SITE_URL || "https://cornermex.ae";
-        const tpl = tplOrderPlaced({
-          orderId: order.id,
-          orderNumber: order.order_number,
-          total,
-          publicOrigin,
-          items: orderItems.map((oi) => ({ name: oi.product_name, qty: oi.qty, total: oi.line_total_aed })),
-        });
-        const r = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "X-Connection-Api-Key": RESEND_API_KEY,
-          },
-          body: JSON.stringify({ from: "Corner Mex <onboarding@resend.dev>", to: [buyerEmail], subject: tpl.subject, html: tpl.html }),
-        });
-        await supabaseAdmin.from("order_notifications").insert({
-          order_id: order.id, kind: "order_placed" as any, channel: "email",
-          status: r.ok ? "sent" : "failed", payload: { to: buyerEmail },
-        });
-      }
-    } catch (e) { console.error("order_placed email failed", e); }
 
     // In-app notifications (best-effort)
     try {
