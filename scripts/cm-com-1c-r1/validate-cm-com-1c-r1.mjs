@@ -23,7 +23,13 @@ requireMatch(
   /safeInternalRedirect\(redirect\)/,
   "post-login redirect must use the safe helper",
 );
-rejectMatch(login, /signInWithOAuth|lovable|google/i, "OAuth must not be restored");
+requireMatch(
+  login,
+  /supabase\.auth\.signInWithOAuth/,
+  "direct Supabase OAuth must remain available",
+);
+requireMatch(login, /provider: "google"/, "Google must remain the direct OAuth provider");
+rejectMatch(login, /lovableAuth|integrations\/lovable/i, "Lovable OAuth must not be restored");
 rejectMatch(login, /Accounts unavailable|LoginUnavailable/, "login must render the account form");
 
 const redirect = "src/lib/safe-internal-redirect.ts";

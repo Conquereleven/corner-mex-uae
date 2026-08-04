@@ -67,9 +67,11 @@ test("account exposes Admin only for admin=true and restores sign-out", () => {
   assert.match(account, /supabase\.auth\.signOut\(\)/);
 });
 
-test("no Claim admin or OAuth control is rendered", () => {
+test("no Claim admin or Lovable OAuth control is rendered", () => {
   assert.doesNotMatch(account, /AdminBootstrapCard|adminBootstrap|Claim admin/i);
-  assert.doesNotMatch(login, /signInWithOAuth|lovable|google/i);
+  assert.match(login, /supabase\.auth\.signInWithOAuth/);
+  assert.match(login, /provider: "google"/);
+  assert.doesNotMatch(login, /lovableAuth|integrations\/lovable/i);
 });
 
 test("product supports variant selection, quantity, and Add to cart", () => {

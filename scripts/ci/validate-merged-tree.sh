@@ -44,8 +44,11 @@ npm run test:cm-com-1b
 npm run test:cm-com-1c
 npm run validate:cm-com-1c-r1
 npm run test:cm-com-1c-r1
+npm run validate:cm-com-1c-r2
+npm run test:cm-com-1c-r2
 npm run typecheck
 npm run build
+npm run validate:ssr-async-context
 npm run build:railway
 npm run validate:browser-secrets
 npm run test:alignment
