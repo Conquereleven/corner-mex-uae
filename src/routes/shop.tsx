@@ -127,6 +127,14 @@ function Shop() {
   const origins = facets.data?.origins ?? [];
   const brands = facets.data?.brands ?? [];
   const resultCount = productItems.length;
+  const supportingDataError = cats.isError || facets.isError;
+
+  function retrySupportingData() {
+    return Promise.all([
+      cats.isError ? cats.refetch() : Promise.resolve(),
+      facets.isError ? facets.refetch() : Promise.resolve(),
+    ]);
+  }
 
   return (
     <SiteLayout>
@@ -186,6 +194,26 @@ function Shop() {
               </button>
             ))}
           </nav>
+        )}
+
+        {supportingDataError && (
+          <div
+            role="alert"
+            className="mt-5 flex flex-col gap-3 rounded-2xl border border-amber-300/60 bg-amber-50 p-4 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p>
+              Some catalogue filters are temporarily unavailable. Product results remain separate
+              from this filter error.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="shrink-0 rounded-full"
+              onClick={() => void retrySupportingData()}
+            >
+              Retry filters
+            </Button>
+          </div>
         )}
 
         <div className="mt-6 lg:grid lg:grid-cols-[260px_1fr] lg:gap-8">
@@ -269,20 +297,36 @@ function Shop() {
                   </div>
                 </SheetContent>
               </Sheet>
-              <p className="text-xs text-muted-foreground">{resultCount ?? 0} products</p>
+              <p className="text-xs text-muted-foreground" role="status">
+                {products.isError
+                  ? "Catalogue unavailable"
+                  : products.isLoading
+                    ? "Loading products"
+                    : `${resultCount} products`}
+              </p>
             </div>
 
-            <div
-              id="shop-results"
-              className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
-            >
-              {products.isLoading
-                ? Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-muted" />
-                  ))
-                : productItems.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 4} />)}
-            </div>
-            {!products.isLoading && productItems.length === 0 && (
+            {products.isError ? (
+              <DesertGlassSurface
+                id="shop-results"
+                role="alert"
+                className="scroll-mt-24 rounded-3xl px-6 py-12 text-center"
+              >
+                <p className="font-display text-2xl">The catalogue is temporarily unavailable.</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                  CornerMex could not load product results. No empty-catalogue conclusion has been
+                  made.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4 rounded-full"
+                  onClick={() => void products.refetch()}
+                >
+                  Retry catalogue
+                </Button>
+              </DesertGlassSurface>
+            ) : products.isSuccess && productItems.length === 0 ? (
               <DesertGlassSurface className="mt-16 rounded-3xl px-6 py-12 text-center">
                 <p className="font-display text-2xl">The pantry is being curated</p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
@@ -293,8 +337,23 @@ function Shop() {
                   Clear filters
                 </Button>
               </DesertGlassSurface>
+            ) : (
+              <div
+                id="shop-results"
+                aria-busy={products.isLoading}
+                aria-label={
+                  products.isLoading ? "Loading catalogue products" : "Catalogue products"
+                }
+                className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
+              >
+                {products.isLoading
+                  ? Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-muted" />
+                    ))
+                  : productItems.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 4} />)}
+              </div>
             )}
-            {products.hasNextPage && (
+            {!products.isError && products.hasNextPage && (
               <>
                 <InfiniteSentinel
                   onIntersect={() => {
