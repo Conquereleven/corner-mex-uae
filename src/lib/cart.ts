@@ -16,6 +16,8 @@ export type CartItem = {
   stock: number;
 };
 
+export const B2C_CART_STORAGE_KEY = "cornermex-cart-v1";
+
 type CartState = {
   items: CartItem[];
   add: (item: Omit<CartItem, "qty">, qty: number) => void;
@@ -35,24 +37,26 @@ export const useCart = create<CartState>()(
             return {
               items: s.items.map((i) =>
                 i.variantId === item.variantId
-                  ? { ...i, qty: Math.min(i.stock, i.qty + qty) }
+                  ? { ...i, qty: Math.min(500, i.qty + qty) }
                   : i,
               ),
             };
           }
-          return { items: [...s.items, { ...item, qty: Math.min(item.stock, qty) }] };
+          return { items: [...s.items, { ...item, qty: Math.max(1, Math.min(500, qty)) }] };
         }),
       remove: (variantId) => set((s) => ({ items: s.items.filter((i) => i.variantId !== variantId) })),
       setQty: (variantId, qty) =>
         set((s) => ({
           items: s.items
-            .map((i) => (i.variantId === variantId ? { ...i, qty: Math.max(1, Math.min(i.stock, qty)) } : i))
+            .map((i) =>
+              i.variantId === variantId ? { ...i, qty: Math.max(1, Math.min(500, qty)) } : i,
+            )
             .filter((i) => i.qty > 0),
         })),
       clear: () => set({ items: [] }),
     }),
     {
-      name: "cornermex-cart-v1",
+      name: B2C_CART_STORAGE_KEY,
       storage: createJSONStorage(() => (typeof window !== "undefined" ? localStorage : (undefined as any))),
     },
   ),
@@ -60,12 +64,10 @@ export const useCart = create<CartState>()(
 
 export function cartTotals(items: CartItem[]) {
   const subtotal = items.reduce((a, i) => a + i.unitPrice * i.qty, 0);
-  // Free shipping above 150 AED, else 25 AED per seller
   const sellers = new Set(items.map((i) => i.sellerId));
-  const shipping = items.length === 0 ? 0 : subtotal >= 150 ? 0 : sellers.size * 25;
   const tax = subtotal * 0.05; // UAE VAT 5%
-  const total = subtotal + shipping + tax;
-  return { subtotal, shipping, tax, total, sellerCount: sellers.size };
+  const totalBeforeShipping = subtotal + tax;
+  return { subtotal, shipping: null, tax, totalBeforeShipping, sellerCount: sellers.size };
 }
 
 export function groupBySeller(items: CartItem[]) {

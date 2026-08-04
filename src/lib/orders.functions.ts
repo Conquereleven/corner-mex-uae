@@ -7,6 +7,7 @@ import { tplOrderPlaced } from "@/lib/email-templates";
 import { createNotification, notifyOrderSellers } from "@/lib/notifications.functions";
 import { awardOrderPoints } from "@/lib/loyalty.functions";
 import { evaluateCoupon } from "@/lib/coupons.functions";
+import { assertCheckoutExecutionEnabled } from "@/lib/checkout-execution.server";
 
 const Emirate = z.enum(["AD", "DU", "SH", "AJ", "UQ", "RK", "FU"]);
 const PaymentMethod = z.enum(["card", "apple_pay", "google_pay", "tabby", "tamara", "cod", "bank_transfer"]);
@@ -36,6 +37,7 @@ export const placeOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof Input>) => Input.parse(input))
   .handler(async ({ data, context }) => {
+    assertCheckoutExecutionEnabled();
     const { userId } = context;
 
     // Load variants + products + sellers with admin to compute trusted prices
@@ -110,9 +112,9 @@ export const placeOrder = createServerFn({ method: "POST" })
             const v: any = variants.find((x: any) => x.id === it.variantId);
             return v && v.product.seller_id === sid ? s + Number(v.weight_grams ?? 0) * it.qty : s;
           }, 0);
-          let cost = sellerRate
-            ? Number(sellerRate.base_aed) + Number(sellerRate.per_kg_aed) * Math.max(0, w / 1000)
-            : 25;
+          if (!sellerRate) throw new Error("SHIPPING_RATE_UNAVAILABLE");
+          let cost =
+            Number(sellerRate.base_aed) + Number(sellerRate.per_kg_aed) * Math.max(0, w / 1000);
           if (sellerRate?.free_above_aed != null && sub >= Number(sellerRate.free_above_aed)) cost = 0;
           shipping += +cost.toFixed(2);
           if (sellerRate) {
@@ -121,10 +123,10 @@ export const placeOrder = createServerFn({ method: "POST" })
           }
         }
       } else {
-        shipping = sellerIds.size * 25;
+        throw new Error("SHIPPING_ZONE_UNAVAILABLE");
       }
     } else {
-      shipping = sellerIds.size * 25;
+      throw new Error("SHIPPING_DESTINATION_UNAVAILABLE");
     }
     shipping = +shipping.toFixed(2);
     const tax = +(subtotal * 0.05).toFixed(2);

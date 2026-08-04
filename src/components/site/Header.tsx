@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Globe, DollarSign, Home, Search, Building2, Info, User } from "lucide-react";
+import { Globe, DollarSign, Home, Search, Building2, User, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
 import { LANGS } from "@/lib/i18n";
 import { useCurrency, CURRENCIES } from "@/lib/use-currency";
 import { useSession } from "@/lib/use-session";
+import { useCart } from "@/lib/cart";
 import {
   DesertGlassBadge,
   DesertGlassControl,
@@ -22,6 +23,7 @@ export function Header() {
   const change = (code: string) => i18n.changeLanguage(code);
   const cur = useCurrency();
   const { user } = useSession();
+  const cartCount = useCart((state) => state.items.reduce((total, item) => total + item.qty, 0));
 
   return (
     <>
@@ -101,18 +103,29 @@ export function Header() {
                 <User className="h-4 w-4" />
               </Button>
             </Link>
+            <Link to="/cart">
+              <Button variant="ghost" size="icon" aria-label="Cart" className="relative">
+                <ShoppingBag className="h-4 w-4" />
+                {cartCount > 0 && (
+                  <span className="absolute -end-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
           </div>
         </div>
       </DesertGlassHeader>
       <DesertGlassControl
         role="navigation"
         aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-3 z-40 grid min-h-14 grid-cols-4 rounded-2xl p-1.5 md:hidden"
+        className="fixed inset-x-3 bottom-3 z-40 grid min-h-14 grid-cols-5 rounded-2xl p-1.5 md:hidden"
       >
         <MobileLink to="/" label="Home" icon={Home} />
         <MobileLink to="/shop" label="Shop" icon={Search} />
-        <MobileLink to="/b2b" label="B2B" icon={Building2} />
-        <MobileLink to="/about" label="About" icon={Info} />
+        <MobileLink to="/b2b" label="Business" icon={Building2} />
+        <MobileLink to={user ? "/account" : "/login"} label={user ? "Account" : "Sign in"} icon={User} />
+        <MobileLink to="/cart" label={cartCount ? `Cart (${cartCount})` : "Cart"} icon={ShoppingBag} />
       </DesertGlassControl>
     </>
   );
@@ -123,7 +136,7 @@ function MobileLink({
   label,
   icon: Icon,
 }: {
-  to: "/" | "/shop" | "/b2b" | "/about";
+  to: "/" | "/shop" | "/b2b" | "/login" | "/account" | "/cart";
   label: string;
   icon: typeof Home;
 }) {

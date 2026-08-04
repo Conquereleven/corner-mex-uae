@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getRequest } from "@tanstack/react-start/server";
+import { assertCheckoutExecutionEnabled } from "@/lib/checkout-execution.server";
 
 function getAppUrl(): string {
   const request = getRequest();
@@ -22,6 +23,7 @@ export const createStripeSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { orderId: string }) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    assertCheckoutExecutionEnabled();
     const { userId } = context;
     const stripe = await getStripe();
     const appUrl = getAppUrl();
@@ -92,6 +94,7 @@ export const confirmBnplPayment = createServerFn({ method: "POST" })
     z.object({ orderId: z.string().uuid(), provider: z.enum(["tabby", "tamara"]) }).parse(input),
   )
   .handler(async ({ data, context }) => {
+    assertCheckoutExecutionEnabled();
     const { userId } = context;
     const { data: order } = await supabaseAdmin
       .from("orders")
@@ -122,6 +125,7 @@ export const getOrderForConfirmation = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { orderId: string }) => z.object({ orderId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    assertCheckoutExecutionEnabled();
     const { userId } = context;
     const { data: order, error } = await supabaseAdmin
       .from("orders")

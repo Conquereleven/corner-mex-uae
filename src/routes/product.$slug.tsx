@@ -2,12 +2,14 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Flame, MapPin, Mail } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, MapPin, Mail, ShoppingBag } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { getProduct, type ProductDetail } from "@/lib/catalog.functions";
 import { siteOrigin, siteUrl } from "@/lib/site-url";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
+import { useCart } from "@/lib/cart";
+import { toast } from "sonner";
 
 function productUrl(slug: string) {
   return siteUrl(`/product/${encodeURIComponent(slug)}`);
@@ -118,7 +120,9 @@ function ProductPage() {
   const { i18n } = useTranslation();
   const lang = i18n.language as "en" | "es" | "ar";
   const [variantId, setVariantId] = useState<string | undefined>(undefined);
+  const [quantity, setQuantity] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+  const addToCart = useCart((state) => state.add);
 
   const { data: product, isLoading } = useQuery<ProductDetail | null>({
     queryKey: ["product", slug, lang],
@@ -147,6 +151,27 @@ function ProductPage() {
     gallery.length > 0 && setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
   const goNext = () => gallery.length > 0 && setActiveImg((i) => (i + 1) % gallery.length);
   const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
+
+  function addSelectedVariant() {
+    if (!variant || !p.seller) return;
+    addToCart(
+      {
+        productId: p.id,
+        variantId: variant.id,
+        slug: p.slug,
+        name: p.name,
+        variantLabel: variant.label,
+        image: p.image,
+        unitPrice: variant.price_aed,
+        sellerId: p.seller.id,
+        sellerSlug: p.seller.slug,
+        sellerName: p.seller.name,
+        stock: variant.stock,
+      },
+      quantity,
+    );
+    toast.success(`${p.name} added to cart`);
+  }
 
   return (
     <SiteLayout>
@@ -286,10 +311,41 @@ function ProductPage() {
               </div>
             )}
 
-            <div className="mt-8 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center rounded-full border border-border">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+                  className="min-h-11 px-4 text-muted-foreground hover:text-foreground"
+                  aria-label="Decrease quantity"
+                >
+                  −
+                </button>
+                <span className="min-w-8 text-center text-sm font-medium">{quantity}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((value) => Math.min(500, value + 1))}
+                  className="min-h-11 px-4 text-muted-foreground hover:text-foreground"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <Button
+                type="button"
+                size="lg"
+                className="flex-1 rounded-full"
+                disabled={!variant || !p.seller}
+                onClick={addSelectedVariant}
+              >
+                <ShoppingBag className="me-2 h-4 w-4" /> Add to cart
+              </Button>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
               <p className="text-sm leading-6 text-muted-foreground">
-                Commercial preview: cart, checkout, payment and live stock are disabled. For a
-                business requirement, request a human-reviewed quote.
+                Cart preparation is available. Checkout execution, payment, final price,
+                availability and shipping remain subject to the controls shown at checkout.
               </p>
               <a href={mailto(PUBLIC_CONTACT.b2b, `CornerMex quote enquiry: ${p.name}`)}>
                 <Button size="lg" className="mt-4 rounded-full">
