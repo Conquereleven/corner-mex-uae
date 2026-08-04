@@ -434,7 +434,6 @@
       "kind": "table_or_storage_bucket",
       "name": "order_notifications",
       "files": [
-        "src/lib/orders.functions.ts",
         "src/lib/shipments.functions.ts"
       ],
       "classification": "lovable_live_only",
