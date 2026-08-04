@@ -5,12 +5,22 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cartTotals, useCart } from "@/lib/cart";
 import { placeOrder } from "@/lib/orders.functions";
 import { createStripeSession } from "@/lib/payments.functions";
-import { getAvailablePaymentMethods, type EmirateCode, type PaymentMethodId } from "@/lib/payment-methods";
+import {
+  getAvailablePaymentMethods,
+  type EmirateCode,
+  type PaymentMethodId,
+} from "@/lib/payment-methods";
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 
@@ -26,7 +36,9 @@ const EMIRATES: Array<{ code: EmirateCode; name: string }> = [
 ];
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — Corner Mex" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Checkout — Corner Mex" }, { name: "robots", content: "noindex" }],
+  }),
   component: Checkout,
 });
 
@@ -106,7 +118,9 @@ function Checkout() {
         <section className="mx-auto max-w-2xl px-4 py-24 text-center">
           <h1 className="font-display text-4xl tracking-tight">Checkout</h1>
           <p className="mt-4 text-muted-foreground">Your B2C cart is empty.</p>
-          <Link to="/shop"><Button className="mt-6 rounded-full">Browse shop</Button></Link>
+          <Link to="/shop">
+            <Button className="mt-6 rounded-full">Browse shop</Button>
+          </Link>
         </section>
       </SiteLayout>
     );
@@ -115,11 +129,14 @@ function Checkout() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">B2C checkout</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          B2C checkout
+        </p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Delivery and payment details</h1>
         {!CHECKOUT_ENABLED && (
           <div className="mt-6 rounded-2xl border border-amber-300/60 bg-amber-50 p-4 text-sm text-amber-950">
-            Checkout execution is currently disabled. You can review the interface, but no order or payment will be created.
+            Checkout execution is currently disabled. You can review the interface, but no order or
+            payment will be created.
           </div>
         )}
 
@@ -128,26 +145,83 @@ function Checkout() {
             <section className="rounded-3xl border border-border bg-card p-6">
               <h2 className="font-display text-xl">Delivery address</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <Field label="Recipient name *"><Input value={form.recipient_name} onChange={(event) => setForm({ ...form, recipient_name: event.target.value })} /></Field>
-                <Field label="Phone *"><Input value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} /></Field>
+                <Field label="Recipient name *">
+                  <Input
+                    value={form.recipient_name}
+                    onChange={(event) => setForm({ ...form, recipient_name: event.target.value })}
+                  />
+                </Field>
+                <Field label="Phone *">
+                  <Input
+                    value={form.phone}
+                    onChange={(event) => setForm({ ...form, phone: event.target.value })}
+                  />
+                </Field>
                 <Field label="Emirate *">
-                  <Select value={form.emirate} onValueChange={(value) => setForm({ ...form, emirate: value as EmirateCode })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{EMIRATES.map((emirate) => <SelectItem key={emirate.code} value={emirate.code}>{emirate.name}</SelectItem>)}</SelectContent>
+                  <Select
+                    value={form.emirate}
+                    onValueChange={(value) => setForm({ ...form, emirate: value as EmirateCode })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EMIRATES.map((emirate) => (
+                        <SelectItem key={emirate.code} value={emirate.code}>
+                          {emirate.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </Field>
-                <Field label="Area / neighbourhood *"><Input value={form.area} onChange={(event) => setForm({ ...form, area: event.target.value })} /></Field>
-                <Field label="Street"><Input value={form.street} onChange={(event) => setForm({ ...form, street: event.target.value })} /></Field>
-                <Field label="Building"><Input value={form.building} onChange={(event) => setForm({ ...form, building: event.target.value })} /></Field>
-                <Field label="Floor / apartment"><Input value={form.floor_apt} onChange={(event) => setForm({ ...form, floor_apt: event.target.value })} /></Field>
-                <Field label="Landmark"><Input value={form.landmark} onChange={(event) => setForm({ ...form, landmark: event.target.value })} /></Field>
+                <Field label="Area / neighbourhood *">
+                  <Input
+                    value={form.area}
+                    onChange={(event) => setForm({ ...form, area: event.target.value })}
+                  />
+                </Field>
+                <Field label="Street">
+                  <Input
+                    value={form.street}
+                    onChange={(event) => setForm({ ...form, street: event.target.value })}
+                  />
+                </Field>
+                <Field label="Building">
+                  <Input
+                    value={form.building}
+                    onChange={(event) => setForm({ ...form, building: event.target.value })}
+                  />
+                </Field>
+                <Field label="Floor / apartment">
+                  <Input
+                    value={form.floor_apt}
+                    onChange={(event) => setForm({ ...form, floor_apt: event.target.value })}
+                  />
+                </Field>
+                <Field label="Landmark">
+                  <Input
+                    value={form.landmark}
+                    onChange={(event) => setForm({ ...form, landmark: event.target.value })}
+                  />
+                </Field>
               </div>
-              <div className="mt-4"><Field label="Notes"><Textarea rows={3} value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></Field></div>
+              <div className="mt-4">
+                <Field label="Notes">
+                  <Textarea
+                    rows={3}
+                    value={form.notes}
+                    onChange={(event) => setForm({ ...form, notes: event.target.value })}
+                  />
+                </Field>
+              </div>
             </section>
 
             <section className="rounded-3xl border border-border bg-card p-6">
               <h2 className="font-display text-xl">Payment option</h2>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">Options are displayed for interface review. Availability is rechecked by the server before any authorized execution.</p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Options are displayed for interface review. Availability is rechecked by the server
+                before any authorized execution.
+              </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {paymentMethods.map((method) => (
                   <button
@@ -158,7 +232,9 @@ function Checkout() {
                     className={`rounded-2xl border p-4 text-start ${payment === method.id ? "border-foreground" : "border-border"} ${method.enabled ? "hover:border-foreground/40" : "cursor-not-allowed opacity-50"}`}
                   >
                     <span className="text-sm font-medium">{method.title}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">{method.enabled ? method.subtitle : method.unavailableReason}</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {method.enabled ? method.subtitle : method.unavailableReason}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -170,24 +246,52 @@ function Checkout() {
             <ul className="mt-4 space-y-2 text-sm">
               {items.map((item) => (
                 <li key={item.variantId} className="flex justify-between gap-4">
-                  <span className="truncate text-muted-foreground">{item.qty} × {item.name}</span>
+                  <span className="truncate text-muted-foreground">
+                    {item.qty} × {item.name}
+                  </span>
                   <span>AED {(item.qty * item.unitPrice).toFixed(2)}</span>
                 </li>
               ))}
             </ul>
             <dl className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
-              <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd>AED {totals.subtotal.toFixed(2)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">VAT (5%)</dt><dd>AED {totals.tax.toFixed(2)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">Shipping</dt><dd>Pending verified rate</dd></div>
-              <div className="flex justify-between border-t border-border pt-3 font-medium"><dt>Total before shipping</dt><dd>AED {totals.totalBeforeShipping.toFixed(2)}</dd></div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Subtotal</dt>
+                <dd>AED {totals.subtotal.toFixed(2)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">VAT (5%)</dt>
+                <dd>AED {totals.tax.toFixed(2)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Shipping</dt>
+                <dd>Pending verified rate</dd>
+              </div>
+              <div className="flex justify-between border-t border-border pt-3 font-medium">
+                <dt>Total before shipping</dt>
+                <dd>AED {totals.totalBeforeShipping.toFixed(2)}</dd>
+              </div>
             </dl>
             {!sessionLoading && !user && (
-              <p className="mt-5 text-xs leading-5 text-muted-foreground">Sign in before an authorized checkout can proceed.</p>
+              <p className="mt-5 text-xs leading-5 text-muted-foreground">
+                Sign in before an authorized checkout can proceed.
+              </p>
             )}
-            <Button type="submit" size="lg" disabled={!canExecute || submitting} className="mt-6 w-full rounded-full">
-              {submitting ? "Processing…" : CHECKOUT_ENABLED ? "Place order" : "Order execution disabled"}
+            <Button
+              type="submit"
+              size="lg"
+              disabled={!canExecute || submitting}
+              className="mt-6 w-full rounded-full"
+            >
+              {submitting
+                ? "Processing…"
+                : CHECKOUT_ENABLED
+                  ? "Place order"
+                  : "Order execution disabled"}
             </Button>
-            <p className="mt-3 text-[11px] leading-5 text-muted-foreground">No order, payment, inventory change or notification occurs while checkout execution is disabled.</p>
+            <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
+              No order, payment, inventory change or notification occurs while checkout execution is
+              disabled.
+            </p>
           </aside>
         </form>
       </section>
@@ -196,5 +300,10 @@ function Checkout() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1.5"><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
 }

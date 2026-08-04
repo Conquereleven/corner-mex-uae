@@ -27,7 +27,10 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
   assert.match(header, /to="\/cart"/);
   assert.match(header, /user \? "\/account" : "\/login"/);
   assert.match(footer, /B2C cart and account access are available/);
-  assert.match(footer, /Checkout and order processing run only\s+when authorized configuration is enabled/);
+  assert.match(
+    footer,
+    /Checkout and order processing run only\s+when authorized configuration is enabled/,
+  );
   assert.match(footer, /B2B quote requests remain manual/);
   assert.match(footer, /does not claim that an order, payment or quote request was processed/);
   assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote request received/i);

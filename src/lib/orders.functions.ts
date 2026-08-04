@@ -9,13 +9,26 @@ import { evaluateCoupon } from "@/lib/coupons.functions";
 import { assertCheckoutExecutionEnabled } from "@/lib/checkout-execution.server";
 
 const Emirate = z.enum(["AD", "DU", "SH", "AJ", "UQ", "RK", "FU"]);
-const PaymentMethod = z.enum(["card", "apple_pay", "google_pay", "tabby", "tamara", "cod", "bank_transfer"]);
+const PaymentMethod = z.enum([
+  "card",
+  "apple_pay",
+  "google_pay",
+  "tabby",
+  "tamara",
+  "cod",
+  "bank_transfer",
+]);
 
 const Input = z.object({
-  items: z.array(z.object({
-    variantId: z.string().uuid(),
-    qty: z.number().int().min(1).max(500),
-  })).min(1).max(50),
+  items: z
+    .array(
+      z.object({
+        variantId: z.string().uuid(),
+        qty: z.number().int().min(1).max(500),
+      }),
+    )
+    .min(1)
+    .max(50),
   payment_method: PaymentMethod,
   shipping_address: z.object({
     recipient_name: z.string().min(1).max(120),
@@ -43,16 +56,19 @@ export const placeOrder = createServerFn({ method: "POST" })
     const variantIds = data.items.map((i) => i.variantId);
     const { data: variants, error: vErr } = await supabaseAdmin
       .from("product_variants")
-      .select(`
+      .select(
+        `
         id, price_aed, stock, format_label, weight_grams,
         product:products!inner(id, seller_id, status,
           translations:product_translations(lang, name),
           seller:sellers!inner(id, commission_rate)
         )
-      `)
+      `,
+      )
       .in("id", variantIds);
     if (vErr) throw new Error(vErr.message);
-    if (!variants || variants.length !== variantIds.length) throw new Error("Some products are no longer available");
+    if (!variants || variants.length !== variantIds.length)
+      throw new Error("Some products are no longer available");
 
     // Build order_items rows
     let subtotal = 0;
@@ -68,7 +84,9 @@ export const placeOrder = createServerFn({ method: "POST" })
       subtotal += line;
       totalWeight += Number(v.weight_grams ?? 0) * it.qty;
       sellerIds.add(v.product.seller_id);
-      const tr = (v.product.translations ?? []).find((t: any) => t.lang === "en") ?? (v.product.translations ?? [])[0];
+      const tr =
+        (v.product.translations ?? []).find((t: any) => t.lang === "en") ??
+        (v.product.translations ?? [])[0];
       const commissionRate = Number(v.product.seller.commission_rate ?? 12);
       return {
         variant_id: v.id,
@@ -104,9 +122,12 @@ export const placeOrder = createServerFn({ method: "POST" })
           .eq("is_active", true);
         const defaultRate: any = (rates ?? []).find((r: any) => r.seller_id === null);
         for (const sid of sellerIds) {
-          const sellerRate: any = (rates ?? []).find((r: any) => r.seller_id === sid) ?? defaultRate;
+          const sellerRate: any =
+            (rates ?? []).find((r: any) => r.seller_id === sid) ?? defaultRate;
           // per-seller subtotal & weight
-          const sub = orderItems.filter((oi) => oi.seller_id === sid).reduce((s, oi) => s + oi.line_total_aed, 0);
+          const sub = orderItems
+            .filter((oi) => oi.seller_id === sid)
+            .reduce((s, oi) => s + oi.line_total_aed, 0);
           const w = data.items.reduce((s, it) => {
             const v: any = variants.find((x: any) => x.id === it.variantId);
             return v && v.product.seller_id === sid ? s + Number(v.weight_grams ?? 0) * it.qty : s;
@@ -114,7 +135,8 @@ export const placeOrder = createServerFn({ method: "POST" })
           if (!sellerRate) throw new Error("SHIPPING_RATE_UNAVAILABLE");
           let cost =
             Number(sellerRate.base_aed) + Number(sellerRate.per_kg_aed) * Math.max(0, w / 1000);
-          if (sellerRate?.free_above_aed != null && sub >= Number(sellerRate.free_above_aed)) cost = 0;
+          if (sellerRate?.free_above_aed != null && sub >= Number(sellerRate.free_above_aed))
+            cost = 0;
           shipping += +cost.toFixed(2);
           if (sellerRate) {
             slaMin = Math.max(slaMin ?? 0, sellerRate.sla_min_days);
@@ -146,7 +168,9 @@ export const placeOrder = createServerFn({ method: "POST" })
     const codNote = "Cash on Delivery selected. Confirm order by WhatsApp before dispatch.";
     const notesCombined =
       data.payment_method === "cod"
-        ? (data.notes ? `${data.notes}\n\n[Internal] ${codNote}` : `[Internal] ${codNote}`)
+        ? data.notes
+          ? `${data.notes}\n\n[Internal] ${codNote}`
+          : `[Internal] ${codNote}`
         : (data.notes ?? null);
 
     // Insert order with admin (auth_id captured separately)
@@ -185,17 +209,31 @@ export const placeOrder = createServerFn({ method: "POST" })
     if (appliedCoupon) {
       try {
         await supabaseAdmin.from("coupon_redemptions").insert({
-          coupon_id: appliedCoupon.id, order_id: order.id, user_id: userId, discount_aed: discount,
+          coupon_id: appliedCoupon.id,
+          order_id: order.id,
+          user_id: userId,
+          discount_aed: discount,
         });
-        const { data: c } = await supabaseAdmin.from("coupons").select("uses_count").eq("id", appliedCoupon.id).maybeSingle();
-        if (c) await supabaseAdmin.from("coupons").update({ uses_count: (c.uses_count ?? 0) + 1 }).eq("id", appliedCoupon.id);
-      } catch (e) { console.error("coupon redemption failed", e); }
+        const { data: c } = await supabaseAdmin
+          .from("coupons")
+          .select("uses_count")
+          .eq("id", appliedCoupon.id)
+          .maybeSingle();
+        if (c)
+          await supabaseAdmin
+            .from("coupons")
+            .update({ uses_count: (c.uses_count ?? 0) + 1 })
+            .eq("id", appliedCoupon.id);
+      } catch (e) {
+        console.error("coupon redemption failed", e);
+      }
     }
 
     // Decrement stock
     for (const it of data.items) {
       const v: any = variants.find((x: any) => x.id === it.variantId);
-      await supabaseAdmin.from("product_variants")
+      await supabaseAdmin
+        .from("product_variants")
         .update({ stock: v.stock - it.qty })
         .eq("id", it.variantId);
     }
@@ -216,7 +254,9 @@ export const placeOrder = createServerFn({ method: "POST" })
         body: `You have new items to fulfill.`,
         link: "/seller/orders",
       });
-    } catch (e) { console.error("notifications failed", e); }
+    } catch (e) {
+      console.error("notifications failed", e);
+    }
 
     // Loyalty: award points based on subtotal (best-effort)
     try {
@@ -229,7 +269,9 @@ export const placeOrder = createServerFn({ method: "POST" })
         link: "/account/loyalty",
         orderId: order.id,
       });
-    } catch (e) { console.error("loyalty award failed", e); }
+    } catch (e) {
+      console.error("loyalty award failed", e);
+    }
 
     return { orderId: order.id, orderNumber: order.order_number, total };
   });

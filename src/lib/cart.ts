@@ -36,15 +36,14 @@ export const useCart = create<CartState>()(
           if (existing) {
             return {
               items: s.items.map((i) =>
-                i.variantId === item.variantId
-                  ? { ...i, qty: Math.min(500, i.qty + qty) }
-                  : i,
+                i.variantId === item.variantId ? { ...i, qty: Math.min(500, i.qty + qty) } : i,
               ),
             };
           }
           return { items: [...s.items, { ...item, qty: Math.max(1, Math.min(500, qty)) }] };
         }),
-      remove: (variantId) => set((s) => ({ items: s.items.filter((i) => i.variantId !== variantId) })),
+      remove: (variantId) =>
+        set((s) => ({ items: s.items.filter((i) => i.variantId !== variantId) })),
       setQty: (variantId, qty) =>
         set((s) => ({
           items: s.items
@@ -57,7 +56,9 @@ export const useCart = create<CartState>()(
     }),
     {
       name: B2C_CART_STORAGE_KEY,
-      storage: createJSONStorage(() => (typeof window !== "undefined" ? localStorage : (undefined as any))),
+      storage: createJSONStorage(() =>
+        typeof window !== "undefined" ? localStorage : (undefined as any),
+      ),
     },
   ),
 );
@@ -71,9 +72,24 @@ export function cartTotals(items: CartItem[]) {
 }
 
 export function groupBySeller(items: CartItem[]) {
-  const groups = new Map<string, { sellerId: string; sellerSlug: string; sellerName: string; items: CartItem[]; subtotal: number }>();
+  const groups = new Map<
+    string,
+    {
+      sellerId: string;
+      sellerSlug: string;
+      sellerName: string;
+      items: CartItem[];
+      subtotal: number;
+    }
+  >();
   for (const i of items) {
-    const g = groups.get(i.sellerId) ?? { sellerId: i.sellerId, sellerSlug: i.sellerSlug, sellerName: i.sellerName, items: [], subtotal: 0 };
+    const g = groups.get(i.sellerId) ?? {
+      sellerId: i.sellerId,
+      sellerSlug: i.sellerSlug,
+      sellerName: i.sellerName,
+      items: [],
+      subtotal: 0,
+    };
     g.items.push(i);
     g.subtotal += i.unitPrice * i.qty;
     groups.set(i.sellerId, g);

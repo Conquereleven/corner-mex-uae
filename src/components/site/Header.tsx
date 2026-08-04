@@ -99,7 +99,12 @@ export function Header() {
               </Button>
             </Link>
             <Link to={user ? "/account" : "/login"} className="ms-1">
-              <Button variant="ghost" size="sm" aria-label={user ? "Account" : "Sign in"} className="gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label={user ? "Account" : "Sign in"}
+                className="gap-1.5"
+              >
                 <User className="h-4 w-4" />
                 <span className="hidden lg:inline">{user ? "Account" : "Sign in"}</span>
               </Button>
@@ -126,8 +131,16 @@ export function Header() {
         <MobileLink to="/" label="Home" icon={Home} />
         <MobileLink to="/shop" label="Shop" icon={Search} />
         <MobileLink to="/b2b" label="Business" icon={Building2} />
-        <MobileLink to={user ? "/account" : "/login"} label={user ? "Account" : "Sign in"} icon={User} />
-        <MobileLink to="/cart" label={cartCount ? `Cart (${cartCount})` : "Cart"} icon={ShoppingBag} />
+        <MobileLink
+          to={user ? "/account" : "/login"}
+          label={user ? "Account" : "Sign in"}
+          icon={User}
+        />
+        <MobileLink
+          to="/cart"
+          label={cartCount ? `Cart (${cartCount})` : "Cart"}
+          icon={ShoppingBag}
+        />
       </DesertGlassControl>
     </>
   );

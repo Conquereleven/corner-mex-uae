@@ -79,7 +79,9 @@ function Cart() {
                             >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="min-w-6 text-center text-xs font-medium">{item.qty}</span>
+                            <span className="min-w-6 text-center text-xs font-medium">
+                              {item.qty}
+                            </span>
                             <button
                               type="button"
                               onClick={() => setQty(item.variantId, item.qty + 1)}

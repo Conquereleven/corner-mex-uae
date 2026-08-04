@@ -19,10 +19,10 @@ export function Footer() {
               Exploring Mexican pantry supply for the UAE
             </h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              B2C cart and account access are available. Checkout and order processing run only
-              when authorized configuration is enabled; prices, availability, shipping and payment
-              are confirmed in the applicable flow. B2B quote requests remain manual, and this page
-              does not claim that an order, payment or quote request was processed.
+              B2C cart and account access are available. Checkout and order processing run only when
+              authorized configuration is enabled; prices, availability, shipping and payment are
+              confirmed in the applicable flow. B2B quote requests remain manual, and this page does
+              not claim that an order, payment or quote request was processed.
             </p>
           </div>
           <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>

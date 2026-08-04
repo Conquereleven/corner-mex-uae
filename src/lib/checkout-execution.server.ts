@@ -4,9 +4,7 @@ export function isCheckoutExecutionEnabled(value = process.env.CORNERMEX_CHECKOU
   return value === "true";
 }
 
-export function assertCheckoutExecutionEnabled(
-  value = process.env.CORNERMEX_CHECKOUT_ENABLED,
-) {
+export function assertCheckoutExecutionEnabled(value = process.env.CORNERMEX_CHECKOUT_ENABLED) {
   if (!isCheckoutExecutionEnabled(value)) {
     throw new Error(CHECKOUT_EXECUTION_DISABLED);
   }

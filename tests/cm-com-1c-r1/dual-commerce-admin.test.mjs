@@ -4,9 +4,15 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { safeInternalRedirect } from "../../src/lib/safe-internal-redirect.ts";
-import { isCheckoutExecutionEnabled, assertCheckoutExecutionEnabled } from "../../src/lib/checkout-execution.server.ts";
+import {
+  isCheckoutExecutionEnabled,
+  assertCheckoutExecutionEnabled,
+} from "../../src/lib/checkout-execution.server.ts";
 import { B2B_CATEGORIES, WAVE_1_PRODUCTS } from "../../src/features/b2b-catalog/wave1-products.ts";
-import { QUOTE_SELECTION_STORAGE_KEY, clearQuoteSelection } from "../../src/features/b2b-catalog/quote-selection.ts";
+import {
+  QUOTE_SELECTION_STORAGE_KEY,
+  clearQuoteSelection,
+} from "../../src/features/b2b-catalog/quote-selection.ts";
 
 const read = (path) => readFileSync(join(process.cwd(), path), "utf8");
 const login = read("src/routes/login.tsx");
@@ -35,7 +41,13 @@ test("login renders email/password auth instead of the unavailable preview", () 
 
 test("safe redirect accepts internal paths and rejects external forms", () => {
   assert.equal(safeInternalRedirect("/account?tab=orders"), "/account?tab=orders");
-  for (const value of ["https://evil.example", "//evil.example", "/\\evil.example", "javascript:alert(1)", ""]) {
+  for (const value of [
+    "https://evil.example",
+    "//evil.example",
+    "/\\evil.example",
+    "javascript:alert(1)",
+    "",
+  ]) {
     assert.equal(safeInternalRedirect(value), "/");
   }
 });
@@ -95,7 +107,8 @@ test("final action is disabled when execution prerequisites are false", () => {
 });
 
 test("server checkout gate defaults off and accepts only exact true", () => {
-  for (const value of [undefined, "", "TRUE", "1", " true", "false"]) assert.equal(isCheckoutExecutionEnabled(value), false);
+  for (const value of [undefined, "", "TRUE", "1", " true", "false"])
+    assert.equal(isCheckoutExecutionEnabled(value), false);
   assert.equal(isCheckoutExecutionEnabled("true"), true);
   assert.throws(() => assertCheckoutExecutionEnabled(undefined), /CHECKOUT_EXECUTION_DISABLED/);
 });
@@ -124,13 +137,19 @@ test("shipping remains pending and no AED 25 fallback is authoritative", () => {
 });
 
 test("low-stock and guaranteed-delivery claims are not restored", () => {
-  assert.doesNotMatch(`${product}\n${cartRoute}\n${checkout}`, /Only .* left|left in stock|guaranteed delivery/i);
+  assert.doesNotMatch(
+    `${product}\n${cartRoute}\n${checkout}`,
+    /Only .* left|left in stock|guaranteed delivery/i,
+  );
 });
 
 test("B2B selection key and approved 15-product mix remain exact", () => {
   assert.equal(QUOTE_SELECTION_STORAGE_KEY, "cm.quoteSelection");
   assert.equal(WAVE_1_PRODUCTS.length, 15);
-  assert.deepEqual(B2B_CATEGORIES.map((category) => category.count), [7, 5, 3]);
+  assert.deepEqual(
+    B2B_CATEGORIES.map((category) => category.count),
+    [7, 5, 3],
+  );
 });
 
 test("B2B surface has no public numeric prices or automated submission", () => {
@@ -145,7 +164,11 @@ test("boundary manifest uses different storage and gives B2B no execution path",
 
 test("clearing B2B removes only its session key", () => {
   const calls = [];
-  const sessionStorage = { getItem: () => null, setItem: () => {}, removeItem: (key) => calls.push(key) };
+  const sessionStorage = {
+    getItem: () => null,
+    setItem: () => {},
+    removeItem: (key) => calls.push(key),
+  };
   clearQuoteSelection(sessionStorage);
   assert.deepEqual(calls, ["cm.quoteSelection"]);
   assert.notEqual(calls[0], "cornermex-cart-v1");
@@ -157,5 +180,6 @@ test("checkout and B2B quote do not import each other's state or execution", () 
 });
 
 test("navigation clearly preserves Shop, Business, Account or Sign in, and Cart", () => {
-  for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"]) assert.match(header, new RegExp(label));
+  for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"])
+    assert.match(header, new RegExp(label));
 });

@@ -51,27 +51,66 @@ function Account() {
           </div>
           <div className="flex flex-wrap gap-2">
             {account.data?.seller && (
-              <Link to="/seller"><Button variant="outline" className="rounded-full">Seller dashboard</Button></Link>
+              <Link to="/seller">
+                <Button variant="outline" className="rounded-full">
+                  Seller dashboard
+                </Button>
+              </Link>
             )}
             {admin.data?.admin && (
-              <Link to="/admin"><Button variant="outline" className="rounded-full">Admin</Button></Link>
+              <Link to="/admin">
+                <Button variant="outline" className="rounded-full">
+                  Admin
+                </Button>
+              </Link>
             )}
-            <Link to="/account/notifications"><Button variant="outline" className="rounded-full">Notifications</Button></Link>
-            <Link to="/account/wishlist"><Button variant="outline" className="rounded-full">Wishlist</Button></Link>
-            <Link to="/account/loyalty"><Button variant="outline" className="rounded-full">Loyalty</Button></Link>
-            <Link to="/account/returns"><Button variant="outline" className="rounded-full">Returns</Button></Link>
-            <Button variant="ghost" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/"; }}>Sign out</Button>
+            <Link to="/account/notifications">
+              <Button variant="outline" className="rounded-full">
+                Notifications
+              </Button>
+            </Link>
+            <Link to="/account/wishlist">
+              <Button variant="outline" className="rounded-full">
+                Wishlist
+              </Button>
+            </Link>
+            <Link to="/account/loyalty">
+              <Button variant="outline" className="rounded-full">
+                Loyalty
+              </Button>
+            </Link>
+            <Link to="/account/returns">
+              <Button variant="outline" className="rounded-full">
+                Returns
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = "/";
+              }}
+            >
+              Sign out
+            </Button>
           </div>
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           <Card className="md:col-span-2">
-            <CardHeader><CardTitle>Recent orders</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Recent orders</CardTitle>
+            </CardHeader>
             <CardContent>
               {orders.isLoading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
               ) : (orders.data ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">You have no orders yet. <Link to="/shop" className="underline">Start shopping →</Link></p>
+                <p className="text-sm text-muted-foreground">
+                  You have no orders yet.{" "}
+                  <Link to="/shop" className="underline">
+                    Start shopping →
+                  </Link>
+                </p>
               ) : (
                 <ul className="divide-y divide-border">
                   {(orders.data ?? []).map((o: any) => (
@@ -83,7 +122,9 @@ function Account() {
           </Card>
 
           <div className="space-y-6">
-            {(reviewable.data ?? []).length > 0 && <PendingReviewsCard items={reviewable.data as any[]} />}
+            {(reviewable.data ?? []).length > 0 && (
+              <PendingReviewsCard items={reviewable.data as any[]} />
+            )}
             {!account.data?.seller && <BecomeSellerCard />}
           </div>
         </div>
@@ -95,19 +136,30 @@ function Account() {
 function PendingReviewsCard({ items }: { items: any[] }) {
   return (
     <Card>
-      <CardHeader><CardTitle>Pending reviews</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Pending reviews</CardTitle>
+      </CardHeader>
       <CardContent className="space-y-2">
-        <p className="text-sm text-muted-foreground">Share your experience on items you received.</p>
+        <p className="text-sm text-muted-foreground">
+          Share your experience on items you received.
+        </p>
         <ul className="space-y-2">
           {items.slice(0, 5).map((it) => (
-            <li key={it.order_item_id} className="flex items-center justify-between gap-2 rounded-md border border-border/60 p-2 text-sm">
+            <li
+              key={it.order_item_id}
+              className="flex items-center justify-between gap-2 rounded-md border border-border/60 p-2 text-sm"
+            >
               <div className="min-w-0">
                 <p className="truncate font-medium">{it.product_name}</p>
-                {it.variant_label && <p className="truncate text-xs text-muted-foreground">{it.variant_label}</p>}
+                {it.variant_label && (
+                  <p className="truncate text-xs text-muted-foreground">{it.variant_label}</p>
+                )}
               </div>
               {it.product_slug && (
                 <Link to="/product/$slug" params={{ slug: it.product_slug }}>
-                  <Button size="sm" variant="outline" className="rounded-full">Review</Button>
+                  <Button size="sm" variant="outline" className="rounded-full">
+                    Review
+                  </Button>
                 </Link>
               )}
             </li>
@@ -133,31 +185,56 @@ function OrderRow({ order }: { order: any }) {
           <p className="font-medium">{order.order_number}</p>
           <p className="text-xs text-muted-foreground">
             {new Date(order.created_at).toLocaleString()} · {order.items?.length ?? 0} items
-            {order.sla_min_days ? <> · ETA {order.sla_min_days}-{order.sla_max_days} days</> : null}
+            {order.sla_min_days ? (
+              <>
+                {" "}
+                · ETA {order.sla_min_days}-{order.sla_max_days} days
+              </>
+            ) : null}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{order.status}</Badge>
           <Badge variant="outline">{order.payment_status}</Badge>
           <span className="font-medium tabular-nums">{Number(order.total_aed).toFixed(2)} AED</span>
-          <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)}>{open ? "Hide" : "Track"}</Button>
+          <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)}>
+            {open ? "Hide" : "Track"}
+          </Button>
         </div>
       </div>
       {open && (
         <div className="mt-3 rounded-lg border bg-muted/30 p-3 text-sm">
-          {q.isLoading ? <p className="text-muted-foreground">Loading…</p> :
-           (q.data ?? []).length === 0 ? <p className="text-muted-foreground">No shipments yet — your seller hasn't dispatched this order.</p> : (
+          {q.isLoading ? (
+            <p className="text-muted-foreground">Loading…</p>
+          ) : (q.data ?? []).length === 0 ? (
+            <p className="text-muted-foreground">
+              No shipments yet — your seller hasn't dispatched this order.
+            </p>
+          ) : (
             <ul className="space-y-2">
               {(q.data as any[]).map((s) => (
                 <li key={s.id} className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <span className="font-medium">{s.seller?.store_name}</span>
-                    <span className="ml-2 uppercase text-xs text-muted-foreground">{s.carrier}</span>
-                    {s.tracking_number && <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>}
+                    <span className="ml-2 uppercase text-xs text-muted-foreground">
+                      {s.carrier}
+                    </span>
+                    {s.tracking_number && (
+                      <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">{s.status}</Badge>
-                    {s.tracking_url && <a className="text-xs underline" href={s.tracking_url} target="_blank" rel="noreferrer">Track</a>}
+                    {s.tracking_url && (
+                      <a
+                        className="text-xs underline"
+                        href={s.tracking_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Track
+                      </a>
+                    )}
                   </div>
                 </li>
               ))}
@@ -173,30 +250,90 @@ function BecomeSellerCard() {
   const qc = useQueryClient();
   const fn = useServerFn(becomeSeller);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ store_name: "", tagline: "", bio: "", contact_email: "", contact_phone: "", trn: "" });
+  const [form, setForm] = useState({
+    store_name: "",
+    tagline: "",
+    bio: "",
+    contact_email: "",
+    contact_phone: "",
+    trn: "",
+  });
   const m = useMutation({
     mutationFn: (input: typeof form) => fn({ data: input }),
-    onSuccess: () => { toast.success("Seller application submitted"); qc.invalidateQueries({ queryKey: ["account"] }); setOpen(false); },
+    onSuccess: () => {
+      toast.success("Seller application submitted");
+      qc.invalidateQueries({ queryKey: ["account"] });
+      setOpen(false);
+    },
     onError: (e: any) => toast.error(e.message),
   });
   return (
     <Card>
-      <CardHeader><CardTitle>Become a seller</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Become a seller</CardTitle>
+      </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">Sell your Mexican products across the UAE. Pending approval by our team.</p>
+        <p className="text-sm text-muted-foreground">
+          Sell your Mexican products across the UAE. Pending approval by our team.
+        </p>
         {!open ? (
-          <Button className="w-full rounded-full" onClick={() => setOpen(true)}>Apply now</Button>
+          <Button className="w-full rounded-full" onClick={() => setOpen(true)}>
+            Apply now
+          </Button>
         ) : (
-          <form onSubmit={(e) => { e.preventDefault(); m.mutate(form); }} className="space-y-3">
-            <div><Label>Store name</Label><Input required value={form.store_name} onChange={(e) => setForm({ ...form, store_name: e.target.value })} /></div>
-            <div><Label>Tagline</Label><Input value={form.tagline} onChange={(e) => setForm({ ...form, tagline: e.target.value })} /></div>
-            <div><Label>Bio</Label><Textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div><Label>Email</Label><Input type="email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} /></div>
-              <div><Label>Phone</Label><Input value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} /></div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              m.mutate(form);
+            }}
+            className="space-y-3"
+          >
+            <div>
+              <Label>Store name</Label>
+              <Input
+                required
+                value={form.store_name}
+                onChange={(e) => setForm({ ...form, store_name: e.target.value })}
+              />
             </div>
-            <div><Label>TRN (optional)</Label><Input value={form.trn} onChange={(e) => setForm({ ...form, trn: e.target.value })} /></div>
-            <Button type="submit" disabled={m.isPending} className="w-full rounded-full">{m.isPending ? "..." : "Submit"}</Button>
+            <div>
+              <Label>Tagline</Label>
+              <Input
+                value={form.tagline}
+                onChange={(e) => setForm({ ...form, tagline: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Bio</Label>
+              <Textarea
+                value={form.bio}
+                onChange={(e) => setForm({ ...form, bio: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={form.contact_email}
+                  onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Phone</Label>
+                <Input
+                  value={form.contact_phone}
+                  onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>TRN (optional)</Label>
+              <Input value={form.trn} onChange={(e) => setForm({ ...form, trn: e.target.value })} />
+            </div>
+            <Button type="submit" disabled={m.isPending} className="w-full rounded-full">
+              {m.isPending ? "..." : "Submit"}
+            </Button>
           </form>
         )}
       </CardContent>
