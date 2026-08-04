@@ -42,6 +42,8 @@ npm run validate:staging-readiness-change-request -- docs/program/STAGING_READIN
 node --test tests/program/*.test.mjs
 npm run test:cm-com-1b
 npm run test:cm-com-1c
+npm run validate:cm-com-1c-r1
+npm run test:cm-com-1c-r1
 npm run typecheck
 npm run build
 npm run build:railway
