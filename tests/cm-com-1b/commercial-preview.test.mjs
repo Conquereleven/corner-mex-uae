@@ -29,10 +29,10 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
   assert.match(footer, /B2C cart and account access are available/);
   assert.match(
     footer,
-    /Checkout and order processing run only\s+when authorized configuration is enabled/,
+    /Checkout and order processing run only\s+when\s+authorized configuration is enabled/,
   );
   assert.match(footer, /B2B quote requests remain manual/);
-  assert.match(footer, /does not claim that an order, payment or quote request was processed/);
+  assert.match(footer, /does\s+not claim that an order, payment or quote request was processed/);
   assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote request received/i);
   assert.match(shop, /Product discovery only/);
   assert.match(home, /UAE commercial preview/);
@@ -139,7 +139,7 @@ test("dual commerce execution fails closed and public sitemaps exclude seller ro
   assert.match(checkout, /VITE_CORNERMEX_CHECKOUT_ENABLED === "true"/);
   assert.match(checkout, /const canExecute = CHECKOUT_ENABLED &&/);
   assert.match(checkout, /disabled=\{!canExecute \|\| submitting\}/);
-  assert.match(checkout, /no order or payment will be created/i);
+  assert.match(checkout, /no order or\s+payment will be created/i);
   assert.match(serverGate, /value = process\.env\.CORNERMEX_CHECKOUT_ENABLED/);
   assert.match(serverGate, /return value === "true"/);
   assert.match(serverGate, /throw new Error\(CHECKOUT_EXECUTION_DISABLED\)/);
