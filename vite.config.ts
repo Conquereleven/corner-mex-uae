@@ -7,6 +7,8 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import path from "node:path";
 
+const browserAsyncHooksShim = path.resolve(__dirname, "src/shims/async-hooks.ts");
+
 // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
 // @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
 export default defineConfig({
@@ -14,16 +16,26 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    resolve: {
-      alias: {
-        // Browser-safe shim for node:async_hooks (used by @tanstack/start-storage-context)
-        "node:async_hooks": path.resolve(__dirname, "src/shims/async-hooks.ts"),
+    plugins: [
+      {
+        name: "cornermex:browser-async-hooks-shim",
+        enforce: "pre",
+        resolveId(source) {
+          if (source === "node:async_hooks" && this.environment.name === "client") {
+            return browserAsyncHooksShim;
+          }
+          return null;
+        },
       },
-    },
-    optimizeDeps: {
-      esbuildOptions: {
-        alias: {
-          "node:async_hooks": path.resolve(__dirname, "src/shims/async-hooks.ts"),
+    ],
+    environments: {
+      client: {
+        optimizeDeps: {
+          esbuildOptions: {
+            alias: {
+              "node:async_hooks": browserAsyncHooksShim,
+            },
+          },
         },
       },
     },
