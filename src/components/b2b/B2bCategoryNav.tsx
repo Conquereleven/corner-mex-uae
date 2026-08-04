@@ -9,7 +9,7 @@ export function B2bCategoryNav() {
           <a
             key={category.id}
             href={`#${categoryAnchor(category.id)}`}
-            className="inline-flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex min-h-12 shrink-0 snap-start items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {category.label}
             <span className="rounded-full bg-sand px-2 py-0.5 text-xs text-muted-foreground">

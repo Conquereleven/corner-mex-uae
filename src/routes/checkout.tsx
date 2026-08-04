@@ -140,29 +140,37 @@ function Checkout() {
           </div>
         )}
 
-        <form onSubmit={submit} className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
-          <div className="space-y-8">
-            <section className="rounded-3xl border border-border bg-card p-6">
+        <form
+          onSubmit={submit}
+          className="mt-8 grid min-w-0 max-w-full gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]"
+        >
+          <div className="min-w-0 space-y-8">
+            <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-xl">Delivery address</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <Field label="Recipient name *">
+                <Field id="checkout-recipient-name" label="Recipient name *">
                   <Input
+                    id="checkout-recipient-name"
+                    name="recipient_name"
                     value={form.recipient_name}
                     onChange={(event) => setForm({ ...form, recipient_name: event.target.value })}
                   />
                 </Field>
-                <Field label="Phone *">
+                <Field id="checkout-phone" label="Phone *">
                   <Input
+                    id="checkout-phone"
+                    name="phone"
                     value={form.phone}
                     onChange={(event) => setForm({ ...form, phone: event.target.value })}
                   />
                 </Field>
-                <Field label="Emirate *">
+                <Field id="checkout-emirate" label="Emirate *">
                   <Select
+                    name="emirate"
                     value={form.emirate}
                     onValueChange={(value) => setForm({ ...form, emirate: value as EmirateCode })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="checkout-emirate" aria-labelledby="checkout-emirate-label">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -174,40 +182,52 @@ function Checkout() {
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field label="Area / neighbourhood *">
+                <Field id="checkout-area" label="Area / neighbourhood *">
                   <Input
+                    id="checkout-area"
+                    name="area"
                     value={form.area}
                     onChange={(event) => setForm({ ...form, area: event.target.value })}
                   />
                 </Field>
-                <Field label="Street">
+                <Field id="checkout-street" label="Street">
                   <Input
+                    id="checkout-street"
+                    name="street"
                     value={form.street}
                     onChange={(event) => setForm({ ...form, street: event.target.value })}
                   />
                 </Field>
-                <Field label="Building">
+                <Field id="checkout-building" label="Building">
                   <Input
+                    id="checkout-building"
+                    name="building"
                     value={form.building}
                     onChange={(event) => setForm({ ...form, building: event.target.value })}
                   />
                 </Field>
-                <Field label="Floor / apartment">
+                <Field id="checkout-floor-apartment" label="Floor / apartment">
                   <Input
+                    id="checkout-floor-apartment"
+                    name="floor_apt"
                     value={form.floor_apt}
                     onChange={(event) => setForm({ ...form, floor_apt: event.target.value })}
                   />
                 </Field>
-                <Field label="Landmark">
+                <Field id="checkout-landmark" label="Landmark">
                   <Input
+                    id="checkout-landmark"
+                    name="landmark"
                     value={form.landmark}
                     onChange={(event) => setForm({ ...form, landmark: event.target.value })}
                   />
                 </Field>
               </div>
               <div className="mt-4">
-                <Field label="Notes">
+                <Field id="checkout-notes" label="Notes">
                   <Textarea
+                    id="checkout-notes"
+                    name="notes"
                     rows={3}
                     value={form.notes}
                     onChange={(event) => setForm({ ...form, notes: event.target.value })}
@@ -216,7 +236,7 @@ function Checkout() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-border bg-card p-6">
+            <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-xl">Payment option</h2>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
                 Options are displayed for interface review. Availability is rechecked by the server
@@ -241,12 +261,12 @@ function Checkout() {
             </section>
           </div>
 
-          <aside className="h-fit rounded-3xl border border-border bg-card p-6">
+          <aside className="h-fit min-w-0 max-w-full rounded-3xl border border-border bg-card p-4 sm:p-6">
             <h2 className="font-display text-xl">Order summary</h2>
             <ul className="mt-4 space-y-2 text-sm">
               {items.map((item) => (
-                <li key={item.variantId} className="flex justify-between gap-4">
-                  <span className="truncate text-muted-foreground">
+                <li key={item.variantId} className="flex min-w-0 justify-between gap-4">
+                  <span className="min-w-0 truncate text-muted-foreground">
                     {item.qty} × {item.name}
                   </span>
                   <span>AED {(item.qty * item.unitPrice).toFixed(2)}</span>
@@ -299,10 +319,12 @@ function Checkout() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+    <div className="min-w-0 space-y-1.5">
+      <Label id={`${id}-label`} htmlFor={id} className="text-xs text-muted-foreground">
+        {label}
+      </Label>
       {children}
     </div>
   );

@@ -50,6 +50,9 @@ export function ManualContactActions({ preview }: { preview: string }) {
           WhatsApp contact configuration is unavailable. Use email or copy the request instead.
         </p>
       )}
+      <p role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-accent">
+        {copied ? "Request copied locally — not submitted or sent." : ""}
+      </p>
     </div>
   );
 }
