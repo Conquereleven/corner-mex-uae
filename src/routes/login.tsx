@@ -36,6 +36,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -50,6 +51,22 @@ function Login() {
     await navigate({ to: safeInternalRedirect(redirect) as "/" });
   }
 
+  async function continueWithGoogle() {
+    setError(null);
+    setGoogleLoading(true);
+    const destination = safeInternalRedirect(redirect, "/account");
+    const callback = new URL("/auth/callback", window.location.origin);
+    callback.searchParams.set("redirect", destination);
+    const result = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: callback.toString() },
+    });
+    if (result.error) {
+      setGoogleLoading(false);
+      setError("Unable to start Google sign-in. Please try again.");
+    }
+  }
+
   return (
     <SiteLayout>
       <section className="mx-auto max-w-md px-4 py-20 sm:px-6">
@@ -60,11 +77,26 @@ function Login() {
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           Use your confirmed CornerMex email and password. Account access does not enable checkout.
         </p>
-        <form onSubmit={submit} className="mt-8 space-y-4">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={googleLoading}
+          className="mt-8 w-full rounded-full"
+          onClick={() => void continueWithGoogle()}
+        >
+          {googleLoading ? "Opening Google…" : "Continue with Google"}
+        </Button>
+        <div className="my-6 flex items-center gap-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">or</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+        <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               autoComplete="email"
               required
@@ -76,6 +108,7 @@ function Login() {
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
+              name="password"
               type="password"
               autoComplete="current-password"
               required

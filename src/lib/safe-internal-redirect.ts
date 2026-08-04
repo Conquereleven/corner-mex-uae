@@ -1,5 +1,28 @@
 const INTERNAL_ORIGIN = "https://cornermex.invalid";
 
+function hasUnsafeRedirectEncoding(value: string) {
+  let decoded = value;
+  for (let pass = 0; pass < 3; pass += 1) {
+    let next: string;
+    try {
+      next = decodeURIComponent(decoded);
+    } catch {
+      return true;
+    }
+    if (next === decoded) break;
+    decoded = next;
+  }
+
+  return (
+    decoded.startsWith("//") ||
+    decoded.includes("\\") ||
+    [...decoded].some((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint < 32 || codePoint === 127;
+    })
+  );
+}
+
 export function safeInternalRedirect(value: unknown, fallback = "/") {
   const hasControlCharacter =
     typeof value === "string" &&
@@ -12,7 +35,8 @@ export function safeInternalRedirect(value: unknown, fallback = "/") {
     !value.startsWith("/") ||
     value.startsWith("//") ||
     value.includes("\\") ||
-    hasControlCharacter
+    hasControlCharacter ||
+    hasUnsafeRedirectEncoding(value)
   ) {
     return fallback;
   }
