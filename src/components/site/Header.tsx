@@ -43,7 +43,7 @@ export function Header() {
               {t("nav.shop")}
             </Link>
             <Link to="/b2b" className="transition-colors hover:text-foreground">
-              {t("nav.b2b")}
+              Business
             </Link>
             <Link to="/about" className="transition-colors hover:text-foreground">
               {t("nav.about")}
@@ -99,13 +99,15 @@ export function Header() {
               </Button>
             </Link>
             <Link to={user ? "/account" : "/login"} className="ms-1">
-              <Button variant="ghost" size="icon" aria-label={user ? "Account" : "Sign in"}>
+              <Button variant="ghost" size="sm" aria-label={user ? "Account" : "Sign in"} className="gap-1.5">
                 <User className="h-4 w-4" />
+                <span className="hidden lg:inline">{user ? "Account" : "Sign in"}</span>
               </Button>
             </Link>
             <Link to="/cart">
-              <Button variant="ghost" size="icon" aria-label="Cart" className="relative">
+              <Button variant="ghost" size="sm" aria-label="Cart" className="relative gap-1.5">
                 <ShoppingBag className="h-4 w-4" />
+                <span className="hidden lg:inline">Cart</span>
                 {cartCount > 0 && (
                   <span className="absolute -end-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
                     {cartCount}

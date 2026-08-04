@@ -38,10 +38,17 @@ export function writeQuoteSelection(
   const safeIds = sanitizeQuoteSelection(productIds);
   if (!storage) return safeIds;
   try {
-    if (safeIds.length === 0) storage.removeItem(QUOTE_SELECTION_STORAGE_KEY);
+    if (safeIds.length === 0) clearQuoteSelection(storage);
     else storage.setItem(QUOTE_SELECTION_STORAGE_KEY, JSON.stringify(safeIds));
   } catch {
     return [];
   }
   return safeIds;
+}
+
+export function clearQuoteSelection(
+  storage: SessionStorageAdapter | undefined = browserSessionStorage(),
+) {
+  if (!storage) return;
+  storage.removeItem(QUOTE_SELECTION_STORAGE_KEY);
 }
