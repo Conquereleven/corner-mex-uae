@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { getMyAccount, getMyOrders, becomeSeller } from "@/lib/account.functions";
 import { getReviewableItems } from "@/lib/reviews.functions";
-import { adminBootstrap, isAdmin } from "@/lib/admin.functions";
+import { isAdmin } from "@/lib/admin.functions";
 import { buyerListOrderShipments } from "@/lib/shipments.functions";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,7 +85,6 @@ function Account() {
           <div className="space-y-6">
             {(reviewable.data ?? []).length > 0 && <PendingReviewsCard items={reviewable.data as any[]} />}
             {!account.data?.seller && <BecomeSellerCard />}
-            {!admin.data?.admin && <AdminBootstrapCard />}
           </div>
         </div>
       </section>
@@ -200,27 +199,6 @@ function BecomeSellerCard() {
             <Button type="submit" disabled={m.isPending} className="w-full rounded-full">{m.isPending ? "..." : "Submit"}</Button>
           </form>
         )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function AdminBootstrapCard() {
-  const qc = useQueryClient();
-  const fn = useServerFn(adminBootstrap);
-  const m = useMutation({
-    mutationFn: () => fn({}),
-    onSuccess: () => { toast.success("You are now admin"); qc.invalidateQueries({ queryKey: ["is-admin"] }); },
-    onError: (e: any) => toast.error(e.message),
-  });
-  return (
-    <Card>
-      <CardHeader><CardTitle>Claim admin</CardTitle></CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">If no admin exists yet, you can claim it for this workspace.</p>
-        <Button variant="outline" className="w-full rounded-full" onClick={() => m.mutate()} disabled={m.isPending}>
-          {m.isPending ? "..." : "Claim admin role"}
-        </Button>
       </CardContent>
     </Card>
   );

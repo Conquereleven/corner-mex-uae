@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Globe, DollarSign, Home, Search, Building2, Info } from "lucide-react";
+import { Globe, DollarSign, Home, Search, Building2, Info, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LANGS } from "@/lib/i18n";
 import { useCurrency, CURRENCIES } from "@/lib/use-currency";
+import { useSession } from "@/lib/use-session";
 import {
   DesertGlassBadge,
   DesertGlassControl,
@@ -20,6 +21,7 @@ export function Header() {
   const { t, i18n } = useTranslation();
   const change = (code: string) => i18n.changeLanguage(code);
   const cur = useCurrency();
+  const { user } = useSession();
 
   return (
     <>
@@ -92,6 +94,11 @@ export function Header() {
             <Link to="/b2b/quote" className="ms-1 hidden sm:block">
               <Button size="sm" variant="outline" className="rounded-full">
                 Manual quote
+              </Button>
+            </Link>
+            <Link to={user ? "/account" : "/login"} className="ms-1">
+              <Button variant="ghost" size="icon" aria-label={user ? "Account" : "Sign in"}>
+                <User className="h-4 w-4" />
               </Button>
             </Link>
           </div>
