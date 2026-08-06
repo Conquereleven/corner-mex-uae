@@ -22,8 +22,12 @@ const previewFormatter = read("src/features/b2b-catalog/manual-quote-request.ts"
 
 test("async-hooks shim is resolved only for the Vite client environment", () => {
   assert.match(vite, /this\.environment\.name === "client"/);
-  assert.match(vite, /environments:\s*\{\s*client:/);
-  assert.doesNotMatch(vite, /resolve:\s*\{\s*alias:\s*\{[\s\S]{0,300}"node:async_hooks"/);
+  assert.match(vite, /configEnvironment\(environmentName\)[\s\S]*environmentName !== "client"/);
+  assert.match(
+    vite,
+    /environmentName !== "client"[\s\S]*resolve:[\s\S]*"node:async_hooks"[\s\S]*exclude:[\s\S]*@tanstack\/start-client-core/,
+  );
+  assert.doesNotMatch(vite, /vite:\s*\{\s*resolve:\s*\{[\s\S]{0,300}"node:async_hooks"/);
 });
 
 test("native AsyncLocalStorage retains context through awaited continuations", async () => {

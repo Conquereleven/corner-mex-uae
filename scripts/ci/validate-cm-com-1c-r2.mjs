@@ -13,10 +13,14 @@ const rejectMatch = (file, pattern, message) => {
 
 const vite = "vite.config.ts";
 requireMatch(vite, /this\.environment\.name === "client"/, "async-hooks shim must be client-only");
-requireMatch(vite, /environments:\s*\{\s*client:/, "dependency optimization must be client-scoped");
+requireMatch(
+  vite,
+  /configEnvironment\(environmentName\)[\s\S]*environmentName !== "client"[\s\S]*resolve:[\s\S]*["']node:async_hooks["']:[\s\S]*optimizeDeps:[\s\S]*@tanstack\/start-client-core/,
+  "async-hooks resolution and dependency optimization must be client-scoped",
+);
 rejectMatch(
   vite,
-  /resolve:\s*\{\s*alias:\s*\{[\s\S]{0,300}["']node:async_hooks["']/,
+  /vite:\s*\{\s*resolve:\s*\{[\s\S]{0,300}["']node:async_hooks["']/,
   "global async-hooks alias is forbidden",
 );
 

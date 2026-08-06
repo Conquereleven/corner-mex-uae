@@ -29,7 +29,9 @@ const browserFiles = (await filesUnder(publicRoot)).filter((file) => /\.(?:js|mj
 assert(serverFiles.length > 0, "SSR_ASYNC_CONTEXT_SERVER_OUTPUT_MISSING");
 assert(browserFiles.length > 0, "SSR_ASYNC_CONTEXT_BROWSER_OUTPUT_MISSING");
 
-const newestInput = Math.max(...(await Promise.all(sourceInputs.map((file) => stat(file)))).map((s) => s.mtimeMs));
+const newestInput = Math.max(
+  ...(await Promise.all(sourceInputs.map((file) => stat(file)))).map((s) => s.mtimeMs),
+);
 const oldestServerOutput = Math.min(
   ...(await Promise.all(serverFiles.map((file) => stat(file)))).map((s) => s.mtimeMs),
 );
@@ -38,8 +40,12 @@ assert(
   "SSR_ASYNC_CONTEXT_OUTPUT_STALE: run npm run build before this validator",
 );
 
-const serverText = (await Promise.all(serverFiles.map((file) => readFile(file, "utf8")))).join("\n");
-const browserText = (await Promise.all(browserFiles.map((file) => readFile(file, "utf8")))).join("\n");
+const serverText = (await Promise.all(serverFiles.map((file) => readFile(file, "utf8")))).join(
+  "\n",
+);
+const browserText = (await Promise.all(browserFiles.map((file) => readFile(file, "utf8")))).join(
+  "\n",
+);
 const synchronousShimSignature =
   /class AsyncLocalStorage[\s\S]{0,900}const prev = this\.store;[\s\S]{0,500}finally \{\s*this\.store = prev;/;
 

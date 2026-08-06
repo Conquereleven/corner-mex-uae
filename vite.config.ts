@@ -20,6 +20,19 @@ export default defineConfig({
       {
         name: "cornermex:browser-async-hooks-shim",
         enforce: "pre",
+        configEnvironment(environmentName) {
+          if (environmentName !== "client") return;
+          return {
+            resolve: {
+              alias: {
+                "node:async_hooks": browserAsyncHooksShim,
+              },
+            },
+            optimizeDeps: {
+              exclude: ["@tanstack/start-client-core", "@tanstack/start-storage-context"],
+            },
+          };
+        },
         resolveId(source) {
           if (source === "node:async_hooks" && this.environment.name === "client") {
             return browserAsyncHooksShim;
@@ -28,16 +41,5 @@ export default defineConfig({
         },
       },
     ],
-    environments: {
-      client: {
-        optimizeDeps: {
-          esbuildOptions: {
-            alias: {
-              "node:async_hooks": browserAsyncHooksShim,
-            },
-          },
-        },
-      },
-    },
   },
 });
