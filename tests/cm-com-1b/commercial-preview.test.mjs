@@ -8,58 +8,67 @@ async function source(path) {
   return readFile(new URL(path, root), "utf8");
 }
 
-test("public chrome presents a truthful phase-one commercial preview", async () => {
-  const [header, footer, home, shop, filters] = await Promise.all([
+test("public chrome truthfully presents independent B2C and B2B surfaces", async () => {
+  const [header, footer, home, shop, filters, login, cart, checkout] = await Promise.all([
     source("src/components/site/Header.tsx"),
     source("src/components/site/Footer.tsx"),
     source("src/routes/index.tsx"),
     source("src/routes/shop.tsx"),
     source("src/components/site/ShopFilters.tsx"),
+    source("src/routes/login.tsx"),
+    source("src/routes/cart.tsx"),
+    source("src/routes/checkout.tsx"),
   ]);
 
   assert.match(header, /Commercial preview/);
+  for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"]) {
+    assert.match(header, new RegExp(label));
+  }
+  assert.match(header, /to="\/cart"/);
+  assert.match(header, /user \? "\/account" : "\/login"/);
+  assert.match(footer, /B2C cart and account access are available/);
   assert.match(
     footer,
-    /Ordering, checkout, payment, live stock and\s+automated messages are not available/,
+    /Checkout and order processing run only\s+when\s+authorized configuration is enabled/,
   );
+  assert.match(footer, /B2B quote requests remain manual/);
+  assert.match(footer, /does\s+not claim that an order, payment or quote request was processed/);
+  assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote request received/i);
   assert.match(shop, /Product discovery only/);
   assert.match(home, /UAE commercial preview/);
   assert.doesNotMatch(filters, /In stock only|title="Availability"/);
-
-  for (const forbiddenPath of ['to="/cart"', 'to="/signup"', 'to="/account"', 'to="/sellers']) {
-    assert.doesNotMatch(`${header}\n${footer}`, new RegExp(forbiddenPath.replace(/["/]/g, "\\$&")));
-  }
+  assert.match(login, /signInWithPassword/);
+  assert.match(cart, /component: Cart/);
+  assert.match(checkout, /component: Checkout/);
+  assert.doesNotMatch(`${header}\n${footer}`, /to="\/(?:signup|sellers)/);
 });
 
-test("public conversion surfaces contain no database or automated-message writes", async () => {
+test("B2B conversion remains manual without order creation or automated messaging", async () => {
   const paths = [
     "src/components/site/Footer.tsx",
-    "src/components/site/ProductCard.tsx",
     "src/routes/b2b_.lead.tsx",
-    "src/routes/cart.tsx",
-    "src/routes/checkout.tsx",
-    "src/routes/checkout.bnpl.$provider.$orderId.tsx",
-    "src/routes/login.tsx",
-    "src/routes/order-confirmed.tsx",
-    "src/routes/product.$slug.tsx",
-    "src/routes/signup.tsx",
+    "src/routes/b2b_.catalog.tsx",
+    "src/routes/b2b_.quote.tsx",
+    "src/components/b2b/ManualQuoteRequestForm.tsx",
+    "src/components/b2b/ManualQuoteRequestPreview.tsx",
   ];
   const combined = (await Promise.all(paths.map(source))).join("\n");
 
   for (const forbidden of [
     "subscribeNewsletter",
     "submitB2bLead",
-    "trackCatalogEvent",
-    "trackProductView",
-    "trackEvent(",
-    "supabase.auth.signUp",
-    "supabase.auth.signIn",
-    "toggleWishlist",
-    "useCart(",
-    "addToCart",
+    "createServerFn",
+    "placeOrder",
+    "createStripeSession",
+    "sendEmail",
+    "sendWhatsApp",
+    "capturePayment",
+    "supabase",
   ]) {
     assert.doesNotMatch(combined, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
+  assert.match(combined, /Nothing is submitted, sent, or\s+stored by this page/);
+  assert.match(combined, /reviewed manually/i);
 });
 
 test("canonical URLs are domain-ready and contain no legacy Lovable origin", async () => {
@@ -100,19 +109,53 @@ test("shipping, returns, privacy and terms are discoverable without unsupported 
   );
 });
 
-test("checkout is fail-closed and public sitemaps exclude seller routes", async () => {
-  const [checkout, bnpl, orderConfirmed, sitemap, publicSitemap] = await Promise.all([
+test("dual commerce execution fails closed and public sitemaps exclude seller routes", async () => {
+  const [
+    checkout,
+    serverGate,
+    orders,
+    payments,
+    bnpl,
+    orderConfirmed,
+    cartStore,
+    quoteSelection,
+    b2bQuote,
+    sitemap,
+    publicSitemap,
+  ] = await Promise.all([
     source("src/routes/checkout.tsx"),
+    source("src/lib/checkout-execution.server.ts"),
+    source("src/lib/orders.functions.ts"),
+    source("src/lib/payments.functions.ts"),
     source("src/routes/checkout.bnpl.$provider.$orderId.tsx"),
     source("src/routes/order-confirmed.tsx"),
+    source("src/lib/cart.ts"),
+    source("src/features/b2b-catalog/quote-selection.ts"),
+    source("src/routes/b2b_.quote.tsx"),
     source("src/routes/sitemap[.]xml.ts"),
     source("src/routes/api/public/sitemap[.]xml.ts"),
   ]);
 
-  assert.match(checkout, /beforeLoad:[\s\S]*throw redirect\(\{ to: "\/cart" \}\)/);
+  assert.match(checkout, /VITE_CORNERMEX_CHECKOUT_ENABLED === "true"/);
+  assert.match(checkout, /const canExecute = CHECKOUT_ENABLED &&/);
+  assert.match(checkout, /disabled=\{!canExecute \|\| submitting\}/);
+  assert.match(checkout, /no order or\s+payment will be created/i);
+  assert.match(serverGate, /value = process\.env\.CORNERMEX_CHECKOUT_ENABLED/);
+  assert.match(serverGate, /return value === "true"/);
+  assert.match(serverGate, /throw new Error\(CHECKOUT_EXECUTION_DISABLED\)/);
+
+  const orderHandler = orders.indexOf(".handler(async ({ data, context }) => {");
+  const orderGate = orders.indexOf("assertCheckoutExecutionEnabled();", orderHandler);
+  const firstOrderEffect = orders.indexOf("supabaseAdmin", orderHandler);
+  assert.ok(orderHandler >= 0 && orderGate > orderHandler && orderGate < firstOrderEffect);
+  assert.equal((payments.match(/assertCheckoutExecutionEnabled\(\);/g) ?? []).length, 3);
+
   assert.match(bnpl, /throw redirect\(\{ to: "\/cart" \}\)/);
   assert.match(orderConfirmed, /throw redirect\(\{ to: "\/cart" \}\)/);
-  assert.doesNotMatch(checkout.match(/beforeLoad:[\s\S]*?\n\s*},/)?.[0] ?? "", /CHECKOUT_ENABLED/);
+  assert.match(cartStore, /B2C_CART_STORAGE_KEY = "cornermex-cart-v1"/);
+  assert.match(quoteSelection, /QUOTE_SELECTION_STORAGE_KEY = "cm\.quoteSelection"/);
+  assert.doesNotMatch(checkout, /quote-selection|cm\.quoteSelection/);
+  assert.doesNotMatch(b2bQuote, /placeOrder|createStripeSession|useCart|cornermex-cart-v1/);
   assert.doesNotMatch(`${sitemap}\n${publicSitemap}`, /loc: `\$\{origin\}\/sellers|"\/sellers"/);
 });
 

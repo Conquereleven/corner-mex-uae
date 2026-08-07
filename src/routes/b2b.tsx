@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Mail, BadgeCheck } from "lucide-react";
+import { ArrowRight, ClipboardList, Mail, BadgeCheck } from "lucide-react";
 import i18n from "@/lib/i18n";
 import { siteUrl } from "@/lib/site-url";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
@@ -39,8 +39,13 @@ function B2B() {
         <h1 className="mt-4 font-display text-5xl tracking-tight">{t("pages.b2b.title")}</h1>
         <p className="mt-6 text-lg text-muted-foreground">{t("pages.b2b.lede")}</p>
         <div className="mt-8 flex flex-wrap gap-3">
+          <Link to="/b2b/catalog">
+            <Button size="lg" className="min-h-11 rounded-full">
+              Explore Wave 1 <ArrowRight className="ms-2 h-4 w-4" />
+            </Button>
+          </Link>
           <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
-            <Button size="lg" className="rounded-full">
+            <Button size="lg" variant="outline" className="min-h-11 rounded-full">
               <Mail className="me-2 h-4 w-4" /> {t("pages.b2b.ctaQuote")}
             </Button>
           </a>

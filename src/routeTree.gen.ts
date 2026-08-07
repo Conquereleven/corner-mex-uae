@@ -30,7 +30,10 @@ import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
+import { Route as B2bQuoteRouteImport } from './routes/b2b_.quote'
 import { Route as B2bLeadRouteImport } from './routes/b2b_.lead'
+import { Route as B2bCatalogRouteImport } from './routes/b2b_.catalog'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiReadyRouteImport } from './routes/api/ready'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
@@ -199,9 +202,24 @@ const LegalSlugRoute = LegalSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => LegalRoute,
 } as any)
+const B2bQuoteRoute = B2bQuoteRouteImport.update({
+  id: '/b2b_/quote',
+  path: '/b2b/quote',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const B2bLeadRoute = B2bLeadRouteImport.update({
   id: '/b2b_/lead',
   path: '/b2b/lead',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const B2bCatalogRoute = B2bCatalogRouteImport.update({
+  id: '/b2b_/catalog',
+  path: '/b2b/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiReadyRoute = ApiReadyRouteImport.update({
@@ -595,7 +613,10 @@ export interface FileRoutesByFullPath {
   '/seller': typeof AuthenticatedSellerRouteWithChildren
   '/api/health': typeof ApiHealthRoute
   '/api/ready': typeof ApiReadyRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/b2b/catalog': typeof B2bCatalogRoute
   '/b2b/lead': typeof B2bLeadRoute
+  '/b2b/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
@@ -678,7 +699,10 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/api/health': typeof ApiHealthRoute
   '/api/ready': typeof ApiReadyRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/b2b/catalog': typeof B2bCatalogRoute
   '/b2b/lead': typeof B2bLeadRoute
+  '/b2b/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
@@ -760,7 +784,10 @@ export interface FileRoutesById {
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
   '/api/health': typeof ApiHealthRoute
   '/api/ready': typeof ApiReadyRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/b2b_/catalog': typeof B2bCatalogRoute
   '/b2b_/lead': typeof B2bLeadRoute
+  '/b2b_/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
@@ -848,7 +875,10 @@ export interface FileRouteTypes {
     | '/seller'
     | '/api/health'
     | '/api/ready'
+    | '/auth/callback'
+    | '/b2b/catalog'
     | '/b2b/lead'
+    | '/b2b/quote'
     | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
@@ -931,7 +961,10 @@ export interface FileRouteTypes {
     | '/account'
     | '/api/health'
     | '/api/ready'
+    | '/auth/callback'
+    | '/b2b/catalog'
     | '/b2b/lead'
+    | '/b2b/quote'
     | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
@@ -1012,7 +1045,10 @@ export interface FileRouteTypes {
     | '/_authenticated/seller'
     | '/api/health'
     | '/api/ready'
+    | '/auth/callback'
+    | '/b2b_/catalog'
     | '/b2b_/lead'
+    | '/b2b_/quote'
     | '/legal/$slug'
     | '/product/$slug'
     | '/sellers/$slug'
@@ -1097,7 +1133,10 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiReadyRoute: typeof ApiReadyRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  B2bCatalogRoute: typeof B2bCatalogRoute
   B2bLeadRoute: typeof B2bLeadRoute
+  B2bQuoteRoute: typeof B2bQuoteRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -1254,11 +1293,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalSlugRouteImport
       parentRoute: typeof LegalRoute
     }
+    '/b2b_/quote': {
+      id: '/b2b_/quote'
+      path: '/b2b/quote'
+      fullPath: '/b2b/quote'
+      preLoaderRoute: typeof B2bQuoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/b2b_/lead': {
       id: '/b2b_/lead'
       path: '/b2b/lead'
       fullPath: '/b2b/lead'
       preLoaderRoute: typeof B2bLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/b2b_/catalog': {
+      id: '/b2b_/catalog'
+      path: '/b2b/catalog'
+      fullPath: '/b2b/catalog'
+      preLoaderRoute: typeof B2bCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ready': {
@@ -2002,7 +2062,10 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiReadyRoute: ApiReadyRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
+  B2bCatalogRoute: B2bCatalogRoute,
   B2bLeadRoute: B2bLeadRoute,
+  B2bQuoteRoute: B2bQuoteRoute,
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,

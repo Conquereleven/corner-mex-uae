@@ -86,8 +86,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:cm-com-1b
+      - run: npm run test:cm-com-1c
+      - run: npm run validate:cm-com-1c-r1
+      - run: npm run test:cm-com-1c-r1
+      - run: npm run validate:cm-com-1c-r2
+      - run: npm run test:cm-com-1c-r2
       - run: npm run typecheck
       - run: npm run build
+      - run: npm run validate:ssr-async-context
       - run: npm run build:railway
       - run: npm run validate:browser-secrets
       - name: Node server health smoke

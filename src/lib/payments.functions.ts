@@ -3,10 +3,12 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getRequest } from "@tanstack/react-start/server";
+import { assertCheckoutExecutionEnabled } from "@/lib/checkout-execution.server";
 
 function getAppUrl(): string {
   const request = getRequest();
-  const host = request?.headers?.get("host") || "project--d9495376-339d-44dd-9c8a-db0f7b451f96.lovable.app";
+  const host =
+    request?.headers?.get("host") || "project--d9495376-339d-44dd-9c8a-db0f7b451f96.lovable.app";
   const protocol = host.includes("localhost") ? "http" : "https";
   return `${protocol}://${host}`;
 }
@@ -20,16 +22,21 @@ async function getStripe() {
 
 export const createStripeSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { orderId: string }) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .inputValidator((input: { orderId: string }) =>
+    z.object({ orderId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
+    assertCheckoutExecutionEnabled();
     const { userId } = context;
     const stripe = await getStripe();
     const appUrl = getAppUrl();
 
     const { data: order, error: oErr } = await supabaseAdmin
       .from("orders")
-      .select(`id, order_number, total_aed, subtotal_aed, shipping_aed, tax_aed, discount_aed, status, buyer_id,
-        items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed)`)
+      .select(
+        `id, order_number, total_aed, subtotal_aed, shipping_aed, tax_aed, discount_aed, status, buyer_id,
+        items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed)`,
+      )
       .eq("id", data.orderId)
       .eq("buyer_id", userId)
       .single();
@@ -92,6 +99,7 @@ export const confirmBnplPayment = createServerFn({ method: "POST" })
     z.object({ orderId: z.string().uuid(), provider: z.enum(["tabby", "tamara"]) }).parse(input),
   )
   .handler(async ({ data, context }) => {
+    assertCheckoutExecutionEnabled();
     const { userId } = context;
     const { data: order } = await supabaseAdmin
       .from("orders")
@@ -111,7 +119,8 @@ export const confirmBnplPayment = createServerFn({ method: "POST" })
       raw: { simulated: true, approved_at: new Date().toISOString() },
     });
 
-    await supabaseAdmin.from("orders")
+    await supabaseAdmin
+      .from("orders")
       .update({ payment_status: "paid", status: "paid" })
       .eq("id", data.orderId);
 
@@ -120,15 +129,20 @@ export const confirmBnplPayment = createServerFn({ method: "POST" })
 
 export const getOrderForConfirmation = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { orderId: string }) => z.object({ orderId: z.string().uuid() }).parse(input))
+  .inputValidator((input: { orderId: string }) =>
+    z.object({ orderId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
+    assertCheckoutExecutionEnabled();
     const { userId } = context;
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select(`id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
+      .select(
+        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
         items:order_items(product_name, variant_label, qty, unit_price_aed, line_total_aed, seller_id, fulfillment_status,
           seller:sellers(store_name)
-        )`)
+        )`,
+      )
       .eq("id", data.orderId)
       .eq("buyer_id", userId)
       .single();
