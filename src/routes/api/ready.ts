@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { getCommerceSafetyStatus, validateCommerceEnvironment } from "../../config/commerce-env.ts";
+import { applicationServiceName } from "../../lib/service-identity.ts";
 
 const READINESS_TIMEOUT_MS = 4_000;
 
@@ -26,7 +27,7 @@ export async function getReadinessResponse(
     return Response.json(
       {
         status: "degraded",
-        service: "cornermex-web",
+        service: applicationServiceName(environment),
         target: "unavailable",
         missing: validation.missing,
         errors: validation.errors,
@@ -45,7 +46,7 @@ export async function getReadinessResponse(
     return Response.json(
       {
         status: ready ? "ready" : "degraded",
-        service: "cornermex-web",
+        service: applicationServiceName(environment),
         target: ready ? "reachable" : "unavailable",
         capabilities,
       },
@@ -55,7 +56,7 @@ export async function getReadinessResponse(
     return Response.json(
       {
         status: "degraded",
-        service: "cornermex-web",
+        service: applicationServiceName(environment),
         target: "unavailable",
         capabilities,
       },

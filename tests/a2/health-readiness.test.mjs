@@ -11,6 +11,21 @@ test("health is side-effect free and contains no environment values", () => {
   assert.doesNotMatch(JSON.stringify(payload), /never/);
 });
 
+test("health and readiness report the environment's service identity consistently", async () => {
+  const environment = {
+    RAILWAY_SERVICE_NAME: "corner-mex-uae",
+    SUPABASE_URL: "https://target.supabase.co",
+    SUPABASE_PUBLISHABLE_KEY: "public-key",
+  };
+  assert.equal(getHealthPayload(environment).service, "corner-mex-uae");
+  const response = await getReadinessResponse(
+    environment,
+    async () => new Response("[]", { status: 200 }),
+  );
+  assert.equal((await response.json()).service, "corner-mex-uae");
+  assert.equal(getHealthPayload({}).service, "corner-mex-uae");
+});
+
 test("readiness fails safely when configuration is absent", async () => {
   const response = await getReadinessResponse({}, async () => {
     throw new Error("must not call network");

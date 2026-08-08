@@ -1,39 +1,39 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-08-01T01:34:29Z",
+  "generatedAt": "2026-08-08T00:45:00Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29",
-    "observedMainSha": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29",
+    "expectedMainSha": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
+    "observedMainSha": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
-    "class": "verified_repository",
-    "source": "GitHub main identity and the Railway deployment status integration were observed read-only. The integration reported staging deployment success for main commit 064a5355d8e860fdef0fa4cf7f2c48ae5d798d29 and preserved the existing successful production deployment on 068b9babacbadf0e786579e056e3363d7afb641c. Direct GETs to /api/health and /api/ready were not re-fetched in this refresh. No Railway or Supabase write was performed.",
-    "sourceIdentity": "github:064a5355d8e860fdef0fa4cf7f2c48ae5d798d29;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:db16f728-1b30-485d-a556-0c19fc4f8975;production-deployment:b3184cee-67b7-4506-969b-bf18fead3292;db2:wlrfknmrhowldygmvtvn",
-    "observedAt": "2026-08-01T01:34:29Z",
-    "freshUntil": "2026-08-08T01:34:29Z"
+    "class": "verified_live",
+    "source": "CM-GOV-3 refresh: GitHub main identity verified via gh; direct read-only GETs to production and staging /api/health and /api/ready returned 200 with status ok/ready. Production health reports commit c9f82892b4bb (PR #21 exact reviewed head, contained in main); staging health reports commit 77e5d24e8a3c (main merge commit). Railway deployment identities observed read-only via CLI. No Railway, Supabase or Lovable write was performed by this refresh.",
+    "sourceIdentity": "github:77e5d24e8a3c9589dac7535480ed7d9dbc60a512;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:fefc9d83-4f06-4b67-8829-a9f033e3ab1f;production-deployment:18dc25e0-1244-44ff-9e66-3a5cc1f02208;db2:wlrfknmrhowldygmvtvn",
+    "observedAt": "2026-08-08T00:45:00Z",
+    "freshUntil": "2026-08-15T00:45:00Z"
   },
   "platforms": {
     "railway": {
       "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
-      "status": "staging_deployment_success_production_unchanged_commercial_flags_off",
-      "stagingActiveSourceCommit": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29",
-      "stagingActiveDeploymentId": "db16f728-1b30-485d-a556-0c19fc4f8975",
+      "status": "staging_and_production_deployment_success_commercial_flags_off",
+      "stagingActiveSourceCommit": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
+      "stagingActiveDeploymentId": "fefc9d83-4f06-4b67-8829-a9f033e3ab1f",
       "stagingActiveDeploymentStatus": "SUCCESS",
-      "stagingPreviousDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+      "stagingPreviousDeploymentId": "51c8aebb-c835-4fc9-a7ea-3cd87950e756",
       "stagingPreviousDeploymentState": "REMOVED",
-      "productionSourceCommit": "068b9babacbadf0e786579e056e3363d7afb641c",
-      "productionDeploymentId": "b3184cee-67b7-4506-969b-bf18fead3292",
-      "productionPreviousDeploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
+      "productionSourceCommit": "c9f82892b4bbe029f2b709eb6a3f00f24026c7c8",
+      "productionDeploymentId": "18dc25e0-1244-44ff-9e66-3a5cc1f02208",
+      "productionPreviousDeploymentId": "dcf40411-651e-4d14-b341-5c2042cbcb04",
       "productionPublicUrl": "https://corner-mex-uae-production.up.railway.app",
       "productionRegion": "asia-southeast1-eqsg3a",
       "governanceModel": "automatic_staging_manual_production",
       "stagingAutoDeploy": true,
       "productionAutoDeploy": false,
       "deploymentCreatedByThisSprint": false,
-      "note": "CM-COM-1A-F1 performed no Railway write. GitHub's Railway status context reported staging deployment db16f728-1b30-485d-a556-0c19fc4f8975 successful for main commit 064a5355d8e860fdef0fa4cf7f2c48ae5d798d29. Production remained on deployment b3184cee-67b7-4506-969b-bf18fead3292 at 068b9babacbadf0e786579e056e3363d7afb641c with auto-deploy disabled. Health, readiness and commercial capability endpoints were not directly re-fetched by this evidence refresh."
+      "note": "CM-GOV-3 performed no Railway write. Production runs deployment 18dc25e0-1244-44ff-9e66-3a5cc1f02208 (SUCCESS, RUNNING) from PR #21 exact reviewed head c9f82892b4bbe029f2b709eb6a3f00f24026c7c8 on branch feature/cm-com-1c-b2b-catalog-manual-quote, deployed manually by the Founder; the head is contained in merged main. Staging runs deployment fefc9d83-4f06-4b67-8829-a9f033e3ab1f from main merge commit. /api/health provenance was independently observed for both environments. Production auto-deploy remains disabled."
     },
     "databases": [
       {
@@ -64,10 +64,10 @@
     }
   },
   "readiness": {
-    "freshLiveReadOnlyPreflight": false,
+    "freshLiveReadOnlyPreflight": true,
     "independentReviewOfRemediationHead": true,
     "reviewedRemediationHeadSha": "33f2231443172b1956c5adf2b609a3e0bb02daab",
-    "declaredReady": false,
+    "declaredReady": true,
     "reviewIdentity": "github-pr-review:PRR_kwDOS0HV_c8AAAABGeXgdA",
     "currentP0RemediationReview": {
       "complete": false,
@@ -92,31 +92,25 @@
       "reviewer": "Sonnet"
     },
     "runtime": {
-      "stagingHealth": "deployment_success_status_observed",
-      "stagingHealthObservedCommit": "064a5355d8e8",
-      "stagingReadiness": "not_reverified",
-      "stagingReadinessDetail": "GitHub's Railway status context reported deployment db16f728-1b30-485d-a556-0c19fc4f8975 successful for source 064a5355d8e860fdef0fa4cf7f2c48ae5d798d29. Direct GET /api/health and GET /api/ready were not completed in this refresh.",
+      "stagingHealth": "verified_live",
+      "stagingHealthObservedCommit": "77e5d24e8a3c",
+      "stagingReadiness": "verified_live_ready",
+      "stagingReadinessDetail": "Direct GET /api/health and /api/ready on cornermex-web-staging returned 200 (status ok/ready) reporting commit 77e5d24e8a3c during the CM-GOV-3 refresh.",
       "productionInstance": "RUNNING",
-      "productionHealth": "previously_verified_not_rechecked",
-      "productionHealthObservedCommit": "068b9babacba",
-      "productionReadiness": "previously_verified_not_rechecked",
-      "productionReadinessDetail": "Production deployment b3184cee-67b7-4506-969b-bf18fead3292 remained the successful Railway status target for source 068b9babacbadf0e786579e056e3363d7afb641c. Direct GET /api/health and GET /api/ready were not re-fetched in this refresh; freshLiveReadOnlyPreflight therefore remains false."
+      "productionHealth": "verified_live",
+      "productionHealthObservedCommit": "c9f82892b4bb",
+      "productionReadiness": "verified_live_ready",
+      "productionReadinessDetail": "Direct GET /api/health and /api/ready on production returned 200 (status ok/ready) reporting commit c9f82892b4bb. Google OAuth, authenticated /account, canonical Founder admin authorization and the Master Dashboard were accepted end-to-end by the Founder during PR #21 runtime acceptance. Checkout, payment and external messaging capabilities remain disabled per /api/ready."
     }
   },
   "program": {
-    "activeSprint": "CM-COM-1A-F1_DESERT_GLASS_MERGE_CHECK_REPAIR",
-    "owner": "Codex",
-    "reviewer": "Sonnet",
+    "activeSprint": "CM-GOV-3_POST_PR21_SECURITY_PROGRAM_HYGIENE",
+    "owner": "Claude",
+    "reviewer": "Founder",
     "blockers": [
-      "Direct staging and production health/readiness endpoints were not re-fetched in this evidence refresh, so freshLiveReadOnlyPreflight remains false.",
-      "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists.",
-      "PR #16's repaired exact head requires renewed Sonnet, Founder and cornermexuae-netizen review before merge.",
-      "Public commerce capabilities remain unauthorized and disabled."
-    ],
-    "nextActions": [
-      "Pass the four required PR #16 checks on the repaired exact head.",
-      "Obtain Sonnet delta review, Founder approval and cornermexuae-netizen approval for the new exact head.",
-      "Preserve production auto-deploy off and make no Railway, Supabase or commercial write without separate authorization."
+      "External Supabase Preview GitHub check fails on main: remote migration versions are not present in the local supabase/migrations directory (integration drift; not a repository CI gate).",
+      "Canonical public.products remains empty; A3.2b remains NOT AUTHORIZED / NOT EXECUTED.",
+      "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists."
     ]
   },
   "safety": {
