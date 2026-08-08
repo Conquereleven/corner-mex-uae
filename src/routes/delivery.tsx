@@ -93,10 +93,15 @@ function Delivery() {
           <ol className="mt-5 space-y-4 text-base leading-7 text-muted-foreground">
             <li>
               <span className="font-medium text-foreground">1. Prepare your cart or quote.</span>{" "}
-              Browse the <Link to="/shop" className="underline underline-offset-4">catalogue</Link>{" "}
+              Browse the{" "}
+              <Link to="/shop" className="underline underline-offset-4">
+                catalogue
+              </Link>{" "}
               for retail, or the{" "}
-              <Link to="/b2b" className="underline underline-offset-4">B2B section</Link> for
-              wholesale.
+              <Link to="/b2b" className="underline underline-offset-4">
+                B2B section
+              </Link>{" "}
+              for wholesale.
             </li>
             <li>
               <span className="font-medium text-foreground">2. Provide your destination.</span> Your

@@ -66,7 +66,10 @@ function Contact() {
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CHANNELS.map((channel) => (
-            <div key={channel.title} className="flex flex-col rounded-2xl border border-border bg-card p-6">
+            <div
+              key={channel.title}
+              className="flex flex-col rounded-2xl border border-border bg-card p-6"
+            >
               <channel.icon className="h-5 w-5 text-primary" aria-hidden="true" />
               <h2 className="mt-4 font-display text-2xl tracking-tight">{channel.title}</h2>
               <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">

@@ -39,7 +39,15 @@ test("legacy /shipping route redirects to /delivery", async () => {
 
 test("footer links every trust destination", async () => {
   const text = await read("src/components/site/Footer.tsx");
-  for (const to of ["/about", "/contact", "/delivery", "/returns", "/privacy", "/terms", "/legal"]) {
+  for (const to of [
+    "/about",
+    "/contact",
+    "/delivery",
+    "/returns",
+    "/privacy",
+    "/terms",
+    "/legal",
+  ]) {
     assert.ok(text.includes(`"${to}"`), `footer missing link to ${to}`);
   }
   assert.doesNotMatch(text, /"\/shipping"/);
@@ -58,7 +66,10 @@ test("sitemaps include contact and delivery and drop the legacy shipping path", 
 test("robots.txt references no retired origin and keeps private surfaces disallowed", async () => {
   const text = await read("public/robots.txt");
   assert.doesNotMatch(text, /lovable\.app/);
-  assert.match(text, /Sitemap: https:\/\/corner-mex-uae-production\.up\.railway\.app\/sitemap\.xml/);
+  assert.match(
+    text,
+    /Sitemap: https:\/\/corner-mex-uae-production\.up\.railway\.app\/sitemap\.xml/,
+  );
   for (const p of ["/admin", "/account", "/checkout", "/cart"]) {
     assert.ok(text.includes(`Disallow: ${p}`), `robots must disallow ${p}`);
   }
@@ -96,7 +107,11 @@ test("trust surfaces contain no fabricated promises or fake badges", async () =>
     /\+971[\s\d-]{7,}/,
     /TRN[\s:]*\d/,
   ];
-  const surfaces = [...TRUST_ROUTES, "src/components/site/Trust.tsx", "src/components/site/Footer.tsx"];
+  const surfaces = [
+    ...TRUST_ROUTES,
+    "src/components/site/Trust.tsx",
+    "src/components/site/Footer.tsx",
+  ];
   for (const file of surfaces) {
     const text = await read(file);
     for (const pattern of banned) {
@@ -136,7 +151,11 @@ test("commercial execution remains disabled by default", () => {
 });
 
 test("contact and trust components use the central public contact registry", async () => {
-  for (const file of ["src/routes/contact.tsx", "src/components/site/Trust.tsx", "src/components/site/Footer.tsx"]) {
+  for (const file of [
+    "src/routes/contact.tsx",
+    "src/components/site/Trust.tsx",
+    "src/components/site/Footer.tsx",
+  ]) {
     const text = await read(file);
     assert.ok(
       !/mailto:[a-z0-9.]+@/i.test(text),
