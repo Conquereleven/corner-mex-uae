@@ -1,39 +1,33 @@
-# Active Sprint: CM-PROD-1 — Controlled Production Frontend Launch
+# Active Sprint: CM-GOV-3 — Post-PR #21 Security & Program State Hygiene
 
-- Owner: Codex
-- Reviewer: Sonnet
-- Branch: `ops/production-frontend-launch-evidence`
-- Base/main source: `068b9babacbadf0e786579e056e3363d7afb641c`
-- Founder decision: `FD-CM-PROD-LAUNCH-001`
-- Status: production launch `executed_verified`; short evidence delta review pending
+- Owner: Claude
+- Reviewer: Founder
+- Branch: `security/cm-gov-3-post-pr21-hygiene`
+- Base/main source: `77e5d24e8a3c9589dac7535480ed7d9dbc60a512`
+- Status: implementation complete; draft PR pending independent review
 
-## Verified production result
+## Verified current production result
 
-- Railway deployment: `b3184cee-67b7-4506-969b-bf18fead3292` (`SUCCESS`, active)
-- previous rollback target: `bac2a5b3-0b8a-4243-8046-531113a4ca18`
-- source: `068b9babacbadf0e786579e056e3363d7afb641c`
-- URL: `https://corner-mex-uae-production.up.railway.app`
-- region: `asia-southeast1-eqsg3a`
-- `/`: `200`, non-empty frontend, public navigation operational
-- `/api/health`: `200`, `status: ok`, commit `068b9babacba`
-- `/api/ready`: `200`, `status: ready`, `target: reachable`
-- checkout, payment, marketplace, commissions, external messaging, orders, inventory mutation and A3.2b: disabled
-- rollback performed: no
+- PR #21 (CM-COM-1C dual B2C/B2B commerce and admin access) is MERGED; merge commit `77e5d24e8a3c9589dac7535480ed7d9dbc60a512`; independently reviewed exact head `c9f82892b4bbe029f2b709eb6a3f00f24026c7c8` is contained in main.
+- Production deployment: `18dc25e0-1244-44ff-9e66-3a5cc1f02208` (`SUCCESS`, `RUNNING`), source `c9f82892b4bb...` (PR #21 exact head), Founder-executed manual deployment.
+- Staging deployment: `fefc9d83-4f06-4b67-8829-a9f033e3ab1f` (`SUCCESS`), source `77e5d24e8a3c...` (main).
+- `/api/health` and `/api/ready`: `200` on both environments with matching commit provenance.
+- Founder runtime acceptance completed: Google OAuth end-to-end, `/auth/callback`, authenticated `/account`, canonical admin authorization (`user_roles.role = 'admin'`), Master Dashboard.
+- Checkout, payment, marketplace, commissions, external messaging, orders, inventory mutation and A3.2b remain disabled/not authorized.
+- Canonical `public.products` remains empty; catalog population (A3.2b) stays a separately authorized operation.
 
-## Platform writes performed
+## Sprint scope (CM-GOV-3)
 
-Railway production received one grouped application containing the Singapore region correction, one Railway public domain, and variables `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `CORNERMEX_COMMERCE_MODEL`. Secret values were never printed or committed. Railway created one deployment from the exact authorized source. Production auto-deploy remained disabled.
+- SECURITY: remove the preexisting `adminBootstrap` self-service zero-admin claim path; add regression coverage.
+- OBSERVABILITY: health/readiness service identity derived from the runtime environment (`RAILWAY_SERVICE_NAME`, fallback `corner-mex-uae`) instead of the hardcoded `cornermex-web` label.
+- PROGRAM STATE: reconcile `CURRENT_STATE.json`, `DEPLOYMENT_REGISTRY.json` and this file to verified post-merge reality; historical evidence documents preserved unchanged.
+- PLATFORM CLEANUP: delete the accidental Railway project `pr21-head` after conclusive isolation proof.
+
+## Known open items
+
+- External "Supabase Preview" GitHub check fails on main: remote migration versions missing from `supabase/migrations` (integration drift; not a repository CI gate).
+- Production deployment `18dc25e0...` lacks a recorded `FD-CM-*` decision document (Founder-executed; formal record pending).
 
 ## Explicitly not executed
 
-No Supabase write, migration, schema change, credential creation or rotation, custom domain, DNS, checkout, payment, marketplace, commission, order, inventory mutation, external message, A3.2b, Lovable action, or commercial activation was performed.
-
-## Exit checklist
-
-- [x] Verify exact merged source and green CI.
-- [x] Verify staging read-only and production rollback target.
-- [x] Apply the minimum authorized Railway configuration in one group.
-- [x] Observe exact-source deployment through SUCCESS and activation.
-- [x] Verify health, readiness, Supabase reachability, public frontend and commercial-off gates.
-- [x] Record redacted execution evidence and minimum tests.
-- [ ] Obtain Sonnet short evidence delta review before merge.
+No CM-COM-2 work, no A3.2b, no product population, no checkout/payment/external messaging enablement, no inventory or order mutation, no seller approval, no OAuth configuration change, no credential rotation, no DNS/custom domain change, no CornerOps write.

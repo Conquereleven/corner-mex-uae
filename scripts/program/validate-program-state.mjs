@@ -178,7 +178,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   const deploymentIds = registry.deployments.map(({ deploymentId }) => deploymentId);
   assert(new Set(deploymentIds).size === deploymentIds.length, "DEPLOYMENT_ID_DUPLICATE");
   const expectedHistoryCount =
-    registry.expectedContexts.length * (registry.failedSourceCommits.length + 3) + 1;
+    registry.expectedContexts.length * (registry.failedSourceCommits.length + 4) + 1;
   assert(registry.deployments.length === expectedHistoryCount, "DEPLOYMENT_HISTORY_INCOMPLETE");
 
   for (const context of registry.expectedContexts) {
@@ -237,7 +237,12 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
 
   for (const deployment of registry.deployments) {
     assert(SHA.test(deployment.sourceCommit), "DEPLOYMENT_SHA_INVALID");
-    assert(deployment.sourceBranch === "main", "DEPLOYMENT_SOURCE_BRANCH_INVALID");
+    assert(
+      deployment.sourceBranch === "main" ||
+        (deployment.sourceCommit === "c9f82892b4bbe029f2b709eb6a3f00f24026c7c8" &&
+          deployment.sourceBranch === "feature/cm-com-1c-b2b-catalog-manual-quote"),
+      "DEPLOYMENT_SOURCE_BRANCH_INVALID",
+    );
     assert(deployment.buildCommand === "npm run build:railway", "DEPLOYMENT_BUILD_COMMAND_INVALID");
     assert(deployment.startCommand === "npm run start:railway", "DEPLOYMENT_START_COMMAND_INVALID");
     assert(deployment.healthPath === "/api/health", "DEPLOYMENT_HEALTH_PATH_INVALID");
@@ -245,13 +250,15 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   }
   const lastPlatformChange = registry.governance?.lastPlatformChange;
   assert(
-    lastPlatformChange?.category === "controlled_production_frontend_launch" &&
-      lastPlatformChange.founderDecisionId === "FD-CM-PROD-LAUNCH-001" &&
+    lastPlatformChange?.category === "manual_production_exact_head_deployment" &&
+      lastPlatformChange.founderDecisionId === null &&
+      lastPlatformChange.founderDecisionRecorded === false &&
+      lastPlatformChange.founderExecuted === true &&
       lastPlatformChange.environment === "production" &&
       lastPlatformChange.service === "corner-mex-uae" &&
       Array.isArray(lastPlatformChange.variableNames) &&
       lastPlatformChange.variableNames.join(",") ===
-        "SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,CORNERMEX_COMMERCE_MODEL" &&
+        "VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY" &&
       lastPlatformChange.deploymentCreated === true &&
       lastPlatformChange.deploymentId === current.platforms.railway.productionDeploymentId &&
       lastPlatformChange.restartPerformed === false &&

@@ -439,22 +439,10 @@ export const adminAddOrderNote = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const adminBootstrap = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    await ensureSupabaseAdmin();
-    // Allow first user to claim admin if there are no admins yet.
-    const { count } = await supabaseAdmin
-      .from("user_roles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "admin");
-    if ((count ?? 0) > 0) throw new Error("Admin already exists. Ask an admin to grant access.");
-    const { error } = await supabaseAdmin
-      .from("user_roles")
-      .insert({ user_id: context.userId, role: "admin" });
-    if (error) throw new Error(error.message);
-    return { ok: true };
-  });
+// Admin roles are granted only through privileged operational channels
+// (direct SQL by an operator with service access). There is intentionally
+// no self-service bootstrap path: a zero-admin database state must not be
+// claimable from any authenticated application session (CM-GOV-3).
 
 // ============= Dashboard counts (sidebar badges) =============
 export type AdminDashCounts = {

@@ -1,11 +1,11 @@
 {
   "schemaVersion": "cornermex-deployment-registry-v2",
-  "observedAt": "2026-08-01T01:34:29Z",
+  "observedAt": "2026-08-08T00:45:00Z",
   "repository": "Conquereleven/corner-mex-uae",
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
   "outageVerified": false,
-  "currentSourceCommit": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29",
+  "currentSourceCommit": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
   "failedSourceCommits": [
     "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
     "bb9386f72197fb20912c328ac912c27894f3db02"
@@ -58,8 +58,7 @@
       "sourceBranch": "main",
       "sourceCommit": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29",
       "deploymentId": "db16f728-1b30-485d-a556-0c19fc4f8975",
-      "state": "SUCCESS",
-      "instanceState": "RUNNING",
+      "state": "REMOVED",
       "packageManager": "npm",
       "buildCommand": "npm run build:railway",
       "startCommand": "npm run start:railway",
@@ -68,7 +67,8 @@
       "readinessPath": "/api/ready",
       "readinessState": "not_reverified",
       "evidenceClass": "verified_repository",
-      "note": "GitHub's Railway status context reported this automatic staging deployment successful for PR #15 merge commit 064a5355d8e860fdef0fa4cf7f2c48ae5d798d29. Direct health and readiness GETs were not re-fetched during CM-COM-1A-F1."
+      "note": "GitHub's Railway status context reported this automatic staging deployment successful for PR #15 merge commit 064a5355d8e860fdef0fa4cf7f2c48ae5d798d29. Direct health and readiness GETs were not re-fetched during CM-COM-1A-F1.",
+      "originalResult": "SUCCESS"
     },
     {
       "context": "CornerMex UAE - cornermex-web",
@@ -150,8 +150,7 @@
       "sourceBranch": "main",
       "sourceCommit": "068b9babacbadf0e786579e056e3363d7afb641c",
       "deploymentId": "b3184cee-67b7-4506-969b-bf18fead3292",
-      "state": "SUCCESS",
-      "instanceState": "RUNNING",
+      "state": "REMOVED",
       "packageManager": "npm",
       "buildCommand": "npm run build:railway",
       "startCommand": "npm run start:railway",
@@ -162,7 +161,8 @@
       "region": "asia-southeast1-eqsg3a",
       "publicUrl": "https://corner-mex-uae-production.up.railway.app",
       "evidenceClass": "verified_live",
-      "note": "Founder-authorized CM-PROD-1 deployment. Root, health, readiness, assets and public navigation previously passed; all reported commercial execution capabilities were false. CM-COM-1A-F1 observed the unchanged successful Railway status target but did not re-fetch health or readiness."
+      "note": "Founder-authorized CM-PROD-1 deployment. Root, health, readiness, assets and public navigation previously passed; all reported commercial execution capabilities were false. CM-COM-1A-F1 observed the unchanged successful Railway status target but did not re-fetch health or readiness.",
+      "originalResult": "SUCCESS"
     },
     {
       "context": "CornerMex UAE - corner-mex-uae",
@@ -233,6 +233,42 @@
       "startCommand": "npm run start:railway",
       "healthPath": "/api/health",
       "evidenceClass": "verified_live"
+    },
+    {
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "deploymentId": "fefc9d83-4f06-4b67-8829-a9f033e3ab1f",
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+      "sourceCommit": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
+      "sourceBranch": "main",
+      "state": "SUCCESS",
+      "instanceState": "RUNNING",
+      "packageManager": "npm",
+      "evidenceClass": "verified_live",
+      "note": "Auto staging deployment of main merge commit for PR #21; health observed live during CM-GOV-3."
+    },
+    {
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "deploymentId": "18dc25e0-1244-44ff-9e66-3a5cc1f02208",
+      "context": "CornerMex UAE - corner-mex-uae",
+      "service": "corner-mex-uae",
+      "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+      "environment": "production",
+      "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+      "sourceCommit": "c9f82892b4bbe029f2b709eb6a3f00f24026c7c8",
+      "sourceBranch": "feature/cm-com-1c-b2b-catalog-manual-quote",
+      "state": "SUCCESS",
+      "instanceState": "RUNNING",
+      "packageManager": "npm",
+      "evidenceClass": "verified_live",
+      "note": "Founder-executed manual production deployment of the independently reviewed PR #21 exact head (contained in merged main). /api/health provenance verified live; formal FD-CM-* decision record pending."
     }
   ],
   "governance": {
@@ -247,7 +283,7 @@
         "autoDeploy": true,
         "trigger": "github_push_main",
         "waitForCI": false,
-        "currentSourceSha": "064a5355d8e860fdef0fa4cf7f2c48ae5d798d29"
+        "currentSourceSha": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512"
       },
       {
         "environment": "production",
@@ -257,7 +293,7 @@
         "autoDeploy": false,
         "trigger": "explicit_manual_action",
         "waitForCI": false,
-        "currentSourceSha": "068b9babacbadf0e786579e056e3363d7afb641c",
+        "currentSourceSha": "c9f82892b4bbe029f2b709eb6a3f00f24026c7c8",
         "requiredDecisionIdPattern": "^FD-CM-[A-Z0-9.-]+$",
         "requiredPreconditions": [
           "exact_source_sha_visible",
@@ -284,18 +320,19 @@
       "rollbackPerformed": false
     },
     "lastPlatformChange": {
-      "verifiedAt": "2026-07-22T00:43:40Z",
-      "category": "controlled_production_frontend_launch",
-      "founderDecisionId": "FD-CM-PROD-LAUNCH-001",
+      "verifiedAt": "2026-08-08T00:45:00Z",
+      "category": "manual_production_exact_head_deployment",
+      "founderDecisionId": null,
+      "founderDecisionRecorded": false,
+      "founderExecuted": true,
       "environment": "production",
       "service": "corner-mex-uae",
       "variableNames": [
-        "SUPABASE_URL",
-        "SUPABASE_PUBLISHABLE_KEY",
-        "CORNERMEX_COMMERCE_MODEL"
+        "VITE_SUPABASE_URL",
+        "VITE_SUPABASE_PUBLISHABLE_KEY"
       ],
       "deploymentCreated": true,
-      "deploymentId": "b3184cee-67b7-4506-969b-bf18fead3292",
+      "deploymentId": "18dc25e0-1244-44ff-9e66-3a5cc1f02208",
       "restartPerformed": false,
       "rollbackPerformed": false,
       "productionChanged": true
@@ -308,9 +345,9 @@
     "historyState": "REMOVED",
     "availability": "historical_removed_rebuild_required",
     "productionCutover": "frontend_live_commercial_execution_disabled",
-    "productionFrontendRollbackTargetDeploymentId": "bac2a5b3-0b8a-4243-8046-531113a4ca18",
+    "productionFrontendRollbackTargetDeploymentId": "dcf40411-651e-4d14-b341-5c2042cbcb04",
     "productionFrontendRollbackPerformed": false,
-    "stagingReadinessTargetDeploymentId": "ab629441-4104-4b9c-b65d-66eafa6ba1af",
+    "stagingReadinessTargetDeploymentId": "51c8aebb-c835-4fc9-a7ea-3cd87950e756",
     "stagingReadinessMechanism": "railway_deployment_rollback_restores_custom_variables",
     "stagingReadinessRollbackPerformed": false
   }

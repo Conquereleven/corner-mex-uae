@@ -141,6 +141,7 @@ const cases = [
     "contradictory readiness",
     ({ read, write }) => {
       const current = read("CURRENT_STATE.json");
+      current.readiness.freshLiveReadOnlyPreflight = false;
       current.readiness.declaredReady = true;
       write("CURRENT_STATE.json", current);
     },

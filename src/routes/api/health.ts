@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { applicationServiceName } from "../../lib/service-identity.ts";
 
 export function getHealthPayload(environment: Record<string, string | undefined> = process.env) {
   return {
     status: "ok",
-    service: "cornermex-web",
+    service: applicationServiceName(environment),
     runtime: "node",
     commerceModel: "single_merchant_with_internal_supplier_network",
     version: environment.npm_package_version ?? "unversioned",
