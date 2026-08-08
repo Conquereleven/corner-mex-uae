@@ -20,23 +20,63 @@ does not deploy, and does not authorize domain cutover or commercial activation.
   both sitemaps updated; `public/robots.txt` sitemap URL moved off the retired lovable.app
   origin to the verified Railway origin.
 
-## Verified business facts used
+## Business facts used, with evidence class
 
-- "CornerMex, a trading brand of RodMor TradeCo LLC · Sharjah Media City, UAE ·
-  Trade license 2647014.01" (pre-existing footer truth, now centralized).
-- Contact mailboxes b2b@/complaints@/legal@/privacy@ cornermex.ae (pre-existing
-  `public-contact.ts`).
+- Legal identity — "CornerMex, a trading brand of RodMor TradeCo LLC · Sharjah Media City,
+  Free Zone, UAE · Trade license 2647014.01". Evidence: **Founder-attested**
+  (`FD-CM-BUSINESS-IDENTITY-001`); not independently verified against an external registry.
+- Public contact — the Founder-authorized **temporary** Gmail address recorded in
+  `FD-CM-PUBLIC-CONTACT-001`, resolved through `public-contact.ts`. Evidence:
+  **Founder-attested / temporary**; no independent mailbox verification is claimed.
 - Seven-emirates delivery structure (`shipping.functions.ts` emirate enum).
 - Checkout execution disabled by default (`CORNERMEX_CHECKOUT_ENABLED` gate).
+
+### Correction (CM-COM-2A-R2)
+
+An earlier revision of this document listed `b2b@/complaints@/legal@/privacy@ cornermex.ae`
+under "verified business facts". That classification was **wrong**: the domain
+`cornermex.ae` is **not purchased and not operational**, so those mailboxes were never
+verified business facts and must not be presented as active contact channels. Corrected
+per `FD-CM-PUBLIC-CONTACT-001`.
+
+## Domain and contact status
+
+- Custom web domain: **not purchased**.
+- `cornermex.ae`: **not owned, not operational** — must not appear as an active website,
+  mailbox domain or implied asset on any customer-visible surface.
+- Current verified application origin: the Railway production origin (unchanged).
+- Future domain cutover: **CM-COM-2B remains ON HOLD** and requires separate Founder
+  authorization for any purchase, DNS/MX, TLS or Railway custom-domain action.
 
 ## Corrections to stale copy
 
 - `/terms` and `/legal` index previously claimed accounts/cart were disabled; accounts and B2C
   cart preparation exist. Wording now matches actual behavior while keeping execution-disabled
   truth.
-- Not corrected in this sprint (pre-existing, out of scope): `src/lib/shipments.functions.ts`
-  keeps a `https://cornermex.ae` fallback origin inside the disabled email path. Flagged for a
-  follow-up config fix; excluded explicitly from the CM-COM-2A domain test.
+- `src/lib/legal-docs.ts` previously published `Website: https://cornermex.ae` at `/legal`.
+  Removed in R2; the field now reads `[PENDING CUSTOM DOMAIN ACTIVATION]`.
+- The CM-COM-2A domain test no longer exempts `legal-docs.ts`; that exemption had masked a
+  publicly rendered claim.
+
+## Known debt, deliberately not changed in R2 (Category D — disabled paths)
+
+Two inherited server paths still reference the unowned domain. Both are **non-rendered** and
+send mail only when `LOVABLE_API_KEY` **and** `RESEND_API_KEY` are present, so neither can
+reach a customer today:
+
+- `src/lib/shipments.functions.ts` — an unowned-domain fallback origin used to build links in
+  order emails.
+- `src/lib/b2b-leads.functions.ts` — an unowned-domain mailto inside the lead-acknowledgement
+  email body.
+
+They were left unchanged on purpose: editing them pulls their pre-existing third-party
+email-provider address and API-key literals into the A3 privacy guard's changed-file scope,
+and R2 is not authorized to modify email-provider configuration. The CM-COM-2A suite exempts
+exactly these two files and separately asserts that their provider-key gate still exists, so
+the exemption cannot silently become untrue.
+
+**Follow-up:** correct both when email delivery is next worked on, together with the
+provider FROM-address handling.
 
 ## Unknown Founder inputs (intentionally NOT displayed)
 
@@ -44,7 +84,7 @@ does not deploy, and does not authorize domain cutover or commercial activation.
 - VAT/TRN number.
 - Approved return windows, fees, exclusions, refund timing.
 - Delivery SLAs, free-shipping thresholds, COD rules, fulfilment partners.
-- Custom domain (no cornermex.ae canonical anywhere in app code).
+- Custom domain and branded mailboxes (not purchased; see "Domain and contact status").
 
 These have typed slots (`business-identity.ts` optional fields; legal centre templates) and can
 be added centrally once approved.

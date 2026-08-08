@@ -13,6 +13,7 @@ Observed: `2026-07-22T00:43:40Z`
 | `FD-CM-PROD-LAUNCH-001`                 | executed and verified                  | exact-SHA production frontend launch with commercial execution off | `docs/program/PRODUCTION_FRONTEND_LAUNCH_EVIDENCE.json`                        | production frontend live and ready; no Supabase write, migration, payment, order, message, or A3.2b |
 | `FD-CM-PROD-EXACT-HEAD-001`             | recorded / ratified after execution    | ratification of executed exact-head production deployment `18dc25e0` | `docs/engineering-playbook/founder-decisions/FD-CM-PROD-EXACT-HEAD-001.md`     | production temporarily on reviewed PR #21 exact head; next manual production deploy must originate from main |
 | `FD-CM-BUSINESS-IDENTITY-001`           | approved — FOUNDER-ATTESTED            | canonical customer-visible business identity and bank beneficiary  | `docs/engineering-playbook/founder-decisions/FD-CM-BUSINESS-IDENTITY-001.md`   | identity authoritative for display; evidence class FOUNDER-ATTESTED, not independently verified; no payment, domain or platform activation |
+| `FD-CM-PUBLIC-CONTACT-001`              | approved — FOUNDER-ATTESTED / TEMPORARY | temporary public contact channel and custom-domain status         | `docs/engineering-playbook/founder-decisions/FD-CM-PUBLIC-CONTACT-001.md`      | temporary Gmail contact authorized for display; cornermex.ae not owned/operational and must not be shown as active; CM-COM-2B on hold; no domain, DNS, mailbox or platform action |
 
 ## Active prohibitions
 

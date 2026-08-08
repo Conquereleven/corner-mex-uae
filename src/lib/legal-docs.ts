@@ -93,7 +93,9 @@ const CONTACT_BLOCK: LegalSection = {
     `Trade license number: ${LEGAL_TRADE_LICENSE}`,
     `Licensing authority: ${LEGAL_LICENSING_AUTHORITY}`,
     `Registered address: ${LEGAL_REGISTERED_ADDRESS}`,
-    "Website: https://cornermex.ae",
+    // No custom domain is owned or operational (FD-CM-PUBLIC-CONTACT-001), so no
+    // branded website is claimed here. Filled in only at an authorized cutover.
+    "Website: [PENDING CUSTOM DOMAIN ACTIVATION]",
     "UAE contact number: [INSERT UAE PHONE NUMBER]",
     "Contact form: [INSERT CONTACT FORM URL]",
     "VAT registration: [INSERT VAT REGISTRATION STATUS IF APPLICABLE]",

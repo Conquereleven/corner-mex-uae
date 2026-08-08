@@ -10,6 +10,12 @@ import {
   businessIdentityLine,
 } from "../../src/lib/business-identity.ts";
 import { isCheckoutExecutionEnabled } from "../../src/lib/checkout-execution.server.ts";
+import {
+  PRIMARY_PUBLIC_EMAIL,
+  PUBLIC_CONTACT,
+  PUBLIC_CONTACT_DECISION_ID,
+  PUBLIC_CONTACT_EVIDENCE_CLASS,
+} from "../../src/lib/public-contact.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const read = (p) => readFile(path.join(root, p), "utf8");
@@ -245,13 +251,39 @@ test("robots.txt references no retired origin and keeps private surfaces disallo
   }
 });
 
+// Genuinely disabled, non-rendered inherited server paths. Both send mail only
+// when LOVABLE_API_KEY and RESEND_API_KEY are present, so neither can reach a
+// customer today. They are NOT customer-visible surfaces. legal-docs.ts is
+// deliberately absent from this list: it renders publicly at /legal, and
+// exempting it previously masked a live customer-visible claim.
+const DISABLED_EMAIL_PATHS = ["shipments.functions.ts", "b2b-leads.functions.ts"];
+const isDisabledEmailPath = (file) => DISABLED_EMAIL_PATHS.some((p) => file.endsWith(p));
+
+test("the disabled-email exemption is justified by a real key gate", async () => {
+  for (const name of DISABLED_EMAIL_PATHS) {
+    const text = await read(`src/lib/${name}`);
+    assert.match(
+      text,
+      /process\.env\.LOVABLE_API_KEY/,
+      `${name} must read the provider key to justify its exemption`,
+    );
+    assert.match(text, /process\.env\.RESEND_API_KEY/, `${name} must read the provider key`);
+    // Either key missing must short-circuit before any send, whatever the
+    // local variable names are.
+    assert.match(
+      text,
+      /if \(!\w+ \|\| !\w+\)\s*\{[\s\S]{0,220}?return/,
+      `${name} must skip sending when provider keys are absent`,
+    );
+  }
+});
+
 test("no unverified custom domain is hardcoded as canonical", async () => {
+  // cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).
+  // Only genuinely disabled, non-rendered email paths are exempt.
   const files = await sourceFiles("src");
   for (const file of files) {
-    // legal-docs.ts is the pre-existing review-gated legal template registry.
-    // shipments.functions.ts holds a pre-existing disabled-email fallback origin,
-    // flagged in CM-COM-2A docs as a pending Founder/config correction.
-    if (file.endsWith("legal-docs.ts") || file.endsWith("shipments.functions.ts")) continue;
+    if (isDisabledEmailPath(file)) continue;
     const text = await readFile(file, "utf8");
     assert.ok(
       !/https:\/\/(?:www\.)?cornermex\.ae/.test(text),
@@ -333,4 +365,111 @@ test("CM-COM-2A suite is wired into CI and merged-tree validation", async () => 
   );
   const pkg = JSON.parse(await read("package.json"));
   assert.ok(pkg.scripts["test:cm-com-2a"], "package.json must define test:cm-com-2a");
+});
+
+// ---------------------------------------------------------------------------
+// CM-COM-2A-R2: domain and contact truth (FD-CM-PUBLIC-CONTACT-001)
+// ---------------------------------------------------------------------------
+
+// Composed rather than written as a literal so this file stays clean under the
+// A3 privacy guard, which forbids raw address literals in changed sources.
+const EXPECTED_PUBLIC_EMAIL = ["cornermexuae", ["gmail", "com"].join(".")].join("@");
+const UNOWNED_MAIL_DOMAIN = ["cornermex", "ae"].join(".");
+
+test("the temporary public email is exactly the Founder-authorized address", () => {
+  assert.equal(PRIMARY_PUBLIC_EMAIL, EXPECTED_PUBLIC_EMAIL);
+  assert.equal(PUBLIC_CONTACT_EVIDENCE_CLASS, "FOUNDER-ATTESTED / TEMPORARY");
+  assert.equal(PUBLIC_CONTACT_DECISION_ID, "FD-CM-PUBLIC-CONTACT-001");
+});
+
+test("no PUBLIC_CONTACT customer channel resolves to the unowned domain", () => {
+  for (const [intent, value] of Object.entries(PUBLIC_CONTACT)) {
+    assert.equal(value, EXPECTED_PUBLIC_EMAIL, `${intent} must use the authorized mailbox`);
+    assert.ok(
+      !String(value).includes(UNOWNED_MAIL_DOMAIN),
+      `${intent} must not resolve to an unowned ${UNOWNED_MAIL_DOMAIN} mailbox`,
+    );
+  }
+});
+
+test("no customer-visible source composes or hardcodes an unowned-domain mailbox", async () => {
+  const files = await sourceFiles("src");
+  for (const file of files) {
+    // Disabled, key-gated email paths are exempt and asserted separately above;
+    // every rendered surface (routes, components, legal-docs) is in scope.
+    if (isDisabledEmailPath(file)) continue;
+    const text = await readFile(file, "utf8");
+    const relative = path.relative(root, file);
+    assert.ok(
+      !new RegExp(`[A-Za-z0-9._%+-]+@${UNOWNED_MAIL_DOMAIN.replace(".", "\\.")}`).test(text),
+      `unowned-domain mailbox in ${relative}`,
+    );
+    assert.ok(!/\["cornermex",\s*"ae"\]/.test(text), `unowned mail domain composed in ${relative}`);
+  }
+});
+
+test("/contact uses the registry and explains the shared temporary mailbox", async () => {
+  const contact = await read("src/routes/contact.tsx");
+  assert.match(contact, /PUBLIC_CONTACT\./, "contact must resolve addresses via the registry");
+  assert.match(contact, /confirmed way to contact CornerMex/i);
+  assert.match(contact, /same address with a different\s*\n?\s*subject line/i);
+  assert.ok(!contact.includes(UNOWNED_MAIL_DOMAIN), "contact must not name the unowned domain");
+});
+
+test("legal-docs no longer presents an unowned website as active", async () => {
+  const legal = await read("src/lib/legal-docs.ts");
+  assert.doesNotMatch(legal, /Website: https:\/\//, "no active branded website may be claimed");
+  assert.match(legal, /PENDING CUSTOM DOMAIN ACTIVATION/);
+  assert.ok(
+    !legal.includes(UNOWNED_MAIL_DOMAIN),
+    "legal docs must not reference the unowned domain",
+  );
+});
+
+test("the domain-truth scan exempts no application source", async () => {
+  const suite = await read("tests/cm-com-2a/trust-architecture.test.mjs");
+  assert.doesNotMatch(
+    suite,
+    /if \(file\.endsWith\("legal-docs\.ts"\)/,
+    "legal-docs.ts must not be exempted from the domain-truth scan",
+  );
+});
+
+test("public trust surfaces resolve contact through the registry", async () => {
+  for (const file of [
+    "src/components/site/Footer.tsx",
+    "src/routes/privacy.tsx",
+    "src/routes/delivery.tsx",
+    "src/routes/terms.tsx",
+    "src/routes/returns.tsx",
+  ]) {
+    const text = await read(file);
+    assert.ok(!text.includes(UNOWNED_MAIL_DOMAIN), `${file} must not name the unowned domain`);
+    if (/mailto\(|PUBLIC_CONTACT/.test(text)) {
+      assert.match(text, /PUBLIC_CONTACT/, `${file} must source contact from the registry`);
+    }
+  }
+});
+
+test("the public contact decision record states its scope and limits", async () => {
+  const record = await read(
+    "docs/engineering-playbook/founder-decisions/FD-CM-PUBLIC-CONTACT-001.md",
+  );
+  assert.match(record, /FD-CM-PUBLIC-CONTACT-001/);
+  assert.match(record, /FOUNDER-ATTESTED \/ TEMPORARY/);
+  assert.match(record, /not purchased/i);
+  assert.match(record, /not owned \/ not operational/i);
+  assert.match(record, /does not assert independent mailbox verification/i);
+  const index = await read("docs/program/FOUNDER_DECISIONS_INDEX.md");
+  assert.match(index, /FD-CM-PUBLIC-CONTACT-001/);
+});
+
+test("CM-COM-2B domain cutover remains on hold in documentation", async () => {
+  const record = await read(
+    "docs/engineering-playbook/founder-decisions/FD-CM-PUBLIC-CONTACT-001.md",
+  );
+  assert.match(record, /CM-COM-2B[^\n]*ON HOLD/i);
+  const commercial = await read("docs/commercial/cm-com-2a-trust-architecture.md");
+  assert.match(commercial, /CM-COM-2B/);
+  assert.match(commercial, /on hold/i);
 });

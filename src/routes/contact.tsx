@@ -88,8 +88,14 @@ function Contact() {
         <div className="mt-12 rounded-2xl border border-border bg-secondary/40 p-6 text-sm leading-6 text-muted-foreground">
           <p>{businessIdentityLine()}</p>
           <p className="mt-2">
+            Email is currently the confirmed way to contact CornerMex. One shared mailbox handles
+            every enquiry type for now, so each option above uses the same address with a different
+            subject line — please keep the subject so your message is routed correctly.
+          </p>
+          <p className="mt-2">
             A phone line, street address for visits and published support hours are not yet
-            available on this website. Email is currently the confirmed way to reach us.
+            available. CornerMex does not operate a branded email domain yet, so any address on
+            another domain is not a CornerMex contact channel.
           </p>
         </div>
 
