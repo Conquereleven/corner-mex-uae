@@ -9,6 +9,7 @@ type PublicContactConfig = {
   complaints: string;
   legal: string;
   privacy: string;
+  support: string;
   whatsapp?: string;
 };
 
@@ -17,6 +18,7 @@ export const PUBLIC_CONTACT: Readonly<PublicContactConfig> = Object.freeze({
   complaints: address("complaints"),
   legal: address("legal"),
   privacy: address("privacy"),
+  support: address("support"),
 });
 
 export function mailto(email: string, subject?: string, body?: string): string {

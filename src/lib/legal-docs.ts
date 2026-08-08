@@ -4,6 +4,7 @@
 // rendering layer.
 
 import { BUSINESS_IDENTITY } from "@/lib/business-identity";
+import { PUBLIC_CONTACT } from "@/lib/public-contact";
 
 // Canonical Founder-attested identity, used so the legal templates cannot drift
 // from the values recorded in FD-CM-BUSINESS-IDENTITY-001.
@@ -84,10 +85,10 @@ const CONTACT_BLOCK: LegalSection = {
     "Complaints: we provide accessible channels to submit and follow up on complaints. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
   ],
   list: [
-    "Legal contact: legal@cornermex.ae",
-    "Privacy contact: privacy@cornermex.ae",
-    "Support contact: support@cornermex.ae",
-    "Complaints contact: complaints@cornermex.ae",
+    `Legal contact: ${PUBLIC_CONTACT.legal}`,
+    `Privacy contact: ${PUBLIC_CONTACT.privacy}`,
+    `Support contact: ${PUBLIC_CONTACT.support}`,
+    `Complaints contact: ${PUBLIC_CONTACT.complaints}`,
     `Company legal name: ${LEGAL_ENTITY_NAME}`,
     `Trade license number: ${LEGAL_TRADE_LICENSE}`,
     `Licensing authority: ${LEGAL_LICENSING_AUTHORITY}`,
@@ -277,7 +278,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         heading: "17. Complaints",
         body: [
           "We provide accessible channels to submit and follow up on complaints about the site, an order, content moderation or an AI-assisted decision.",
-          "Write to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Where a complaint is not resolved internally, you may escalate via [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW], without prejudice to your rights under UAE consumer protection law.",
+          `Write to ${PUBLIC_CONTACT.complaints}. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Where a complaint is not resolved internally, you may escalate via [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW], without prejudice to your rights under UAE consumer protection law.`,
         ],
       },
       {
@@ -396,7 +397,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
           "Withdraw consent at any time, without affecting prior lawful processing.",
         ],
         body: [
-          "To exercise these rights, contact privacy@cornermex.ae. We may verify your identity before responding.",
+          `To exercise these rights, contact ${PUBLIC_CONTACT.privacy}. We may verify your identity before responding.`,
         ],
       },
       {
@@ -417,7 +418,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "minors",
         heading: "12. Children and minors",
         body: [
-          "CornerMex is intended for adults. We do not knowingly process personal data of children under the age of legal capacity in your emirate. If you believe a minor has provided personal data, contact privacy@cornermex.ae.",
+          `CornerMex is intended for adults. We do not knowingly process personal data of children under the age of legal capacity in your emirate. If you believe a minor has provided personal data, contact ${PUBLIC_CONTACT.privacy}.`,
         ],
       },
     ],
@@ -570,21 +571,21 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "delayed",
         heading: "7. Delayed or undelivered orders",
         body: [
-          "If your order has not arrived within the estimated window, contact support@cornermex.ae so we can investigate with the courier.",
+          `If your order has not arrived within the estimated window, contact ${PUBLIC_CONTACT.support} so we can investigate with the courier.`,
         ],
       },
       {
         id: "escalation",
         heading: "8. Escalation",
         body: [
-          "If you are not satisfied with the outcome of a return or refund request, contact complaints@cornermex.ae. Nothing in this policy affects your rights under UAE consumer protection law.",
+          `If you are not satisfied with the outcome of a return or refund request, contact ${PUBLIC_CONTACT.complaints}. Nothing in this policy affects your rights under UAE consumer protection law.`,
         ],
       },
       {
         id: "complaints",
         heading: "9. Complaints",
         body: [
-          "Formal complaints can be sent to complaints@cornermex.ae. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
+          `Formal complaints can be sent to ${PUBLIC_CONTACT.complaints}. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].`,
         ],
       },
     ],
@@ -625,7 +626,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         heading: "2. Human review",
         body: [
           "CornerOps AI does not replace human review for critical cases. Material decisions affecting your account or orders are reviewed by trained staff before being applied.",
-          "You can request human review when an AI-assisted decision materially affects you by writing to support@cornermex.ae.",
+          `You can request human review when an AI-assisted decision materially affects you by writing to ${PUBLIC_CONTACT.support}.`,
         ],
       },
       {
@@ -805,7 +806,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "report",
         heading: "3. Reporting infringement",
         body: [
-          "Rights holders can report infringement by emailing legal@cornermex.ae with the information listed below. We review complete and good-faith reports promptly.",
+          `Rights holders can report infringement by emailing ${PUBLIC_CONTACT.legal} with the information listed below. We review complete and good-faith reports promptly.`,
         ],
         list: [
           "Identification of the protected work or trademark.",
@@ -1049,7 +1050,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
           "If a complaint cannot be resolved internally, CornerMex may provide information about escalation to the competent UAE consumer protection authority after legal review.",
         ],
         footnotes: [
-          "Support: support@cornermex.ae · Complaints: complaints@cornermex.ae · Legal: legal@cornermex.ae · Privacy: privacy@cornermex.ae · UAE phone: [INSERT UAE PHONE NUMBER] · Contact form: [INSERT CONTACT FORM URL].",
+          `Support: ${PUBLIC_CONTACT.support} · Complaints: ${PUBLIC_CONTACT.complaints} · Legal: ${PUBLIC_CONTACT.legal} · Privacy: ${PUBLIC_CONTACT.privacy} · UAE phone: [INSERT UAE PHONE NUMBER] · Contact form: [INSERT CONTACT FORM URL].`,
         ],
       },
       {
