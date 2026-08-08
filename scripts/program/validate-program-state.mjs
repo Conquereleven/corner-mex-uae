@@ -251,8 +251,8 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
   const lastPlatformChange = registry.governance?.lastPlatformChange;
   assert(
     lastPlatformChange?.category === "manual_production_exact_head_deployment" &&
-      lastPlatformChange.founderDecisionId === null &&
-      lastPlatformChange.founderDecisionRecorded === false &&
+      lastPlatformChange.founderDecisionId === "FD-CM-PROD-EXACT-HEAD-001" &&
+      lastPlatformChange.founderDecisionRecorded === true &&
       lastPlatformChange.founderExecuted === true &&
       lastPlatformChange.environment === "production" &&
       lastPlatformChange.service === "corner-mex-uae" &&

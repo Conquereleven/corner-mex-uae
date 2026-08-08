@@ -268,7 +268,7 @@
       "instanceState": "RUNNING",
       "packageManager": "npm",
       "evidenceClass": "verified_live",
-      "note": "Founder-executed manual production deployment of the independently reviewed PR #21 exact head (contained in merged main). /api/health provenance verified live; formal FD-CM-* decision record pending."
+      "note": "Founder-executed manual production deployment of the independently reviewed PR #21 exact head (contained in merged main). /api/health provenance verified live; ratified by FD-CM-PROD-EXACT-HEAD-001."
     }
   ],
   "governance": {
@@ -322,8 +322,8 @@
     "lastPlatformChange": {
       "verifiedAt": "2026-08-08T00:45:00Z",
       "category": "manual_production_exact_head_deployment",
-      "founderDecisionId": null,
-      "founderDecisionRecorded": false,
+      "founderDecisionId": "FD-CM-PROD-EXACT-HEAD-001",
+      "founderDecisionRecorded": true,
       "founderExecuted": true,
       "environment": "production",
       "service": "corner-mex-uae",

@@ -109,7 +109,6 @@
     "reviewer": "Founder",
     "blockers": [
       "External Supabase Preview GitHub check fails on main: remote migration versions are not present in the local supabase/migrations directory (integration drift; not a repository CI gate).",
-      "Production deployment 18dc25e0-1244-44ff-9e66-3a5cc1f02208 was Founder-executed but has no recorded FD-CM-* decision document; formal decision record pending.",
       "Canonical public.products remains empty; A3.2b remains NOT AUTHORIZED / NOT EXECUTED.",
       "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists."
     ]

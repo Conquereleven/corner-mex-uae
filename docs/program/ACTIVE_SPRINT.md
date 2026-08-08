@@ -26,7 +26,7 @@
 ## Known open items
 
 - External "Supabase Preview" GitHub check fails on main: remote migration versions missing from `supabase/migrations` (integration drift; not a repository CI gate).
-- Production deployment `18dc25e0...` lacks a recorded `FD-CM-*` decision document (Founder-executed; formal record pending).
+- Production deployment `18dc25e0...` is now ratified by `FD-CM-PROD-EXACT-HEAD-001` (recorded after execution); the next manual production deployment must originate from `main`.
 
 ## Explicitly not executed
 

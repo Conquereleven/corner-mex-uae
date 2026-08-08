@@ -11,6 +11,7 @@ Observed: `2026-07-22T00:43:40Z`
 | `FD-CM-PR10-AUTODEPLOY-DISPOSITION-001` | template only; not adopted             | temporary disposition of the already-running PR #10 deployments    | response pack dated `2026-07-19`                                               | unavailable until the specified Opus acceptance verdict is recorded; does not authorize deployment  |
 | `FD-CM-STAGING-READINESS-001`           | executed and verified                  | one `CORNERMEX_COMMERCE_MODEL` correction in staging/cornermex-web | `docs/program/STAGING_READINESS_EXECUTION_EVIDENCE.json`                       | staging ready; no production, Supabase, commercial, A3.2b, or communication authorization           |
 | `FD-CM-PROD-LAUNCH-001`                 | executed and verified                  | exact-SHA production frontend launch with commercial execution off | `docs/program/PRODUCTION_FRONTEND_LAUNCH_EVIDENCE.json`                        | production frontend live and ready; no Supabase write, migration, payment, order, message, or A3.2b |
+| `FD-CM-PROD-EXACT-HEAD-001`             | recorded / ratified after execution    | ratification of executed exact-head production deployment `18dc25e0` | `docs/engineering-playbook/founder-decisions/FD-CM-PROD-EXACT-HEAD-001.md`     | production temporarily on reviewed PR #21 exact head; next manual production deploy must originate from main |
 
 ## Active prohibitions
 
