@@ -2,8 +2,58 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { businessIdentityLine } from "@/lib/business-identity";
 import { openCookiePreferences } from "@/lib/cookie-consent";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
+
+type FooterLink =
+  | {
+      to:
+        | "/shop"
+        | "/b2b"
+        | "/b2b/catalog"
+        | "/about"
+        | "/contact"
+        | "/delivery"
+        | "/returns"
+        | "/privacy"
+        | "/terms"
+        | "/legal";
+      label: string;
+    }
+  | { action: "cookies"; label: string };
+
+const FOOTER_GROUPS: Array<{ heading: string; links: FooterLink[] }> = [
+  {
+    heading: "Shop",
+    links: [
+      { to: "/shop", label: "Catalogue" },
+      { to: "/b2b/catalog", label: "B2B catalogue" },
+      { to: "/b2b", label: "Business enquiries" },
+    ],
+  },
+  {
+    heading: "Help",
+    links: [
+      { to: "/contact", label: "Contact" },
+      { to: "/delivery", label: "Delivery in the UAE" },
+      { to: "/returns", label: "Returns & refunds" },
+      { action: "cookies", label: "Cookie preferences" },
+    ],
+  },
+  {
+    heading: "Company",
+    links: [{ to: "/about", label: "About CornerMex" }],
+  },
+  {
+    heading: "Legal",
+    links: [
+      { to: "/privacy", label: "Privacy" },
+      { to: "/terms", label: "Terms" },
+      { to: "/legal", label: "Legal centre" },
+    ],
+  },
+];
 
 export function Footer() {
   const { t } = useTranslation();
@@ -33,96 +83,56 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] lg:px-8">
         <div>
           <div className="font-display text-2xl font-semibold tracking-tight">
             Corner<span className="text-primary">Mex</span>
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">{t("footer.tagline")}</p>
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="mt-3 max-w-xs text-xs leading-5 text-muted-foreground">
             AED is the primary display currency. Prices and availability shown in preview are not
             offers and must be confirmed manually.
           </p>
+          <a
+            href={mailto(PUBLIC_CONTACT.complaints, "CornerMex customer enquiry")}
+            className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+            {PUBLIC_CONTACT.complaints}
+          </a>
         </div>
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest">Explore</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>
-              <Link to="/shop" className="hover:text-foreground">
-                Catalogue
-              </Link>
-            </li>
-            <li>
-              <Link to="/b2b" className="hover:text-foreground">
-                Business enquiries
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" className="hover:text-foreground">
-                About CornerMex
-              </Link>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest">Policies</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>
-              <Link to="/shipping" className="hover:text-foreground">
-                Shipping
-              </Link>
-            </li>
-            <li>
-              <Link to="/returns" className="hover:text-foreground">
-                Returns
-              </Link>
-            </li>
-            <li>
-              <Link to="/privacy" className="hover:text-foreground">
-                Privacy
-              </Link>
-            </li>
-            <li>
-              <Link to="/terms" className="hover:text-foreground">
-                Terms
-              </Link>
-            </li>
-            <li>
-              <button
-                type="button"
-                onClick={openCookiePreferences}
-                className="text-left hover:text-foreground"
-              >
-                Cookie preferences
-              </button>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest">Contact</h4>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>
-              <a href={mailto(PUBLIC_CONTACT.b2b)} className="hover:text-foreground">
-                {PUBLIC_CONTACT.b2b}
-              </a>
-            </li>
-            <li>
-              <a href={mailto(PUBLIC_CONTACT.privacy)} className="hover:text-foreground">
-                {PUBLIC_CONTACT.privacy}
-              </a>
-            </li>
-            <li>
-              <a href={mailto(PUBLIC_CONTACT.complaints)} className="hover:text-foreground">
-                {PUBLIC_CONTACT.complaints}
-              </a>
-            </li>
-          </ul>
-        </div>
+        {FOOTER_GROUPS.map((group) => (
+          <nav key={group.heading} aria-label={`${group.heading} links`}>
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">
+              {group.heading}
+            </h4>
+            <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
+              {group.links.map((link) =>
+                "action" in link ? (
+                  <li key={link.label}>
+                    <button
+                      type="button"
+                      onClick={openCookiePreferences}
+                      className="text-left hover:text-foreground"
+                    >
+                      {link.label}
+                    </button>
+                  </li>
+                ) : (
+                  <li key={link.to}>
+                    <Link to={link.to} className="hover:text-foreground">
+                      {link.label}
+                    </Link>
+                  </li>
+                ),
+              )}
+            </ul>
+          </nav>
+        ))}
       </div>
 
-      <div className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} CornerMex, a trading brand of RodMor TradeCo LLC · Sharjah
-        Media City, UAE · Trade license 2647014.01 · {t("footer.rights")}
+      <div className="border-t border-border/60 px-4 py-6 text-center text-xs leading-5 text-muted-foreground">
+        © {new Date().getFullYear()} {businessIdentityLine()} · {t("footer.rights")}
       </div>
     </footer>
   );

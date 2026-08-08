@@ -26,6 +26,7 @@
     "validate:cm-com-1c-r2": "node scripts/ci/validate-cm-com-1c-r2.mjs",
     "test:cm-com-1c-r2": "node --experimental-strip-types --test tests/cm-com-1c-r2/*.test.mjs",
     "test:cm-gov-3": "node --experimental-strip-types --test tests/cm-gov-3/*.test.mjs",
+    "test:cm-com-2a": "node --experimental-strip-types --test tests/cm-com-2a/*.test.mjs",
     "validate:ssr-async-context": "node scripts/ci/validate-ssr-async-context.mjs",
     "test:a2": "node --test tests/a2/*.test.mjs",
     "test:a3": "node --test tests/a3/*.test.mjs",

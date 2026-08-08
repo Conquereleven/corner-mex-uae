@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { TrustBar } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -312,6 +313,7 @@ function Checkout() {
               No order, payment, inventory change or notification occurs while checkout execution is
               disabled.
             </p>
+            <TrustBar context="b2c" className="mt-5" />
           </aside>
         </form>
       </section>

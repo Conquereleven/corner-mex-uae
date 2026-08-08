@@ -20,6 +20,8 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OrderConfirmedRouteImport } from './routes/order-confirmed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LegalRouteImport } from './routes/legal'
+import { Route as DeliveryRouteImport } from './routes/delivery'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as B2bRouteImport } from './routes/b2b'
@@ -151,6 +153,16 @@ const LoginRoute = LoginRouteImport.update({
 const LegalRoute = LegalRouteImport.update({
   id: '/legal',
   path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeliveryRoute = DeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -597,6 +609,8 @@ export interface FileRoutesByFullPath {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
+  '/contact': typeof ContactRoute
+  '/delivery': typeof DeliveryRoute
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
@@ -686,6 +700,8 @@ export interface FileRoutesByTo {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
+  '/contact': typeof ContactRoute
+  '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
   '/privacy': typeof PrivacyRoute
@@ -768,6 +784,8 @@ export interface FileRoutesById {
   '/b2b': typeof B2bRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRouteWithChildren
+  '/contact': typeof ContactRoute
+  '/delivery': typeof DeliveryRoute
   '/legal': typeof LegalRouteWithChildren
   '/login': typeof LoginRoute
   '/order-confirmed': typeof OrderConfirmedRoute
@@ -859,6 +877,8 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/checkout'
+    | '/contact'
+    | '/delivery'
     | '/legal'
     | '/login'
     | '/order-confirmed'
@@ -948,6 +968,8 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/checkout'
+    | '/contact'
+    | '/delivery'
     | '/login'
     | '/order-confirmed'
     | '/privacy'
@@ -1029,6 +1051,8 @@ export interface FileRouteTypes {
     | '/b2b'
     | '/cart'
     | '/checkout'
+    | '/contact'
+    | '/delivery'
     | '/legal'
     | '/login'
     | '/order-confirmed'
@@ -1120,6 +1144,8 @@ export interface RootRouteChildren {
   B2bRoute: typeof B2bRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
+  ContactRoute: typeof ContactRoute
+  DeliveryRoute: typeof DeliveryRoute
   LegalRoute: typeof LegalRouteWithChildren
   LoginRoute: typeof LoginRoute
   OrderConfirmedRoute: typeof OrderConfirmedRoute
@@ -1221,6 +1247,20 @@ declare module '@tanstack/react-router' {
       path: '/legal'
       fullPath: '/legal'
       preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery': {
+      id: '/delivery'
+      path: '/delivery'
+      fullPath: '/delivery'
+      preLoaderRoute: typeof DeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -2049,6 +2089,8 @@ const rootRouteChildren: RootRouteChildren = {
   B2bRoute: B2bRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
+  ContactRoute: ContactRoute,
+  DeliveryRoute: DeliveryRoute,
   LegalRoute: LegalRouteWithChildren,
   LoginRoute: LoginRoute,
   OrderConfirmedRoute: OrderConfirmedRoute,

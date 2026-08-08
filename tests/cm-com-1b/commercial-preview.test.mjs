@@ -88,20 +88,23 @@ test("canonical URLs are domain-ready and contain no legacy Lovable origin", asy
   assert.match(combined, /siteUrl\(/);
 });
 
-test("shipping, returns, privacy and terms are discoverable without unsupported SLAs", async () => {
-  const [footer, shipping, returns, privacy, terms] = await Promise.all([
+test("delivery, returns, privacy and terms are discoverable without unsupported SLAs", async () => {
+  // CM-COM-2A: /shipping became a redirect to /delivery; discoverability moved with it.
+  const [footer, shipping, delivery, returns, privacy, terms] = await Promise.all([
     source("src/components/site/Footer.tsx"),
     source("src/routes/shipping.tsx"),
+    source("src/routes/delivery.tsx"),
     source("src/routes/returns.tsx"),
     source("src/routes/privacy.tsx"),
     source("src/routes/terms.tsx"),
   ]);
 
-  for (const path of ["/shipping", "/returns", "/privacy", "/terms"]) {
-    assert.match(footer, new RegExp(`to=\\"${path}\\"`));
+  for (const path of ["/delivery", "/returns", "/privacy", "/terms"]) {
+    assert.match(footer, new RegExp(`"${path}"`));
   }
-  const policies = `${shipping}\n${returns}\n${privacy}\n${terms}`;
-  assert.match(policies, /online ordering and shipping are not active/i);
+  assert.match(shipping, /redirect\(\{ to: "\/delivery" \}\)/);
+  const policies = `${delivery}\n${returns}\n${privacy}\n${terms}`;
+  assert.match(policies, /Order execution is not currently enabled/i);
   assert.match(policies, /does not create an order/i);
   assert.doesNotMatch(
     policies,

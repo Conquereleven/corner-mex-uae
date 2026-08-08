@@ -6,9 +6,9 @@ import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 const POLICIES = [
   {
-    to: "/shipping" as const,
-    title: "Shipping",
-    summary: "How delivery is handled while online ordering remains off.",
+    to: "/delivery" as const,
+    title: "Delivery",
+    summary: "Emirate-based coverage and how charges are confirmed before you commit.",
   },
   {
     to: "/returns" as const,
@@ -53,9 +53,9 @@ function LegalIndex() {
           Clear boundaries before commerce
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-          CornerMex is currently a catalogue and manual-enquiry experience. Online orders, accounts,
-          checkout, payments, live stock, marketplace participation and automated messaging are not
-          active.
+          CornerMex currently supports catalogue discovery, optional accounts, B2C cart preparation
+          and manual B2B enquiries. Order execution, payments, marketplace participation and
+          automated messaging run only when authorized configuration is enabled.
         </p>
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {POLICIES.map((policy) => (

@@ -3,6 +3,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { DesertGlassDrawerShell } from "@/components/site/DesertGlass";
+import { TrustBar } from "@/components/site/Trust";
 import { cartTotals, groupBySeller, useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/cart")({
@@ -140,6 +141,7 @@ function Cart() {
             <Link to="/checkout">
               <Button className="mt-6 w-full rounded-full">Continue to checkout</Button>
             </Link>
+            <TrustBar context="b2c" className="mt-6" />
           </DesertGlassDrawerShell>
         </div>
       </section>
