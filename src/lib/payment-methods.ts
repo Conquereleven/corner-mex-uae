@@ -3,6 +3,8 @@
 
 import { CreditCard, Smartphone, Truck, Wallet, Building2, type LucideIcon } from "lucide-react";
 
+import { BUSINESS_IDENTITY } from "@/lib/business-identity";
+
 export type PaymentMethodId =
   | "card"
   | "apple_pay"
@@ -157,7 +159,10 @@ const envBankIban = (import.meta.env.VITE_BANK_IBAN as string | undefined)?.trim
 const envBankAccount = (import.meta.env.VITE_BANK_ACCOUNT_NAME as string | undefined)?.trim();
 
 export const BANK_TRANSFER_DETAILS = {
-  accountName: envBankAccount || "RodMor Trade Co LLC",
+  // Beneficiary name comes from the canonical Founder-attested registry so the
+  // legal entity spelling cannot drift. This does NOT enable bank transfer:
+  // BANK_TRANSFER_CONFIGURED below still requires both bank name and IBAN.
+  accountName: envBankAccount || BUSINESS_IDENTITY.bankAccountBeneficiary,
   bankName: envBankName || null,
   iban: envBankIban || null,
 };

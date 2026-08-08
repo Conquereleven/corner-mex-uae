@@ -16,17 +16,26 @@ export function TrustCard({
   children,
   to,
   linkLabel,
+  headingLevel = 3,
 }: {
   icon: ComponentType<{ className?: string }>;
   title: string;
   children: ReactNode;
   to?: TrustDestination;
   linkLabel?: string;
+  /**
+   * Heading level for the card title. Callers pass the level that keeps the
+   * page outline sequential (no skipped levels) where the card is rendered.
+   */
+  headingLevel?: 2 | 3 | 4;
 }) {
+  const Heading = `h${headingLevel}` as "h2" | "h3" | "h4";
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
-      <h3 className="mt-3 font-display text-lg tracking-tight text-foreground">{title}</h3>
+      <Heading className="mt-3 font-display text-lg tracking-tight text-foreground">
+        {title}
+      </Heading>
       <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{children}</p>
       {to && (
         <Link

@@ -44,20 +44,36 @@ function Delivery() {
         <h1 className="mt-3 font-display text-5xl tracking-tight">Delivery in the UAE</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
           CornerMex is built for the United Arab Emirates. Delivery is organised by emirate, and any
-          charge or timeframe that applies to you is confirmed in your specific flow — at checkout
-          for retail, or in a written quote for business orders — before you commit to anything.
+          charge or timeframe that applies to you is intended to be confirmed in your specific flow
+          — at checkout for retail, or in a written quote for business orders — before you commit to
+          anything.
         </p>
 
+        <div
+          role="note"
+          className="mt-8 max-w-3xl rounded-2xl border border-border bg-secondary/40 p-6 leading-7"
+        >
+          <p className="font-medium text-foreground">
+            Online order and delivery execution are not currently enabled on this website.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            No delivery can be booked or dispatched through this site today, and no delivery area,
+            charge or timeframe shown anywhere on this site should be treated as confirmed. This
+            page describes how delivery is intended to work once ordering is activated. Business
+            enquiries continue to be handled manually in writing.
+          </p>
+        </div>
+
         <div className="mt-12 grid gap-4 sm:grid-cols-3">
-          <TrustCard icon={MapPin} title="Emirate-based coverage">
-            Delivery is structured around the seven emirates. Whether your destination is covered is
-            confirmed when you provide it.
+          <TrustCard icon={MapPin} title="Emirate-based coverage" headingLevel={2}>
+            Delivery is organised around the seven emirates. Whether a specific destination can be
+            served is confirmed for that order rather than promised in advance here.
           </TrustCard>
-          <TrustCard icon={Scale} title="Charges shown first">
-            Any delivery charge is calculated for your verified destination and shown before you
-            confirm. There are no charges added after the fact.
+          <TrustCard icon={Scale} title="Charges shown before you commit" headingLevel={2}>
+            Any delivery charge that applies is intended to be shown in your checkout or written
+            quote before you commit, so you can decide with the amount in front of you.
           </TrustCard>
-          <TrustCard icon={PackageCheck} title="No silent promises">
+          <TrustCard icon={PackageCheck} title="No silent promises" headingLevel={2}>
             We do not advertise delivery times, waived-charge thresholds or express service unless
             they are confirmed for your order.
           </TrustCard>
@@ -81,8 +97,10 @@ function Delivery() {
             ))}
           </ul>
           <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Coverage, charges and timing for a specific address are confirmed in the checkout or
-            quote flow for that order — availability can differ between emirates and order types.
+            Listing an emirate here is not a guarantee of service. Coverage, charges and timing for
+            a specific address are confirmed in the checkout or quote flow for that order. Delivery
+            and payment options can differ between emirates and order types, and the options that
+            actually apply are the ones presented in your own flow.
           </p>
         </section>
 
@@ -109,8 +127,9 @@ function Delivery() {
             </li>
             <li>
               <span className="font-medium text-foreground">3. Review before committing.</span> The
-              applicable delivery arrangement and charge are presented in that flow. Nothing is
-              final until you see and accept it.
+              applicable delivery arrangement and charge are intended to be presented in that flow,
+              and nothing is final until you see and accept it. While ordering is disabled, this
+              step is not available on the website.
             </li>
           </ol>
         </section>
