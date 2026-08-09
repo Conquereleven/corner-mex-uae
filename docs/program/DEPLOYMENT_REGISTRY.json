@@ -5,7 +5,7 @@
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
   "outageVerified": false,
-  "currentSourceCommit": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
+  "currentSourceCommit": "acb1723095471786e904825042c1b9745f120504",
   "failedSourceCommits": [
     "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
     "bb9386f72197fb20912c328ac912c27894f3db02"
@@ -350,5 +350,6 @@
     "stagingReadinessTargetDeploymentId": "51c8aebb-c835-4fc9-a7ea-3cd87950e756",
     "stagingReadinessMechanism": "railway_deployment_rollback_restores_custom_variables",
     "stagingReadinessRollbackPerformed": false
-  }
+  },
+  "currentSourceCommitNote": "Repository main identity after the PR #23 (CM-COM-2A) merge. This records the current SOURCE of truth for main, not a deployment: no deployment was created for this commit. Production still runs the last observed deployment from the PR #21 head. Previous recorded value: 77e5d24e8a3c9589dac7535480ed7d9dbc60a512."
 }

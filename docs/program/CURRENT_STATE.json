@@ -1,19 +1,20 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-08-08T00:45:00Z",
+  "generatedAt": "2026-08-08T18:00:00Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
-    "observedMainSha": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
+    "expectedMainSha": "acb1723095471786e904825042c1b9745f120504",
+    "observedMainSha": "acb1723095471786e904825042c1b9745f120504",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
     "class": "verified_live",
-    "source": "CM-GOV-3 refresh: GitHub main identity verified via gh; direct read-only GETs to production and staging /api/health and /api/ready returned 200 with status ok/ready. Production health reports commit c9f82892b4bb (PR #21 exact reviewed head, contained in main); staging health reports commit 77e5d24e8a3c (main merge commit). Railway deployment identities observed read-only via CLI. No Railway, Supabase or Lovable write was performed by this refresh.",
+    "source": "Runtime facts in this document were observed during the CM-GOV-3 refresh (see observedAt) and are CARRIED FORWARD, not re-observed. CM-COM-2B0 is a repository/readiness sprint: it verified GitHub main identity via git/gh only and performed NO Railway, Supabase, Lovable, DNS, registrar, OAuth or email-provider read or write. Main identity was re-verified as acb1723095471786e904825042c1b9745f120504 (merge commit of PR #23 / CM-COM-2A). Production and staging deployment state, health and readiness below predate the PR #22 and PR #23 merges and were NOT re-checked; PR #23 is MERGED but NOT DEPLOYED.",
     "sourceIdentity": "github:77e5d24e8a3c9589dac7535480ed7d9dbc60a512;railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:fefc9d83-4f06-4b67-8829-a9f033e3ab1f;production-deployment:18dc25e0-1244-44ff-9e66-3a5cc1f02208;db2:wlrfknmrhowldygmvtvn",
     "observedAt": "2026-08-08T00:45:00Z",
-    "freshUntil": "2026-08-15T00:45:00Z"
+    "freshUntil": "2026-08-15T00:45:00Z",
+    "runtimeFactFreshness": "carried_forward_from_cm_gov_3_observation_not_reobserved"
   },
   "platforms": {
     "railway": {
@@ -33,7 +34,10 @@
       "stagingAutoDeploy": true,
       "productionAutoDeploy": false,
       "deploymentCreatedByThisSprint": false,
-      "note": "CM-GOV-3 performed no Railway write. Production runs deployment 18dc25e0-1244-44ff-9e66-3a5cc1f02208 (SUCCESS, RUNNING) from PR #21 exact reviewed head c9f82892b4bbe029f2b709eb6a3f00f24026c7c8 on branch feature/cm-com-1c-b2b-catalog-manual-quote, deployed manually by the Founder; the head is contained in merged main. Staging runs deployment fefc9d83-4f06-4b67-8829-a9f033e3ab1f from main merge commit. /api/health provenance was independently observed for both environments. Production auto-deploy remains disabled."
+      "note": "CM-COM-2B0 performed no Railway read or write. The deployment identities, commits and statuses in this block are the last observed values from the CM-GOV-3 refresh and were NOT re-verified. As last observed, production ran deployment 18dc25e0-1244-44ff-9e66-3a5cc1f02208 from PR #21 exact head c9f82892b4bbe029f2b709eb6a3f00f24026c7c8. Production therefore does NOT run current main (acb1723095471786e904825042c1b9745f120504); PR #22 and PR #23 are merged but not deployed. Staging auto-deploy is enabled, so staging may have advanced beyond the recorded commit without observation. Production auto-deploy remains disabled and production deployment remains separately gated.",
+      "lastObservedDuringSprint": "CM-GOV-3",
+      "reobservedByCurrentSprint": false,
+      "currentMainDeployedToProduction": false
     },
     "databases": [
       {
@@ -95,22 +99,50 @@
       "stagingHealth": "verified_live",
       "stagingHealthObservedCommit": "77e5d24e8a3c",
       "stagingReadiness": "verified_live_ready",
-      "stagingReadinessDetail": "Direct GET /api/health and /api/ready on cornermex-web-staging returned 200 (status ok/ready) reporting commit 77e5d24e8a3c during the CM-GOV-3 refresh.",
+      "stagingReadinessDetail": "Direct GET /api/health and /api/ready on cornermex-web-staging returned 200 (status ok/ready) reporting commit 77e5d24e8a3c during the CM-GOV-3 refresh. CM-COM-2B0 did not re-observe staging; staging auto-deploy may have advanced it past commit 77e5d24e8a3c.",
       "productionInstance": "RUNNING",
       "productionHealth": "verified_live",
       "productionHealthObservedCommit": "c9f82892b4bb",
       "productionReadiness": "verified_live_ready",
-      "productionReadinessDetail": "Direct GET /api/health and /api/ready on production returned 200 (status ok/ready) reporting commit c9f82892b4bb. Google OAuth, authenticated /account, canonical Founder admin authorization and the Master Dashboard were accepted end-to-end by the Founder during PR #21 runtime acceptance. Checkout, payment and external messaging capabilities remain disabled per /api/ready."
+      "productionReadinessDetail": "Direct GET /api/health and /api/ready on production returned 200 (status ok/ready) reporting commit c9f82892b4bb. Google OAuth, authenticated /account, canonical Founder admin authorization and the Master Dashboard were accepted end-to-end by the Founder during PR #21 runtime acceptance. Checkout, payment and external messaging capabilities remain disabled per /api/ready. CM-COM-2B0 did not re-observe production. Production still runs the PR #21 head as last observed and does not run current main; PR #23 is merged but not deployed.",
+      "provenance": "last_observed_cm_gov_3_not_reobserved_by_cm_com_2b0"
     }
   },
   "program": {
-    "activeSprint": "CM-GOV-3_POST_PR21_SECURITY_PROGRAM_HYGIENE",
+    "activeSprint": "CM-COM-2B0_DOMAIN_READINESS",
     "owner": "Claude",
-    "reviewer": "Founder",
+    "reviewer": "Codex",
     "blockers": [
+      "CM-COM-2B1 domain cutover is BLOCKED: no custom domain is purchased or approved. cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).",
+      "PR #23 (CM-COM-2A) is merged to main but NOT deployed; production still runs the PR #21 head as last observed.",
+      "Runtime/Railway facts in this document are carried forward from the CM-GOV-3 observation and were not re-observed by CM-COM-2B0.",
       "External Supabase Preview GitHub check fails on main: remote migration versions are not present in the local supabase/migrations directory (integration drift; not a repository CI gate).",
       "Canonical public.products remains empty; A3.2b remains NOT AUTHORIZED / NOT EXECUTED.",
-      "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists."
+      "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists.",
+      "Pre-activation email debt (telemetry skipped-vs-failed, sendOrderEmail auth review, opaque provider errors) must be closed before external email activation."
+    ],
+    "completedSprints": [
+      {
+        "sprint": "CM-COM-2A_TRUST_ARCHITECTURE",
+        "status": "complete_merged",
+        "pullRequest": 23,
+        "reviewedHeadSha": "f0dfbb71a8978583c78aed0181078aa25b36f8f7",
+        "mergeSha": "acb1723095471786e904825042c1b9745f120504",
+        "independentFinalReview": "APPROVED_CM_COM_2A_R3_FOR_FOUNDER_VISUAL_ACCEPTANCE",
+        "remediationRounds": [
+          "R1",
+          "R2 (rejected, remediated)",
+          "R3 (rejected, remediated)"
+        ],
+        "founderVisualAcceptance": {
+          "status": "approved",
+          "desktop": "approved",
+          "mobile": "approved",
+          "observations": "none"
+        },
+        "deployed": false,
+        "note": "Merged to main only. Not deployed; production deployment remains separately gated."
+      }
     ]
   },
   "safety": {

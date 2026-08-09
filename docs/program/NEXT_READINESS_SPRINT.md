@@ -1,5 +1,11 @@
 # Next Commercial Sprint — CM-COM-1 Storefront Conversion Foundation
 
+> **SUPERSEDED — historical handoff.** This document recorded the handoff written when
+> `CM-COM-1` was the next sprint. `CM-COM-1` and `CM-COM-2A` are now complete and merged.
+> The current sprint is `CM-COM-2B0 — Domain Readiness` (see `ACTIVE_SPRINT.md`), and the
+> canonical sequence is in `COMMERCIAL_ROADMAP.md`. Retained unedited below as historical
+> evidence; do not treat its "next sprint" statement as current.
+
 The production frontend is live and ready under `FD-CM-PROD-LAUNCH-001`. PR #14 has been merged and CM-PROD-1 is complete.
 
 This handoff records roadmap direction only. It does not authorize Railway, Supabase, production deployment, commercial activation, migration, DNS, payment, checkout, marketplace, inventory, messaging, or external actions.

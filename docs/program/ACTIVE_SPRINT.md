@@ -1,33 +1,60 @@
-# Active Sprint: CM-GOV-3 — Post-PR #21 Security & Program State Hygiene
+# Active Sprint: CM-COM-2B0 — Domain Readiness & Program Reconciliation
 
 - Owner: Claude
-- Reviewer: Founder
-- Branch: `security/cm-gov-3-post-pr21-hygiene`
-- Base/main source: `77e5d24e8a3c9589dac7535480ed7d9dbc60a512`
+- Reviewer: Codex (independent)
+- Branch: `chore/cm-com-2b0-domain-readiness`
+- Base/main source: `acb1723095471786e904825042c1b9745f120504`
 - Status: implementation complete; draft PR pending independent review
 
-## Verified current production result
+This sprint prepares the repository and governance state for a future custom-domain cutover
+**without performing it**, and reconciles canonical program documents that went stale after the
+PR #22 and PR #23 merges. It does **not** complete CM-COM-2B.
 
-- PR #21 (CM-COM-1C dual B2C/B2B commerce and admin access) is MERGED; merge commit `77e5d24e8a3c9589dac7535480ed7d9dbc60a512`; independently reviewed exact head `c9f82892b4bbe029f2b709eb6a3f00f24026c7c8` is contained in main.
-- Production deployment: `18dc25e0-1244-44ff-9e66-3a5cc1f02208` (`SUCCESS`, `RUNNING`), source `c9f82892b4bb...` (PR #21 exact head), Founder-executed manual deployment.
-- Staging deployment: `fefc9d83-4f06-4b67-8829-a9f033e3ab1f` (`SUCCESS`), source `77e5d24e8a3c...` (main).
-- `/api/health` and `/api/ready`: `200` on both environments with matching commit provenance.
-- Founder runtime acceptance completed: Google OAuth end-to-end, `/auth/callback`, authenticated `/account`, canonical admin authorization (`user_roles.role = 'admin'`), Master Dashboard.
-- Checkout, payment, marketplace, commissions, external messaging, orders, inventory mutation and A3.2b remain disabled/not authorized.
-- Canonical `public.products` remains empty; catalog population (A3.2b) stays a separately authorized operation.
+## Verified repository facts
 
-## Sprint scope (CM-GOV-3)
+- `main` is `acb1723095471786e904825042c1b9745f120504` — the merge commit of PR #23.
+- **CM-COM-2A is COMPLETE / MERGED.** PR #23; independently reviewed exact head
+  `f0dfbb71a8978583c78aed0181078aa25b36f8f7`; final independent review returned
+  `APPROVED_CM_COM_2A_R3_FOR_FOUNDER_VISUAL_ACCEPTANCE`.
+- Founder Visual Acceptance: **APPROVED** — desktop approved, mobile approved, no observations.
+- CM-COM-2A required three remediation rounds. R1 and R2 were each independently **rejected**
+  and remediated; that trail is preserved in git history and in
+  `docs/commercial/cm-com-2a-trust-architecture.md`. It is deliberately not rewritten.
 
-- SECURITY: remove the preexisting `adminBootstrap` self-service zero-admin claim path; add regression coverage.
-- OBSERVABILITY: health/readiness service identity derived from the runtime environment (`RAILWAY_SERVICE_NAME`, fallback `corner-mex-uae`) instead of the hardcoded `cornermex-web` label.
-- PROGRAM STATE: reconcile `CURRENT_STATE.json`, `DEPLOYMENT_REGISTRY.json` and this file to verified post-merge reality; historical evidence documents preserved unchanged.
-- PLATFORM CLEANUP: delete the accidental Railway project `pr21-head` after conclusive isolation proof.
+## Last-observed runtime facts (NOT re-observed by this sprint)
 
-## Known open items
+- Production last observed running the PR #21 head `c9f82892b4bb…`, not current main.
+  **PR #22 and PR #23 are merged but not deployed.**
+- Staging last observed at `77e5d24e8a3c…`; staging auto-deploy is enabled, so it may have
+  advanced without observation.
+- Production auto-deploy remains disabled; production deployment remains separately gated.
 
-- External "Supabase Preview" GitHub check fails on main: remote migration versions missing from `supabase/migrations` (integration drift; not a repository CI gate).
-- Production deployment `18dc25e0...` is now ratified by `FD-CM-PROD-EXACT-HEAD-001` (recorded after execution); the next manual production deployment must originate from `main`.
+## Founder-attested facts
 
-## Explicitly not executed
+- `cornermex.ae` is **not purchased and not operational**.
+- The temporary public contact mailbox stands under `FD-CM-PUBLIC-CONTACT-001`
+  (evidence class: FOUNDER-ATTESTED / TEMPORARY).
+- Business identity is FOUNDER-ATTESTED under `FD-CM-BUSINESS-IDENTITY-001`.
 
-No CM-COM-2 work, no A3.2b, no product population, no checkout/payment/external messaging enablement, no inventory or order mutation, no seller approval, no OAuth configuration change, no credential rotation, no DNS/custom domain change, no CornerOps write.
+## Sprint scope
+
+1. Reconcile `CURRENT_STATE.json`, `DEPLOYMENT_REGISTRY.json`, this file,
+   `COMMERCIAL_ROADMAP.md` and `NEXT_READINESS_SPRINT.md` to verified repository reality,
+   keeping runtime facts explicitly marked as carried forward.
+2. Record CM-COM-2A closure in the program record.
+3. Publish `CM-COM-2B0_DOMAIN_READINESS.md`: domain approval contract, URL authority
+   inventory, CM-COM-2B1 cutover runbook, and the pre-activation email debt register.
+4. Add domain-safety invariant tests.
+
+## Explicitly not done
+
+No domain purchased or configured. No DNS, MX or TLS action. No Railway custom-domain binding
+or variable change. No Railway, Supabase, OAuth, email-provider or CornerOps write. No
+deployment. No checkout, payment, bank transfer, COD, external email, external messaging,
+A3.2b, catalog population or inventory mutation. CM-COM-3 implementation has not started.
+
+## Next
+
+`CM-COM-2B1 — Domain Cutover` remains **BLOCKED** until an approved, owned domain exists and
+the Founder authorizes it. Entry conditions are the domain approval contract in
+`CM-COM-2B0_DOMAIN_READINESS.md`.
