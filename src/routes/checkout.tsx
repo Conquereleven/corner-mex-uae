@@ -134,8 +134,8 @@ function Checkout() {
     form.recipient_name.trim().length >= 2 &&
     form.phone.trim().length >= 7 &&
     form.area.trim().length >= 2;
-  const canExecute =
-    CHECKOUT_ENABLED && Boolean(user) && items.length > 0 && requiredFilled && accepted;
+  const readyToOrder = Boolean(user) && items.length > 0 && requiredFilled && accepted;
+  const canExecute = CHECKOUT_ENABLED && readyToOrder;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
