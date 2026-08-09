@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Flame, MapPin, Mail, ShoppingBag } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { TrustBar } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
 import { getProduct, type ProductDetail } from "@/lib/catalog.functions";
 import { siteOrigin, siteUrl } from "@/lib/site-url";
@@ -353,6 +354,8 @@ function ProductPage() {
                 </Button>
               </a>
             </div>
+
+            <TrustBar context="b2c" className="mt-6" />
           </div>
         </div>
 

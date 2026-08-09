@@ -6,6 +6,7 @@ import { ManualQuoteRequestForm } from "@/components/b2b/ManualQuoteRequestForm"
 import { ManualQuoteRequestPreview } from "@/components/b2b/ManualQuoteRequestPreview";
 import { QuoteSelectionList } from "@/components/b2b/QuoteSelectionList";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { TrustBar } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
 import {
   EMPTY_MANUAL_QUOTE_REQUEST,
@@ -98,6 +99,8 @@ function B2bQuoteRoute() {
             </>
           )}
         </div>
+
+        <TrustBar context="b2b" className="mt-8" />
       </main>
     </SiteLayout>
   );

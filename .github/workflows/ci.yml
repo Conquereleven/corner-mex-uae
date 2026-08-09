@@ -92,6 +92,7 @@ jobs:
       - run: npm run validate:cm-com-1c-r2
       - run: npm run test:cm-com-1c-r2
       - run: npm run test:cm-gov-3
+      - run: npm run test:cm-com-2a
       - run: npm run typecheck
       - run: npm run build
       - run: npm run validate:ssr-async-context
