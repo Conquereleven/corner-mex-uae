@@ -10,7 +10,11 @@ import {
   isCommercialActive,
 } from "../../src/lib/commercial-config.server.ts";
 import { getAvailablePaymentMethods } from "../../src/lib/payment-methods.ts";
-import { validateActivationManifest } from "../../scripts/cm-com-3a/validate-activation-manifest.mjs";
+import {
+  MANIFEST_LIMITS,
+  validateActivationManifest,
+} from "../../scripts/cm-com-3a/validate-activation-manifest.mjs";
+import { normalizeCatalog, summarize } from "../../scripts/cm-com-3a/ingest-intermex-catalog.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const read = (p) => readFile(path.join(root, p), "utf8");
@@ -240,14 +244,6 @@ test("the manifest validator rejects malformed rows", () => {
     ["unknown category", (m) => (m.products[0].category = "missing")],
     ["missing english name", (m) => delete m.products[0].names.en],
     ["invalid sku", (m) => (m.products[0].sku = "bad sku!")],
-    [
-      "too many products",
-      (m) => {
-        for (let i = 0; i < 12; i += 1) {
-          m.products.push({ ...m.products[0], slug: `p-${i}`, sku: `SKU-${i}` });
-        }
-      },
-    ],
   ];
   for (const [name, mutate] of cases) {
     const manifest = structuredClone(VALID_MANIFEST);
@@ -268,6 +264,110 @@ test("the manifest tool never connects to or writes a database", async () => {
     );
   }
   assert.match(raw, /DRY-RUN ONLY/i);
+});
+
+test("the manifest has no fixed catalog-size cap", () => {
+  // The public catalog is dynamic (196 products observed in R2), so a large
+  // manifest must validate rather than be rejected by an arbitrary limit.
+  const manifest = structuredClone(VALID_MANIFEST);
+  for (let i = 0; i < 250; i += 1) {
+    manifest.products.push({ ...manifest.products[0], slug: `bulk-${i}`, sku: `BULK-${i}` });
+  }
+  const result = validateActivationManifest(manifest);
+  assert.equal(result.valid, true, JSON.stringify(result.errors?.slice(0, 3)));
+  assert.equal(result.plan.totals.products, 251);
+  assert.equal(MANIFEST_LIMITS.maxProducts, undefined, "no maximum product cap may exist");
+});
+
+test("intermex ingestion mirrors the effective price and never fabricates a source SKU", () => {
+  const observedAt = "2026-08-09T00:00:00.000Z";
+  const manifest = normalizeCatalog(
+    [
+      {
+        id: 1,
+        handle: "salsa-verde",
+        title: "Salsa Verde",
+        vendor: "La Costena",
+        product_type: "Salsas",
+        body_html: "<p>x</p>",
+        images: [{ src: "https://cdn.example.test/a.jpg" }],
+        variants: [
+          {
+            id: 11,
+            sku: "REAL-SKU",
+            title: "450 g",
+            price: "12.00",
+            compare_at_price: "15.00",
+            available: true,
+            grams: 450,
+          },
+          {
+            id: 12,
+            sku: "",
+            title: "Default Title",
+            price: "9.50",
+            compare_at_price: null,
+            available: false,
+            grams: 0,
+          },
+        ],
+      },
+    ],
+    observedAt,
+  );
+  const [product] = manifest.products;
+  const [onSale, plain] = product.variants;
+  // Pricing mirror: price_aed is exactly the effective price, sale wins.
+  assert.equal(onSale.source_effective_price_aed, 12);
+  assert.equal(onSale.price_aed, 12);
+  assert.equal(onSale.source_regular_price_aed, 15);
+  assert.equal(onSale.on_sale, true);
+  assert.equal(plain.on_sale, false);
+  // Source SKU preserved exactly; absent stays null with a separate CornerMex SKU.
+  assert.equal(onSale.source_sku, "REAL-SKU");
+  assert.equal(plain.source_sku, null);
+  assert.match(plain.cornermex_sku, /^CM-/);
+  // Availability is source state, never numeric stock.
+  assert.equal(onSale.source_availability, "AVAILABLE");
+  assert.equal(plain.source_availability, "SOLD_OUT");
+  // Stock policy is unresolved and must never be invented.
+  assert.equal(onSale.initial_stock, null);
+  assert.equal(manifest.source_price_observed_at, observedAt);
+});
+
+test("catalog representation is separate from activation eligibility", () => {
+  const manifest = normalizeCatalog(
+    [
+      {
+        id: 2,
+        handle: "sold-out-item",
+        title: "Sold Out",
+        vendor: "V",
+        images: [{ src: "https://cdn.example.test/b.jpg" }],
+        variants: [{ id: 21, sku: null, title: "Default Title", price: "5.00", available: false }],
+      },
+    ],
+    "2026-08-09T00:00:00.000Z",
+  );
+  const summary = summarize(manifest);
+  // A sold-out, stock-unresolved variant is still a VALID catalog row...
+  assert.equal(summary.valid, true);
+  assert.equal(summary.counts.validCatalogRows, 1);
+  // ...but is blocked from activation on both counts.
+  assert.equal(summary.counts.activationBlockedStockPolicy, 1);
+  assert.equal(summary.counts.activationBlockedAvailability, 1);
+});
+
+test("the ingestion crawler is public read-only with no fixed catalog cap", async () => {
+  const source = await read("scripts/cm-com-3a/ingest-intermex-catalog.mjs");
+  const code = stripJsComments(source);
+  for (const forbidden of ["POST", "PUT", "DELETE", "/cart", "/checkout", "Authorization"]) {
+    assert.ok(!code.includes(forbidden), `crawler must not use ${forbidden}`);
+  }
+  assert.match(source, /READ ONLY/i);
+  // Pagination continues until exhausted; MAX_PAGES is only a loop guard.
+  assert.match(code, /break;/);
+  assert.ok(!/maxProducts/.test(code), "crawler must not impose a product cap");
 });
 
 test("halal is never defaulted to true", () => {

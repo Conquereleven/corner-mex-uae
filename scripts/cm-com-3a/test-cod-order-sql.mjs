@@ -9,7 +9,7 @@
 // stays runnable on machines without a database.
 
 import { execFileSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -56,6 +56,26 @@ const psql = (args) =>
 const query = (sql) => psql(["-t", "-A", "-c", sql]).trim();
 const file = (relative) => psql(["-q", "-f", path.join(root, relative)]);
 
+// PostgreSQL roles are cluster-wide, not per-database. In CI the canonical
+// replay step has already created anon/authenticated/service_role in the same
+// cluster, so replaying the shared prelude verbatim aborts with
+// "role ... already exists". The shared fixture is correct for a fresh cluster
+// and is NOT modified; instead this harness applies a role-idempotent copy of
+// it via stdin. Only role creation is made conditional — every other statement,
+// and ON_ERROR_STOP, is left untouched.
+const applyRoleIdempotentPrelude = (relative) => {
+  const sql = readFileSync(path.join(root, relative), "utf8").replace(
+    /create\s+role\s+([a-z_]+)\s+nologin\s*;/gi,
+    (_match, role) =>
+      `do $$ begin if not exists (select 1 from pg_roles where rolname = '${role}') then create role ${role} nologin; end if; end $$;`,
+  );
+  execFileSync("psql", ["-d", DB, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], {
+    input: sql,
+    encoding: "utf8",
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+};
+
 const failures = [];
 const check = (name, condition, detail = "") => {
   if (condition) console.log(`  ok  ${name}`);
@@ -75,7 +95,7 @@ const expectError = (sql, code) => {
 };
 
 // --- schema ---------------------------------------------------------------
-file("tests/fixtures/supabase-canonical-platform-prelude.sql");
+applyRoleIdempotentPrelude("tests/fixtures/supabase-canonical-platform-prelude.sql");
 for (const name of readdirSync(path.join(root, "supabase/migrations"))
   .filter((n) => n.endsWith(".sql"))
   .sort()) {

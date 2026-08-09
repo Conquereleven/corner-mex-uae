@@ -31,6 +31,7 @@
     "test:cm-com-3a": "node --experimental-strip-types --test tests/cm-com-3a/*.test.mjs",
     "test:cm-com-3a:sql": "node scripts/cm-com-3a/test-cod-order-sql.mjs",
     "validate:cm-com-3a:manifest": "node scripts/cm-com-3a/validate-activation-manifest.mjs",
+    "ingest:intermex-catalog": "node scripts/cm-com-3a/ingest-intermex-catalog.mjs",
     "validate:ssr-async-context": "node scripts/ci/validate-ssr-async-context.mjs",
     "test:a2": "node --test tests/a2/*.test.mjs",
     "test:a3": "node --test tests/a3/*.test.mjs",

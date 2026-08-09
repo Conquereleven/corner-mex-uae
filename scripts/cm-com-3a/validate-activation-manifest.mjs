@@ -10,7 +10,9 @@
 
 import { readFileSync } from "node:fs";
 
-export const MANIFEST_LIMITS = { minProducts: 1, maxProducts: 10 };
+// The catalog size is dynamic and set by the public source, so there is no
+// fixed maximum. CM-COM-3A ingests the full current Intermex UAE catalog.
+export const MANIFEST_LIMITS = { minProducts: 1 };
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SKU = /^[A-Z0-9][A-Z0-9._-]{1,39}$/;
@@ -65,9 +67,6 @@ export function validateActivationManifest(manifest) {
   const productSlugs = new Set();
   const skus = new Set();
   if (products.length < MANIFEST_LIMITS.minProducts) push("at least one product is required");
-  if (products.length > MANIFEST_LIMITS.maxProducts) {
-    push(`initial activation is limited to ${MANIFEST_LIMITS.maxProducts} products`);
-  }
 
   products.forEach((product, index) => {
     const at = `products[${index}]`;
