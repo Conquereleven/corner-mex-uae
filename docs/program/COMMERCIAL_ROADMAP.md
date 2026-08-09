@@ -89,20 +89,35 @@ Split into a completed trust half and a blocked domain half.
   (desktop + mobile, no observations);
 - merged to main only — **not deployed**; production deployment remains separately gated.
 
-### CM-COM-2B0 — Domain Readiness · CURRENT
+### CM-COM-2B0 — Domain Readiness · COMPLETE / MERGED
 
 - domain approval contract, URL authority inventory and CM-COM-2B1 cutover runbook;
 - canonical program-document reconciliation;
-- **no** domain, DNS, Railway or deployment action. See `CM-COM-2B0_DOMAIN_READINESS.md`.
+- **no** domain, DNS, Railway or deployment action. See `CM-COM-2B0_DOMAIN_READINESS.md`;
+- merged as PR #24, merge commit `af822ba00866ccd75a8a0cf4431570f044317ad7`, reviewed head
+  `92845d3d903d8843679db6cd68fe3a9ebb279534`;
+- merged to main only — **not deployed**.
 
-### CM-COM-2B1 — Domain Cutover · BLOCKED
+### CM-COM-2B1 — Domain Cutover · ON HOLD
 
-Blocked until an approved, owned domain exists **and** the Founder authorizes it.
+On hold until an approved, owned domain exists **and** the Founder authorizes it.
 `cornermex.ae` is **not purchased and not operational**, so no domain is currently approved.
 
 - connect the approved CornerMex domain;
 - configure DNS and TLS under explicit authorization;
 - preserve the Railway origin as the rollback route during cutover.
+
+## CM-COM-3A — Commercial Active MVP (Cash on Delivery) · CURRENT
+
+Runs **ahead of** `CM-COM-2B1` under explicit Founder authorization, because revenue readiness
+does not depend on a custom domain.
+
+- one bounded order path: cash on delivery, single merchant, AED only;
+- server-authoritative money: per-emirate shipping, 5% VAT and a Founder-attested TRN;
+- transactional COD order function prepared and **unapplied**;
+- Intermex UAE public catalog ingestion (read-only) and a dry-run activation plan;
+- repository readiness only — **no** migration applied, catalog loaded, deployment or
+  checkout activation. See `CM-COM-3A_ACTIVATION_RUNBOOK.md`.
 
 ## CM-COM-3 — Controlled Order Intake
 
@@ -129,17 +144,19 @@ Blocked until an approved, owned domain exists **and** the Founder authorizes it
 
 `Desert Glass + catalog visibility → domain and trust → controlled order intake → payments and fulfilment → B2B growth`
 
-This priority order is canonical. `CM-COM-3` must **not** move ahead of the domain and trust
-layer without explicit Founder authorization.
+This priority order is canonical. `CM-COM-3A` moved ahead of the domain cutover **with**
+explicit Founder authorization, recorded here and in `ACTIVE_SPRINT.md`. Any further reorder
+requires the same explicit authorization.
 
 ### Current position
 
-| Sprint                               | Status                                                                            |
-| ------------------------------------ | --------------------------------------------------------------------------------- |
-| `CM-COM-1` / `CM-COM-1A–1C`          | delivered (storefront, Desert Glass, dual B2C/B2B commerce)                       |
-| `CM-COM-2A` — Trust Architecture     | **complete / merged** (PR #23)                                                    |
-| `CM-COM-2B0` — Domain Readiness      | **current sprint**                                                                |
-| `CM-COM-2B1` — Domain Cutover        | **blocked** — no approved or owned domain exists                                  |
-| `CM-COM-3` — Controlled Order Intake | follows completion of CM-COM-2 unless the Founder explicitly authorizes a reorder |
+| Sprint                               | Status                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| `CM-COM-1` / `CM-COM-1A–1C`          | delivered (storefront, Desert Glass, dual B2C/B2B commerce)                  |
+| `CM-COM-2A` — Trust Architecture     | **complete / merged** (PR #23)                                               |
+| `CM-COM-2B0` — Domain Readiness      | **complete / merged** (PR #24)                                               |
+| `CM-COM-2B1` — Domain Cutover        | **on hold** — no approved or owned domain exists                             |
+| `CM-COM-3A` — Commercial Active MVP  | **current sprint** (PR #25) — Founder-authorized reorder ahead of CM-COM-2B1 |
+| `CM-COM-3` — Controlled Order Intake | superseded in scope by CM-COM-3A; remaining items follow it                  |
 
 Production commerce execution remains safely off until separately authorized.

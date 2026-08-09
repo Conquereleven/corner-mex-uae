@@ -13,11 +13,12 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
+  ALL_EMIRATE_CODES,
   computeOrderTotals,
   evaluateCommercialConfig,
   getPublicCommercialConfig,
+  shippingForEmirate,
 } from "@/lib/commercial-config.server";
-import { ALL_EMIRATE_CODES } from "@/lib/commercial-config.server";
 
 export const COD_ORDER_DISABLED = "COD_ORDER_EXECUTION_DISABLED";
 export const COD_ORDER_METHOD_INVALID = "COD_ORDER_PAYMENT_METHOD_INVALID";
@@ -90,10 +91,9 @@ export const placeCodOrder = createServerFn({ method: "POST" })
       throw new Error(COD_ORDER_METHOD_INVALID);
     }
 
-    // 3. Delivery must be inside a configured emirate.
-    if (!config.supportedEmirates.includes(data.address.emirate as never)) {
-      throw new Error(COD_ORDER_EMIRATE_UNSUPPORTED);
-    }
+    // 3. Shipping is resolved server-side from the validated emirate code. The
+    //    client only ever sends the code; it never sends a money amount.
+    const shippingAed = shippingForEmirate(data.address.emirate, config);
 
     // 4. Terms, privacy and returns must all be accepted before execution.
     const { terms, privacy, returns } = data.legal_acceptance;
@@ -121,7 +121,7 @@ export const placeCodOrder = createServerFn({ method: "POST" })
           landmark: data.address.landmark ?? null,
           notes: data.address.notes ?? null,
         },
-        p_shipping_aed: config.shippingAed,
+        p_shipping_aed: shippingAed,
         p_tax_rate: config.vatRate,
         p_legal_acceptance: {
           accepted_at: new Date().toISOString(),
@@ -160,16 +160,20 @@ export const placeCodOrder = createServerFn({ method: "POST" })
 
 /** Preview totals for the checkout summary, using the same server authority. */
 export const previewCodOrderTotals = createServerFn({ method: "GET" })
-  .inputValidator((input: { subtotal_aed: number }) =>
-    z.object({ subtotal_aed: z.number().min(0).max(1_000_000) }).parse(input),
+  .inputValidator((input: { subtotal_aed: number; emirate: string }) =>
+    z.object({ subtotal_aed: z.number().min(0).max(1_000_000), emirate: EmirateEnum }).parse(input),
   )
   .handler(async ({ data }) => {
     const evaluation = evaluateCommercialConfig();
     if (!evaluation.ready || !evaluation.config) {
       return { available: false as const, reasons: evaluation.reasons };
     }
-    return {
-      available: true as const,
-      ...computeOrderTotals(data.subtotal_aed, evaluation.config),
-    };
+    try {
+      return {
+        available: true as const,
+        ...computeOrderTotals(data.subtotal_aed, evaluation.config, data.emirate),
+      };
+    } catch {
+      return { available: false as const, reasons: [COD_ORDER_EMIRATE_UNSUPPORTED] };
+    }
   });

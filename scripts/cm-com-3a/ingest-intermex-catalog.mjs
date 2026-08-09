@@ -95,8 +95,10 @@ export function normalizeCatalog(rawProducts, observedAt) {
         // Founder rule: mirror the current effective price exactly. No markup.
         price_aed: effective,
         on_sale: regular !== null && effective !== null && regular > effective,
-        // Numeric CornerMex stock policy is unresolved; never invented.
-        initial_stock: null,
+        // Founder stock policy (CM-COM-3A-R3): source availability maps to a
+        // minimal CornerMex opening stock. A quantity is never invented above 1,
+        // and unknown availability is treated as not sellable.
+        initial_stock: available === AVAILABILITY.AVAILABLE ? 1 : 0,
       };
     });
 
@@ -144,7 +146,8 @@ export function summarize(manifest) {
   let regularPriced = 0;
   let salePriced = 0;
   let validRows = 0;
-  let activationBlockedStock = 0;
+  let stockOne = 0;
+  let stockZero = 0;
   let activationBlockedAvailability = 0;
   const availability = { AVAILABLE: 0, SOLD_OUT: 0, UNKNOWN: 0 };
 
@@ -183,7 +186,15 @@ export function summarize(manifest) {
         if (variant.on_sale) salePriced += 1;
         else regularPriced += 1;
       }
-      if (variant.initial_stock === null) activationBlockedStock += 1;
+      // Stock must follow the Founder policy exactly; any drift is an error,
+      // not a silently accepted value.
+      const expectedStock = variant.source_availability === AVAILABILITY.AVAILABLE ? 1 : 0;
+      if (variant.initial_stock !== expectedStock) {
+        errors.push(
+          `${product.source_product_id}/${variant.source_variant_id}: initial_stock must be ${expectedStock}`,
+        );
+      } else if (expectedStock === 1) stockOne += 1;
+      else stockZero += 1;
       if (variant.source_availability !== AVAILABILITY.AVAILABLE)
         activationBlockedAvailability += 1;
     }
@@ -203,7 +214,8 @@ export function summarize(manifest) {
       regularPriceVariants: regularPriced,
       salePriceVariants: salePriced,
       validCatalogRows: validRows,
-      activationBlockedStockPolicy: activationBlockedStock,
+      variantsWithStockOne: stockOne,
+      variantsWithStockZero: stockZero,
       activationBlockedAvailability,
     },
   };

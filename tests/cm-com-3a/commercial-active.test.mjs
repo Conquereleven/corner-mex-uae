@@ -4,10 +4,14 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  DEFAULT_SHIPPING_RATES_AED,
+  DEFAULT_VAT_RATE,
+  FOUNDER_ATTESTED_TRN,
   computeOrderTotals,
   evaluateCommercialConfig,
   getPublicCommercialConfig,
   isCommercialActive,
+  shippingForEmirate,
 } from "../../src/lib/commercial-config.server.ts";
 import { getAvailablePaymentMethods } from "../../src/lib/payment-methods.ts";
 import {
@@ -21,9 +25,19 @@ const read = (p) => readFile(path.join(root, p), "utf8");
 const stripSqlComments = (sql) => sql.replace(/--[^\n]*/g, "");
 const stripJsComments = (code) => code.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
 
+const FULL_RATES = { DU: 15, AD: 15, SH: 20, AJ: 20, UQ: 20, RK: 20, FU: 20 };
+
 const READY_ENV = {
   CORNERMEX_CHECKOUT_ENABLED: "true",
-  CORNERMEX_COD_SHIPPING_AED: "20",
+  CORNERMEX_COD_SHIPPING_RATES_JSON: JSON.stringify({
+    DU: 15,
+    AD: 15,
+    SH: 20,
+    AJ: 20,
+    UQ: 20,
+    RK: 20,
+    FU: 20,
+  }),
   CORNERMEX_COD_SUPPORTED_EMIRATES: "DU,SH",
   CORNERMEX_VAT_RATE: "0",
 };
@@ -51,19 +65,52 @@ test("only the exact string true can enable checkout", () => {
   assert.equal(isCommercialActive(READY_ENV), true);
 });
 
-test("missing shipping configuration fails closed", () => {
+test("an incomplete per-emirate shipping table fails closed", () => {
+  // Every emirate must resolve; a partial table is never silently completed.
   const evaluation = evaluateCommercialConfig({
     ...READY_ENV,
-    CORNERMEX_COD_SHIPPING_AED: undefined,
+    CORNERMEX_COD_SHIPPING_RATES_JSON: JSON.stringify({ DU: 15 }),
   });
   assert.equal(evaluation.ready, false);
-  assert.ok(evaluation.reasons.some((r) => r.includes("COD_SHIPPING_AED")));
+  assert.ok(evaluation.reasons.some((r) => r.includes("COD_SHIPPING_RATES_JSON")));
+});
+
+test("the Founder-approved per-emirate rates apply when no override is set", () => {
+  const { config } = evaluateCommercialConfig({
+    ...READY_ENV,
+    CORNERMEX_COD_SHIPPING_RATES_JSON: undefined,
+    CORNERMEX_COD_SUPPORTED_EMIRATES: "DU,AD,SH,AJ,UQ,RK,FU",
+  });
+  assert.deepEqual(config.shippingRates, DEFAULT_SHIPPING_RATES_AED);
+  assert.equal(shippingForEmirate("DU", config), 15);
+  assert.equal(shippingForEmirate("AD", config), 15);
+  for (const code of ["SH", "AJ", "UQ", "RK", "FU"]) {
+    assert.equal(shippingForEmirate(code, config), 20, code);
+  }
+});
+
+test("shipping resolution fails closed for an unsupported emirate", () => {
+  const { config } = evaluateCommercialConfig(READY_ENV);
+  assert.throws(() => shippingForEmirate("FU", config), /COD_ORDER_EMIRATE_UNSUPPORTED/);
+  assert.throws(() => shippingForEmirate("XX", config), /COD_ORDER_EMIRATE_UNSUPPORTED/);
+});
+
+test("VAT defaults to the Founder-attested 5% and a valid TRN", () => {
+  const { config } = evaluateCommercialConfig({ ...READY_ENV, CORNERMEX_VAT_RATE: undefined });
+  assert.equal(config.vatRate, DEFAULT_VAT_RATE);
+  assert.equal(config.vatRate, 0.05);
+  assert.match(config.vatTrn, /^\d{15}$/);
+  assert.equal(config.vatTrn, FOUNDER_ATTESTED_TRN);
+  const bad = evaluateCommercialConfig({ ...READY_ENV, CORNERMEX_VAT_TRN: "12345" });
+  assert.equal(bad.ready, false);
+  assert.ok(bad.reasons.includes("invalid_CORNERMEX_VAT_TRN"));
 });
 
 test("invalid commercial configuration fails closed", () => {
   for (const patch of [
-    { CORNERMEX_COD_SHIPPING_AED: "-5" },
-    { CORNERMEX_COD_SHIPPING_AED: "twenty" },
+    { CORNERMEX_COD_SHIPPING_RATES_JSON: JSON.stringify({ ...FULL_RATES, DU: -5 }) },
+    { CORNERMEX_COD_SHIPPING_RATES_JSON: JSON.stringify({ ...FULL_RATES, DU: "twenty" }) },
+    { CORNERMEX_COD_SHIPPING_RATES_JSON: "{not json" },
     { CORNERMEX_COD_SUPPORTED_EMIRATES: "" },
     { CORNERMEX_COD_SUPPORTED_EMIRATES: "XX" },
     { CORNERMEX_COD_SUPPORTED_EMIRATES: "DU,DU" },
@@ -85,12 +132,15 @@ test("unsupported emirate is not offered to the customer", () => {
 
 // --- money is server-authoritative ---------------------------------------
 
-test("server shipping and tax are authoritative", () => {
+test("server shipping and tax are authoritative and per-emirate", () => {
   const { config } = evaluateCommercialConfig({ ...READY_ENV, CORNERMEX_VAT_RATE: "0.05" });
-  const totals = computeOrderTotals(100, config);
-  assert.equal(totals.shippingAed, 20);
-  assert.equal(totals.taxAed, 5);
-  assert.equal(totals.totalAed, 125);
+  const dubai = computeOrderTotals(100, config, "DU");
+  assert.equal(dubai.shippingAed, 15);
+  assert.equal(dubai.taxAed, 5);
+  assert.equal(dubai.totalAed, 120);
+  const sharjah = computeOrderTotals(100, config, "SH");
+  assert.equal(sharjah.shippingAed, 20);
+  assert.equal(sharjah.totalAed, 125);
 });
 
 test("VAT of zero does not claim a 5% VAT label", () => {
@@ -142,7 +192,7 @@ test("the server rejects a forged non-COD payment method", async () => {
 
 test("the server rejects an unsupported emirate", async () => {
   const source = await read("src/lib/cod-order.functions.ts");
-  assert.match(source, /supportedEmirates\.includes/);
+  assert.match(source, /shippingForEmirate\(data\.address\.emirate, config\)/);
   assert.match(source, /COD_ORDER_EMIRATE_UNSUPPORTED/);
 });
 
@@ -150,6 +200,63 @@ test("legal acceptance is required before execution", async () => {
   const source = await read("src/lib/cod-order.functions.ts");
   assert.match(source, /COD_ORDER_LEGAL_ACCEPTANCE_REQUIRED/);
   assert.match(source, /accepted_at/);
+});
+
+// --- checkout UI ----------------------------------------------------------
+
+test("checkout executes only the CM-COM-3A COD path", async () => {
+  const raw = await read("src/routes/checkout.tsx");
+  const source = stripJsComments(raw);
+  assert.match(source, /placeCodOrder/);
+  assert.match(source, /previewCodOrderTotals/);
+  assert.match(source, /getCommercialCheckoutConfig/);
+  for (const forbidden of [
+    "placeOrder",
+    "createStripeSession",
+    "stripe",
+    "tabby",
+    "tamara",
+    "bank_transfer",
+    "apple_pay",
+    "google_pay",
+  ]) {
+    assert.ok(!source.includes(forbidden), `checkout must not execute ${forbidden}`);
+  }
+  assert.match(source, /codOnly: true/, "only COD may be offered");
+});
+
+test("checkout sends no money and no unchecked legal acceptance", async () => {
+  const source = stripJsComments(await read("src/routes/checkout.tsx"));
+  const payload = source.slice(source.indexOf("await placeCod("), source.indexOf("clear();"));
+  for (const forbidden of ["price", "subtotal", "shipping_aed", "tax", "total"]) {
+    assert.ok(!payload.includes(forbidden), `checkout must not send ${forbidden}`);
+  }
+  assert.match(payload, /variant_id/);
+  assert.match(payload, /payment_method: "cod"/);
+  // Acceptance starts unchecked and gates the submit button.
+  assert.match(source, /useState\(false\)/);
+  assert.match(source, /canExecute[\s\S]{0,220}accepted/);
+});
+
+test("checkout clears the cart only after a real order and guards double submit", async () => {
+  const source = stripJsComments(await read("src/routes/checkout.tsx"));
+  const submit = source.slice(
+    source.indexOf("async function submit"),
+    source.lastIndexOf("if (items.length === 0)"),
+  );
+  assert.match(
+    submit,
+    /if \(submitting \|\| !canExecute\) return;/,
+    "double submit must be blocked",
+  );
+  const orderIndex = submit.indexOf("await placeCod(");
+  const clearIndex = submit.indexOf("clear();");
+  assert.ok(orderIndex > 0 && clearIndex > orderIndex, "the cart may only clear after the order");
+  assert.equal(submit.split("clear();").length - 1, 1, "the cart must clear exactly once");
+  const failure = submit.slice(submit.indexOf("} catch"));
+  assert.ok(!failure.includes("clear();"), "a failure must never clear the cart");
+  assert.ok(!failure.includes("order-confirmed"), "a failure must never fake success");
+  assert.match(submit, /navigate\(\{ to: "\/order-confirmed"/);
 });
 
 // --- migration contract ---------------------------------------------------
@@ -219,7 +326,8 @@ const VALID_MANIFEST = {
       images: ["https://images.example.test/a.jpg"],
       format_label: "450 g",
       price_aed: 25.5,
-      initial_stock: 12,
+      source_availability: "AVAILABLE",
+      initial_stock: 1,
     },
   ],
 };
@@ -230,7 +338,7 @@ test("a well-formed manifest produces a deterministic plan", () => {
   assert.equal(first.valid, true, JSON.stringify(first.errors));
   assert.equal(first.plan.dryRun, true);
   assert.deepEqual(first.plan, second.plan, "the plan must be deterministic");
-  assert.equal(first.plan.totals.units, 12);
+  assert.equal(first.plan.totals.units, 1);
 });
 
 test("the manifest validator rejects malformed rows", () => {
@@ -239,6 +347,14 @@ test("the manifest validator rejects malformed rows", () => {
     ["duplicate sku", (m) => m.products.push({ ...m.products[0], slug: "other-slug" })],
     ["negative price", (m) => (m.products[0].price_aed = -1)],
     ["negative stock", (m) => (m.products[0].initial_stock = -5)],
+    ["invented stock above 1", (m) => (m.products[0].initial_stock = 12)],
+    [
+      "stock contradicting availability",
+      (m) => {
+        m.products[0].source_availability = "SOLD_OUT";
+        m.products[0].initial_stock = 1;
+      },
+    ],
     ["non-https image", (m) => (m.products[0].images = ["http://insecure.test/a.jpg"])],
     ["empty images", (m) => (m.products[0].images = [])],
     ["unknown category", (m) => (m.products[0].category = "missing")],
@@ -276,6 +392,7 @@ test("the manifest has no fixed catalog-size cap", () => {
   const result = validateActivationManifest(manifest);
   assert.equal(result.valid, true, JSON.stringify(result.errors?.slice(0, 3)));
   assert.equal(result.plan.totals.products, 251);
+  assert.equal(result.plan.totals.units, 251);
   assert.equal(MANIFEST_LIMITS.maxProducts, undefined, "no maximum product cap may exist");
 });
 
@@ -330,8 +447,9 @@ test("intermex ingestion mirrors the effective price and never fabricates a sour
   // Availability is source state, never numeric stock.
   assert.equal(onSale.source_availability, "AVAILABLE");
   assert.equal(plain.source_availability, "SOLD_OUT");
-  // Stock policy is unresolved and must never be invented.
-  assert.equal(onSale.initial_stock, null);
+  // Founder stock policy: available -> 1, everything else -> 0. Never above 1.
+  assert.equal(onSale.initial_stock, 1);
+  assert.equal(plain.initial_stock, 0);
   assert.equal(manifest.source_price_observed_at, observedAt);
 });
 
@@ -350,12 +468,15 @@ test("catalog representation is separate from activation eligibility", () => {
     "2026-08-09T00:00:00.000Z",
   );
   const summary = summarize(manifest);
-  // A sold-out, stock-unresolved variant is still a VALID catalog row...
+  // A sold-out variant is still a VALID catalog row...
   assert.equal(summary.valid, true);
   assert.equal(summary.counts.validCatalogRows, 1);
-  // ...but is blocked from activation on both counts.
-  assert.equal(summary.counts.activationBlockedStockPolicy, 1);
+  // ...carries zero stock under the Founder policy...
+  assert.equal(summary.counts.variantsWithStockZero, 1);
+  assert.equal(summary.counts.variantsWithStockOne, 0);
+  // ...and is blocked from activation on availability.
   assert.equal(summary.counts.activationBlockedAvailability, 1);
+  assert.equal(summary.counts.activationBlockedStockPolicy, undefined);
 });
 
 test("the ingestion crawler is public read-only with no fixed catalog cap", async () => {
@@ -381,7 +502,7 @@ test("the activation runbook enables checkout last and rolls it back first", asy
   const runbook = await read("docs/program/CM-COM-3A_ACTIVATION_RUNBOOK.md");
   const enable = runbook.indexOf("CORNERMEX_CHECKOUT_ENABLED=true");
   const migration = runbook.search(/apply the exact reviewed COD/i);
-  const manifest = runbook.search(/approved 5–10 SKU manifest/i);
+  const manifest = runbook.search(/Validate the manifest and produce the dry-run plan/i);
   const deploy = runbook.search(/CHECKOUT_ENABLED` still false/i);
   assert.ok(
     migration > 0 && manifest > 0 && deploy > 0 && enable > 0,

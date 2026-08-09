@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { TrustBar } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
@@ -15,18 +15,19 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cartTotals, useCart } from "@/lib/cart";
-import { placeOrder } from "@/lib/orders.functions";
-import { createStripeSession } from "@/lib/payments.functions";
 import {
-  getAvailablePaymentMethods,
-  type EmirateCode,
-  type PaymentMethodId,
-} from "@/lib/payment-methods";
+  getCommercialCheckoutConfig,
+  placeCodOrder,
+  previewCodOrderTotals,
+} from "@/lib/cod-order.functions";
+import { getAvailablePaymentMethods, type EmirateCode } from "@/lib/payment-methods";
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 
 const CHECKOUT_ENABLED = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
-const EMIRATES: Array<{ code: EmirateCode; name: string }> = [
+// Fallback list used only until the server configuration resolves; the
+// authoritative supported set comes from getCommercialCheckoutConfig.
+const FALLBACK_EMIRATES: Array<{ code: EmirateCode; name: string }> = [
   { code: "DU", name: "Dubai" },
   { code: "AD", name: "Abu Dhabi" },
   { code: "SH", name: "Sharjah" },
@@ -45,14 +46,24 @@ export const Route = createFileRoute("/checkout")({
 
 function Checkout() {
   const navigate = useNavigate();
-  const place = useServerFn(placeOrder);
-  const createStripe = useServerFn(createStripeSession);
+  // CM-COM-3A: the only executable order path. The legacy marketplace
+  // placeOrder and every payment-provider session are deliberately unused.
+  const placeCod = useServerFn(placeCodOrder);
+  const loadConfig = useServerFn(getCommercialCheckoutConfig);
+  const loadPreview = useServerFn(previewCodOrderTotals);
   const items = useCart((state) => state.items);
   const clear = useCart((state) => state.clear);
   const totals = cartTotals(items);
   const { user, loading: sessionLoading } = useSession();
   const [submitting, setSubmitting] = useState(false);
-  const [payment, setPayment] = useState<PaymentMethodId | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [accepted, setAccepted] = useState(false);
+  const [config, setConfig] = useState<Awaited<ReturnType<typeof loadConfig>> | null>(null);
+  const [preview, setPreview] = useState<{
+    shippingAed: number;
+    taxAed: number;
+    totalAed: number;
+  } | null>(null);
   const [form, setForm] = useState({
     recipient_name: "",
     phone: "",
@@ -65,49 +76,109 @@ function Checkout() {
     notes: "",
   });
 
+  // COD is the only method offered in the Commercial Active MVP.
   const paymentMethods = useMemo(
-    () => getAvailablePaymentMethods({ subtotal: totals.subtotal, emirate: form.emirate }),
+    () =>
+      getAvailablePaymentMethods({
+        subtotal: totals.subtotal,
+        emirate: form.emirate,
+        codOnly: true,
+      }),
     [form.emirate, totals.subtotal],
   );
-  const canExecute = CHECKOUT_ENABLED && Boolean(user) && Boolean(payment) && items.length > 0;
+
+  useEffect(() => {
+    let cancelled = false;
+    loadConfig({}).then(
+      (value) => !cancelled && setConfig(value),
+      () => !cancelled && setConfig(null),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [loadConfig]);
+
+  // Trusted preview: shipping and VAT always come from the server, recalculated
+  // whenever the emirate or basket changes. Display only — the final RPC
+  // recomputes everything and its result wins.
+  useEffect(() => {
+    let cancelled = false;
+    if (items.length === 0) return undefined;
+    loadPreview({ data: { subtotal_aed: totals.subtotal, emirate: form.emirate } }).then(
+      (result) => {
+        if (cancelled) return;
+        setPreview(
+          result.available
+            ? {
+                shippingAed: result.shippingAed,
+                taxAed: result.taxAed,
+                totalAed: result.totalAed,
+              }
+            : null,
+        );
+      },
+      () => !cancelled && setPreview(null),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [form.emirate, items.length, loadPreview, totals.subtotal]);
+
+  const emirateOptions = useMemo(() => {
+    const supported = config?.supportedEmirates ?? [];
+    if (supported.length === 0) return FALLBACK_EMIRATES;
+    return supported.map((code) => ({ code, name: config?.emirateNames?.[code] ?? code }));
+  }, [config]);
+
+  const requiredFilled =
+    form.recipient_name.trim().length >= 2 &&
+    form.phone.trim().length >= 7 &&
+    form.area.trim().length >= 2;
+  const canExecute =
+    CHECKOUT_ENABLED && Boolean(user) && items.length > 0 && requiredFilled && accepted;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!canExecute || !payment) return;
-    if (!form.recipient_name || !form.phone || !form.area) {
-      toast.error("Complete all required delivery fields.");
-      return;
-    }
+    // Guard against double submission and against executing while disabled.
+    if (submitting || !canExecute) return;
+    setError(null);
     setSubmitting(true);
     try {
-      const order = await place({
+      const order = await placeCod({
         data: {
-          items: items.map((item) => ({ variantId: item.variantId, qty: item.qty })),
-          payment_method: payment,
-          shipping_address: {
-            recipient_name: form.recipient_name,
-            phone: form.phone,
+          // Only identity and quantity are sent. No price, shipping, tax or
+          // total: money is derived entirely on the server.
+          items: items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
+          payment_method: "cod",
+          address: {
+            recipient_name: form.recipient_name.trim(),
+            phone: form.phone.trim(),
             emirate: form.emirate,
-            area: form.area,
+            area: form.area.trim(),
             street: form.street || null,
             building: form.building || null,
-            floor_apt: form.floor_apt || null,
+            floor_apartment: form.floor_apt || null,
             landmark: form.landmark || null,
+            notes: form.notes || null,
           },
-          notes: form.notes || null,
+          legal_acceptance: { terms: accepted, privacy: accepted, returns: accepted },
         },
       });
-      if (["card", "apple_pay", "google_pay"].includes(payment)) {
-        const session = await createStripe({ data: { orderId: order.orderId } });
-        if (!session.url) throw new Error("Payment session unavailable");
-        clear();
-        window.location.assign(session.url);
-        return;
-      }
+      // Only clear the cart after the order genuinely exists.
       clear();
-      await navigate({ to: "/order-confirmed", search: { order: order.orderId } });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Checkout execution failed closed.");
+      await navigate({ to: "/order-confirmed", search: { order: order.order_id } });
+    } catch (caught) {
+      // Failure keeps the cart and the customer's entered details intact.
+      const message = caught instanceof Error ? caught.message : "Checkout failed.";
+      const safe = message.includes("COD_ORDER_INSUFFICIENT_STOCK")
+        ? "One of your items is no longer available in the requested quantity."
+        : message.includes("COD_ORDER_EMIRATE_UNSUPPORTED")
+          ? "We cannot deliver to the selected emirate yet."
+          : message.includes("COD_ORDER_EXECUTION_DISABLED")
+            ? "Ordering is not currently enabled."
+            : "We could not place your order. Nothing has been charged and your cart is unchanged.";
+      setError(safe);
+      toast.error(safe);
     } finally {
       setSubmitting(false);
     }
@@ -175,7 +246,7 @@ function Checkout() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {EMIRATES.map((emirate) => (
+                      {emirateOptions.map((emirate) => (
                         <SelectItem key={emirate.code} value={emirate.code}>
                           {emirate.name}
                         </SelectItem>
@@ -238,27 +309,59 @@ function Checkout() {
             </section>
 
             <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
-              <h2 className="font-display text-xl">Payment option</h2>
+              <h2 className="font-display text-xl">Payment method</h2>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                Options are displayed for interface review. Availability is rechecked by the server
-                before any authorized execution.
+                Cash on delivery is the only payment method available. You pay the courier in AED
+                when your order arrives. No card details are collected.
               </p>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid gap-3">
                 {paymentMethods.map((method) => (
-                  <button
-                    type="button"
+                  <div
                     key={method.id}
-                    disabled={!method.enabled}
-                    onClick={() => setPayment(method.id)}
-                    className={`rounded-2xl border p-4 text-start ${payment === method.id ? "border-foreground" : "border-border"} ${method.enabled ? "hover:border-foreground/40" : "cursor-not-allowed opacity-50"}`}
+                    className={`rounded-2xl border p-4 ${method.enabled ? "border-foreground" : "border-border opacity-50"}`}
                   >
                     <span className="text-sm font-medium">{method.title}</span>
                     <span className="mt-1 block text-xs text-muted-foreground">
                       {method.enabled ? method.subtitle : method.unavailableReason}
                     </span>
-                  </button>
+                  </div>
                 ))}
               </div>
+            </section>
+
+            <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
+              <h2 className="font-display text-xl">Terms of sale</h2>
+              <label
+                className="mt-4 flex items-start gap-3 text-sm"
+                htmlFor="checkout-legal-accept"
+              >
+                <input
+                  id="checkout-legal-accept"
+                  name="legal_acceptance"
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(event) => setAccepted(event.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0"
+                />
+                <span className="leading-6 text-muted-foreground">
+                  I accept the{" "}
+                  <Link to="/terms" className="underline">
+                    Terms of Service
+                  </Link>
+                  , the{" "}
+                  <Link to="/privacy" className="underline">
+                    Privacy Policy
+                  </Link>{" "}
+                  and the{" "}
+                  <Link to="/returns" className="underline">
+                    Returns Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
+                Acceptance is required before an order can be placed and is recorded with the order.
+              </p>
             </section>
           </div>
 
@@ -280,21 +383,39 @@ function Checkout() {
                 <dd>AED {totals.subtotal.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">VAT (5%)</dt>
-                <dd>AED {totals.tax.toFixed(2)}</dd>
+                <dt className="text-muted-foreground">{config?.taxLabel ?? "VAT"}</dt>
+                <dd>{preview ? `AED ${preview.taxAed.toFixed(2)}` : "—"}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Shipping</dt>
-                <dd>Pending verified rate</dd>
+                <dt className="text-muted-foreground">
+                  Delivery ({config?.emirateNames?.[form.emirate] ?? form.emirate})
+                </dt>
+                <dd>{preview ? `AED ${preview.shippingAed.toFixed(2)}` : "—"}</dd>
               </div>
               <div className="flex justify-between border-t border-border pt-3 font-medium">
-                <dt>Total before shipping</dt>
-                <dd>AED {totals.totalBeforeShipping.toFixed(2)}</dd>
+                <dt>Total</dt>
+                {/* Amounts are always the server's, never computed in the browser. */}
+                <dd>
+                  {preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by CornerMex"}
+                </dd>
               </div>
             </dl>
+            {config?.vatTrn && (
+              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
+                RodMor TradeCo LLC — VAT TRN {config.vatTrn}
+              </p>
+            )}
             {!sessionLoading && !user && (
               <p className="mt-5 text-xs leading-5 text-muted-foreground">
                 Sign in before an authorized checkout can proceed.
+              </p>
+            )}
+            {error && (
+              <p
+                role="alert"
+                className="mt-5 rounded-2xl border border-destructive/40 bg-destructive/5 p-3 text-xs leading-5 text-destructive"
+              >
+                {error}
               </p>
             )}
             <Button
@@ -304,13 +425,13 @@ function Checkout() {
               className="mt-6 w-full rounded-full"
             >
               {submitting
-                ? "Processing…"
+                ? "Placing order…"
                 : CHECKOUT_ENABLED
-                  ? "Place order"
+                  ? "Place order — cash on delivery"
                   : "Order execution disabled"}
             </Button>
             <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-              No order, payment, inventory change or notification occurs while checkout execution is
+              No order, inventory change or notification occurs while checkout execution is
               disabled.
             </p>
             <TrustBar context="b2c" className="mt-5" />

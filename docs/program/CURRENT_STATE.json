@@ -1,25 +1,25 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-08-09T04:08:19Z",
+  "generatedAt": "2026-08-09T20:00:00Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "acb1723095471786e904825042c1b9745f120504",
-    "observedMainSha": "acb1723095471786e904825042c1b9745f120504",
+    "expectedMainSha": "af822ba00866ccd75a8a0cf4431570f044317ad7",
+    "observedMainSha": "af822ba00866ccd75a8a0cf4431570f044317ad7",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
     "class": "verified_repository",
-    "source": "CM-COM-2B0 is a repository/readiness sprint. It re-verified GitHub main identity via git/gh only and performed NO Railway, Supabase, Lovable, DNS, registrar, OAuth or email-provider read or write. Runtime and deployment values in this document are carried forward from the CM-GOV-3 observation and were NOT re-verified; the commit each environment serves right now is UNKNOWN.",
+    "source": "CM-COM-3A is a repository/implementation sprint. It re-verified GitHub main identity via git/gh only and performed NO Railway, Supabase, Lovable, DNS, registrar, OAuth or email-provider write. The Intermex UAE public storefront feed was read over unauthenticated HTTPS GET only. Runtime and deployment values in this document are carried forward from the CM-GOV-3 observation and were NOT re-verified; the commit each environment serves right now is UNKNOWN.",
     "observedAt": "2026-08-08T00:45:00Z",
     "freshUntil": "2026-08-15T00:45:00Z",
-    "classMeaning": "This snapshot's own evidence is repository-verified. CM-COM-2B0 performed NO runtime observation, so it does not carry a verified_live class.",
+    "classMeaning": "This snapshot's own evidence is repository-verified. CM-COM-3A performed NO runtime observation, so it does not carry a verified_live class.",
     "repositoryEvidence": {
       "class": "verified_repository",
-      "identity": "github:acb1723095471786e904825042c1b9745f120504",
-      "verifiedBy": "CM-COM-2B0",
-      "verifiedAt": "2026-08-09T04:08:19Z",
-      "statement": "main is the merge commit of PR #23 (CM-COM-2A); re-verified from git/gh during this sprint."
+      "identity": "github:af822ba00866ccd75a8a0cf4431570f044317ad7",
+      "verifiedBy": "CM-COM-3A",
+      "verifiedAt": "2026-08-09T20:00:00Z",
+      "statement": "main is the merge commit of PR #24 (CM-COM-2B0); re-verified from git/gh during this sprint."
     },
     "runtimeEvidence": {
       "class": "historical",
@@ -50,7 +50,7 @@
       "stagingAutoDeploy": true,
       "productionAutoDeploy": false,
       "deploymentCreatedByThisSprint": false,
-      "note": "CM-COM-2B0 performed no Railway read or write. Every deployment identity, commit and status in this block is a LAST-OBSERVED value from the CM-GOV-3 refresh. VERIFIED GOVERNANCE FACT: this sprint performed no production deployment and no production deployment was authorized by it. LAST-OBSERVED RUNTIME FACT: production served the PR #21 exact head c9f82892b4bb and staging served 77e5d24e8a3c. UNKNOWN: the commit each environment serves now. Staging auto-deploy is enabled, so staging may have advanced without observation. Production auto-deploy remains disabled and production deployment remains separately gated.",
+      "note": "CM-COM-3A performed no Railway read or write. Every deployment identity, commit and status in this block is a LAST-OBSERVED value from the CM-GOV-3 refresh. VERIFIED GOVERNANCE FACT: this sprint performed no production deployment and no production deployment was authorized by it. LAST-OBSERVED RUNTIME FACT: production served the PR #21 exact head c9f82892b4bb and staging served 77e5d24e8a3c. UNKNOWN: the commit each environment serves now. Staging auto-deploy is enabled, so staging may have advanced without observation. Production auto-deploy remains disabled and production deployment remains separately gated.",
       "lastObservedDuringSprint": "CM-GOV-3",
       "reobservedByCurrentSprint": false,
       "productionDeploymentPerformedByThisSprint": false,
@@ -127,10 +127,10 @@
       "provenance": "last_observed_cm_gov_3_not_reobserved_by_cm_com_2b0",
       "currentStatus": "unknown_not_reobserved"
     },
-    "scope": "These readiness fields describe A3.2b EXECUTION readiness (reviewedRemediationHeadSha is the pinned A3.2b remediation head) and historical sprint reviews. They do NOT describe CM-COM-2B0 and must not be read as an independent review or release approval of the active sprint.",
+    "scope": "These readiness fields describe A3.2b EXECUTION readiness (reviewedRemediationHeadSha is the pinned A3.2b remediation head) and historical sprint reviews. They do NOT describe CM-COM-3A and must not be read as an independent review or release approval of the active sprint.",
     "currentSprintReadiness": {
-      "sprint": "CM-COM-2B0_DOMAIN_READINESS",
-      "pullRequest": 24,
+      "sprint": "CM-COM-3A_COMMERCIAL_ACTIVE_MVP",
+      "pullRequest": 25,
       "state": "draft",
       "independentReviewComplete": false,
       "independentReviewer": "Codex",
@@ -140,15 +140,15 @@
     }
   },
   "program": {
-    "activeSprint": "CM-COM-2B0_DOMAIN_READINESS",
+    "activeSprint": "CM-COM-3A_COMMERCIAL_ACTIVE_MVP",
     "owner": "Claude",
     "reviewer": "Codex",
     "blockers": [
-      "CM-COM-2B1 domain cutover is BLOCKED: no custom domain is purchased or approved. cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).",
-      "PR #23 (CM-COM-2A) is merged to main. No deployment of it was performed or authorized by this sprint; whether production has since been deployed was not re-observed.",
-      "Runtime facts are carried forward from the CM-GOV-3 observation; CM-COM-2B0 re-observed nothing, so the commit each environment currently serves is UNKNOWN.",
+      "CM-COM-3A is repository-only. The COD order function is PREPARED and UNAPPLIED; no Supabase migration, catalog load, Railway change or deployment was performed or authorized.",
+      "Canonical public.products remains empty. The Intermex activation manifest is a DRY-RUN plan; loading it is a separate Founder-authorized step.",
+      "CM-COM-2B1 domain cutover remains ON HOLD: no custom domain is purchased or approved. cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).",
+      "Runtime facts are carried forward from the CM-GOV-3 observation; CM-COM-3A re-observed nothing, so the commit each environment currently serves is UNKNOWN.",
       "External Supabase Preview GitHub check fails on main: remote migration versions are not present in the local supabase/migrations directory (integration drift; not a repository CI gate).",
-      "Canonical public.products remains empty; A3.2b remains NOT AUTHORIZED / NOT EXECUTED.",
       "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists.",
       "Pre-activation email debt (telemetry skipped-vs-failed, sendOrderEmail auth review, opaque provider errors) must be closed before external email activation."
     ],
@@ -187,6 +187,29 @@
         "deployed": false,
         "note": "Merged to main only. Not deployed by this sprint; production deployment remains separately gated. R1 and R2 were independently rejected and remediated; R3 was independently approved and Founder visual acceptance followed that approval.",
         "finalIndependentReviewRound": "R3"
+      },
+      {
+        "sprint": "CM-COM-2B0_DOMAIN_READINESS",
+        "status": "complete_merged",
+        "pullRequest": 24,
+        "reviewedHeadSha": "92845d3d903d8843679db6cd68fe3a9ebb279534",
+        "mergeSha": "af822ba00866ccd75a8a0cf4431570f044317ad7",
+        "independentFinalReview": "APPROVED_CM_COM_2B0_R2",
+        "deployed": false,
+        "note": "Merged to main only. Not deployed by this sprint. R1 and R2 were independently rejected and remediated before approval.",
+        "remediationRounds": [
+          {
+            "round": "R1",
+            "independentReviewOutcome": "rejected",
+            "remediated": true
+          },
+          {
+            "round": "R2",
+            "independentReviewOutcome": "rejected",
+            "remediated": true
+          }
+        ],
+        "finalIndependentReviewRound": "R2"
       }
     ]
   },
@@ -195,5 +218,5 @@
     "externalSendsBlocked": true,
     "customerImpactBlocked": true
   },
-  "generatedAtMeaning": "Time this repository state snapshot was generated/reconciled by CM-COM-2B0. This is NOT a runtime observation timestamp; see evidence.runtimeEvidence.observedAt."
+  "generatedAtMeaning": "Time this repository state snapshot was generated/reconciled by CM-COM-3A. This is NOT a runtime observation timestamp; see evidence.runtimeEvidence.observedAt."
 }

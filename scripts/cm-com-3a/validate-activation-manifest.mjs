@@ -100,12 +100,15 @@ export function validateActivationManifest(manifest) {
       });
 
     if (!isMoney(product?.price_aed)) push(`${at}.price_aed must be a non-negative AED amount`);
-    if (
-      !Number.isInteger(product?.initial_stock) ||
-      product.initial_stock < 0 ||
-      product.initial_stock > 100000
-    ) {
-      push(`${at}.initial_stock must be a non-negative integer`);
+    // Founder stock policy (CM-COM-3A-R3): opening stock is 1 for an available
+    // source row and 0 otherwise. No quantity above 1 is ever accepted.
+    if (product?.initial_stock !== 0 && product?.initial_stock !== 1) {
+      push(`${at}.initial_stock must be 0 or 1`);
+    } else if (product?.source_availability !== undefined) {
+      const expected = product.source_availability === "AVAILABLE" ? 1 : 0;
+      if (product.initial_stock !== expected) {
+        push(`${at}.initial_stock must be ${expected} for ${product.source_availability}`);
+      }
     }
     if (typeof product?.format_label !== "string" || product.format_label.trim() === "") {
       push(`${at}.format_label is required`);
