@@ -17,17 +17,24 @@ PR #22 and PR #23 merges. It does **not** complete CM-COM-2B.
   `f0dfbb71a8978583c78aed0181078aa25b36f8f7`; final independent review returned
   `APPROVED_CM_COM_2A_R3_FOR_FOUNDER_VISUAL_ACCEPTANCE`.
 - Founder Visual Acceptance: **APPROVED** — desktop approved, mobile approved, no observations.
-- CM-COM-2A required three remediation rounds. R1 and R2 were each independently **rejected**
-  and remediated; that trail is preserved in git history and in
-  `docs/commercial/cm-com-2a-trust-architecture.md`. It is deliberately not rewritten.
+- CM-COM-2A required three remediation rounds. **R1 and R2 were each independently
+  rejected and remediated; R3 was independently approved.** Founder Visual Acceptance followed
+  the R3 approval. That trail is preserved in git history, in the structured record in
+  `CURRENT_STATE.json`, and in `docs/commercial/cm-com-2a-trust-architecture.md`. It is
+  deliberately not rewritten.
 
-## Last-observed runtime facts (NOT re-observed by this sprint)
+## Runtime facts — last observed, NOT re-observed by this sprint
 
-- Production last observed running the PR #21 head `c9f82892b4bb…`, not current main.
-  **PR #22 and PR #23 are merged but not deployed.**
-- Staging last observed at `77e5d24e8a3c…`; staging auto-deploy is enabled, so it may have
-  advanced without observation.
-- Production auto-deploy remains disabled; production deployment remains separately gated.
+**Verified governance fact:** CM-COM-2B0 performed no production deployment, and no production
+deployment was authorized by it.
+
+**Last-observed runtime fact (CM-GOV-3):** production served the PR #21 exact head
+`c9f82892b4bb…`; staging served `77e5d24e8a3c…`.
+
+**Unknown:** what commit either environment serves _now_. This sprint re-observed nothing, and
+staging auto-deploy is enabled, so staging may have advanced. Production auto-deploy remains
+disabled and production deployment remains separately gated. Do not read the last-observed
+values above as current state.
 
 ## Founder-attested facts
 

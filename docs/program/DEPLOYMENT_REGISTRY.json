@@ -327,10 +327,7 @@
       "founderExecuted": true,
       "environment": "production",
       "service": "corner-mex-uae",
-      "variableNames": [
-        "VITE_SUPABASE_URL",
-        "VITE_SUPABASE_PUBLISHABLE_KEY"
-      ],
+      "variableNames": ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"],
       "deploymentCreated": true,
       "deploymentId": "18dc25e0-1244-44ff-9e66-3a5cc1f02208",
       "restartPerformed": false,
@@ -351,5 +348,5 @@
     "stagingReadinessMechanism": "railway_deployment_rollback_restores_custom_variables",
     "stagingReadinessRollbackPerformed": false
   },
-  "currentSourceCommitNote": "Repository main identity after the PR #23 (CM-COM-2A) merge. This records the current SOURCE of truth for main, not a deployment: no deployment was created for this commit. Production still runs the last observed deployment from the PR #21 head. Previous recorded value: 77e5d24e8a3c9589dac7535480ed7d9dbc60a512."
+  "currentSourceCommitMeaning": "REPOSITORY current source (most recently reconciled main SHA), NOT deployed source. Deployed source is tracked per environment in governance.contexts[].currentSourceSha, which the validator separately requires to match a SUCCESS + RUNNING deployment. These two are expected to differ whenever main is ahead of what is deployed, which is the case now."
 }

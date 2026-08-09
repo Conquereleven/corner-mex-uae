@@ -52,6 +52,31 @@ Verified from the repository at base `acb1723095471786e904825042c1b9745f120504`.
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/lib/site-url.ts` | **The single canonical origin authority.** `siteOrigin()` resolves, in order: browser `window.location.origin` → `process.env.CORNERMEX_PUBLIC_APPLICATION_URL` → `VERIFIED_PUBLIC_ORIGIN` (the Railway production origin). `siteUrl(path)` composes absolute URLs from it. Non-`http(s)` or unparseable values fall back to the verified origin. |
 
+#### SSR vs browser semantics — verified
+
+The precedence above is **context-dependent, and this is load-bearing for a cutover**
+(behaviour proven by test in `tests/cm-com-2b0/`):
+
+| Context                                 | `window`  | Origin used                                                        |
+| --------------------------------------- | --------- | ------------------------------------------------------------------ |
+| Initial SSR request                     | undefined | `CORNERMEX_PUBLIC_APPLICATION_URL`, else Railway fallback          |
+| Browser (hydration / client navigation) | defined   | **`window.location.origin` — the env override is never consulted** |
+
+Consequences, stated without overclaiming:
+
+- **Can the Railway rollback host emit Railway canonical metadata after the env override is
+  set?** Yes — in the browser. Served from the Railway host, `window.location.origin` is the
+  Railway origin and wins over the override. On the initial SSR response the same host would
+  emit the override value instead. The two can therefore disagree on the same page.
+- **Can client-side navigation recalculate canonical metadata from `window.location.origin`?**
+  The origin _function_ provably returns the browser origin in that context. Whether the
+  router re-evaluates a given route's `head()` on client navigation was **not** determined in
+  this sprint — see preflight **P1**. Not asserted either way.
+- **Is `CORNERMEX_PUBLIC_APPLICATION_URL` a deterministic canonical origin across SSR and
+  client navigation?** **No.** It is bypassed whenever `window` exists. Deterministic canonical
+  output would require a source change to `site-url.ts`, which belongs in the reviewed
+  exact-domain code delta — not a variable change. See preflight **P2**.
+
 ### B — Runtime override
 
 | Authority                          | Detail                                                                                                                                                                                                             |
@@ -125,49 +150,84 @@ browser origin — plus one static file. A cutover is only coherent when all fou
 
 Prepared, **not executed**. Every step requires the domain approval contract to be complete.
 
+### Safe order (why it matters)
+
+```
+approved domain
+  → ownership / custody attested
+  → exact-domain CODE delta prepared, reviewed, merged
+  → Supabase Auth allow-list updated with the new origin
+  → production deployment of that code (separately authorized)
+  → domain binding / DNS / TLS
+  → validation
+```
+
+Two orderings are load-bearing:
+
+1. **The Supabase Auth allow-list must be updated BEFORE any DNS change makes the new host
+   reachable.** OAuth `redirectTo` is derived from the browser origin, so the instant a user
+   loads the new host, sign-in attempts use a redirect URI that Supabase will reject unless it
+   is already allow-listed. Doing this after DNS creates an avoidable authentication outage.
+2. **`public/robots.txt` and `src/lib/legal-docs.ts` are source files.** They cannot change in
+   production by editing DNS or a Railway variable — they require a code delta, review, merge
+   and a separately authorized deployment. Treating them as a platform step would leave the
+   deployed site advertising the wrong sitemap host and a stale legal website field.
+
 ### Pre-cutover
 
 1. Exact domain approved and recorded in a Founder decision record.
-2. Ownership/control attested; custody classified.
+2. Ownership/control attested; registrar custody classified.
 3. Record current `main` exact SHA; confirm CI green on it.
-4. Record current production health provenance (`/api/health` commit) with a fresh read-only GET.
+4. **Fresh** read-only GET of production `/api/health` to establish the true current serving
+   commit (it is unknown until re-observed).
 5. Verify the rollback origin (Railway) is serving and will remain attached.
+6. Prepare the exact-domain **code delta**: `public/robots.txt` sitemap host, the
+   `legal-docs.ts` website field, and any canonical decision that must ship in source.
+7. Independent review of that delta; Founder Ready/merge gates satisfied; merge to `main`.
+8. **Update the Supabase Auth redirect allow-list to include the new origin** (platform write —
+   requires explicit authorization). Keep the Railway origin allow-listed for rollback.
+
+### Deployment
+
+9. Deploy the merged code delta to production under a separate deployment authorization.
+   Deploy **before** the DNS switch: the new values are inert while the domain does not
+   resolve, so this ordering avoids a window where the domain is live but the source is stale.
+10. Set `CORNERMEX_PUBLIC_APPLICATION_URL` to the approved canonical URL (platform write).
+    See §2 for why this does not fully determine client-side canonical output.
 
 ### Domain
 
-6. Registrar/DNS preflight: confirm nameserver control and existing record inventory.
-7. Apply the apex vs `www` decision; define which redirects to which.
-8. Create DNS records as Railway specifies for the chosen target.
-9. Bind the Railway custom domain (**platform write — requires explicit authorization**).
-10. Verify TLS issuance and that the certificate covers the chosen host(s).
-
-### Application
-
-11. Set `CORNERMEX_PUBLIC_APPLICATION_URL` to the approved canonical URL (**platform write**).
-12. Confirm redirect behaviour between apex and `www` matches the decision.
-13. Re-verify sitemap output on **both** hosts: sitemaps follow the request host, so the Railway host will still emit Railway URLs while it remains directly reachable. Decide whether that is acceptable or whether the Railway host should redirect.
-14. **Update `public/robots.txt` `Sitemap:` by hand** — it does not follow `siteOrigin()`.
-15. Fill the legal website field, replacing `[PENDING CUSTOM DOMAIN ACTIVATION]`.
-16. Add the new origin to the Supabase Auth redirect allow-list **before** announcing the domain.
+11. Registrar/DNS preflight: confirm nameserver control and inventory existing records.
+12. Apply the apex vs `www` decision; define which redirects to which.
+13. Create DNS records as Railway specifies; note TTLs before switching.
+14. Bind the Railway custom domain (platform write — requires explicit authorization).
+15. Verify TLS issuance and that the certificate covers the chosen host(s).
 
 ### Validation
 
-17. HTTP → HTTPS redirect; certificate valid and trusted.
-18. Apex and `www` both behave per the decision.
-19. Canonical tags, `og:url` and JSON-LD resolve to the new origin.
-20. `/sitemap.xml`, `/robots.txt` and canonical tags coherent with each other on the new host — and checked again on the Railway host, which uses a different origin source.
+16. HTTP → HTTPS redirect; certificate valid and trusted.
+17. Apex and `www` behave per the decision.
+18. Canonical tags, `og:url` and JSON-LD resolve to the intended origin — checked on **initial
+    SSR load and after a client-side navigation**, which use different origin sources (§2).
+19. Sitemap output checked on **both** hosts: sitemaps follow the request host, so the Railway
+    host still emits Railway URLs while directly reachable. Decide whether that is acceptable
+    or whether the Railway host should redirect.
+20. `/robots.txt` reflects the deployed source and is coherent with canonical tags.
 21. OAuth sign-in completes end-to-end via `/auth/callback` on the new origin.
 22. Public routes render: `/`, `/shop`, `/b2b`, `/about`, `/contact`, `/delivery`, `/returns`,
     `/privacy`, `/terms`, `/legal`; `/shipping` still redirects to `/delivery`.
 23. Desktop and mobile smoke pass.
 
-### Rollback
+### Rollback — platform AND source
 
-24. The Railway origin remains attached and serving throughout — it is the rollback target.
-25. DNS reversal: restore prior records; document TTL exposure before cutting over.
-26. Decide explicitly whether to detach the Railway custom domain on rollback, or leave it bound.
-27. Canonical rollback: revert `CORNERMEX_PUBLIC_APPLICATION_URL`, `robots.txt` and the legal
-    website field together — a partial revert leaves incoherent canonical state.
+Rollback is not complete unless **both** layers are reverted; reverting only one leaves
+incoherent canonical state.
+
+_Platform state_ 24. The Railway origin remains attached and serving throughout — it is the rollback target. 25. DNS reversal: restore prior records; TTL exposure is the practical rollback latency. 26. Decide explicitly whether to detach the Railway custom domain, or leave it bound. 27. Revert `CORNERMEX_PUBLIC_APPLICATION_URL` to its pre-cutover value. 28. Leave the new origin in the Supabase Auth allow-list (harmless) and confirm the Railway
+origin is still allow-listed.
+
+_Deployed source state_ 29. Revert the exact-domain code delta (`robots.txt` sitemap host, legal website field) via a
+reviewed revert, and deploy it under the same separate deployment authorization. 30. Confirm canonical tags, sitemap and robots are coherent again on the rollback host.
 
 ### Not authorized by a cutover
 
@@ -175,7 +235,20 @@ A domain cutover authorizes **no** commercial capability: checkout, payments, ba
 COD, external email, external messaging, A3.2b, catalog population and inventory all remain
 separately gated.
 
----
+### Open preflight questions (must be answered in CM-COM-2B1, not assumed)
+
+- **P1 — Does route metadata recompute on client-side navigation?** `siteOrigin()` prefers
+  `window.location.origin` whenever `window` exists (§2). Whether a given canonical/`og:url`
+  tag is _recomputed_ in the browser depends on when the router evaluates route `head()`. This
+  was **not** determined in CM-COM-2B0 and must be measured on a real deployment before
+  cutover. Recorded as UNKNOWN rather than assumed.
+- **P2 — Is `CORNERMEX_PUBLIC_APPLICATION_URL` a deterministic canonical origin?** No, not on
+  its own: it is only consulted when `window` is undefined, so it governs SSR output but is
+  bypassed in the browser. If deterministic canonical output is required, that is a source
+  change to `site-url.ts` and must be part of the reviewed code delta, not a variable change.
+- **P3 — Should the Railway host redirect after cutover?** While it remains directly reachable
+  it will emit Railway-origin sitemap URLs and, on client navigation, Railway-origin canonical
+  values — competing with the new domain. Decide redirect vs keep-open before cutover.
 
 ## 4. Pre-activation debt register
 

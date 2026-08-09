@@ -4,13 +4,13 @@ Observed: `2026-08-08T00:45:00Z` · Founder confirmation recorded: `2026-08-07T1
 
 ## Subject
 
-| Field | Value |
-| --- | --- |
-| Accidental Railway project | `pr21-head` |
-| Project ID | `1a30d4d7-2ad6-4ba1-b274-8769a9eecd38` |
-| Accidental service ID | `9419a3d9-8cae-4ee2-9ef2-b343ac80b39a` |
-| Accidental deployment | `24baae0a-6f03-498f-9f6a-4db47a40dcf8` |
-| Origin | Created 2026-08-07 by an unlinked `railway up` during the PR #21 production remediation flow |
+| Field                      | Value                                                                                        |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| Accidental Railway project | `pr21-head`                                                                                  |
+| Project ID                 | `1a30d4d7-2ad6-4ba1-b274-8769a9eecd38`                                                       |
+| Accidental service ID      | `9419a3d9-8cae-4ee2-9ef2-b343ac80b39a`                                                       |
+| Accidental deployment      | `24baae0a-6f03-498f-9f6a-4db47a40dcf8`                                                       |
+| Origin                     | Created 2026-08-07 by an unlinked `railway up` during the PR #21 production remediation flow |
 
 ## Previously observed agent evidence (pre-deletion, read-only)
 
