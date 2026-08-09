@@ -3,7 +3,7 @@
 
 import { CreditCard, Smartphone, Truck, Wallet, Building2, type LucideIcon } from "lucide-react";
 
-import { BUSINESS_IDENTITY } from "@/lib/business-identity";
+import { BUSINESS_IDENTITY } from "./business-identity.ts";
 
 export type PaymentMethodId =
   | "card"
@@ -40,6 +40,12 @@ const COD_MAX = 300;
 const BNPL_MIN = 150;
 
 export type EligibilityInput = {
+  /**
+   * CM-COM-3A commercial-active MVP: only Cash on Delivery is executable, so
+   * no provider method may be offered. Future provider code is retained but
+   * excluded from the active surface.
+   */
+  codOnly?: boolean;
   subtotal: number;
   emirate: EmirateCode;
   stripeEnabled?: boolean;
@@ -53,6 +59,7 @@ export function getAvailablePaymentMethods(input: EligibilityInput): PaymentMeth
   const {
     subtotal,
     emirate,
+    codOnly = false,
     stripeEnabled = PAYMENT_FLAGS.stripeEnabled,
     tabbyEnabled = PAYMENT_FLAGS.tabbyEnabled,
     tamaraEnabled = PAYMENT_FLAGS.tamaraEnabled,
@@ -61,6 +68,22 @@ export function getAvailablePaymentMethods(input: EligibilityInput): PaymentMeth
   } = input;
 
   const list: PaymentMethodOption[] = [];
+
+  // CM-COM-3A commercial-active MVP: Cash on Delivery is the only executable
+  // method, so no provider option is offered at all. Provider code below is
+  // retained for future sprints but is not part of the active surface. The
+  // server independently rejects any non-COD payment_method.
+  if (codOnly) {
+    return [
+      {
+        id: "cod",
+        title: "Cash on delivery",
+        subtitle: "Pay the courier when your order arrives",
+        icon: Truck,
+        enabled: true,
+      },
+    ];
+  }
 
   list.push({
     id: "card",
@@ -154,9 +177,9 @@ export function isMethodAvailable(id: PaymentMethodId, methods: PaymentMethodOpt
 // code changes; missing values are hidden from the confirmation UI instead of
 // showing placeholder text to the customer.
 // TODO: Move to an admin-editable settings row once available.
-const envBankName = (import.meta.env.VITE_BANK_NAME as string | undefined)?.trim();
-const envBankIban = (import.meta.env.VITE_BANK_IBAN as string | undefined)?.trim();
-const envBankAccount = (import.meta.env.VITE_BANK_ACCOUNT_NAME as string | undefined)?.trim();
+const envBankName = (import.meta.env?.VITE_BANK_NAME as string | undefined)?.trim();
+const envBankIban = (import.meta.env?.VITE_BANK_IBAN as string | undefined)?.trim();
+const envBankAccount = (import.meta.env?.VITE_BANK_ACCOUNT_NAME as string | undefined)?.trim();
 
 export const BANK_TRANSFER_DETAILS = {
   // Beneficiary name comes from the canonical Founder-attested registry so the

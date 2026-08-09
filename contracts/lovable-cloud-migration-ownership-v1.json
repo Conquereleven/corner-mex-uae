@@ -10,7 +10,8 @@
     "20260714012000_public_read_policy_boundary_a2.sql"
   ],
   "pendingCanonicalMigrations": [
-    "20260716010000_catalog_import_foundation_a3_2b.sql"
+    "20260716010000_catalog_import_foundation_a3_2b.sql",
+    "20260809010000_place_cod_order_v1.sql"
   ],
   "migrations": [
     {

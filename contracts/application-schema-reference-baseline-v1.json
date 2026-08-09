@@ -475,6 +475,15 @@
       ],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "function",
+      "name": "place_cod_order_v1",
+      "files": [
+        "src/lib/cod-order.functions.ts"
+      ],
+      "classification": "lovable_live_only",
+      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     }
   ]
 }

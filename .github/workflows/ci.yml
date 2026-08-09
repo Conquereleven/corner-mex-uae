@@ -94,6 +94,7 @@ jobs:
       - run: npm run test:cm-gov-3
       - run: npm run test:cm-com-2a
       - run: npm run test:cm-com-2b0
+      - run: npm run test:cm-com-3a
       - run: npm run typecheck
       - run: npm run build
       - run: npm run validate:ssr-async-context
@@ -146,6 +147,7 @@ jobs:
       - run: npm run validate:application-schema-references
       - run: npm run validate:schema-authority
       - run: npm run test:canonical-migration-replay
+      - run: npm run test:cm-com-3a:sql
       - run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
 
   merged-tree-verification:
