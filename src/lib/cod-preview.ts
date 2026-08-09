@@ -46,6 +46,54 @@ export type CodPreviewLine = {
   line_total_aed: number;
 };
 
+export type PreviewState<T> =
+  | { status: "idle" }
+  | { status: "loading"; key: string; requestId: number }
+  | { status: "success"; key: string; requestId: number; value: T }
+  | { status: "error"; key: string; requestId: number };
+
+/** Stable identity for every input that can change the trusted preview. */
+export function previewInputKey(
+  items: Array<{ variant_id: string; qty: number }>,
+  emirate: string,
+): string {
+  const canonicalItems = [...items].sort((a, b) =>
+    a.variant_id === b.variant_id ? a.qty - b.qty : a.variant_id.localeCompare(b.variant_id),
+  );
+  return JSON.stringify({ emirate, items: canonicalItems });
+}
+
+export const beginPreview = (key: string, requestId: number): PreviewState<never> => ({
+  status: "loading",
+  key,
+  requestId,
+});
+
+/** Accept only the response for the request that still owns the current key. */
+export function acceptPreview<T>(
+  state: PreviewState<T>,
+  key: string,
+  requestId: number,
+  value: T,
+): PreviewState<T> {
+  if (state.status !== "loading" || state.key !== key || state.requestId !== requestId)
+    return state;
+  return { status: "success", key, requestId, value };
+}
+
+export function rejectPreview<T>(
+  state: PreviewState<T>,
+  key: string,
+  requestId: number,
+): PreviewState<T> {
+  if (state.status !== "loading" || state.key !== key || state.requestId !== requestId)
+    return state;
+  return { status: "error", key, requestId };
+}
+
+export const hasCurrentPreview = <T>(state: PreviewState<T>, key: string): boolean =>
+  state.status === "success" && state.key === key;
+
 /**
  * Build the preview lines from TRUSTED variant rows. Every amount is derived
  * from the database price; the requested items contribute identity and

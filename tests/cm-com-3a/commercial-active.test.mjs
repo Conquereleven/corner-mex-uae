@@ -14,7 +14,16 @@ import {
   shippingForEmirate,
 } from "../../src/lib/commercial-config.server.ts";
 import { getAvailablePaymentMethods } from "../../src/lib/payment-methods.ts";
-import { PreviewInput, buildPreviewLines, previewSubtotal } from "../../src/lib/cod-preview.ts";
+import {
+  PreviewInput,
+  acceptPreview,
+  beginPreview,
+  buildPreviewLines,
+  hasCurrentPreview,
+  previewInputKey,
+  previewSubtotal,
+  rejectPreview,
+} from "../../src/lib/cod-preview.ts";
 import {
   MANIFEST_LIMITS,
   validateActivationManifest,
@@ -276,11 +285,53 @@ test("checkout renders server money, not cart-local money", async () => {
   // The preview request carries identities and the emirate only.
   const previewCall = source.indexOf("loadPreview({");
   const request = source.slice(previewCall, source.indexOf(").then(", previewCall));
-  assert.match(request, /variant_id/);
-  assert.match(request, /qty/);
+  assert.match(request, /items: previewItems/);
+  assert.match(
+    source,
+    /items\.map\(\(item\) => \(\{ variant_id: item\.variantId, qty: item\.qty \}\)\)/,
+  );
   for (const forbidden of ["price", "subtotal", "total", "tax"]) {
     assert.ok(!request.includes(forbidden), `preview request must not send ${forbidden}`);
   }
+});
+
+test("checkout execution requires the successful preview for the exact current input", async () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const duKey = previewInputKey([{ variant_id: id, qty: 1 }], "DU");
+  const shKey = previewInputKey([{ variant_id: id, qty: 1 }], "SH");
+  const qtyKey = previewInputKey([{ variant_id: id, qty: 2 }], "DU");
+  const value = { totalAed: 41.25 };
+
+  assert.equal(hasCurrentPreview({ status: "idle" }, duKey), false);
+  let state = beginPreview(duKey, 1);
+  assert.equal(hasCurrentPreview(state, duKey), false, "loading must not execute");
+  state = acceptPreview(state, duKey, 1, value);
+  assert.equal(hasCurrentPreview(state, duKey), true);
+  assert.equal(hasCurrentPreview(state, shKey), false, "emirate change invalidates immediately");
+  assert.equal(hasCurrentPreview(state, qtyKey), false, "quantity change invalidates immediately");
+
+  state = beginPreview(shKey, 2);
+  state = rejectPreview(state, shKey, 2);
+  assert.equal(hasCurrentPreview(state, shKey), false, "error must not execute");
+
+  const source = stripJsComments(await read("src/routes/checkout.tsx"));
+  assert.match(source, /hasCurrentPreview\(previewState, currentPreviewKey\)/);
+  assert.match(source, /hasCurrentPreview\(previewState, submitKey\)/);
+  assert.match(source, /submitKey !== currentPreviewKey/);
+});
+
+test("a stale preview response cannot replace the latest request", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const oldKey = previewInputKey([{ variant_id: id, qty: 1 }], "DU");
+  const currentKey = previewInputKey([{ variant_id: id, qty: 1 }], "SH");
+  let state = beginPreview(oldKey, 1);
+  state = beginPreview(currentKey, 2);
+  state = acceptPreview(state, currentKey, 2, { totalAed: 45 });
+  const afterStaleSuccess = acceptPreview(state, oldKey, 1, { totalAed: 40 });
+  const afterStaleError = rejectPreview(afterStaleSuccess, oldKey, 1);
+  assert.deepEqual(afterStaleSuccess, state);
+  assert.deepEqual(afterStaleError, state);
+  assert.equal(hasCurrentPreview(state, currentKey), true);
 });
 
 // --- COD-only payment surface --------------------------------------------
@@ -355,7 +406,7 @@ test("checkout sends no money and no unchecked legal acceptance", async () => {
   assert.match(payload, /payment_method: "cod"/);
   // Acceptance starts unchecked and gates the submit button.
   assert.match(source, /useState\(false\)/);
-  assert.match(source, /readyToOrder =[\s\S]{0,160}accepted;/);
+  assert.match(source, /readyToOrder =[\s\S]{0,220}accepted &&[\s\S]{0,80}hasCurrentPreview/);
   assert.match(source, /canExecute = CHECKOUT_ENABLED && readyToOrder/);
 });
 
@@ -367,7 +418,7 @@ test("checkout clears the cart only after a real order and guards double submit"
   );
   assert.match(
     submit,
-    /if \(submitting \|\| !canExecute\) return;/,
+    /if \([\s\S]{0,100}submitting \|\|[\s\S]{0,100}!canExecute[\s\S]{0,180}\)\s+return;/,
     "double submit must be blocked",
   );
   const orderIndex = submit.indexOf("await placeCod(");
@@ -870,6 +921,9 @@ test("the loader refuses unvalidated input and defaults to not writing", async (
   assert.match(sql, /on conflict \(slug\) do update/);
   assert.match(sql, /insert into public\.product_variants/);
   assert.match(sql, /insert into public\.inventory /);
+  assert.ok(!/do update set[^;]*stock\s*=\s*excluded\.stock/.test(sql));
+  assert.match(sql, /on conflict \(variant_id\) do nothing/);
+  assert.match(sql, /cm_com_3a/);
   assert.ok(!sql.includes("seller"), "the loader must not touch marketplace tables");
 
   const source = stripJsComments(await read("scripts/cm-com-3a/load-activation-plan.mjs"));

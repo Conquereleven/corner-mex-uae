@@ -44,6 +44,10 @@ catalog is discovered while the database is still untouched.
 8. Execute the exact reviewed loader against the canonical manifest:
    `CORNERMEX_ACTIVATION_DATABASE_URL=… node scripts/cm-com-3a/load-activation-plan.mjs <manifest.json> --execute`.
    It applies in ONE transaction; a failure leaves no partial catalog.
+   `initial_stock` seeds only newly created variants. Re-running the loader may
+   refresh approved catalog metadata and prices, but it never changes existing
+   `product_variants.stock` or `inventory.quantity_on_hand`. Restocking is a
+   separate, explicitly authorized and auditable inventory operation.
 9. Verify catalog and inventory: products active, variants active and bound to
    the right product, stock 1 for available rows and 0 otherwise, inventory
    rows matching, public read works anonymously.

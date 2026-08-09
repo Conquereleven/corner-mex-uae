@@ -272,6 +272,24 @@ export function buildActivationPlan(manifest) {
       source_product_id: product.source_product_id,
       source_product_url: product.source_product_url,
       source_handle: product.source_handle,
+      source_provenance: {
+        provider: "intermex_uae",
+        product_id: product.source_product_id,
+        product_url: product.source_product_url,
+        handle: product.source_handle,
+        observed_at: manifest.source_price_observed_at ?? null,
+        variants: Object.fromEntries(
+          [...product.variants]
+            .sort((a, b) => a.sku.localeCompare(b.sku))
+            .map((variant) => [
+              variant.sku,
+              {
+                source_variant_id: variant.source_variant_id,
+                source_sku: variant.source_sku ?? null,
+              },
+            ]),
+        ),
+      },
     });
     translations.push({
       product_slug: product.slug,

@@ -61,6 +61,7 @@ export function renderPlanSql(plan) {
   }
 
   for (const product of plan.products) {
+    const ownedAttrs = JSON.stringify({ cm_com_3a: product.source_provenance });
     lines.push(
       `insert into public.products (slug, category_id, brand, origin_region, spice_level, is_halal, is_bulk, status, attrs) select ${sqlText(
         product.slug,
@@ -72,9 +73,9 @@ export function renderPlanSql(plan) {
         product.source_product_id,
       )}, 'source_product_url', ${sqlText(product.source_product_url)}, 'source_handle', ${sqlText(
         product.source_handle,
-      )}) from public.categories c where c.slug = ${sqlText(
+      )}, 'cm_com_3a', ${sqlText(JSON.stringify(product.source_provenance))}::jsonb) from public.categories c where c.slug = ${sqlText(
         product.category_slug,
-      )} on conflict (slug) do update set category_id = excluded.category_id, brand = excluded.brand, origin_region = excluded.origin_region, spice_level = excluded.spice_level, is_halal = excluded.is_halal, is_bulk = excluded.is_bulk, status = excluded.status, attrs = excluded.attrs, updated_at = now();`,
+      )} on conflict (slug) do update set category_id = excluded.category_id, brand = excluded.brand, origin_region = excluded.origin_region, spice_level = excluded.spice_level, is_halal = excluded.is_halal, is_bulk = excluded.is_bulk, status = excluded.status, attrs = coalesce(products.attrs, '{}'::jsonb) || ${sqlText(ownedAttrs)}::jsonb, updated_at = now();`,
     );
   }
 
@@ -122,7 +123,7 @@ export function renderPlanSql(plan) {
         variant.is_active,
       )} from public.products p where p.slug = ${sqlText(
         variant.product_slug,
-      )} on conflict (sku) do update set format_label = excluded.format_label, weight_grams = excluded.weight_grams, price_aed = excluded.price_aed, compare_at_price_aed = excluded.compare_at_price_aed, stock = excluded.stock, is_default = excluded.is_default, is_active = excluded.is_active, updated_at = now();`,
+      )} on conflict (sku) do update set format_label = excluded.format_label, weight_grams = excluded.weight_grams, price_aed = excluded.price_aed, compare_at_price_aed = excluded.compare_at_price_aed, is_default = excluded.is_default, is_active = excluded.is_active, updated_at = now();`,
     );
   }
 
@@ -132,7 +133,7 @@ export function renderPlanSql(plan) {
         row.quantity_on_hand,
       )} from public.product_variants v where v.sku = ${sqlText(
         row.sku,
-      )} on conflict (variant_id) do update set quantity_on_hand = excluded.quantity_on_hand, updated_at = now();`,
+      )} on conflict (variant_id) do nothing;`,
     );
   }
 

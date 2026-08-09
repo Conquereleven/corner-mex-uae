@@ -390,6 +390,32 @@ check(
 );
 check("images loaded", query("select count(*) from product_images") === "1");
 
+check(
+  "variant provenance maps generated SKU to exact source variant and literal SKU",
+  query(
+    "select p.attrs->'cm_com_3a'->'variants'->v.sku->>'source_variant_id'||'/'||coalesce(p.attrs->'cm_com_3a'->'variants'->v.sku->>'source_sku','NULL') from product_variants v join products p on p.id=v.product_id where v.sku like 'CM-LOADERSALSA-%9001'",
+  ) === "9001/LOADER-REAL",
+);
+check(
+  "missing source SKU remains JSON null in persisted provenance",
+  query(
+    "select jsonb_typeof(p.attrs->'cm_com_3a'->'variants'->v.sku->'source_sku') from product_variants v join products p on p.id=v.product_id where v.sku like 'CM-LOADERSALSA-%9002'",
+  ) === "null",
+);
+
+// Simulate consumption after activation, and preserve unrelated A2 metadata.
+const loaderSku = query("select sku from product_variants where sku like 'CM-LOADERSALSA-%9001'");
+psql([
+  "-q",
+  "-c",
+  `update product_variants set stock=0 where sku='${loaderSku}';
+   update inventory set quantity_on_hand=0 where variant_id=(select id from product_variants where sku='${loaderSku}');
+   update products set attrs = attrs || '{"unrelated":{"must_survive":true}}'::jsonb where slug='loader-salsa';
+   insert into inventory_movements (variant_id, movement_type, quantity_delta, reason)
+     select id, 'sale', -1, 'loader regression proof' from product_variants where sku='${loaderSku}';`,
+]);
+const movementsBeforeReload = query("select count(*) from inventory_movements");
+
 // Re-applying the same plan converges instead of duplicating.
 applySql(loadSql);
 check(
@@ -397,6 +423,44 @@ check(
   query(
     "select count(*) from product_variants v join products p on p.id=v.product_id where p.slug='loader-salsa'",
   ) === "2" && query("select count(*) from product_images") === "1",
+);
+check(
+  "re-applying the plan never resurrects consumed variant stock",
+  query(`select stock from product_variants where sku='${loaderSku}'`) === "0",
+);
+check(
+  "re-applying the plan never resurrects quantity_on_hand",
+  query(
+    `select i.quantity_on_hand from inventory i join product_variants v on v.id=i.variant_id where v.sku='${loaderSku}'`,
+  ) === "0",
+);
+check(
+  "catalog reload creates no fake restock movement",
+  query("select count(*) from inventory_movements") === movementsBeforeReload,
+);
+check(
+  "catalog provenance merge preserves unrelated product attrs",
+  query("select attrs->'unrelated'->>'must_survive' from products where slug='loader-salsa'") ===
+    "true",
+);
+
+// A later source-price refresh is catalog metadata, not a restock instruction.
+const refreshedManifest = structuredClone(loadManifest);
+refreshedManifest.products[0].variants[0].source_effective_price_aed = 27.75;
+refreshedManifest.products[0].variants[0].price_aed = 27.75;
+const refreshed = validateActivationManifest(refreshedManifest);
+check("price refresh manifest remains valid", refreshed.valid, JSON.stringify(refreshed.errors));
+applySql(renderPlanSql(refreshed.plan));
+check(
+  "source price refresh updates catalog price",
+  query(`select price_aed from product_variants where sku='${loaderSku}'`) === "27.75",
+);
+check(
+  "source price refresh does not restock existing inventory",
+  query(`select stock from product_variants where sku='${loaderSku}'`) === "0" &&
+    query(
+      `select i.quantity_on_hand from inventory i join product_variants v on v.id=i.variant_id where v.sku='${loaderSku}'`,
+    ) === "0",
 );
 
 // A failing statement must abort the whole load: no partial activation.

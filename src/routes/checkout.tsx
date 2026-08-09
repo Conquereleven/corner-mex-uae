@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { TrustBar } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,14 @@ import {
   placeCodOrder,
   previewCodOrderTotals,
 } from "@/lib/cod-order.functions";
+import {
+  acceptPreview,
+  beginPreview,
+  hasCurrentPreview,
+  previewInputKey,
+  rejectPreview,
+  type PreviewState,
+} from "@/lib/cod-preview";
 import { getAvailablePaymentMethods, type EmirateCode } from "@/lib/payment-methods";
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
@@ -59,7 +67,7 @@ function Checkout() {
   const [error, setError] = useState<string | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [config, setConfig] = useState<Awaited<ReturnType<typeof loadConfig>> | null>(null);
-  const [preview, setPreview] = useState<{
+  type CheckoutPreview = {
     lines: Array<{
       variant_id: string;
       product_name: string;
@@ -72,7 +80,11 @@ function Checkout() {
     shippingAed: number;
     taxAed: number;
     totalAed: number;
-  } | null>(null);
+  };
+  const [previewState, setPreviewState] = useState<PreviewState<CheckoutPreview>>({
+    status: "idle",
+  });
+  const previewRequestId = useRef(0);
   const [form, setForm] = useState({
     recipient_name: "",
     phone: "",
@@ -84,6 +96,19 @@ function Checkout() {
     landmark: "",
     notes: "",
   });
+
+  const previewItems = useMemo(
+    () => items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
+    [items],
+  );
+  const currentPreviewKey = useMemo(
+    () => previewInputKey(previewItems, form.emirate),
+    [form.emirate, previewItems],
+  );
+  const preview =
+    previewState.status === "success" && previewState.key === currentPreviewKey
+      ? previewState.value
+      : null;
 
   // COD is the only method offered in the Commercial Active MVP.
   const paymentMethods = useMemo(
@@ -112,37 +137,37 @@ function Checkout() {
   // from current database prices. The browser sends only variant ids, the
   // quantities and the emirate, and recomputes nothing.
   useEffect(() => {
-    let cancelled = false;
+    const requestId = ++previewRequestId.current;
     if (items.length === 0) {
-      setPreview(null);
+      setPreviewState({ status: "idle" });
       return undefined;
     }
+    // Immediately makes every older preview non-executable. Even before this
+    // effect runs, its old key cannot match currentPreviewKey during render.
+    setPreviewState(beginPreview(currentPreviewKey, requestId));
     loadPreview({
       data: {
-        items: items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
+        items: previewItems,
         emirate: form.emirate,
       },
     }).then(
       (result) => {
-        if (cancelled) return;
-        setPreview(
+        setPreviewState((current) =>
           result.available
-            ? {
+            ? acceptPreview(current, currentPreviewKey, requestId, {
                 lines: result.lines,
                 subtotalAed: result.subtotalAed,
                 shippingAed: result.shippingAed,
                 taxAed: result.taxAed,
                 totalAed: result.totalAed,
-              }
-            : null,
+              })
+            : rejectPreview(current, currentPreviewKey, requestId),
         );
       },
-      () => !cancelled && setPreview(null),
+      () => setPreviewState((current) => rejectPreview(current, currentPreviewKey, requestId)),
     );
-    return () => {
-      cancelled = true;
-    };
-  }, [form.emirate, items, loadPreview]);
+    return undefined;
+  }, [currentPreviewKey, form.emirate, items.length, loadPreview, previewItems]);
 
   const emirateOptions = useMemo(() => {
     const supported = config?.supportedEmirates ?? [];
@@ -154,13 +179,28 @@ function Checkout() {
     form.recipient_name.trim().length >= 2 &&
     form.phone.trim().length >= 7 &&
     form.area.trim().length >= 2;
-  const readyToOrder = Boolean(user) && items.length > 0 && requiredFilled && accepted;
+  const readyToOrder =
+    Boolean(user) &&
+    items.length > 0 &&
+    requiredFilled &&
+    accepted &&
+    hasCurrentPreview(previewState, currentPreviewKey);
   const canExecute = CHECKOUT_ENABLED && readyToOrder;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     // Guard against double submission and against executing while disabled.
-    if (submitting || !canExecute) return;
+    const submitKey = previewInputKey(
+      items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
+      form.emirate,
+    );
+    if (
+      submitting ||
+      !canExecute ||
+      submitKey !== currentPreviewKey ||
+      !hasCurrentPreview(previewState, submitKey)
+    )
+      return;
     setError(null);
     setSubmitting(true);
     try {
@@ -402,7 +442,11 @@ function Checkout() {
                   </li>
                 ))
               ) : (
-                <li className="text-muted-foreground">Confirming current prices…</li>
+                <li className="text-muted-foreground">
+                  {previewState.status === "error"
+                    ? "Current prices could not be confirmed. Please try again."
+                    : "Confirming current prices…"}
+                </li>
               )}
             </ul>
             <dl className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
