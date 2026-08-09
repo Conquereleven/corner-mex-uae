@@ -7,7 +7,7 @@ export const APPLICATION_REFERENCE_CLASSIFICATIONS = Object.freeze([
 const EXPECTED_COUNTS = Object.freeze({
   canonical_supported: 16,
   lovable_live_only: 25,
-  requires_future_migration: 2,
+  requires_future_migration: 3,
 });
 
 export function validateApplicationSchemaReferenceContract(contract) {
@@ -32,7 +32,7 @@ export function validateApplicationSchemaReferenceContract(contract) {
       counts[reference.classification] += 1;
     }
   }
-  if (contract.references.length !== 43) errors.push("reference count mismatch");
+  if (contract.references.length !== 44) errors.push("reference count mismatch");
   for (const [classification, expected] of Object.entries(EXPECTED_COUNTS)) {
     if (counts[classification] !== expected)
       errors.push(`${classification} count mismatch: ${counts[classification]}`);

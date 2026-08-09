@@ -116,18 +116,14 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "catalog_import_executions",
-      "files": [
-        "src/lib/admin.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_pending_canonical_a3_2b_migration"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "catalog_import_reviews",
-      "files": [
-        "src/lib/admin.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_pending_canonical_a3_2b_migration"
     },
@@ -166,20 +162,14 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "order_events",
-      "files": [
-        "src/lib/admin.functions.ts",
-        "src/lib/seller.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts", "src/lib/seller.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "order_notes",
-      "files": [
-        "src/lib/admin.functions.ts",
-        "src/lib/seller.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts", "src/lib/seller.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
@@ -208,10 +198,7 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "b2b_leads",
-      "files": [
-        "src/lib/admin.functions.ts",
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts", "src/lib/b2b-leads.functions.ts"],
       "classification": "canonical_supported",
       "rationale": "present_in_canonical_db2_inventory"
     },
@@ -251,10 +238,7 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "payout-receipts",
-      "files": [
-        "src/lib/admin.functions.ts",
-        "src/lib/seller.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts", "src/lib/seller.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
@@ -273,18 +257,14 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "addresses",
-      "files": [
-        "src/lib/admin.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts"],
       "classification": "canonical_supported",
       "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "seller-kyc",
-      "files": [
-        "src/lib/admin.functions.ts"
-      ],
+      "files": ["src/lib/admin.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
@@ -303,187 +283,142 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "anomaly_events",
-      "files": [
-        "src/lib/anomaly-cases.functions.ts"
-      ],
+      "files": ["src/lib/anomaly-cases.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "lead_status_history",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "lead_notes",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "promo_banners",
-      "files": [
-        "src/lib/banners.functions.ts"
-      ],
+      "files": ["src/lib/banners.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "catalog_events",
-      "files": [
-        "src/lib/catalog-events.functions.ts",
-        "src/lib/live-view.functions.ts"
-      ],
+      "files": ["src/lib/catalog-events.functions.ts", "src/lib/live-view.functions.ts"],
       "classification": "canonical_supported",
       "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "product_views",
-      "files": [
-        "src/lib/catalog.functions.ts"
-      ],
+      "files": ["src/lib/catalog.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "function",
       "name": "track_product_view",
-      "files": [
-        "src/lib/catalog.functions.ts"
-      ],
+      "files": ["src/lib/catalog.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "coupons",
-      "files": [
-        "src/lib/coupons.functions.ts",
-        "src/lib/orders.functions.ts"
-      ],
+      "files": ["src/lib/coupons.functions.ts", "src/lib/orders.functions.ts"],
       "classification": "canonical_supported",
       "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "loyalty_accounts",
-      "files": [
-        "src/lib/loyalty.functions.ts"
-      ],
+      "files": ["src/lib/loyalty.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "loyalty_transactions",
-      "files": [
-        "src/lib/loyalty.functions.ts"
-      ],
+      "files": ["src/lib/loyalty.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "newsletter_subscribers",
-      "files": [
-        "src/lib/newsletter.functions.ts"
-      ],
+      "files": ["src/lib/newsletter.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "shipping_zones",
-      "files": [
-        "src/lib/orders.functions.ts",
-        "src/lib/shipping.functions.ts"
-      ],
+      "files": ["src/lib/orders.functions.ts", "src/lib/shipping.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "shipping_rates",
-      "files": [
-        "src/lib/orders.functions.ts",
-        "src/lib/shipping.functions.ts"
-      ],
+      "files": ["src/lib/orders.functions.ts", "src/lib/shipping.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "coupon_redemptions",
-      "files": [
-        "src/lib/orders.functions.ts"
-      ],
+      "files": ["src/lib/orders.functions.ts"],
       "classification": "canonical_supported",
       "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "order_notifications",
-      "files": [
-        "src/lib/shipments.functions.ts"
-      ],
+      "files": ["src/lib/shipments.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "function",
       "name": "update_verified_review",
-      "files": [
-        "src/lib/reviews.functions.ts"
-      ],
+      "files": ["src/lib/reviews.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "function",
       "name": "create_verified_review",
-      "files": [
-        "src/lib/reviews.functions.ts"
-      ],
+      "files": ["src/lib/reviews.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "currency_rates",
-      "files": [
-        "src/lib/seller.functions.ts",
-        "src/routes/api/public/hooks/refresh-rates.ts"
-      ],
+      "files": ["src/lib/seller.functions.ts", "src/routes/api/public/hooks/refresh-rates.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "wishlists",
-      "files": [
-        "src/lib/wishlist.functions.ts"
-      ],
+      "files": ["src/lib/wishlist.functions.ts"],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "function",
       "name": "place_cod_order_v1",
-      "files": [
-        "src/lib/cod-order.functions.ts"
-      ],
-      "classification": "lovable_live_only",
-      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+      "files": ["src/lib/cod-order.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_a3_2b_migration"
     }
   ]
 }

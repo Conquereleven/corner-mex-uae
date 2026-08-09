@@ -23,7 +23,12 @@ const canonical = new Set([
   "profiles",
   "user_roles",
 ]);
-const future = new Set(["catalog_import_executions", "catalog_import_reviews"]);
+const future = new Set([
+  "catalog_import_executions",
+  "catalog_import_reviews",
+  // CM-COM-3A: created by the pending COD migration, not yet applied.
+  "place_cod_order_v1",
+]);
 const roots = ["src", "scripts"];
 const files = [];
 const walk = async (directory) => {
