@@ -138,10 +138,10 @@ export const getOrderForConfirmation = createServerFn({ method: "GET" })
     const { data: order, error } = await supabaseAdmin
       .from("orders")
       .select(
-        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
-        items:order_items(product_name, variant_label, qty, unit_price_aed, line_total_aed, seller_id, fulfillment_status,
-          seller:sellers(store_name)
-        )`,
+        // CM-COM-3A: A2 canonical columns only. Production has no sellers
+        // table and order_items has no seller_id.
+        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, shipping_address, created_at,
+        items:order_items(product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
       )
       .eq("id", data.orderId)
       .eq("buyer_id", userId)

@@ -154,6 +154,7 @@
       "name": "product_variants",
       "files": [
         "src/lib/admin.functions.ts",
+        "src/lib/cod-order.functions.ts",
         "src/lib/csv-import.functions.ts",
         "src/lib/orders.functions.ts",
         "src/lib/performance.functions.ts",
@@ -475,6 +476,15 @@
       ],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+    },
+    {
+      "kind": "function",
+      "name": "place_cod_order_v1",
+      "files": [
+        "src/lib/cod-order.functions.ts"
+      ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_a3_2b_migration"
     }
   ]
 }

@@ -40,8 +40,16 @@ for (const item of contract.migrations) {
 
 if (active.length !== 4)
   errors.push(`expected 4 applied canonical migrations, found ${active.length}`);
-if (pending.length !== 1 || !pending[0].includes("catalog_import_foundation_a3_2b")) {
-  errors.push("A3.2b pending canonical boundary is missing");
+// Every pending canonical migration must be individually named here, so a new
+// unapplied migration cannot appear without an explicit contract update.
+const REQUIRED_PENDING = ["catalog_import_foundation_a3_2b", "place_cod_order_v1"];
+if (pending.length !== REQUIRED_PENDING.length) {
+  errors.push("pending canonical migration count drift");
+}
+for (const required of REQUIRED_PENDING) {
+  if (!pending.some((name) => name.includes(required))) {
+    errors.push(`pending canonical boundary is missing: ${required}`);
+  }
 }
 const activeSql = (
   await Promise.all(
