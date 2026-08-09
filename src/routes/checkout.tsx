@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { BUSINESS_IDENTITY } from "@/lib/business-identity";
 import { cartTotals, useCart } from "@/lib/cart";
 import {
   getCommercialCheckoutConfig,
@@ -402,7 +403,7 @@ function Checkout() {
             </dl>
             {config?.vatTrn && (
               <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-                RodMor TradeCo LLC — VAT TRN {config.vatTrn}
+                {BUSINESS_IDENTITY.legalEntity} — VAT TRN {config.vatTrn}
               </p>
             )}
             {!sessionLoading && !user && (

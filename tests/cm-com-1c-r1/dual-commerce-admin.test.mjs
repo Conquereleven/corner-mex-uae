@@ -132,10 +132,14 @@ test("payment and confirmation functions independently fail closed", () => {
   }
 });
 
-test("shipping remains pending and no AED 25 fallback is authoritative", () => {
+test("no AED 25 shipping fallback is authoritative", () => {
   assert.match(cartRoute, /Pending destination check/);
-  assert.match(checkout, /Pending verified rate/);
+  // CM-COM-3A replaced the placeholder shipping line with the Founder-approved
+  // per-emirate rate, which the SERVER computes. The browser must still never
+  // derive a shipping amount of its own.
+  assert.match(checkout, /preview \? `AED \$\{preview\.shippingAed/);
   assert.doesNotMatch(`${cartStore}\n${orders}`, /shipping\s*=.*25|:\s*25\b|size \* 25/);
+  assert.doesNotMatch(checkout, /shipping\s*=\s*\d/);
 });
 
 test("low-stock and guaranteed-delivery claims are not restored", () => {
