@@ -343,30 +343,113 @@ test("the SSR-vs-browser divergence is recorded as a cutover preflight, not assu
   assert.match(readiness, /P2 —[\s\S]{0,400}bypassed in the browser/);
 });
 
-test("the runbook puts the OAuth allow-list before any DNS change", async () => {
+test("the runbook never claims pre-DNS deployment is inert", async () => {
   const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
-  const allowList = readiness.indexOf("Update the Supabase Auth redirect allow-list");
-  const dnsRecords = readiness.indexOf("Create DNS records as Railway specifies");
-  const binding = readiness.indexOf("Bind the Railway custom domain");
-  assert.ok(allowList > 0 && dnsRecords > 0 && binding > 0, "runbook steps must be present");
-  assert.ok(
-    allowList < dnsRecords && allowList < binding,
-    "the Auth allow-list must precede DNS records and custom-domain binding",
-  );
-  assert.match(readiness, /BEFORE any DNS change makes the new host\s*\n?\s*reachable/i);
+  // The false P2-A assumption must not return in any phrasing.
+  for (const pattern of [
+    /inert while the domain does not/i,
+    /values are inert/i,
+    /safe because DNS does not/i,
+    /harmless until DNS/i,
+  ]) {
+    assert.doesNotMatch(readiness, pattern, `false inertness claim present: ${pattern}`);
+  }
+  // It must instead state why a pre-DNS deployment is NOT automatically safe.
+  assert.match(readiness, /not\*{0,2}\s*safe merely because DNS does not yet resolve/i);
+  assert.match(readiness, /runs on the \*\*existing Railway host immediately\*\*/i);
+  assert.match(readiness, /That claim was false and has been removed/i);
 });
 
-test("the runbook models the code release lifecycle and dual-layer rollback", async () => {
+test("a pre-cutover deployment is permitted only if activation-inert", async () => {
   const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
-  // Source changes must go through review/merge/deploy, not a platform toggle.
-  assert.match(readiness, /Prepare the exact-domain \*\*code delta\*\*/);
-  assert.match(readiness, /Independent review of that delta/);
-  assert.match(readiness, /Deploy the merged code delta to production under a separate deployment/);
+  assert.match(readiness, /ACTIVATION-INERT/);
   assert.match(
     readiness,
-    /cannot change in\s*\n?\s*production by editing DNS or a Railway variable/,
+    /MUST NOT cause the application to publicly claim the future domain/i,
+    "the activation-inert invariant must be stated",
   );
-  // Rollback must cover both platform and deployed source.
-  assert.match(readiness, /Rollback — platform AND source/);
-  assert.match(readiness, /Revert the exact-domain code delta/);
+  assert.match(readiness, /permitted \*\*only if it is activation-inert\*\*/i);
+  // If inertness cannot be guaranteed, the delta must not ship in Phase A.
+  assert.match(readiness, /do not deploy\s*\n?\s*in Phase A/i);
+});
+
+test("public-domain outputs may not switch to the future domain before activation", async () => {
+  const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
+  // Every listed public-domain output must be named in the inert list.
+  for (const output of [
+    /legal website field/i,
+    /`robots\.txt` `Sitemap:` target/i,
+    /canonical URLs/i,
+    /`og:url`/,
+    /JSON-LD origin/i,
+    /sitemap authority/i,
+    /branded email-domain claims/i,
+  ]) {
+    assert.match(readiness, output, `activation-inert list missing: ${output}`);
+  }
+  // Owning a web domain still must not authorize branded email.
+  assert.match(readiness, /does \*\*not\*\* authorize branded email/i);
+  // Activation is an explicit step, not a side effect of a deployment.
+  assert.match(
+    readiness,
+    /become active \*\*only when the domain is actually being activated\*\*/i,
+  );
+});
+
+test("the cutover is modelled as two phases with activation gated to Phase B", async () => {
+  const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
+  const phaseA = readiness.indexOf("### Phase A — Preparation");
+  const phaseB = readiness.indexOf("### Phase B — Activation");
+  assert.ok(phaseA > 0 && phaseB > phaseA, "Phase A must precede Phase B");
+  assert.match(readiness, /Phase A — Preparation \(no public-domain change\)/);
+  assert.match(readiness, /Phase B — Activation \(under explicit Founder authorization\)/);
+  // Phase A must require fresh runtime re-observation and the architecture decision.
+  const phaseAText = readiness.slice(phaseA, phaseB);
+  assert.match(phaseAText, /Freshly re-observe runtime/i);
+  assert.match(phaseAText, /deterministic canonical architecture/i);
+  assert.match(phaseAText, /CM-COM-2B0 does\s*\n?\s*not specify that mechanism/i);
+});
+
+test("the OAuth allow-list precedes new-domain user traffic", async () => {
+  const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
+  const allowList = readiness.indexOf("Supabase Auth redirect allow-list");
+  const phaseB = readiness.indexOf("### Phase B — Activation");
+  assert.ok(allowList > 0 && phaseB > 0, "both markers must exist");
+  assert.ok(allowList < phaseB, "the allow-list step must be in Phase A, before activation");
+  assert.match(readiness, /before the new host can\s*\n?\s*receive user traffic/i);
+});
+
+test("rollback stays dual-layer and forbids incoherent end states", async () => {
+  const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
+  assert.match(readiness, /dual-layer/i);
+  assert.match(readiness, /Prohibited final states/i);
+  assert.match(
+    readiness,
+    /new-domain canonical metadata served while public traffic is on the\s*\n?\s*Railway host/i,
+  );
+  assert.match(
+    readiness,
+    /Railway canonical metadata served while public traffic is on the new domain/i,
+  );
+  assert.match(readiness, /explicitly bounded and validated/i);
+  assert.match(readiness, /Revert the exact-domain delta via a reviewed revert/i);
+});
+
+test("Railway rollback access is separated from public canonical authority", async () => {
+  const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
+  assert.match(readiness, /Technical rollback access/i);
+  assert.match(readiness, /Public SEO \/ canonical authority/i);
+  // The Railway host must NOT be mandated as a competing public canonical host.
+  assert.match(readiness, /\*\*not\*\* required to remain a competing public canonical host/i);
+  assert.match(readiness, /Open decision for CM-COM-2B1/i);
+});
+
+test("deterministic canonical architecture remains a CM-COM-2B1 prerequisite", async () => {
+  const readiness = await read("docs/program/CM-COM-2B0_DOMAIN_READINESS.md");
+  assert.match(
+    readiness,
+    /P2 — Is `CORNERMEX_PUBLIC_APPLICATION_URL` a deterministic canonical origin\?/,
+  );
+  assert.match(readiness, /P2 —[\s\S]{0,400}only consulted when `window` is undefined/);
+  assert.match(readiness, /Deterministic canonical output requires a reviewed source change/i);
 });
