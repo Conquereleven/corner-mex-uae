@@ -13,6 +13,13 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
+  COD_ORDER_VARIANT_UNAVAILABLE as PREVIEW_VARIANT_UNAVAILABLE,
+  PreviewInput,
+  buildPreviewLines,
+  previewSubtotal,
+  type TrustedVariantRow,
+} from "@/lib/cod-preview";
+import {
   ALL_EMIRATE_CODES,
   computeOrderTotals,
   evaluateCommercialConfig,
@@ -23,6 +30,14 @@ import {
 export const COD_ORDER_DISABLED = "COD_ORDER_EXECUTION_DISABLED";
 export const COD_ORDER_METHOD_INVALID = "COD_ORDER_PAYMENT_METHOD_INVALID";
 export const COD_ORDER_EMIRATE_UNSUPPORTED = "COD_ORDER_EMIRATE_UNSUPPORTED";
+
+export {
+  COD_ORDER_VARIANT_UNAVAILABLE,
+  PreviewInput,
+  buildPreviewLines,
+  previewSubtotal,
+} from "./cod-preview.ts";
+export type { CodPreviewLine, TrustedVariantRow } from "./cod-preview.ts";
 
 const EmirateEnum = z.enum(ALL_EMIRATE_CODES as unknown as [string, ...string[]]);
 
@@ -158,20 +173,47 @@ export const placeCodOrder = createServerFn({ method: "POST" })
     };
   });
 
-/** Preview totals for the checkout summary, using the same server authority. */
-export const previewCodOrderTotals = createServerFn({ method: "GET" })
-  .inputValidator((input: { subtotal_aed: number; emirate: string }) =>
-    z.object({ subtotal_aed: z.number().min(0).max(1_000_000), emirate: EmirateEnum }).parse(input),
-  )
+/**
+ * Trusted checkout preview. Every monetary value is derived on the server from
+ * the current database price of each requested variant; the browser supplies
+ * only variant ids, quantities and the emirate.
+ */
+export const previewCodOrderTotals = createServerFn({ method: "POST" })
+  .inputValidator((input: z.input<typeof PreviewInput>) => PreviewInput.parse(input))
   .handler(async ({ data }) => {
     const evaluation = evaluateCommercialConfig();
     if (!evaluation.ready || !evaluation.config) {
       return { available: false as const, reasons: evaluation.reasons };
     }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const uniqueIds = [...new Set(data.items.map((item) => item.variant_id))];
+    const { data: rows, error } = await supabaseAdmin
+      .from("product_variants")
+      .select(
+        `id, format_label, price_aed, is_active,
+         product:products!inner(status, translations:product_translations(lang, name))`,
+      )
+      .in("id", uniqueIds);
+    if (error) return { available: false as const, reasons: ["COD_ORDER_PREVIEW_FAILED"] };
+
+    const byId = new Map(
+      (rows ?? []).map((row) => [row.id as string, row as unknown as TrustedVariantRow]),
+    );
+
+    let lines;
+    try {
+      lines = buildPreviewLines(data.items, byId);
+    } catch {
+      return { available: false as const, reasons: [PREVIEW_VARIANT_UNAVAILABLE] };
+    }
+
+    const subtotal = previewSubtotal(lines);
     try {
       return {
         available: true as const,
-        ...computeOrderTotals(data.subtotal_aed, evaluation.config, data.emirate),
+        lines,
+        ...computeOrderTotals(subtotal, evaluation.config, data.emirate),
       };
     } catch {
       return { available: false as const, reasons: [COD_ORDER_EMIRATE_UNSUPPORTED] };

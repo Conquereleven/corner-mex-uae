@@ -154,6 +154,7 @@
       "name": "product_variants",
       "files": [
         "src/lib/admin.functions.ts",
+        "src/lib/cod-order.functions.ts",
         "src/lib/csv-import.functions.ts",
         "src/lib/orders.functions.ts",
         "src/lib/performance.functions.ts",

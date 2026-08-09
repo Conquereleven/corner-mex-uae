@@ -19,42 +19,53 @@ commercially active.
 
 ## Sequence
 
+Catalog validity is proved BEFORE the COD migration is applied, so an unusable
+catalog is discovered while the database is still untouched.
+
 1. Verify the reviewed, merged `main` exact SHA and that CI is green on it.
 2. Fresh **read-only** production schema and runtime preflight (tables, row
    counts, health, current serving commit).
-3. Apply the exact reviewed COD transactional migration
+3. Fresh Intermex public crawl and canonical manifest generation:
+   `node scripts/cm-com-3a/ingest-intermex-catalog.mjs --out <manifest.json>`
+   so prices and availability are current at load time, not at review time.
+4. Validate the canonical manifest:
+   `npm run validate:cm-com-3a:manifest -- <manifest.json>`. The validator
+   rejects any markup, any `initial_stock` outside the Founder policy, and any
+   loss of product or variant provenance.
+5. Generate the deterministic activation plan and its SQL artifact, still
+   without writing anything:
+   `node scripts/cm-com-3a/load-activation-plan.mjs <manifest.json> --sql <plan.sql>`.
+6. Founder reviews the activation evidence: counts, excluded rows and their
+   stated reasons, sampled prices against the public source.
+7. **Only then** apply the exact reviewed COD transactional migration
    (`supabase/pending-canonical/20260809010000_place_cod_order_v1.sql`), then
    move it into `supabase/migrations/` and update the migration-ownership
    contract in the same authorized change.
-4. Re-crawl the Intermex public catalog and regenerate the manifest
-   (`node scripts/cm-com-3a/ingest-intermex-catalog.mjs --report`) so prices and
-   availability are current at load time, not at review time.
-5. Validate the manifest and produce the dry-run plan
-   (`npm run validate:cm-com-3a:manifest -- <manifest.json> --plan`). The
-   validator rejects any `initial_stock` outside the Founder policy.
-6. Load the approved plan. Products are created `active`; variants carry the
-   policy stock (1 for available, 0 otherwise).
-7. Verify rows, stock and read policies: products active, variants active with
-   the intended stock, public read works anonymously.
-8. Configure the COD commercial environment on the production service:
-   `CORNERMEX_COMMERCE_ACTIVE_MODE=cod`,
-   `CORNERMEX_COD_SUPPORTED_EMIRATES=DU,AD,SH,AJ,UQ,RK,FU`,
-   `CORNERMEX_VAT_RATE=0.05`, `CORNERMEX_VAT_TRN=105514792800001`, and
-   `CORNERMEX_COD_SHIPPING_RATES_JSON` only if the Founder-approved defaults are
-   being overridden. Any incomplete rate table fails closed.
-9. Deploy the reviewed `main` with **`CHECKOUT_ENABLED` still false** (both
-   `CORNERMEX_CHECKOUT_ENABLED` and `VITE_CORNERMEX_CHECKOUT_ENABLED`).
-10. Smoke the read-only surfaces: `/shop`, a product page, cart, login,
-    `/checkout` (must still refuse to execute).
-11. Confirm `/api/ready` still reports checkout execution disabled.
-12. Set **`CORNERMEX_CHECKOUT_ENABLED=true` and
+8. Execute the exact reviewed loader against the canonical manifest:
+   `CORNERMEX_ACTIVATION_DATABASE_URL=… node scripts/cm-com-3a/load-activation-plan.mjs <manifest.json> --execute`.
+   It applies in ONE transaction; a failure leaves no partial catalog.
+9. Verify catalog and inventory: products active, variants active and bound to
+   the right product, stock 1 for available rows and 0 otherwise, inventory
+   rows matching, public read works anonymously.
+10. Configure the COD commercial runtime on the production service:
+    `CORNERMEX_COMMERCE_ACTIVE_MODE=cod`,
+    `CORNERMEX_COD_SUPPORTED_EMIRATES=DU,AD,SH,AJ,UQ,RK,FU`,
+    `CORNERMEX_VAT_RATE=0.05`, `CORNERMEX_VAT_TRN=105514792800001`, and
+    `CORNERMEX_COD_SHIPPING_RATES_JSON` only if the Founder-approved defaults
+    are being overridden. Any incomplete rate table fails closed.
+11. Deploy the reviewed `main` with **`CHECKOUT_ENABLED` still false** (both
+    `CORNERMEX_CHECKOUT_ENABLED` and `VITE_CORNERMEX_CHECKOUT_ENABLED`).
+12. Smoke the read-only surfaces: `/shop`, a product page, cart, login,
+    `/checkout` (must still refuse to execute), and confirm `/api/ready` still
+    reports checkout execution disabled.
+13. Set **`CORNERMEX_CHECKOUT_ENABLED=true` and
     `VITE_CORNERMEX_CHECKOUT_ENABLED=true` LAST**, after every step above, and
     redeploy so the client flag takes effect.
-13. Founder places one real COD test order in one emirate.
-14. Verify: order row, order items, `payment_method=cod` / `payment_status=pending`,
-    stock decrement, inventory movement, per-emirate shipping, 5% VAT, total, and
-    the confirmation page.
-15. Declare `COMMERCIAL_ACTIVE` and record the exact deployed SHA in
+14. Founder places one real COD test order in one emirate.
+15. Verify the transaction: order row, order items, `payment_method=cod` /
+    `payment_status=pending`, stock decrement, inventory movement, per-emirate
+    shipping, 5% VAT, total, and the confirmation page.
+16. Declare `COMMERCIAL_ACTIVE` and record the exact deployed SHA in
     `CURRENT_STATE.json` and `DEPLOYMENT_REGISTRY.json`.
 
 ## Rollback
@@ -71,6 +82,13 @@ Roll back in this order:
    disabled, and it is executable by `service_role` only.
 
 Do not begin any deeper rollback before checkout execution is disabled.
+
+## Known non-blocking debt
+
+`CM-COM-3A-P3-CONFIRMATION-GATE` — `getOrderForConfirmation` currently depends
+on checkout-enabled state, so disabling checkout during a rollback would also
+make existing order confirmations unavailable. Recorded as debt; not changed in
+this sprint.
 
 ## Not authorized by this runbook
 

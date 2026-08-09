@@ -288,6 +288,129 @@ for (const forbidden of [
   check(`no ${forbidden} dependency`, !body.includes(forbidden));
 }
 
+// 9. The catalog load mechanism applies to the real A2 schema, transactionally
+//    and idempotently. This proves the generated artifact is executable rather
+//    than merely well-formed.
+const { renderPlanSql } = await import("./load-activation-plan.mjs");
+const { validateActivationManifest } = await import("./validate-activation-manifest.mjs");
+const { normalizeCatalog, toActivationManifest } = await import("./ingest-intermex-catalog.mjs");
+
+const loadManifest = toActivationManifest(
+  normalizeCatalog(
+    [
+      {
+        id: 900,
+        handle: "loader-salsa",
+        title: "Loader Salsa",
+        vendor: "Loader Vendor",
+        product_type: "Salsas",
+        body_html: "<p>loader</p>",
+        images: [{ src: "https://cdn.example.test/loader-a.jpg" }],
+        variants: [
+          {
+            id: 9001,
+            sku: "LOADER-REAL",
+            title: "450 g",
+            price: "25.50",
+            compare_at_price: "30.00",
+            available: true,
+            grams: 450,
+          },
+          {
+            id: 9002,
+            sku: null,
+            title: "900 g",
+            price: "40.00",
+            compare_at_price: null,
+            available: false,
+            grams: 900,
+          },
+        ],
+      },
+    ],
+    "2026-08-09T00:00:00.000Z",
+  ),
+);
+const loadResult = validateActivationManifest(loadManifest);
+check(
+  "generated manifest is valid for loading",
+  loadResult.valid,
+  JSON.stringify(loadResult.errors),
+);
+const loadSql = renderPlanSql(loadResult.plan);
+
+const applySql = (sql) =>
+  execFileSync("psql", ["-d", DB, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], {
+    input: sql,
+    encoding: "utf8",
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+applySql(loadSql);
+check("category loaded", query("select name_en from categories where slug='salsas'") === "Salsas");
+check(
+  "product loaded active and linked to its category",
+  query(
+    "select p.status from products p join categories c on c.id=p.category_id where p.slug='loader-salsa' and c.slug='salsas'",
+  ) === "active",
+);
+check(
+  "english translation loaded",
+  query(
+    "select name from product_translations t join products p on p.id=t.product_id where p.slug='loader-salsa' and t.lang='en'",
+  ) === "Loader Salsa",
+);
+check(
+  "both variants loaded under one product",
+  query(
+    "select count(*) from product_variants v join products p on p.id=v.product_id where p.slug='loader-salsa'",
+  ) === "2",
+);
+check(
+  "CornerMex price mirrors the source effective price",
+  query("select price_aed from product_variants where sku like 'CM-LOADERSALSA-%9001'") === "25.50",
+);
+check(
+  "Founder stock policy applied by the loader",
+  query(
+    "select string_agg(stock::text, ',' order by sku) from product_variants v join products p on p.id=v.product_id where p.slug='loader-salsa'",
+  ) === "1,0",
+);
+check(
+  "inventory rows match variant stock",
+  query(
+    "select string_agg(i.quantity_on_hand::text, ',' order by v.sku) from inventory i join product_variants v on v.id=i.variant_id",
+  ) === "1,0",
+);
+check(
+  "exactly one default variant",
+  query(
+    "select count(*) from product_variants v join products p on p.id=v.product_id where p.slug='loader-salsa' and v.is_default",
+  ) === "1",
+);
+check("images loaded", query("select count(*) from product_images") === "1");
+
+// Re-applying the same plan converges instead of duplicating.
+applySql(loadSql);
+check(
+  "re-applying the plan is idempotent",
+  query(
+    "select count(*) from product_variants v join products p on p.id=v.product_id where p.slug='loader-salsa'",
+  ) === "2" && query("select count(*) from product_images") === "1",
+);
+
+// A failing statement must abort the whole load: no partial activation.
+const partialProbe = expectError(
+  `${loadSql.replace("commit;", "insert into public.product_variants (product_id, sku, price_aed) values (null, 'BAD-SKU', 1); commit;")}`,
+  // Match the column, not the message text, which is locale-dependent.
+  "product_id",
+);
+check("a failing statement aborts the whole load", partialProbe === null, partialProbe ?? "");
+check(
+  "no row from the aborted load survives",
+  query("select count(*) from product_variants where sku='BAD-SKU'") === "0",
+);
+
 console.log(
   JSON.stringify({
     status: failures.length ? "cod_sql_contract_failed" : "cod_sql_contract_valid",

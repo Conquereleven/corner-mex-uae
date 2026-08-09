@@ -13,11 +13,18 @@
 //
 // Usage:
 //   node scripts/cm-com-3a/ingest-intermex-catalog.mjs --report
-//   node scripts/cm-com-3a/ingest-intermex-catalog.mjs --out <dir>
+//   node scripts/cm-com-3a/ingest-intermex-catalog.mjs --out <file.json>
+//   node scripts/cm-com-3a/ingest-intermex-catalog.mjs --out <file.json> --raw <file.json>
+//
+// `--out` writes the CANONICAL ACTIVATION MANIFEST, which is exactly the
+// contract that validate-activation-manifest.mjs and load-activation-plan.mjs
+// consume. `--raw` additionally writes the normalized source snapshot.
 
 const SOURCE_ORIGIN = "https://intermexuae.com";
 const PAGE_SIZE = 250;
 const MAX_PAGES = 200; // loop guard only, not a catalog cap
+
+export const ACTIVATION_MANIFEST_VERSION = "cm-com-3a-activation-manifest-v1";
 
 export const AVAILABILITY = { AVAILABLE: "AVAILABLE", SOLD_OUT: "SOLD_OUT", UNKNOWN: "UNKNOWN" };
 
@@ -221,17 +228,145 @@ export function summarize(manifest) {
   };
 }
 
+/**
+ * Deterministic category identity derived from the observed source product
+ * type. No marketing taxonomy is invented: the slug is a pure function of the
+ * source value, and the single documented fallback is used only when the source
+ * supplies no product type at all.
+ */
+export const FALLBACK_CATEGORY = Object.freeze({ slug: "uncategorized", name: "Uncategorized" });
+
+export function categoryForProduct(product) {
+  const raw = typeof product.product_type === "string" ? product.product_type.trim() : "";
+  const slug = slugify(raw);
+  if (raw === "" || slug === "") return { ...FALLBACK_CATEGORY };
+  return { slug, name: raw };
+}
+
+/**
+ * Convert the normalized source snapshot into the CANONICAL ACTIVATION
+ * MANIFEST. Product and variant identity are both preserved so the loader can
+ * reconstruct the A2 product -> variant relationship exactly.
+ */
+export function toActivationManifest(normalized) {
+  const categories = new Map();
+  const excluded = [];
+  const activatable = normalized.products.filter((product) => {
+    // A row the storefront cannot legitimately sell is excluded from the
+    // activation manifest with a stated reason rather than being reshaped or
+    // given invented data. The normalized snapshot still records it in full.
+    const reasons = [];
+    if (product.images.length === 0) reasons.push("no_source_image");
+    if (product.variants.length === 0) reasons.push("no_source_variant");
+    if (product.variants.some((variant) => variant.source_effective_price_aed === null)) {
+      reasons.push("no_source_effective_price");
+    }
+    if (reasons.length === 0) return true;
+    excluded.push({
+      source_product_id: product.source_product_id,
+      source_handle: product.source_handle,
+      reasons,
+    });
+    return false;
+  });
+
+  const products = activatable.map((product) => {
+    const category = categoryForProduct(product);
+    if (!categories.has(category.slug)) {
+      categories.set(category.slug, { slug: category.slug, names: { en: category.name } });
+    }
+    return {
+      slug: product.slug,
+      category: category.slug,
+      names: { en: product.title },
+      description: product.description ?? null,
+      brand: product.brand ?? null,
+      images: product.images,
+      source_product_id: product.source_product_id,
+      source_product_url: product.source_product_url,
+      source_handle: product.source_handle,
+      source_product_title: product.title,
+      source_availability: product.source_availability,
+      variants: product.variants.map((variant, index) => ({
+        sku: variant.cornermex_sku,
+        source_variant_id: variant.source_variant_id,
+        // Provenance: the literal source SKU is preserved when it exists and is
+        // never merged into, or fabricated from, the CornerMex SKU.
+        source_sku: variant.source_sku,
+        format_label: variant.format_label ?? variant.options[0] ?? null,
+        weight_grams: variant.weight_grams,
+        source_availability: variant.source_availability,
+        source_regular_price_aed: variant.source_regular_price_aed,
+        source_effective_price_aed: variant.source_effective_price_aed,
+        price_aed: variant.price_aed,
+        initial_stock: variant.initial_stock,
+        is_default: index === 0,
+      })),
+    };
+  });
+
+  return {
+    manifestVersion: ACTIVATION_MANIFEST_VERSION,
+    source: normalized.source,
+    source_price_observed_at: normalized.source_price_observed_at,
+    readOnly: true,
+    categories: [...categories.values()].sort((a, b) => a.slug.localeCompare(b.slug)),
+    products: [...products].sort((a, b) => a.slug.localeCompare(b.slug)),
+    excluded: excluded.sort((a, b) => a.source_product_id.localeCompare(b.source_product_id)),
+  };
+}
+
+/** Parse the documented CLI arguments. Unknown flags are rejected loudly. */
+export function parseArgs(argv) {
+  const options = { out: null, raw: null, report: false };
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === "--report") options.report = true;
+    else if (arg === "--out" || arg === "--raw") {
+      const value = argv[i + 1];
+      if (!value || value.startsWith("--")) throw new Error(`${arg} requires a file path`);
+      options[arg === "--out" ? "out" : "raw"] = value;
+      i += 1;
+    } else throw new Error(`unknown argument: ${arg}`);
+  }
+  return options;
+}
+
 const invokedDirectly = process.argv[1]?.endsWith("ingest-intermex-catalog.mjs");
 if (invokedDirectly) {
+  const { mkdirSync, writeFileSync } = await import("node:fs");
+  const path = await import("node:path");
+  const options = parseArgs(process.argv.slice(2));
+
   const observedAt = new Date().toISOString();
   const raw = await crawlSource();
-  const manifest = normalizeCatalog(raw, observedAt);
-  const summary = summarize(manifest);
+  const normalized = normalizeCatalog(raw, observedAt);
+  const summary = summarize(normalized);
+  const activation = toActivationManifest(normalized);
+
+  const write = (file, value) => {
+    mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+    // Deterministic UTF-8 JSON: stable key order from the builders above and a
+    // fixed indentation, so two runs of the same input produce identical bytes.
+    writeFileSync(path.resolve(file), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  };
+  if (options.raw) write(options.raw, normalized);
+  if (options.out) write(options.out, activation);
+
   console.log(
     JSON.stringify(
       {
         status: summary.valid ? "intermex_catalog_valid" : "intermex_catalog_invalid",
         observedAt,
+        wroteActivationManifest: options.out ?? null,
+        activationProducts: activation.products.length,
+        activationVariants: activation.products.reduce((n, p) => n + p.variants.length, 0),
+        activationCategories: activation.categories.length,
+        excludedFromActivation: activation.excluded.length,
+        exclusionReasons: activation.excluded.map(
+          (row) => `${row.source_handle}: ${row.reasons.join(",")}`,
+        ),
+        wroteNormalizedSnapshot: options.raw ?? null,
         ...summary,
       },
       null,

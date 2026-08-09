@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { BUSINESS_IDENTITY } from "@/lib/business-identity";
-import { cartTotals, useCart } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 import {
   getCommercialCheckoutConfig,
   placeCodOrder,
@@ -54,13 +54,21 @@ function Checkout() {
   const loadPreview = useServerFn(previewCodOrderTotals);
   const items = useCart((state) => state.items);
   const clear = useCart((state) => state.clear);
-  const totals = cartTotals(items);
   const { user, loading: sessionLoading } = useSession();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [config, setConfig] = useState<Awaited<ReturnType<typeof loadConfig>> | null>(null);
   const [preview, setPreview] = useState<{
+    lines: Array<{
+      variant_id: string;
+      product_name: string;
+      variant_label: string | null;
+      qty: number;
+      unit_price_aed: number;
+      line_total_aed: number;
+    }>;
+    subtotalAed: number;
     shippingAed: number;
     taxAed: number;
     totalAed: number;
@@ -81,11 +89,12 @@ function Checkout() {
   const paymentMethods = useMemo(
     () =>
       getAvailablePaymentMethods({
-        subtotal: totals.subtotal,
+        // Server subtotal only; cart-local money never drives the offer.
+        subtotal: preview?.subtotalAed ?? 0,
         emirate: form.emirate,
         codOnly: true,
       }),
-    [form.emirate, totals.subtotal],
+    [form.emirate, preview?.subtotalAed],
   );
 
   useEffect(() => {
@@ -99,18 +108,28 @@ function Checkout() {
     };
   }, [loadConfig]);
 
-  // Trusted preview: shipping and VAT always come from the server, recalculated
-  // whenever the emirate or basket changes. Display only — the final RPC
-  // recomputes everything and its result wins.
+  // Trusted preview: every amount shown at checkout is computed by the server
+  // from current database prices. The browser sends only variant ids, the
+  // quantities and the emirate, and recomputes nothing.
   useEffect(() => {
     let cancelled = false;
-    if (items.length === 0) return undefined;
-    loadPreview({ data: { subtotal_aed: totals.subtotal, emirate: form.emirate } }).then(
+    if (items.length === 0) {
+      setPreview(null);
+      return undefined;
+    }
+    loadPreview({
+      data: {
+        items: items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
+        emirate: form.emirate,
+      },
+    }).then(
       (result) => {
         if (cancelled) return;
         setPreview(
           result.available
             ? {
+                lines: result.lines,
+                subtotalAed: result.subtotalAed,
                 shippingAed: result.shippingAed,
                 taxAed: result.taxAed,
                 totalAed: result.totalAed,
@@ -123,7 +142,7 @@ function Checkout() {
     return () => {
       cancelled = true;
     };
-  }, [form.emirate, items.length, loadPreview, totals.subtotal]);
+  }, [form.emirate, items, loadPreview]);
 
   const emirateOptions = useMemo(() => {
     const supported = config?.supportedEmirates ?? [];
@@ -368,20 +387,28 @@ function Checkout() {
 
           <aside className="h-fit min-w-0 max-w-full rounded-3xl border border-border bg-card p-4 sm:p-6">
             <h2 className="font-display text-xl">Order summary</h2>
+            {/* Lines come from the server preview, never from cart-local price
+                state, so a stale or tampered cart price is never shown as the
+                checkout price. */}
             <ul className="mt-4 space-y-2 text-sm">
-              {items.map((item) => (
-                <li key={item.variantId} className="flex min-w-0 justify-between gap-4">
-                  <span className="min-w-0 truncate text-muted-foreground">
-                    {item.qty} × {item.name}
-                  </span>
-                  <span>AED {(item.qty * item.unitPrice).toFixed(2)}</span>
-                </li>
-              ))}
+              {preview ? (
+                preview.lines.map((line) => (
+                  <li key={line.variant_id} className="flex min-w-0 justify-between gap-4">
+                    <span className="min-w-0 truncate text-muted-foreground">
+                      {line.qty} × {line.product_name}
+                      {line.variant_label ? ` (${line.variant_label})` : ""}
+                    </span>
+                    <span>AED {line.line_total_aed.toFixed(2)}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="text-muted-foreground">Confirming current prices…</li>
+              )}
             </ul>
             <dl className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
-                <dd>AED {totals.subtotal.toFixed(2)}</dd>
+                <dd>{preview ? `AED ${preview.subtotalAed.toFixed(2)}` : "—"}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">{config?.taxLabel ?? "VAT"}</dt>

@@ -14,11 +14,26 @@ import {
   shippingForEmirate,
 } from "../../src/lib/commercial-config.server.ts";
 import { getAvailablePaymentMethods } from "../../src/lib/payment-methods.ts";
+import { PreviewInput, buildPreviewLines, previewSubtotal } from "../../src/lib/cod-preview.ts";
 import {
   MANIFEST_LIMITS,
   validateActivationManifest,
 } from "../../scripts/cm-com-3a/validate-activation-manifest.mjs";
-import { normalizeCatalog, summarize } from "../../scripts/cm-com-3a/ingest-intermex-catalog.mjs";
+import {
+  ACTIVATION_MANIFEST_VERSION,
+  FALLBACK_CATEGORY,
+  categoryForProduct,
+  normalizeCatalog,
+  parseArgs,
+  summarize,
+  toActivationManifest,
+} from "../../scripts/cm-com-3a/ingest-intermex-catalog.mjs";
+import {
+  DATABASE_URL_ENV,
+  planLoad,
+  renderPlanSql,
+  parseArgs as parseLoaderArgs,
+} from "../../scripts/cm-com-3a/load-activation-plan.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const read = (p) => readFile(path.join(root, p), "utf8");
@@ -161,6 +176,111 @@ test("the order input schema accepts no client-supplied money", async () => {
     assert.ok(!schema.includes(forbidden), `client must not be able to send ${forbidden}`);
   }
   assert.ok(schema.includes("variant_id") && schema.includes("qty"));
+});
+
+// --- preview money is server-authoritative --------------------------------
+
+const trustedRow = (overrides = {}) => ({
+  id: "11111111-1111-1111-1111-111111111111",
+  format_label: "450 g",
+  price_aed: 25,
+  is_active: true,
+  product: { status: "active", translations: [{ lang: "en", name: "Contract Salsa" }] },
+  ...overrides,
+});
+
+test("the preview input cannot carry any monetary value", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const good = PreviewInput.parse({ items: [{ variant_id: id, qty: 2 }], emirate: "DU" });
+  assert.deepEqual(Object.keys(good).sort(), ["emirate", "items"]);
+  assert.deepEqual(Object.keys(good.items[0]).sort(), ["qty", "variant_id"]);
+  // Every field a tampered browser could use to assert money is rejected.
+  for (const forged of [
+    { subtotal_aed: 0.01 },
+    { unit_price: 0.01 },
+    { line_total: 0.01 },
+    { shipping_aed: 0 },
+    { tax_aed: 0 },
+    { total_aed: 0.01 },
+  ]) {
+    assert.throws(
+      () => PreviewInput.parse({ items: [{ variant_id: id, qty: 1 }], emirate: "DU", ...forged }),
+      Object.keys(forged)[0],
+    );
+  }
+  assert.throws(() =>
+    PreviewInput.parse({
+      items: [{ variant_id: id, qty: 1, unit_price_aed: 0.01 }],
+      emirate: "DU",
+    }),
+  );
+});
+
+test("a tampered browser price cannot influence the preview", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const rows = new Map([[id, trustedRow({ price_aed: 25 })]]);
+  // The browser claims AED 0.01; the database says AED 25.00.
+  const lines = buildPreviewLines([{ variant_id: id, qty: 2 }], rows);
+  assert.equal(lines[0].unit_price_aed, 25);
+  assert.equal(lines[0].line_total_aed, 50);
+  assert.equal(lines[0].product_name, "Contract Salsa");
+  assert.equal(previewSubtotal(lines), 50);
+
+  // A stale high cart price is equally powerless: the server price still wins.
+  const cheaper = new Map([[id, trustedRow({ price_aed: "9.50" })]]);
+  assert.equal(previewSubtotal(buildPreviewLines([{ variant_id: id, qty: 1 }], cheaper)), 9.5);
+});
+
+test("server-derived subtotal flows into shipping, VAT and total", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const { config } = evaluateCommercialConfig({ ...READY_ENV, CORNERMEX_VAT_RATE: "0.05" });
+  const subtotal = previewSubtotal(
+    buildPreviewLines([{ variant_id: id, qty: 4 }], new Map([[id, trustedRow({ price_aed: 25 })]])),
+  );
+  assert.equal(subtotal, 100);
+  assert.deepEqual(computeOrderTotals(subtotal, config, "DU"), {
+    subtotalAed: 100,
+    shippingAed: 15,
+    taxAed: 5,
+    totalAed: 120,
+  });
+  assert.equal(computeOrderTotals(subtotal, config, "SH").shippingAed, 20);
+});
+
+test("the preview refuses variants it cannot trust", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const cases = [
+    ["missing variant", new Map()],
+    ["inactive variant", new Map([[id, trustedRow({ is_active: false })]])],
+    [
+      "non-active product",
+      new Map([[id, trustedRow({ product: { status: "draft", translations: [] } })]]),
+    ],
+  ];
+  for (const [name, rows] of cases) {
+    assert.throws(
+      () => buildPreviewLines([{ variant_id: id, qty: 1 }], rows),
+      /COD_ORDER_VARIANT_UNAVAILABLE/,
+      name,
+    );
+  }
+});
+
+test("checkout renders server money, not cart-local money", async () => {
+  const source = stripJsComments(await read("src/routes/checkout.tsx"));
+  assert.ok(!source.includes("cartTotals"), "cart totals must not drive checkout money");
+  assert.ok(!source.includes("item.unitPrice"), "cart unit price must not be displayed");
+  assert.match(source, /preview\.lines\.map/);
+  assert.match(source, /line\.line_total_aed/);
+  assert.match(source, /preview \? `AED \$\{preview\.subtotalAed/);
+  // The preview request carries identities and the emirate only.
+  const previewCall = source.indexOf("loadPreview({");
+  const request = source.slice(previewCall, source.indexOf(").then(", previewCall));
+  assert.match(request, /variant_id/);
+  assert.match(request, /qty/);
+  for (const forbidden of ["price", "subtotal", "total", "tax"]) {
+    assert.ok(!request.includes(forbidden), `preview request must not send ${forbidden}`);
+  }
 });
 
 // --- COD-only payment surface --------------------------------------------
@@ -317,20 +437,56 @@ test("order confirmation uses A2-compatible fields only", async () => {
 // --- activation manifest --------------------------------------------------
 
 const VALID_MANIFEST = {
+  manifestVersion: "cm-com-3a-activation-manifest-v1",
+  source: "https://source.example.test",
+  source_price_observed_at: "2026-08-09T00:00:00.000Z",
   categories: [{ slug: "salsas", names: { en: "Salsas" } }],
   products: [
     {
       slug: "example-salsa",
-      sku: "EX-SALSA-450",
       category: "salsas",
       names: { en: "Example Salsa" },
+      description: "A salsa.",
+      brand: "Example Brand",
       images: ["https://images.example.test/a.jpg"],
-      format_label: "450 g",
-      price_aed: 25.5,
+      source_product_id: "1",
+      source_product_url: "https://source.example.test/products/example-salsa",
+      source_handle: "example-salsa",
+      source_product_title: "Example Salsa",
       source_availability: "AVAILABLE",
-      initial_stock: 1,
+      variants: [
+        {
+          sku: "CM-EXAMPLESALSA-000011",
+          source_variant_id: "11",
+          source_sku: "EX-SALSA-450",
+          format_label: "450 g",
+          weight_grams: 450,
+          source_availability: "AVAILABLE",
+          source_regular_price_aed: 30,
+          source_effective_price_aed: 25.5,
+          price_aed: 25.5,
+          initial_stock: 1,
+          is_default: true,
+        },
+      ],
     },
   ],
+};
+
+const cloneWithProducts = (count) => {
+  const manifest = structuredClone(VALID_MANIFEST);
+  for (let i = 0; i < count; i += 1) {
+    const product = structuredClone(manifest.products[0]);
+    product.slug = `bulk-${i}`;
+    product.source_product_id = `bulk-${i}`;
+    product.source_product_url = `https://source.example.test/products/bulk-${i}`;
+    product.source_handle = `bulk-${i}`;
+    product.variants[0].sku = `CM-BULK-${i}`;
+    product.variants[0].source_variant_id = `bulk-v-${i}`;
+    product.variants[0].source_sku = null;
+    manifest.products.push(product);
+  }
+  return manifest;
 };
 
 test("a well-formed manifest produces a deterministic plan", () => {
@@ -340,27 +496,62 @@ test("a well-formed manifest produces a deterministic plan", () => {
   assert.equal(first.plan.dryRun, true);
   assert.deepEqual(first.plan, second.plan, "the plan must be deterministic");
   assert.equal(first.plan.totals.units, 1);
+  // The plan separates the A2 writes it describes.
+  assert.deepEqual(first.plan.categories, [
+    { slug: "salsas", name_en: "Salsas", is_active: true, sort_order: 0 },
+  ]);
+  assert.equal(first.plan.products[0].category_slug, "salsas");
+  assert.equal(first.plan.products[0].status, "active");
+  assert.deepEqual(first.plan.translations[0], {
+    product_slug: "example-salsa",
+    lang: "en",
+    name: "Example Salsa",
+    description: "A salsa.",
+  });
+  assert.equal(first.plan.images[0].product_slug, "example-salsa");
+  const variant = first.plan.variants[0];
+  assert.equal(variant.product_slug, "example-salsa", "variant must stay bound to its product");
+  assert.equal(variant.price_aed, 25.5);
+  assert.equal(variant.compare_at_price_aed, 30);
+  assert.equal(variant.stock, 1);
+  assert.equal(variant.source_variant_id, "11");
+  assert.equal(variant.source_sku, "EX-SALSA-450");
+  assert.deepEqual(first.plan.inventory[0], { sku: variant.sku, quantity_on_hand: 1 });
+  // No marketplace concepts leak into the plan.
+  assert.ok(!JSON.stringify(first.plan).includes("seller"));
 });
 
 test("the manifest validator rejects malformed rows", () => {
+  const v = (m) => m.products[0].variants[0];
   const cases = [
-    ["duplicate slug", (m) => m.products.push({ ...m.products[0], sku: "OTHER-1" })],
-    ["duplicate sku", (m) => m.products.push({ ...m.products[0], slug: "other-slug" })],
-    ["negative price", (m) => (m.products[0].price_aed = -1)],
-    ["negative stock", (m) => (m.products[0].initial_stock = -5)],
-    ["invented stock above 1", (m) => (m.products[0].initial_stock = 12)],
+    ["duplicate slug", (m) => m.products.push(structuredClone(m.products[0]))],
+    ["negative price", (m) => (v(m).price_aed = -1)],
+    [
+      "marked-up price",
+      (m) => {
+        v(m).price_aed = 30;
+      },
+    ],
+    ["negative stock", (m) => (v(m).initial_stock = -5)],
+    ["invented stock above 1", (m) => (v(m).initial_stock = 12)],
     [
       "stock contradicting availability",
       (m) => {
-        m.products[0].source_availability = "SOLD_OUT";
-        m.products[0].initial_stock = 1;
+        v(m).source_availability = "SOLD_OUT";
+        v(m).initial_stock = 1;
       },
     ],
     ["non-https image", (m) => (m.products[0].images = ["http://insecure.test/a.jpg"])],
     ["empty images", (m) => (m.products[0].images = [])],
     ["unknown category", (m) => (m.products[0].category = "missing")],
     ["missing english name", (m) => delete m.products[0].names.en],
-    ["invalid sku", (m) => (m.products[0].sku = "bad sku!")],
+    ["invalid sku", (m) => (v(m).sku = "bad sku!")],
+    ["missing source provenance", (m) => delete m.products[0].source_product_id],
+    ["missing variant provenance", (m) => delete v(m).source_variant_id],
+    ["source sku equal to the generated sku", (m) => (v(m).source_sku = v(m).sku)],
+    ["no variants", (m) => (m.products[0].variants = [])],
+    ["no default variant", (m) => (v(m).is_default = false)],
+    ["unknown availability state", (m) => (v(m).source_availability = "MAYBE")],
   ];
   for (const [name, mutate] of cases) {
     const manifest = structuredClone(VALID_MANIFEST);
@@ -386,11 +577,7 @@ test("the manifest tool never connects to or writes a database", async () => {
 test("the manifest has no fixed catalog-size cap", () => {
   // The public catalog is dynamic (196 products observed in R2), so a large
   // manifest must validate rather than be rejected by an arbitrary limit.
-  const manifest = structuredClone(VALID_MANIFEST);
-  for (let i = 0; i < 250; i += 1) {
-    manifest.products.push({ ...manifest.products[0], slug: `bulk-${i}`, sku: `BULK-${i}` });
-  }
-  const result = validateActivationManifest(manifest);
+  const result = validateActivationManifest(cloneWithProducts(250));
   assert.equal(result.valid, true, JSON.stringify(result.errors?.slice(0, 3)));
   assert.equal(result.plan.totals.products, 251);
   assert.equal(result.plan.totals.units, 251);
@@ -497,27 +684,244 @@ test("halal is never defaulted to true", () => {
   assert.equal(result.plan.products[0].is_halal, false);
 });
 
+// --- end-to-end catalog pipeline ------------------------------------------
+
+const SOURCE_FIXTURE = [
+  {
+    id: 1,
+    handle: "salsa-verde",
+    title: "Salsa Verde",
+    vendor: "La Costena",
+    product_type: "Salsas",
+    body_html: "<p>x</p>",
+    images: [{ src: "https://cdn.example.test/a.jpg" }, { src: "https://cdn.example.test/b.jpg" }],
+    variants: [
+      {
+        id: 11,
+        sku: "REAL-SKU",
+        title: "450 g",
+        price: "12.00",
+        compare_at_price: "15.00",
+        available: true,
+        grams: 450,
+      },
+      {
+        id: 12,
+        sku: "",
+        title: "900 g",
+        price: "20.50",
+        compare_at_price: null,
+        available: false,
+        grams: 900,
+      },
+    ],
+  },
+  {
+    id: 2,
+    handle: "untyped-item",
+    title: "Untyped Item",
+    vendor: "Other",
+    product_type: "",
+    images: [{ src: "https://cdn.example.test/c.jpg" }],
+    variants: [
+      { id: 21, sku: null, title: "Default Title", price: "9.00", available: true, grams: 0 },
+    ],
+  },
+];
+
+const pipeline = () => {
+  const normalized = normalizeCatalog(structuredClone(SOURCE_FIXTURE), "2026-08-09T00:00:00.000Z");
+  const manifest = toActivationManifest(normalized);
+  const result = validateActivationManifest(manifest);
+  return { normalized, manifest, result };
+};
+
+test("source -> normalized -> canonical manifest -> validator -> plan all agree", () => {
+  const { manifest, result } = pipeline();
+  assert.equal(manifest.manifestVersion, ACTIVATION_MANIFEST_VERSION);
+  assert.equal(result.valid, true, JSON.stringify(result.errors));
+
+  // Product identity and variant identity both survive the whole pipeline.
+  const salsa = manifest.products.find((product) => product.slug === "salsa-verde");
+  assert.equal(salsa.source_product_id, "1");
+  assert.equal(salsa.source_product_url, "https://intermexuae.com/products/salsa-verde");
+  assert.equal(salsa.source_handle, "salsa-verde");
+  assert.equal(salsa.variants.length, 2, "variants must not collapse into the product");
+  assert.deepEqual(
+    salsa.variants.map((variant) => variant.source_variant_id),
+    ["11", "12"],
+  );
+  // Source SKU provenance is preserved and kept separate from the generated one.
+  assert.equal(salsa.variants[0].source_sku, "REAL-SKU");
+  assert.equal(salsa.variants[1].source_sku, null);
+  assert.match(salsa.variants[0].sku, /^CM-/);
+  assert.notEqual(salsa.variants[0].sku, salsa.variants[0].source_sku);
+  // Price mirror, availability and stock rule all survive.
+  assert.equal(salsa.variants[0].price_aed, 12);
+  assert.equal(salsa.variants[0].source_effective_price_aed, 12);
+  assert.equal(salsa.variants[0].source_availability, "AVAILABLE");
+  assert.equal(salsa.variants[0].initial_stock, 1);
+  assert.equal(salsa.variants[1].source_availability, "SOLD_OUT");
+  assert.equal(salsa.variants[1].initial_stock, 0);
+
+  // The plan keeps every variant bound to its own product.
+  const planVariants = result.plan.variants.filter((v) => v.product_slug === "salsa-verde");
+  assert.equal(planVariants.length, 2);
+  assert.equal(planVariants.filter((v) => v.is_default).length, 1);
+  assert.equal(result.plan.totals.units, 2);
+  assert.equal(result.plan.images.filter((i) => i.product_slug === "salsa-verde").length, 2);
+});
+
+test("categories are derived deterministically from observed source metadata", () => {
+  const { manifest } = pipeline();
+  assert.deepEqual(
+    manifest.categories.map((category) => category.slug).sort(),
+    ["salsas", FALLBACK_CATEGORY.slug].sort(),
+  );
+  assert.equal(manifest.products.find((p) => p.slug === "salsa-verde").category, "salsas");
+  // Exactly one documented neutral fallback when the source states no type.
+  assert.equal(
+    manifest.products.find((p) => p.slug === "untyped-item").category,
+    FALLBACK_CATEGORY.slug,
+  );
+  assert.deepEqual(categoryForProduct({ product_type: "Salsas" }), {
+    slug: "salsas",
+    name: "Salsas",
+  });
+  assert.deepEqual(
+    categoryForProduct({ product_type: "Salsas" }),
+    categoryForProduct({ product_type: "Salsas" }),
+  );
+  assert.deepEqual(categoryForProduct({}), { ...FALLBACK_CATEGORY });
+});
+
+test("the same source produces byte-identical manifest and plan", () => {
+  const first = pipeline();
+  const second = pipeline();
+  assert.equal(JSON.stringify(first.manifest), JSON.stringify(second.manifest));
+  assert.equal(JSON.stringify(first.result.plan), JSON.stringify(second.result.plan));
+});
+
+test("rows the storefront cannot sell are excluded with a stated reason", () => {
+  const normalized = normalizeCatalog(
+    [
+      { id: 3, handle: "no-image", title: "No Image", images: [], variants: [] },
+      {
+        id: 4,
+        handle: "no-price",
+        title: "No Price",
+        images: [{ src: "https://cdn.example.test/d.jpg" }],
+        variants: [{ id: 41, sku: null, title: "Default Title", price: null, available: true }],
+      },
+    ],
+    "2026-08-09T00:00:00.000Z",
+  );
+  const manifest = toActivationManifest(normalized);
+  assert.equal(manifest.products.length, 0);
+  assert.deepEqual(manifest.excluded.map((row) => row.source_handle).sort(), [
+    "no-image",
+    "no-price",
+  ]);
+  assert.ok(manifest.excluded.every((row) => row.reasons.length > 0));
+});
+
+test("the ingestion CLI parses its documented arguments", () => {
+  assert.deepEqual(parseArgs(["--out", "a.json"]), { out: "a.json", raw: null, report: false });
+  assert.deepEqual(parseArgs(["--out", "a.json", "--raw", "b.json", "--report"]), {
+    out: "a.json",
+    raw: "b.json",
+    report: true,
+  });
+  assert.throws(() => parseArgs(["--out"]), /requires a file path/);
+  assert.throws(() => parseArgs(["--nope"]), /unknown argument/);
+});
+
+test("--out writes a real manifest the validator accepts", async () => {
+  const { execFile } = await import("node:child_process");
+  const { promisify } = await import("node:util");
+  const { mkdtemp, readFile: readJson, rm } = await import("node:fs/promises");
+  const os = await import("node:os");
+  const dir = await mkdtemp(path.join(os.tmpdir(), "cm-com-3a-"));
+  const out = path.join(dir, "nested", "manifest.json");
+  try {
+    // The CLI is exercised end to end, including the live public crawl, so the
+    // documented --out semantics cannot drift from the implementation.
+    await promisify(execFile)(
+      process.execPath,
+      [path.join(root, "scripts/cm-com-3a/ingest-intermex-catalog.mjs"), "--out", out],
+      { cwd: root, timeout: 300_000 },
+    );
+    const manifest = JSON.parse(await readJson(out, "utf8"));
+    const result = validateActivationManifest(manifest);
+    assert.equal(result.valid, true, JSON.stringify(result.errors?.slice(0, 5)));
+    assert.ok(result.plan.products.length > 0);
+    assert.ok(result.plan.variants.length >= result.plan.products.length);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("the loader refuses unvalidated input and defaults to not writing", async () => {
+  assert.throws(() => planLoad({ products: [] }), /ACTIVATION_MANIFEST_INVALID/);
+  const { plan, sql } = planLoad(structuredClone(VALID_MANIFEST));
+  assert.equal(plan.dryRun, true);
+  assert.match(sql, /^begin;/m);
+  assert.match(sql, /commit;\s*$/);
+  assert.match(sql, /on conflict \(slug\) do update/);
+  assert.match(sql, /insert into public\.product_variants/);
+  assert.match(sql, /insert into public\.inventory /);
+  assert.ok(!sql.includes("seller"), "the loader must not touch marketplace tables");
+
+  const source = stripJsComments(await read("scripts/cm-com-3a/load-activation-plan.mjs"));
+  // Writing requires BOTH an explicit flag and an operator-supplied database
+  // URL; no connection string or credential is defaulted or embedded.
+  assert.match(source, /options\.execute/);
+  assert.match(source, /if \(!options\.execute\)/);
+  assert.equal(DATABASE_URL_ENV, "CORNERMEX_ACTIVATION_DATABASE_URL");
+  assert.ok(!/postgres(ql)?:\/\//.test(source), "no connection string may be embedded");
+  assert.ok(!source.includes("supabase.co"), "no production host may be embedded");
+  assert.deepEqual(parseLoaderArgs(["m.json"]), { manifest: "m.json", sql: null, execute: false });
+  assert.throws(() => parseLoaderArgs([]), /manifest path is required/);
+});
+
+test("the generated SQL escapes source text rather than interpolating it", () => {
+  const manifest = structuredClone(VALID_MANIFEST);
+  manifest.products[0].names.en = "O'Brien's \"Salsa\"";
+  const { sql } = planLoad(manifest);
+  assert.match(sql, /'O''Brien''s "Salsa"'/);
+});
+
 // --- activation sequence ---------------------------------------------------
 
-test("the activation runbook enables checkout last and rolls it back first", async () => {
+test("the activation runbook proves the catalog first and enables checkout last", async () => {
   const runbook = await read("docs/program/CM-COM-3A_ACTIVATION_RUNBOOK.md");
-  const enable = runbook.indexOf("CORNERMEX_CHECKOUT_ENABLED=true");
+  const crawl = runbook.search(/Fresh Intermex public crawl/i);
+  const validate = runbook.search(/Validate the canonical manifest/i);
+  const plan = runbook.search(/Generate the deterministic activation plan/i);
   const migration = runbook.search(/apply the exact reviewed COD/i);
-  const manifest = runbook.search(/Validate the manifest and produce the dry-run plan/i);
+  const load = runbook.search(/Execute the exact reviewed loader/i);
   const deploy = runbook.search(/CHECKOUT_ENABLED` still false/i);
+  const enable = runbook.indexOf("CORNERMEX_CHECKOUT_ENABLED=true");
   assert.ok(
-    migration > 0 && manifest > 0 && deploy > 0 && enable > 0,
+    [crawl, validate, plan, migration, load, deploy, enable].every((index) => index > 0),
     "runbook steps must be present",
   );
+  // Catalog validity is proved while the database is still untouched.
+  assert.ok(crawl < validate, "the crawl must precede validation");
+  assert.ok(validate < plan, "validation must precede plan generation");
+  assert.ok(plan < migration, "the catalog plan must be proved before the migration");
+  assert.ok(migration < load, "the migration must precede the catalog load");
   assert.ok(
-    migration < enable && manifest < enable && deploy < enable,
-    "checkout must be enabled LAST",
+    load < deploy && deploy < enable,
+    "checkout must be enabled LAST, after the catalog is loaded and deployed",
   );
   assert.match(
     runbook,
     /CHECKOUT_ENABLED=false[\s\S]{0,160}first/i,
     "rollback must disable checkout first",
   );
+  // The non-blocking confirmation-gate debt is recorded, not silently dropped.
+  assert.match(runbook, /CM-COM-3A-P3-CONFIRMATION-GATE/);
 });
 
 test("the SQL contract test refuses to run against a remote database", async () => {
