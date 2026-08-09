@@ -47,6 +47,7 @@ npm run test:cm-com-1c-r1
 npm run validate:cm-com-1c-r2
 npm run test:cm-com-1c-r2
 npm run test:cm-com-2a
+npm run test:cm-com-2b0
 npm run typecheck
 npm run build
 npm run validate:ssr-async-context

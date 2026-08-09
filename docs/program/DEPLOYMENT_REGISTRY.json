@@ -5,7 +5,7 @@
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
   "outageVerified": false,
-  "currentSourceCommit": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
+  "currentSourceCommit": "acb1723095471786e904825042c1b9745f120504",
   "failedSourceCommits": [
     "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
     "bb9386f72197fb20912c328ac912c27894f3db02"
@@ -327,10 +327,7 @@
       "founderExecuted": true,
       "environment": "production",
       "service": "corner-mex-uae",
-      "variableNames": [
-        "VITE_SUPABASE_URL",
-        "VITE_SUPABASE_PUBLISHABLE_KEY"
-      ],
+      "variableNames": ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"],
       "deploymentCreated": true,
       "deploymentId": "18dc25e0-1244-44ff-9e66-3a5cc1f02208",
       "restartPerformed": false,
@@ -350,5 +347,6 @@
     "stagingReadinessTargetDeploymentId": "51c8aebb-c835-4fc9-a7ea-3cd87950e756",
     "stagingReadinessMechanism": "railway_deployment_rollback_restores_custom_variables",
     "stagingReadinessRollbackPerformed": false
-  }
+  },
+  "currentSourceCommitMeaning": "REPOSITORY current source (most recently reconciled main SHA), NOT deployed source. Deployed source is tracked per environment in governance.contexts[].currentSourceSha, which the validator separately requires to match a SUCCESS + RUNNING deployment. These two are expected to differ whenever main is ahead of what is deployed, which is the case now."
 }

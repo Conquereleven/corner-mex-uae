@@ -78,11 +78,31 @@ Keep the commerce content layer solid and highly legible:
 
 ## CM-COM-2 — Domain and Trust Layer
 
+Split into a completed trust half and a blocked domain half.
+
+### CM-COM-2A — Trust Architecture · COMPLETE / MERGED
+
+- company, delivery, returns, privacy, terms and contact surfaces — delivered;
+- UAE-focused trust signals and emirate-based delivery coverage — delivered;
+- merged as PR #23, merge commit `acb1723095471786e904825042c1b9745f120504`, reviewed head
+  `f0dfbb71a8978583c78aed0181078aa25b36f8f7`, Founder visual acceptance approved
+  (desktop + mobile, no observations);
+- merged to main only — **not deployed**; production deployment remains separately gated.
+
+### CM-COM-2B0 — Domain Readiness · CURRENT
+
+- domain approval contract, URL authority inventory and CM-COM-2B1 cutover runbook;
+- canonical program-document reconciliation;
+- **no** domain, DNS, Railway or deployment action. See `CM-COM-2B0_DOMAIN_READINESS.md`.
+
+### CM-COM-2B1 — Domain Cutover · BLOCKED
+
+Blocked until an approved, owned domain exists **and** the Founder authorizes it.
+`cornermex.ae` is **not purchased and not operational**, so no domain is currently approved.
+
 - connect the approved CornerMex domain;
 - configure DNS and TLS under explicit authorization;
-- add company, delivery, returns, privacy and contact surfaces;
-- add UAE-focused trust signals and delivery coverage;
-- preserve the Railway domain as a rollback route during cutover.
+- preserve the Railway origin as the rollback route during cutover.
 
 ## CM-COM-3 — Controlled Order Intake
 
@@ -109,4 +129,17 @@ Keep the commerce content layer solid and highly legible:
 
 `Desert Glass + catalog visibility → domain and trust → controlled order intake → payments and fulfilment → B2B growth`
 
-The next implementation sprint is `CM-COM-1`. Its purpose is to make CornerMex look and behave like a credible UAE storefront while keeping production commerce execution safely off until separately authorized.
+This priority order is canonical. `CM-COM-3` must **not** move ahead of the domain and trust
+layer without explicit Founder authorization.
+
+### Current position
+
+| Sprint                               | Status                                                                            |
+| ------------------------------------ | --------------------------------------------------------------------------------- |
+| `CM-COM-1` / `CM-COM-1A–1C`          | delivered (storefront, Desert Glass, dual B2C/B2B commerce)                       |
+| `CM-COM-2A` — Trust Architecture     | **complete / merged** (PR #23)                                                    |
+| `CM-COM-2B0` — Domain Readiness      | **current sprint**                                                                |
+| `CM-COM-2B1` — Domain Cutover        | **blocked** — no approved or owned domain exists                                  |
+| `CM-COM-3` — Controlled Order Intake | follows completion of CM-COM-2 unless the Founder explicitly authorizes a reorder |
+
+Production commerce execution remains safely off until separately authorized.
