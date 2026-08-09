@@ -58,25 +58,35 @@ per `FD-CM-PUBLIC-CONTACT-001`.
 - The CM-COM-2A domain test no longer exempts `legal-docs.ts`; that exemption had masked a
   publicly rendered claim.
 
-## Known debt, deliberately not changed in R2 (Category D — disabled paths)
+## External email is fail-closed (CM-COM-2A-R3)
 
-Two inherited server paths still reference the unowned domain. Both are **non-rendered** and
-send mail only when `LOVABLE_API_KEY` **and** `RESEND_API_KEY` are present, so neither can
-reach a customer today:
+R2 left the two inherited senders gated only by provider credentials and exempted them from
+the domain-truth scan. Independent review correctly rejected that: credential absence is
+runtime state, not an authorization contract — configuring provider keys could have made
+sending possible without any code change or commercial email decision.
 
-- `src/lib/shipments.functions.ts` — an unowned-domain fallback origin used to build links in
-  order emails.
-- `src/lib/b2b-leads.functions.ts` — an unowned-domain mailto inside the lead-acknowledgement
-  email body.
+R3 closes this:
 
-They were left unchanged on purpose: editing them pulls their pre-existing third-party
-email-provider address and API-key literals into the A3 privacy guard's changed-file scope,
-and R2 is not authorized to modify email-provider configuration. The CM-COM-2A suite exempts
-exactly these two files and separately asserts that their provider-key gate still exists, so
-the exemption cannot silently become untrue.
+- `src/lib/external-email.server.ts` is the single canonical gate and transport.
+  `isExternalEmailEnabled()` is **fail-closed**: only the exact literal `"true"` enables
+  external email. Unset, `""`, `"false"`, `"0"`, `"1"`, `"TRUE"`, `"True"`, `"yes"`, `"on"`
+  and arbitrary text all leave it disabled. No truthiness, no default-on.
+- **Authorization and configuration are separate.** The capability flag is checked _before_
+  provider configuration and before any outbound request, so provider keys alone can never
+  authorize a send. Email activation is not coupled to checkout.
+- Both `shipments.functions.ts` and `b2b-leads.functions.ts` now delegate to that gate.
+  Neither builds provider headers, reads provider keys, or calls the provider directly.
+- The unowned-domain fallback origin and the unowned-domain mailto are gone; the shipments
+  path falls back to the verified application origin and the B2B email uses `PUBLIC_CONTACT`.
+- Unauthorized commercial claims were removed from the B2B acknowledgement email: the
+  one-business-day response promise and the delivery-SLA promise. The email now confirms
+  receipt only and states it is not an order, quote or commitment. No replacement SLA was
+  invented.
+- The Category D exemption is **removed**. No application source is exempt from the
+  cornermex.ae domain-truth scan.
 
-**Follow-up:** correct both when email delivery is next worked on, together with the
-provider FROM-address handling.
+The environment flag was **not** set and no provider credential was configured, so external
+email remains disabled in the current state.
 
 ## Unknown Founder inputs (intentionally NOT displayed)
 
@@ -97,7 +107,12 @@ CornerOps involvement.
 
 ## Test evidence
 
-`npm run test:cm-com-2a` — 12/12 static contract tests (routes exist, redirect, footer/sitemap
-links, robots, centralized identity, banned fabricated-promise patterns, metadata presence, no
-unverified domain, checkout disabled default, central contact registry, contextual TrustBar).
-Full gate results recorded in the PR description.
+`npm run test:cm-com-2a` — 41 tests covering: Founder-attested identity and undefined
+unattested fields; bank beneficiary spelling; delivery non-operational disclosure, absence of
+absolute guarantees and suppressed COD thresholds; sequential heading outline; `/shipping`
+redirect; manual-only contact; unique metadata titles; robots/sitemap/domain truth with **no**
+application-source exemption; temporary public contact authority; and the R3 external-email
+fail-closed gate (exact-`"true"` semantics, provider keys are not authorization, no outbound
+request while disabled, both senders routed through the canonical gate, removed SLA/response
+promises). Wired into CI and merged-tree validation. Full gate results recorded in the PR
+description.

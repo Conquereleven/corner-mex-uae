@@ -11,6 +11,12 @@ import {
 } from "../../src/lib/business-identity.ts";
 import { isCheckoutExecutionEnabled } from "../../src/lib/checkout-execution.server.ts";
 import {
+  assertExternalEmailEnabled,
+  isExternalEmailEnabled,
+  isExternalEmailProviderConfigured,
+  sendExternalEmail,
+} from "../../src/lib/external-email.server.ts";
+import {
   PRIMARY_PUBLIC_EMAIL,
   PUBLIC_CONTACT,
   PUBLIC_CONTACT_DECISION_ID,
@@ -251,39 +257,12 @@ test("robots.txt references no retired origin and keeps private surfaces disallo
   }
 });
 
-// Genuinely disabled, non-rendered inherited server paths. Both send mail only
-// when LOVABLE_API_KEY and RESEND_API_KEY are present, so neither can reach a
-// customer today. They are NOT customer-visible surfaces. legal-docs.ts is
-// deliberately absent from this list: it renders publicly at /legal, and
-// exempting it previously masked a live customer-visible claim.
-const DISABLED_EMAIL_PATHS = ["shipments.functions.ts", "b2b-leads.functions.ts"];
-const isDisabledEmailPath = (file) => DISABLED_EMAIL_PATHS.some((p) => file.endsWith(p));
-
-test("the disabled-email exemption is justified by a real key gate", async () => {
-  for (const name of DISABLED_EMAIL_PATHS) {
-    const text = await read(`src/lib/${name}`);
-    assert.match(
-      text,
-      /process\.env\.LOVABLE_API_KEY/,
-      `${name} must read the provider key to justify its exemption`,
-    );
-    assert.match(text, /process\.env\.RESEND_API_KEY/, `${name} must read the provider key`);
-    // Either key missing must short-circuit before any send, whatever the
-    // local variable names are.
-    assert.match(
-      text,
-      /if \(!\w+ \|\| !\w+\)\s*\{[\s\S]{0,220}?return/,
-      `${name} must skip sending when provider keys are absent`,
-    );
-  }
-});
-
 test("no unverified custom domain is hardcoded as canonical", async () => {
   // cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).
-  // Only genuinely disabled, non-rendered email paths are exempt.
+  // NO application source is exempt: the former shipments/b2b-leads exemption
+  // was removed in R3 once both senders were truthfully remediated.
   const files = await sourceFiles("src");
   for (const file of files) {
-    if (isDisabledEmailPath(file)) continue;
     const text = await readFile(file, "utf8");
     assert.ok(
       !/https:\/\/(?:www\.)?cornermex\.ae/.test(text),
@@ -373,6 +352,9 @@ test("CM-COM-2A suite is wired into CI and merged-tree validation", async () => 
 
 // Composed rather than written as a literal so this file stays clean under the
 // A3 privacy guard, which forbids raw address literals in changed sources.
+// Composed so this file holds no raw address literal (A3 privacy guard).
+const AUDIT_RECIPIENT = ["recipient", ["example", "invalid"].join(".")].join("@");
+
 const EXPECTED_PUBLIC_EMAIL = ["cornermexuae", ["gmail", "com"].join(".")].join("@");
 const UNOWNED_MAIL_DOMAIN = ["cornermex", "ae"].join(".");
 
@@ -392,12 +374,10 @@ test("no PUBLIC_CONTACT customer channel resolves to the unowned domain", () => 
   }
 });
 
-test("no customer-visible source composes or hardcodes an unowned-domain mailbox", async () => {
+test("no application source composes or hardcodes an unowned-domain mailbox", async () => {
+  // No exemptions. Every application source, rendered or not, is in scope.
   const files = await sourceFiles("src");
   for (const file of files) {
-    // Disabled, key-gated email paths are exempt and asserted separately above;
-    // every rendered surface (routes, components, legal-docs) is in scope.
-    if (isDisabledEmailPath(file)) continue;
     const text = await readFile(file, "utf8");
     const relative = path.relative(root, file);
     assert.ok(
@@ -472,4 +452,154 @@ test("CM-COM-2B domain cutover remains on hold in documentation", async () => {
   const commercial = await read("docs/commercial/cm-com-2a-trust-architecture.md");
   assert.match(commercial, /CM-COM-2B/);
   assert.match(commercial, /on hold/i);
+});
+
+// ---------------------------------------------------------------------------
+// CM-COM-2A-R3: external email is fail-closed on an explicit capability flag
+// ---------------------------------------------------------------------------
+
+test("external email capability is fail-closed — only the exact string true enables it", () => {
+  for (const value of [
+    undefined,
+    "",
+    "false",
+    "0",
+    "1",
+    "TRUE",
+    "True",
+    "yes",
+    "on",
+    " true",
+    "true ",
+    "truthy",
+    "enabled",
+  ]) {
+    assert.equal(
+      isExternalEmailEnabled(value),
+      false,
+      `external email must stay disabled for ${JSON.stringify(value)}`,
+    );
+  }
+  assert.equal(isExternalEmailEnabled("true"), true);
+});
+
+test("assertExternalEmailEnabled throws unless the capability is exactly true", () => {
+  for (const value of [undefined, "", "false", "1", "TRUE", "yes"]) {
+    assert.throws(() => assertExternalEmailEnabled(value), /EXTERNAL_EMAIL_DISABLED/);
+  }
+  assert.doesNotThrow(() => assertExternalEmailEnabled("true"));
+});
+
+test("provider configuration is not authorization", () => {
+  // Keys present but capability off => still disabled.
+  assert.equal(
+    isExternalEmailProviderConfigured({ LOVABLE_API_KEY: "x", RESEND_API_KEY: "y" }),
+    true,
+  );
+  assert.equal(isExternalEmailEnabled(undefined), false);
+  // Capability on but keys absent => configuration incomplete.
+  assert.equal(isExternalEmailProviderConfigured({}), false);
+  assert.equal(isExternalEmailProviderConfigured({ LOVABLE_API_KEY: "x" }), false);
+  assert.equal(isExternalEmailProviderConfigured({ RESEND_API_KEY: "y" }), false);
+});
+
+test("capability off blocks the outbound request even with provider keys present", async () => {
+  const originalFetch = globalThis.fetch;
+  let called = 0;
+  globalThis.fetch = async () => {
+    called += 1;
+    throw new Error("network must not be reached while external email is disabled");
+  };
+  try {
+    for (const flag of [undefined, "false", "1", "TRUE", "yes"]) {
+      const result = await sendExternalEmail({
+        to: AUDIT_RECIPIENT,
+        subject: "audit",
+        html: "<p>audit</p>",
+        environment: {
+          CORNERMEX_EXTERNAL_EMAIL_ENABLED: flag,
+          LOVABLE_API_KEY: "present",
+          RESEND_API_KEY: "present",
+        },
+      });
+      assert.equal(result.ok, false);
+      assert.equal(result.skipped, true);
+      assert.equal(result.reason, "capability_disabled");
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.equal(called, 0, "no outbound request may be attempted while disabled");
+});
+
+test("capability on without provider configuration still sends nothing", async () => {
+  const originalFetch = globalThis.fetch;
+  let called = 0;
+  globalThis.fetch = async () => {
+    called += 1;
+    throw new Error("network must not be reached without provider configuration");
+  };
+  try {
+    const result = await sendExternalEmail({
+      to: AUDIT_RECIPIENT,
+      subject: "audit",
+      html: "<p>audit</p>",
+      environment: { CORNERMEX_EXTERNAL_EMAIL_ENABLED: "true" },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.skipped, true);
+    assert.equal(result.reason, "provider_not_configured");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.equal(called, 0);
+});
+
+test("both inherited senders route through the canonical capability gate", async () => {
+  for (const name of ["shipments.functions.ts", "b2b-leads.functions.ts"]) {
+    const text = await read(`src/lib/${name}`);
+    assert.match(
+      text,
+      /from "@\/lib\/external-email\.server"/,
+      `${name} must use the canonical external email gate`,
+    );
+    // No sender may talk to the provider directly any more.
+    assert.doesNotMatch(text, /connector-gateway/, `${name} must not call the provider directly`);
+    assert.doesNotMatch(text, /X-Connection-Api-Key/, `${name} must not build provider headers`);
+    assert.doesNotMatch(
+      text,
+      /process\.env\.RESEND_API_KEY/,
+      `${name} must not read provider keys directly`,
+    );
+  }
+  // The B2B sender additionally short-circuits before composing anything.
+  const b2b = await read("src/lib/b2b-leads.functions.ts");
+  assert.match(b2b, /if \(!isExternalEmailEnabled\(\)\)/);
+});
+
+test("the inherited email templates make no unauthorized commercial promise", async () => {
+  const b2b = await read("src/lib/b2b-leads.functions.ts");
+  for (const pattern of [
+    /within one business day/i,
+    /business day/i,
+    /delivery SLAs?/i,
+    /guaranteed/i,
+  ]) {
+    assert.doesNotMatch(b2b, pattern, `unauthorized promise in b2b email: ${pattern}`);
+  }
+  assert.match(b2b, /not an order, a quote, or a commitment/i);
+  assert.match(b2b, /PUBLIC_CONTACT\.b2b/, "email contact must come from the registry");
+});
+
+test("no application source falls back to an unowned origin for emails", async () => {
+  const shipments = await read("src/lib/shipments.functions.ts");
+  assert.doesNotMatch(shipments, /cornermex\.ae/);
+  assert.match(shipments, /siteOrigin\(\)/, "must fall back to the verified application origin");
+});
+
+test("the external email gate is not coupled to checkout or provider presence", async () => {
+  const gate = await read("src/lib/external-email.server.ts");
+  assert.match(gate, /value === "true"/, "gate must compare the exact literal");
+  assert.doesNotMatch(gate, /CORNERMEX_CHECKOUT_ENABLED/, "email must not depend on checkout");
+  assert.doesNotMatch(gate, /Boolean\(value\)/, "gate must not use truthiness");
 });
