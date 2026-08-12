@@ -36,14 +36,16 @@ of consistency for the ordered variant.
 2. **Guarded reconciliation artifact (NOT executed here)** —
    `scripts/cm-com-3a/reconcile-inventory-consistency.sql` brings the one
    already-committed order's `inventory.quantity_on_hand` back into agreement
-   with the already-applied stock decrement. It is idempotent and fail-closed,
-   is not wired into any npm script or CI step, and must only be run under this
-   runbook.
+   with the already-applied stock decrement. It is bounded to the known
+   incident, idempotent and fail-closed, and is run only under this runbook
+   (its behaviour is otherwise exercised only by the disposable-PostgreSQL
+   regression tests that execute the file).
 
 3. **Regression proof** — `scripts/cm-com-3a/test-cod-order-sql.mjs`
-   (`npm run test:cm-com-3a:sql`) executes the corrected function against a
-   disposable PostgreSQL and asserts the production-defect scenario plus the A–H
-   failure/rollback matrix.
+   (`npm run test:cm-com-3a:sql`) executes, against a disposable PostgreSQL, the
+   corrected function (production-defect scenario plus the A–H failure/rollback
+   matrix) **and the actual reconciliation artifact from disk** (scenarios
+   R1–R12 below).
 
 ## Correctness contract added
 
@@ -93,17 +95,44 @@ for production at that time.
 
 ## Reconciliation preconditions and behaviour
 
-The reconciliation targets variants whose `inventory.quantity_on_hand` disagrees
-with `product_variants.stock`, and per affected variant requires the exact
-incident shape (`sale_units = 1`, `stock = 0`, `quantity_on_hand = 1`,
-`quantity_reserved = 0`, and `quantity_on_hand - stock = sale_units`). It then
-changes only `quantity_on_hand` (`1 -> 0`) and `updated_at`. It creates no
-movement and does not touch orders, payments or stock. Any deviation aborts the
-whole transaction (fail-closed); a re-run after reconciliation subtracts nothing
-(idempotent). This was verified on a disposable database by reproducing the
-incident with the original function, running the artifact (`quantity_on_hand`
-`1 -> 0`), re-running it (no change), and confirming an unexpected drift shape
-aborts without any write.
+The reconciliation is **bound to the single known incident**, not a
+general-purpose drift auto-repair tool. It:
+
+- resolves the target from the stable business identifier
+  `order_number = 'CM-20260810-51E1AC74'` (not customer PII) via
+  `orders → order_items → inventory_movements`; the affected **variant is
+  derived, never hardcoded**;
+- requires **exactly one** order with that number, in the expected COD /
+  `pending` shape (order and payment state are verified, never mutated);
+- requires **exactly one** `order_items` row for that order, with `qty = 1`;
+- requires **exactly one** `inventory_movements` row for that exact order +
+  variant (`reference_type='order'`, `reference_id=<order>`,
+  `movement_type='sale'`, `quantity_delta=-1`, `reason='cod_order'`) — a single
+  row, not an aggregate that merely sums to `-1`;
+- **locks** the target `product_variants` and `inventory` rows `FOR UPDATE`
+  before the final validation and mutation;
+- requires the target to be the **only** stock/`quantity_on_hand` drift in the
+  catalog (global drift `= 1` in the pre-repair state); any unrelated drift
+  **aborts** and repairs nothing;
+- changes only `inventory.quantity_on_hand` (`1 → 0`) and `updated_at`, guarded
+  by the expected pre-state, and requires **exactly one row updated**
+  (`GET DIAGNOSTICS … = ROW_COUNT`, `ROW_COUNT = 1`) or aborts; it creates no
+  movement and does not touch orders, order items, payments or
+  `product_variants.stock`;
+- is an **idempotent no-op** on re-run: the already-reconciled state
+  (`quantity_on_hand = 0`, global drift `= 0`) reports `ALREADY_RECONCILED` with
+  zero writes;
+- **aborts fail-closed** on any deviation (wrong cardinality, qty, stock,
+  reserved, on-hand, movement shape, or extra drift).
+
+The **actual artifact file** is executed by the automated disposable-PostgreSQL
+regression suite (`npm run test:cm-com-3a:sql`, scenarios R1–R12): exact incident
+reconciled (`quantity_on_hand 1 → 0`), idempotent rerun no-op, an unrelated
+second matching drift aborts and repairs nothing, wrong/missing movement
+cardinality aborts, wrong item cardinality/qty aborts, unexpected
+stock/on-hand/reserved aborts, the `ROW_COUNT = 1` invariant is present and
+enforced, and the write-boundary check confirms only `quantity_on_hand` (+
+`updated_at`) changes on success.
 
 ## Explicitly out of scope
 

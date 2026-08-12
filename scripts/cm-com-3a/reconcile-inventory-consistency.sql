@@ -3,103 +3,185 @@
 -- ============================================================================
 -- DO NOT EXECUTE THIS AGAINST PRODUCTION FROM THIS PR.
 -- It is prepared for a later, separately Founder-authorized hotfix rollout and
--- is intentionally NOT wired into any npm script, migration chain or CI step.
--- Run it only under the CM-COM-3A.1 hotfix runbook, AFTER the corrected
--- place_cod_order_v1 function migration has been applied and checkout is OFF.
+-- is intentionally NOT wired into any npm script, migration chain or CI step
+-- (other than the disposable-PostgreSQL regression tests that execute this exact
+-- file to prove its behaviour). Run it against production only under the
+-- CM-COM-3A.1 hotfix runbook, AFTER the corrected place_cod_order_v1 function
+-- migration has been applied and checkout is OFF.
 -- ============================================================================
 --
 -- Purpose
 --   The original place_cod_order_v1 (applied to production) decremented
 --   product_variants.stock and recorded a `sale` inventory_movement, but did
 --   NOT decrement inventory.quantity_on_hand. The first Founder COD acceptance
---   order therefore left exactly one variant with:
+--   order left exactly one variant with:
 --       product_variants.stock       = 0   (correct, decremented)
 --       inventory.quantity_on_hand   = 1   (incorrect, not decremented)
 --       one 'sale' movement of -1        (correct)
 --   This script brings inventory.quantity_on_hand back into agreement with the
---   already-applied stock decrement, for that committed sale only.
+--   already-applied stock decrement, for THAT ONE committed sale only.
+--
+-- Bounded to the known incident (NOT a general drift auto-repair tool)
+--   The target is resolved from the stable business identifier
+--   order_number = 'CM-20260810-51E1AC74' (not customer PII) via
+--   orders -> order_items -> inventory_movements. No variant UUID is hardcoded.
+--   The affected variant is derived from that exact order's single line item.
 --
 -- Safety properties
---   * Identifies the affected variant(s) from committed order/movement facts,
---     not from any hardcoded variant UUID.
---   * Verifies, per affected variant, the exact expected incident shape and
---     ABORTS the whole transaction if anything differs (fail-closed).
---   * Changes ONLY inventory.quantity_on_hand (and inventory.updated_at).
+--   * Requires exactly one order with the known order_number, in the expected
+--     COD/pending shape (order and payment state are never mutated).
+--   * Requires exactly one order_items row for that order, with qty = 1.
+--   * Requires exactly ONE inventory_movements row for that exact order+variant
+--     (reference_type='order', reference_id=<order>, movement_type='sale',
+--     quantity_delta=-1, reason='cod_order') — a single row, not an aggregate.
+--   * Locks the target product_variants and inventory rows FOR UPDATE before the
+--     final validation and mutation.
+--   * Requires the target variant to be the ONLY stock/quantity_on_hand drift in
+--     the whole catalog (global drift = 1 in the pre-repair state); any other
+--     drift aborts the entire transaction.
+--   * Changes ONLY inventory.quantity_on_hand (1 -> 0) and inventory.updated_at,
+--     guarded by the expected pre-state, and requires exactly one row updated
+--     (GET DIAGNOSTICS ROW_COUNT = 1) or aborts.
 --   * Creates no inventory_movement, and does not touch orders, order_items,
 --     payments or product_variants.stock.
---   * Idempotent: once quantity_on_hand mirrors stock again, the affected set is
---     empty and a re-run subtracts nothing.
+--   * Idempotent: a re-run after success detects the already-reconciled state
+--     (quantity_on_hand = 0, global drift = 0) and is a zero-write no-op.
+--   * Any unexpected state (wrong cardinality, qty, stock, reserved, on-hand,
+--     movement shape, or extra drift) aborts fail-closed with no write.
 
 begin;
 
 do $$
 declare
-  v_row record;
-  v_reconciled integer := 0;
+  v_order_number constant text := 'CM-20260810-51E1AC74';
+  v_order_id uuid;
+  v_payment_method text;
+  v_payment_status text;
+  v_variant_id uuid;
+  v_qty integer;
+  v_stock integer;
+  v_qoh integer;
+  v_reserved integer;
+  v_count integer;
+  v_global_drift integer;
+  v_rowcount integer;
 begin
-  -- Affected set: variants whose inventory quantity_on_hand disagrees with the
-  -- already-applied product_variants.stock. On a healthy CM-COM-3A catalog these
-  -- two mirror each other, so a difference is exactly the un-applied sale.
-  for v_row in
-    select
-      v.id                                   as variant_id,
-      v.stock                                as stock,
-      i.quantity_on_hand                     as quantity_on_hand,
-      i.quantity_reserved                    as quantity_reserved,
-      coalesce(m.sale_units, 0)              as sale_units
-    from public.product_variants v
-    join public.inventory i on i.variant_id = v.id
-    left join (
-      select variant_id, -sum(quantity_delta) as sale_units
-      from public.inventory_movements
-      where movement_type = 'sale'
-        and reference_type = 'order'
-        and reason = 'cod_order'
-      group by variant_id
-    ) m on m.variant_id = v.id
-    where i.quantity_on_hand <> v.stock
-    order by v.id
-  loop
-    -- Fail-closed shape verification for the first Founder COD acceptance order
-    -- (exactly one unit sold, stock already 0, on-hand still 1, nothing
-    -- reserved). Any deviation means an unexpected state this reviewed artifact
-    -- is not authorized to repair, so abort and change nothing.
-    if v_row.sale_units <> 1 then
-      raise exception 'CM_COM_3A1_RECONCILE_ABORT_UNEXPECTED_SALE_UNITS: variant=% sale_units=%',
-        v_row.variant_id, v_row.sale_units;
-    end if;
-    if v_row.stock <> 0 then
-      raise exception 'CM_COM_3A1_RECONCILE_ABORT_UNEXPECTED_STOCK: variant=% stock=%',
-        v_row.variant_id, v_row.stock;
-    end if;
-    if v_row.quantity_on_hand <> 1 then
-      raise exception 'CM_COM_3A1_RECONCILE_ABORT_UNEXPECTED_QOH: variant=% quantity_on_hand=%',
-        v_row.variant_id, v_row.quantity_on_hand;
-    end if;
-    if v_row.quantity_reserved <> 0 then
-      raise exception 'CM_COM_3A1_RECONCILE_ABORT_UNEXPECTED_RESERVED: variant=% quantity_reserved=%',
-        v_row.variant_id, v_row.quantity_reserved;
-    end if;
-    -- The drift must be explained exactly by the committed-but-unapplied sale.
-    if (v_row.quantity_on_hand - v_row.stock) <> v_row.sale_units then
-      raise exception 'CM_COM_3A1_RECONCILE_ABORT_DRIFT_MISMATCH: variant=% drift=% sale_units=%',
-        v_row.variant_id, v_row.quantity_on_hand - v_row.stock, v_row.sale_units;
+  -- A. Exactly one order with the known order_number.
+  select count(*) into v_count from public.orders where order_number = v_order_number;
+  if v_count = 0 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_ORDER_NOT_FOUND: order_number=%', v_order_number;
+  end if;
+  if v_count > 1 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_ORDER_CARDINALITY: order_number=% count=%', v_order_number, v_count;
+  end if;
+  select id, payment_method, payment_status
+    into v_order_id, v_payment_method, v_payment_status
+    from public.orders where order_number = v_order_number;
+
+  -- B. Expected acceptance shape. Order/payment state is verified, never mutated.
+  if v_payment_method is distinct from 'cod' or v_payment_status is distinct from 'pending' then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_PAYMENT_SHAPE: order=% method=% status=%',
+      v_order_id, v_payment_method, v_payment_status;
+  end if;
+
+  -- C. Exactly one order_items row for that order. D. Derive the variant, qty = 1.
+  select count(*) into v_count from public.order_items where order_id = v_order_id;
+  if v_count <> 1 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_ITEM_CARDINALITY: order=% count=%', v_order_id, v_count;
+  end if;
+  select variant_id, qty into v_variant_id, v_qty
+    from public.order_items where order_id = v_order_id;
+  if v_qty <> 1 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_ITEM_QTY: order=% variant=% qty=%',
+      v_order_id, v_variant_id, v_qty;
+  end if;
+
+  -- F. Exactly ONE sale movement row for that exact order + variant, delta -1.
+  -- A single row is required, not merely an aggregate that sums to -1.
+  select count(*) into v_count
+    from public.inventory_movements
+    where reference_type = 'order'
+      and reference_id = v_order_id
+      and variant_id = v_variant_id
+      and movement_type = 'sale';
+  if v_count <> 1 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_MOVEMENT_CARDINALITY: order=% variant=% sale_rows=%',
+      v_order_id, v_variant_id, v_count;
+  end if;
+  select count(*) into v_count
+    from public.inventory_movements
+    where reference_type = 'order'
+      and reference_id = v_order_id
+      and variant_id = v_variant_id
+      and movement_type = 'sale'
+      and quantity_delta = -1
+      and reason = 'cod_order';
+  if v_count <> 1 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_MOVEMENT_SHAPE: order=% variant=%', v_order_id, v_variant_id;
+  end if;
+
+  -- Lock the exact target rows before final validation and mutation. Variant
+  -- first, then inventory, matching the order function's deterministic order.
+  perform 1 from public.product_variants where id = v_variant_id for update;
+
+  select quantity_on_hand, quantity_reserved into v_qoh, v_reserved
+    from public.inventory where variant_id = v_variant_id for update;
+  if not found then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_INVENTORY_NOT_FOUND: variant=%', v_variant_id;
+  end if;
+  select stock into v_stock from public.product_variants where id = v_variant_id;
+
+  -- G. Stock must already be 0 (the decrement that did commit).
+  if v_stock <> 0 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_UNEXPECTED_STOCK: variant=% stock=%', v_variant_id, v_stock;
+  end if;
+  -- H. Nothing reserved.
+  if v_reserved <> 0 then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_UNEXPECTED_RESERVED: variant=% quantity_reserved=%',
+      v_variant_id, v_reserved;
+  end if;
+
+  -- Global drift across the whole catalog (product_variants joined inventory).
+  select count(*) into v_global_drift
+    from public.product_variants pv
+    join public.inventory iv on iv.variant_id = pv.id
+    where pv.stock <> iv.quantity_on_hand;
+
+  if v_qoh = 1 then
+    -- Pre-repair state. The target must be the ONLY drift in the catalog. Since
+    -- the target itself (stock 0, on-hand 1) is a drift, global_drift = 1 means
+    -- it is the sole drift; any other drift makes this >= 2 and aborts.
+    if v_global_drift <> 1 then
+      raise exception 'CM_COM_3A1_RECONCILE_ABORT_GLOBAL_DRIFT: expected exactly 1 drift (the target), found %', v_global_drift;
     end if;
 
-    -- Apply ONLY the missing quantity_on_hand decrement (1 -> 0), mirroring the
-    -- stock already committed. The optimistic guard ensures we never subtract
-    -- twice if the row moved between the read and the write.
+    -- Guarded, single-row update: only the expected pre-state matches.
     update public.inventory
-    set quantity_on_hand = v_row.stock,          -- 1 -> 0, i.e. quantity_on_hand - sale_units
-        updated_at = now()
-    where variant_id = v_row.variant_id
-      and quantity_on_hand = v_row.quantity_on_hand
-      and quantity_reserved = v_row.quantity_reserved;
+      set quantity_on_hand = 0,
+          updated_at = now()
+      where variant_id = v_variant_id
+        and quantity_on_hand = 1
+        and quantity_reserved = 0;
+    get diagnostics v_rowcount = row_count;
+    if v_rowcount <> 1 then
+      raise exception 'CM_COM_3A1_RECONCILE_ABORT_ROWCOUNT: expected exactly 1 updated row, updated %', v_rowcount;
+    end if;
 
-    v_reconciled := v_reconciled + 1;
-  end loop;
+    raise notice 'CM_COM_3A1_RECONCILED: order=% variant=% quantity_on_hand 1 -> 0 (rows=%)',
+      v_order_id, v_variant_id, v_rowcount;
 
-  raise notice 'CM-COM-3A.1 reconciliation complete: % variant(s) reconciled (0 means already consistent / already reconciled)', v_reconciled;
+  elsif v_qoh = 0 then
+    -- Already reconciled: target no longer drifts, and nothing else may drift.
+    if v_global_drift <> 0 then
+      raise exception 'CM_COM_3A1_RECONCILE_ABORT_GLOBAL_DRIFT: already reconciled but found % residual drift', v_global_drift;
+    end if;
+    raise notice 'CM_COM_3A1_ALREADY_RECONCILED: order=% variant=% quantity_on_hand already 0 (no-op, 0 writes)',
+      v_order_id, v_variant_id;
+
+  else
+    -- Any other on-hand value is neither the pre-state (1) nor reconciled (0).
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_UNEXPECTED_QOH: variant=% quantity_on_hand=%', v_variant_id, v_qoh;
+  end if;
 end $$;
 
 commit;
