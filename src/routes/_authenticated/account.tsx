@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { getMyAccount, getMyOrders, becomeSeller } from "@/lib/account.functions";
 import { getReviewableItems } from "@/lib/reviews.functions";
 import { isAdmin } from "@/lib/admin.functions";
-import { buyerListOrderShipments } from "@/lib/shipments.functions";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -104,6 +103,15 @@ function Account() {
             <CardContent>
               {orders.isLoading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : orders.isError ? (
+                <div className="space-y-2" role="alert">
+                  <p className="text-sm font-medium text-destructive">
+                    We couldn't load your orders.
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => orders.refetch()}>
+                    Try again
+                  </Button>
+                </div>
               ) : (orders.data ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   You have no orders yet.{" "}
@@ -171,13 +179,6 @@ function PendingReviewsCard({ items }: { items: any[] }) {
 }
 
 function OrderRow({ order }: { order: any }) {
-  const fn = useServerFn(buyerListOrderShipments);
-  const [open, setOpen] = useState(false);
-  const q = useQuery({
-    queryKey: ["my-order-shipments", order.id],
-    queryFn: () => fn({ data: { orderId: order.id } }),
-    enabled: open,
-  });
   return (
     <li className="py-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -197,51 +198,31 @@ function OrderRow({ order }: { order: any }) {
           <Badge variant="secondary">{order.status}</Badge>
           <Badge variant="outline">{order.payment_status}</Badge>
           <span className="font-medium tabular-nums">{Number(order.total_aed).toFixed(2)} AED</span>
-          <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)}>
-            {open ? "Hide" : "Track"}
+          <Button asChild size="sm" variant="outline">
+            <Link to="/account/orders/$id" params={{ id: order.id }}>
+              View order
+            </Link>
           </Button>
         </div>
       </div>
-      {open && (
-        <div className="mt-3 rounded-lg border bg-muted/30 p-3 text-sm">
-          {q.isLoading ? (
-            <p className="text-muted-foreground">Loading…</p>
-          ) : (q.data ?? []).length === 0 ? (
-            <p className="text-muted-foreground">
-              No shipments yet — your seller hasn't dispatched this order.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {(q.data as any[]).map((s) => (
-                <li key={s.id} className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <span className="font-medium">{s.seller?.store_name}</span>
-                    <span className="ml-2 uppercase text-xs text-muted-foreground">
-                      {s.carrier}
-                    </span>
-                    {s.tracking_number && (
-                      <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{s.status}</Badge>
-                    {s.tracking_url && (
-                      <a
-                        className="text-xs underline"
-                        href={s.tracking_url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Track
-                      </a>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground sm:grid-cols-4">
+        <div>
+          <dt>Subtotal</dt>
+          <dd>{Number(order.subtotal_aed).toFixed(2)} AED</dd>
         </div>
-      )}
+        <div>
+          <dt>Shipping</dt>
+          <dd>{Number(order.shipping_aed).toFixed(2)} AED</dd>
+        </div>
+        <div>
+          <dt>Tax</dt>
+          <dd>{Number(order.tax_aed).toFixed(2)} AED</dd>
+        </div>
+        <div>
+          <dt>Payment</dt>
+          <dd className="uppercase">{order.payment_method ?? "—"}</dd>
+        </div>
+      </dl>
     </li>
   );
 }

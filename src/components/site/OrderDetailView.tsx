@@ -1,64 +1,20 @@
-import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useServerFn } from "@tanstack/react-start";
+import { ArrowLeft, CreditCard, History, MapPin, Package } from "lucide-react";
+import { toast } from "sonner";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminTransitionOrderLifecycle } from "@/lib/admin.functions";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Package,
-  CreditCard,
-  Truck,
-  User,
-  MapPin,
-  FileText,
-  Clock,
-  Check,
-  Circle,
-} from "lucide-react";
-import { toast } from "sonner";
-import { statusColor } from "@/lib/dashboard-tokens";
-import {
-  adminSetOrderStatus,
-  adminSetPaymentStatus,
-  adminAddOrderNote,
-} from "@/lib/admin.functions";
-import { setOrderItemStatus, sellerAddOrderNote } from "@/lib/seller.functions";
+  allowedOrderTransitions,
+  allowedPaymentTransitions,
+  type LifecycleTransitionType,
+} from "@/lib/order-lifecycle";
 
-const AED = (n: number | string) =>
-  `${Number(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
-
-const ORDER_STATUSES = [
-  "pending",
-  "paid",
-  "preparing",
-  "shipped",
-  "delivered",
-  "cancelled",
-  "refunded",
-];
-const PAYMENT_STATUSES = ["pending", "authorized", "paid", "failed", "refunded"];
-const FULFILLMENT_FLOW = ["pending", "preparing", "shipped", "delivered"];
+const aed = (value: number | string) => `${Number(value ?? 0).toFixed(2)} AED`;
 
 export type OrderDetailRole = "admin" | "seller";
 
@@ -67,7 +23,6 @@ export function OrderDetailView({
   data,
   invalidateKey,
   backHref,
-  customerHref,
 }: {
   role: OrderDetailRole;
   data: any;
@@ -75,650 +30,241 @@ export function OrderDetailView({
   backHref: string;
   customerHref?: string;
 }) {
-  const qc = useQueryClient();
   const order = data.order;
   const items: any[] = data.items ?? [];
-  const notes: any[] = data.notes ?? [];
   const events: any[] = data.events ?? [];
-  const shipments: any[] = data.shipments ?? [];
-  const payments: any[] = data.payments ?? [];
-  const buyer = data.buyer;
-  const addr = order.shipping_address ?? {};
+  const capabilityAvailable = role === "admin" && data.lifecycleCapability === true;
+  const transition = useServerFn(adminTransitionOrderLifecycle);
+  const queryClient = useQueryClient();
 
-  const adminStatus = useServerFn(adminSetOrderStatus);
-  const adminPayment = useServerFn(adminSetPaymentStatus);
-  const adminNote = useServerFn(adminAddOrderNote);
-  const sellerItem = useServerFn(setOrderItemStatus);
-  const sellerNote = useServerFn(sellerAddOrderNote);
-  const [pendingChange, setPendingChange] = useState<{
-    type: "order" | "payment" | "item";
-    status: string;
-    itemId?: string;
-  } | null>(null);
-
-  const invalidate = () => qc.invalidateQueries({ queryKey: invalidateKey });
-
-  const statusM = useMutation({
-    mutationFn: (s: string) => adminStatus({ data: { orderId: order.id, status: s } }),
-    onSuccess: () => {
-      toast.success("Order status updated");
-      setPendingChange(null);
-      invalidate();
+  const mutation = useMutation({
+    mutationFn: (request: {
+      transitionType: LifecycleTransitionType;
+      expectedCurrent: string;
+      next: string;
+    }) => transition({ data: { orderId: order.id, ...request } as any }),
+    onSuccess: async () => {
+      toast.success("Lifecycle transition recorded");
+      await queryClient.invalidateQueries({ queryKey: invalidateKey });
     },
-    onError: (e: any) => toast.error(e.message),
-  });
-  const payM = useMutation({
-    mutationFn: (v: string | { status: string; manual?: boolean }) =>
-      adminPayment({
-        data: typeof v === "string"
-          ? { orderId: order.id, status: v }
-          : { orderId: order.id, status: v.status, manual: v.manual },
-      }),
-    onSuccess: () => {
-      toast.success("Payment status updated");
-      setPendingChange(null);
-      invalidate();
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-  const itemM = useMutation({
-    mutationFn: (v: { itemId: string; status: string }) => sellerItem({ data: v }),
-    onSuccess: () => {
-      toast.success("Item status updated");
-      setPendingChange(null);
-      invalidate();
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-  const [noteText, setNoteText] = useState("");
-  const noteM = useMutation({
-    mutationFn: () =>
-      role === "admin"
-        ? adminNote({ data: { orderId: order.id, body: noteText } })
-        : sellerNote({ data: { orderId: order.id, body: noteText } }),
-    onSuccess: () => {
-      toast.success("Note added");
-      setNoteText("");
-      invalidate();
-    },
-    onError: (e: any) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  const subtotal = items.reduce((s, i) => s + Number(i.line_total_aed ?? 0), 0);
+  const orderTransitions = allowedOrderTransitions(order.status);
+  const paymentTransitions = allowedPaymentTransitions(order.payment_status, order.payment_method);
+  const address = order.shipping_address ?? {};
+
+  const applyTransition = (
+    transitionType: LifecycleTransitionType,
+    expectedCurrent: string,
+    next: string,
+  ) => mutation.mutate({ transitionType, expectedCurrent, next });
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/60 pb-5">
-        <div className="min-w-0">
-          <Link
-            to={backHref}
-            className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground"
-          >
-            ← Back to orders
-          </Link>
-          <h1 className="mt-2 flex flex-wrap items-center gap-3 font-display text-3xl tracking-tight">
-            {order.order_number}
-            <Badge
-              variant="outline"
-              className="capitalize"
-              style={{ borderColor: statusColor(order.status), color: statusColor(order.status) }}
-            >
-              {order.status}
-            </Badge>
-            <Badge
-              variant="outline"
-              className="capitalize"
-              style={{
-                borderColor: statusColor(order.payment_status),
-                color: statusColor(order.payment_status),
-              }}
-            >
-              {order.payment_status}
-            </Badge>
-          </h1>
+      <Button asChild variant="ghost">
+        <Link to={backHref as any}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to orders
+        </Link>
+      </Button>
+
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Order</p>
+          <h1 className="font-display text-4xl tracking-tight">{order.order_number}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {new Date(order.created_at).toLocaleString()}
           </p>
         </div>
-        {role === "admin" && (
-          <div className="flex flex-wrap items-center gap-2">
-            {order.payment_status !== "paid" &&
-              order.payment_status !== "refunded" &&
-              (order.payment_method === "bank_transfer" || order.payment_method === "cod") && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" disabled={payM.isPending}>
-                      {payM.isPending ? "Marking…" : "Mark as paid"}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Mark this order as paid?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Confirm you've received the {order.payment_method === "cod" ? "cash on delivery" : "bank transfer"} payment for this order. This action will update the payment status to paid.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => payM.mutate({ status: "paid", manual: true })}>
-                        Yes, mark as paid
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            {order.status !== "cancelled" && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Cancel order
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will mark the order as cancelled. The buyer will see the change
-                      immediately.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Keep order</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => statusM.mutate("cancelled")}>
-                      Yes, cancel
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-            {order.payment_status !== "refunded" && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Mark refunded
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Mark payment refunded?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Use this after issuing the refund through your payment provider.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => payM.mutate("refunded")}>
-                      Confirm refund
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-        )}
-      </div>
+        <div className="flex gap-2">
+          <Badge variant="secondary">Order: {order.status}</Badge>
+          <Badge variant="outline">Payment: {order.payment_status}</Badge>
+        </div>
+      </header>
 
-      {role === "seller" && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="h-4 w-4" /> Fulfillment progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FulfillmentTimeline status={order.status} shipments={shipments} />
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          {/* Items */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+        <div className="space-y-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="flex items-center gap-2 text-base">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <Package className="h-4 w-4" /> Items
               </CardTitle>
-              <span className="text-xs text-muted-foreground">
-                {items.length} line item{items.length === 1 ? "" : "s"}
-              </span>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {items.length === 0 && (
-                <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-                  No order items are available for this role.
-                </div>
-              )}
-              {items.map((i) => {
-                const img = (i.product?.images ?? [])
-                  .slice()
-                  .sort((a: any, b: any) => a.sort_order - b.sort_order)[0]?.url;
-                return (
-                  <div
-                    key={i.id}
-                    className="flex flex-wrap items-center gap-4 rounded-lg border border-border/60 p-3"
+            <CardContent>
+              <ul className="divide-y divide-border">
+                {items.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex justify-between gap-4 py-4 first:pt-0 last:pb-0"
                   >
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
-                      {img ? (
-                        <img
-                          src={img}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : null}
+                    <div>
+                      <p className="font-medium">{item.product_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {[item.variant_label, `Qty ${item.qty}`, item.fulfillment_status]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{i.product_name}</p>
-                      {i.variant_label && (
-                        <p className="text-xs text-muted-foreground">{i.variant_label}</p>
-                      )}
-                      {role === "admin" && i.seller?.store_name && (
-                        <p className="text-xs text-muted-foreground">
-                          Seller: {i.seller.store_name}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right text-sm tabular-nums">
-                      <div>
-                        {i.qty} × {AED(i.unit_price_aed)}
-                      </div>
-                      <div className="font-medium">{AED(i.line_total_aed)}</div>
-                    </div>
-                    {role === "seller" ? (
-                      <div className="flex flex-wrap items-center justify-end gap-2">
-                        <Badge variant="outline" className="capitalize">
-                          {i.fulfillment_status}
-                        </Badge>
-                        {i.fulfillment_status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                setPendingChange({
-                                  type: "item",
-                                  itemId: i.id,
-                                  status: "preparing",
-                                })
-                              }
-                            >
-                              Start preparing
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                setPendingChange({
-                                  type: "item",
-                                  itemId: i.id,
-                                  status: "cancelled",
-                                })
-                              }
-                            >
-                              Cancel item
-                            </Button>
-                          </>
-                        )}
-                        {i.fulfillment_status === "preparing" && (
-                          <span className="max-w-48 text-right text-xs text-muted-foreground">
-                            Create a shipment from the orders list to mark it shipped.
-                          </span>
-                        )}
-                        {i.fulfillment_status === "shipped" && (
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              setPendingChange({ type: "item", itemId: i.id, status: "delivered" })
-                            }
-                          >
-                            Mark delivered
-                          </Button>
-                        )}
-                      </div>
-                    ) : (
-                      <Badge variant="outline" className="capitalize">
-                        {i.fulfillment_status}
-                      </Badge>
-                    )}
-                  </div>
-                );
-              })}
-              <Separator />
-              <div className="space-y-1 text-sm">
-                <Row label="Subtotal" value={AED(order.subtotal_aed ?? subtotal)} />
-                {Number(order.discount_aed ?? 0) > 0 && (
-                  <Row
-                    label={`Discount${order.coupon_code ? ` (${order.coupon_code})` : ""}`}
-                    value={`- ${AED(order.discount_aed)}`}
-                  />
-                )}
-                <Row label="Shipping" value={AED(order.shipping_aed)} />
-                <Row label="VAT" value={AED(order.tax_aed)} />
-                <div className="flex items-center justify-between pt-2 text-base font-semibold">
-                  <span>Total</span>
-                  <span className="tabular-nums">{AED(order.total_aed)}</span>
-                </div>
-              </div>
+                    <p className="tabular-nums">{aed(item.line_total_aed)}</p>
+                  </li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
 
-          {/* Shipments */}
-          {shipments.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Truck className="h-4 w-4" /> Shipments
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {shipments.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded border border-border/60 p-3"
-                  >
-                    <div>
-                      <span className="font-medium uppercase">{s.carrier}</span>
-                      {s.tracking_number && (
-                        <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>
-                      )}
-                      {s.tracking_url && (
-                        <a
-                          className="ml-2 text-xs underline"
-                          href={s.tracking_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          track
-                        </a>
-                      )}
-                    </div>
-                    <Badge variant="secondary" className="capitalize">
-                      {s.status}
-                    </Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Timeline */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Clock className="h-4 w-4" /> Timeline
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-4 w-4" /> Lifecycle audit
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-col gap-2">
-                <Textarea
-                  placeholder="Add an internal note…"
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  rows={2}
-                />
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    onClick={() => noteM.mutate()}
-                    disabled={!noteText.trim() || noteM.isPending}
-                  >
-                    {noteM.isPending ? "Saving…" : "Add note"}
-                  </Button>
-                </div>
-              </div>
-              <Separator />
-              <ul className="space-y-3 text-sm">
-                {notes.map((n) => (
-                  <li key={n.id} className="rounded border border-border/60 bg-muted/40 p-3">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="capitalize">{n.author_role} note</span>
-                      <span>{new Date(n.created_at).toLocaleString()}</span>
-                    </div>
-                    <p className="mt-1 whitespace-pre-wrap">{n.body}</p>
-                  </li>
-                ))}
-                {events.map((e) => (
-                  <li key={e.id} className="flex items-start gap-3">
-                    <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                    <div className="flex-1">
-                      <p className="text-sm">{e.message ?? e.kind}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(e.created_at).toLocaleString()} · {e.actor_role}
+            <CardContent>
+              {events.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No lifecycle transitions recorded.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {events.map((event) => (
+                    <li key={event.id} className="rounded-md border p-3 text-sm">
+                      <p className="font-medium">
+                        {event.transition_type.replace(/_/g, " ")}: {event.previous_value} →{" "}
+                        {event.new_value}
                       </p>
-                    </div>
-                  </li>
-                ))}
-                {notes.length === 0 && events.length === 0 && (
-                  <li className="text-sm text-muted-foreground">No activity yet.</li>
-                )}
-              </ul>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(event.created_at).toLocaleString()} · actor{" "}
+                        {String(event.actor_id).slice(0, 8)}…
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </div>
 
         <div className="space-y-6">
-          {/* Status controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Totals</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="space-y-2 text-sm">
+                <Row label="Subtotal" value={aed(order.subtotal_aed)} />
+                <Row label="Shipping" value={aed(order.shipping_aed)} />
+                <Row label="Tax" value={aed(order.tax_aed)} />
+                <Row label="Total" value={aed(order.total_aed)} strong />
+              </dl>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" /> Delivery
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1 text-sm text-muted-foreground">
+              <p>{address.recipient_name ?? "—"}</p>
+              <p>{[address.area, address.emirate].filter(Boolean).join(", ") || "—"}</p>
+              <p>
+                {[address.street, address.building, address.floor_apartment]
+                  .filter(Boolean)
+                  .join(", ")}
+              </p>
+            </CardContent>
+          </Card>
+
           {role === "admin" && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Manual controls</CardTitle>
+                <CardTitle className="text-base">Controlled lifecycle</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
-                    Order status
-                  </p>
-                  <Select
-                    value={order.status}
-                    onValueChange={(v) => setPendingChange({ type: "order", status: v })}
+              <CardContent className="space-y-5">
+                {!capabilityAvailable && (
+                  <p
+                    className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs"
+                    role="status"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ORDER_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s} className="capitalize">
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <p className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
-                    Payment status
+                    Lifecycle mutation capability is unavailable. Controls are disabled.
                   </p>
-                  <Select
-                    value={order.payment_status}
-                    onValueChange={(v) => setPendingChange({ type: "payment", status: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s} className="capitalize">
-                          {s.replace(/_/g, " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                )}
+
+                <TransitionGroup
+                  title="Order status"
+                  current={order.status}
+                  next={orderTransitions}
+                  disabled={!capabilityAvailable || mutation.isPending}
+                  onSelect={(value) => applyTransition("order_status", order.status, value)}
+                />
+
+                <div className="border-t pt-5">
+                  <TransitionGroup
+                    icon={<CreditCard className="h-4 w-4" />}
+                    title={`COD payment status`}
+                    current={order.payment_status}
+                    next={paymentTransitions}
+                    disabled={!capabilityAvailable || mutation.isPending}
+                    onSelect={(value) =>
+                      applyTransition("payment_status", order.payment_status, value)
+                    }
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Customer */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <User className="h-4 w-4" /> Customer
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <p className="font-medium">{buyer?.full_name ?? addr.recipient_name ?? "—"}</p>
-              {buyer?.email && <p className="text-muted-foreground">{buyer.email}</p>}
-              {(buyer?.phone || addr.phone) && (
-                <p className="text-muted-foreground">{buyer?.phone ?? addr.phone}</p>
-              )}
-              {customerHref ? (
-                buyer?.id ? (
-                  <Button asChild variant="outline" size="sm" className="mt-3 rounded-full">
-                    <Link to={customerHref as any} params={{ id: buyer.id } as any}>
-                      View customer
-                    </Link>
-                  </Button>
-                ) : (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    No customer profile attached to this order.
-                  </p>
-                )
-              ) : null}
-            </CardContent>
-          </Card>
-
-          {/* Address */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <MapPin className="h-4 w-4" /> Shipping address
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <p className="font-medium">{addr.recipient_name ?? "—"}</p>
-              {addr.phone && <p className="text-muted-foreground">{addr.phone}</p>}
-              <p className="text-muted-foreground">
-                {[addr.building, addr.street, addr.area, addr.emirate].filter(Boolean).join(", ")}
-              </p>
-              {addr.landmark && (
-                <p className="text-xs text-muted-foreground">Landmark: {addr.landmark}</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Payment */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCard className="h-4 w-4" /> Payment
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <Row label="Method" value={(order.payment_method ?? "").replace(/_/g, " ")} />
-              <Row label="Status" value={order.payment_status} />
-              <Row label="Total" value={AED(order.total_aed)} />
-              {payments.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {payments.map((p) => (
-                    <div key={p.id} className="rounded border border-border/60 p-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{p.provider}</span>
-                        <span>{p.status}</span>
-                      </div>
-                      {p.provider_ref && (
-                        <div className="font-mono text-[10px] text-muted-foreground">
-                          {p.provider_ref}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {order.notes && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <FileText className="h-4 w-4" /> Order notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {order.notes}
               </CardContent>
             </Card>
           )}
         </div>
       </div>
-
-      <AlertDialog
-        open={Boolean(pendingChange)}
-        onOpenChange={(open) => !open && setPendingChange(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm state change</AlertDialogTitle>
-            <AlertDialogDescription>
-              Change{" "}
-              {pendingChange?.type === "payment"
-                ? "payment"
-                : pendingChange?.type === "item"
-                  ? "fulfillment"
-                  : "order"}{" "}
-              status to “{pendingChange?.status}”? This action is validated against your assigned
-              role.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={statusM.isPending || payM.isPending || itemM.isPending}
-              onClick={() => {
-                if (!pendingChange) return;
-                if (pendingChange.type === "order") statusM.mutate(pendingChange.status);
-                if (pendingChange.type === "payment") payM.mutate(pendingChange.status);
-                if (pendingChange.type === "item" && pendingChange.itemId) {
-                  itemM.mutate({ itemId: pendingChange.itemId, status: pendingChange.status });
-                }
-              }}
-            >
-              Confirm update
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
 
-function FulfillmentTimeline({ status, shipments }: { status: string; shipments: any[] }) {
-  const current = FULFILLMENT_FLOW.indexOf(status);
+function TransitionGroup({
+  icon,
+  title,
+  current,
+  next,
+  disabled,
+  onSelect,
+}: {
+  icon?: React.ReactNode;
+  title: string;
+  current: string;
+  next: readonly string[];
+  disabled: boolean;
+  onSelect: (value: string) => void;
+}) {
   return (
-    <ol className="grid gap-4 sm:grid-cols-4">
-      {FULFILLMENT_FLOW.map((step, index) => {
-        const complete = current >= index || (step === "shipped" && shipments.length > 0);
-        const Icon = complete ? Check : Circle;
-        return (
-          <li key={step} className="flex gap-3 sm:flex-col">
-            <span
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border ${complete ? "border-primary bg-primary text-primary-foreground" : "bg-background text-muted-foreground"}`}
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        {icon}
+        {title}
+      </div>
+      <p className="text-xs text-muted-foreground">Current: {current}</p>
+      {next.length === 0 ? (
+        <p className="text-xs text-muted-foreground">No permitted next transition.</p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {next.map((value) => (
+            <Button
+              key={value}
+              size="sm"
+              variant="outline"
+              disabled={disabled}
+              onClick={() => onSelect(value)}
             >
-              <Icon className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="font-medium capitalize">{step}</p>
-              <p className="text-xs text-muted-foreground">
-                {step === "shipped" && shipments[0]?.shipped_at
-                  ? new Date(shipments[0].shipped_at).toLocaleString()
-                  : complete
-                    ? "Completed"
-                    : "Pending"}
-              </p>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+              Set {value.replace(/_/g, " ")}
+            </Button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: any }) {
+function Row({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="capitalize text-muted-foreground">{label}</span>
-      <span className="tabular-nums">{value}</span>
+    <div className={`flex justify-between gap-4 ${strong ? "border-t pt-2 font-semibold" : ""}`}>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
     </div>
   );
 }

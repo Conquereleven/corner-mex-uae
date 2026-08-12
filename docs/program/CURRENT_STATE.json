@@ -1,25 +1,25 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-08-09T20:00:00Z",
+  "generatedAt": "2026-08-12T18:00:00Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "af822ba00866ccd75a8a0cf4431570f044317ad7",
-    "observedMainSha": "af822ba00866ccd75a8a0cf4431570f044317ad7",
+    "expectedMainSha": "e02960f0887d98e624b22a9333fde59175299847",
+    "observedMainSha": "e02960f0887d98e624b22a9333fde59175299847",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
     "class": "verified_repository",
-    "source": "CM-COM-3A is a repository/implementation sprint. It re-verified GitHub main identity via git/gh only and performed NO Railway, Supabase, Lovable, DNS, registrar, OAuth or email-provider write. The Intermex UAE public storefront feed was read over unauthenticated HTTPS GET only. Runtime and deployment values in this document are carried forward from the CM-GOV-3 observation and were NOT re-verified; the commit each environment serves right now is UNKNOWN.",
+    "source": "CM-COM-4A is a repository-only implementation sprint from the production-accepted CM-COM-3A.1 merge. It performed NO Railway, Supabase, Lovable, DNS, registrar, OAuth or email-provider write. The lifecycle migration is prepared in Git only and remains unapplied.",
     "observedAt": "2026-08-08T00:45:00Z",
     "freshUntil": "2026-08-15T00:45:00Z",
     "classMeaning": "This snapshot's own evidence is repository-verified. CM-COM-3A performed NO runtime observation, so it does not carry a verified_live class.",
     "repositoryEvidence": {
       "class": "verified_repository",
-      "identity": "github:af822ba00866ccd75a8a0cf4431570f044317ad7",
-      "verifiedBy": "CM-COM-3A",
-      "verifiedAt": "2026-08-09T20:00:00Z",
-      "statement": "main is the merge commit of PR #24 (CM-COM-2B0); re-verified from git/gh during this sprint."
+      "identity": "github:e02960f0887d98e624b22a9333fde59175299847",
+      "verifiedBy": "CM-COM-4A",
+      "verifiedAt": "2026-08-12T18:00:00Z",
+      "statement": "main is the merge commit of PR #26 (CM-COM-3A.1); re-verified from git during this sprint."
     },
     "runtimeEvidence": {
       "class": "historical",
@@ -129,23 +129,23 @@
     },
     "scope": "These readiness fields describe A3.2b EXECUTION readiness (reviewedRemediationHeadSha is the pinned A3.2b remediation head) and historical sprint reviews. They do NOT describe CM-COM-3A and must not be read as an independent review or release approval of the active sprint.",
     "currentSprintReadiness": {
-      "sprint": "CM-COM-3A_COMMERCIAL_ACTIVE_MVP",
-      "pullRequest": 25,
+      "sprint": "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION",
+      "pullRequest": null,
       "state": "draft",
       "independentReviewComplete": false,
-      "independentReviewer": "Codex",
+      "independentReviewer": "Independent reviewer",
       "reviewedHeadSha": null,
       "declaredReady": false,
       "status": "pending_independent_review"
     }
   },
   "program": {
-    "activeSprint": "CM-COM-3A_COMMERCIAL_ACTIVE_MVP",
-    "owner": "Claude",
-    "reviewer": "Codex",
+    "activeSprint": "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION",
+    "owner": "Codex",
+    "reviewer": "independent reviewer",
     "blockers": [
-      "CM-COM-3A is repository-only. The COD order function is PREPARED and UNAPPLIED; no Supabase migration, catalog load, Railway change or deployment was performed or authorized.",
-      "Canonical public.products remains empty. The Intermex activation manifest is a DRY-RUN plan; loading it is a separate Founder-authorized step.",
+      "CM-COM-4A is repository-only. Its lifecycle migration/RPC is PREPARED and UNAPPLIED; no Supabase, Railway, order, payment or deployment write was performed or authorized.",
+      "CM-COM-4A requires independent review and a separate Founder-authorized migration/deployment sequence before activation.",
       "CM-COM-2B1 domain cutover remains ON HOLD: no custom domain is purchased or approved. cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).",
       "Runtime facts are carried forward from the CM-GOV-3 observation; CM-COM-3A re-observed nothing, so the commit each environment currently serves is UNKNOWN.",
       "External Supabase Preview GitHub check fails on main: remote migration versions are not present in the local supabase/migrations directory (integration drift; not a repository CI gate).",
@@ -210,6 +210,22 @@
           }
         ],
         "finalIndependentReviewRound": "R2"
+      },
+      {
+        "sprint": "CM-COM-3A_COMMERCIAL_ACTIVE_MVP",
+        "status": "production_accepted_complete",
+        "pullRequest": 25,
+        "mergeSha": "b91365946d0326b20418a560ac44ac7c80f38780",
+        "deployed": true,
+        "note": "Founder-authorized COD activation completed. Final acceptance followed the CM-COM-3A.1 inventory correction and Acceptance Order #2."
+      },
+      {
+        "sprint": "CM-COM-3A1_INVENTORY_CONSISTENCY_HOTFIX",
+        "status": "production_accepted_complete",
+        "pullRequest": 26,
+        "mergeSha": "e02960f0887d98e624b22a9333fde59175299847",
+        "deployed": true,
+        "note": "Founder COD Acceptance Order #2 passed atomic stock/QOH consistency, exact sale movement cardinality and zero global drift."
       }
     ]
   },
@@ -218,5 +234,5 @@
     "externalSendsBlocked": true,
     "customerImpactBlocked": true
   },
-  "generatedAtMeaning": "Time this repository state snapshot was generated/reconciled by CM-COM-3A. This is NOT a runtime observation timestamp; see evidence.runtimeEvidence.observedAt."
+  "generatedAtMeaning": "Time this repository state snapshot was generated/reconciled by CM-COM-4A. This is NOT a runtime observation timestamp; see evidence.runtimeEvidence.observedAt."
 }

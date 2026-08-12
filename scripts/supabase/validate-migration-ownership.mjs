@@ -46,6 +46,7 @@ const REQUIRED_PENDING = [
   "catalog_import_foundation_a3_2b",
   "place_cod_order_v1",
   "place_cod_order_v1_inventory_consistency",
+  "cm_com_4a_post_order_lifecycle",
 ];
 if (pending.length !== REQUIRED_PENDING.length) {
   errors.push("pending canonical migration count drift");
