@@ -63,13 +63,13 @@ const file = (relative) => psql(["-q", "-f", path.join(root, relative)]);
 // and is NOT modified; instead this harness applies a role-idempotent copy of
 // it via stdin. Only role creation is made conditional — every other statement,
 // and ON_ERROR_STOP, is left untouched.
-const applyRoleIdempotentPrelude = (relative) => {
+const applyRoleIdempotentPrelude = (relative, targetDb = DB) => {
   const sql = readFileSync(path.join(root, relative), "utf8").replace(
     /create\s+role\s+([a-z_]+)\s+nologin\s*;/gi,
     (_match, role) =>
       `do $$ begin if not exists (select 1 from pg_roles where rolname = '${role}') then create role ${role} nologin; end if; end $$;`,
   );
-  execFileSync("psql", ["-d", DB, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], {
+  execFileSync("psql", ["-d", targetDb, "-v", "ON_ERROR_STOP=1", "-q", "-f", "-"], {
     input: sql,
     encoding: "utf8",
     stdio: ["pipe", "pipe", "pipe"],
@@ -102,6 +102,10 @@ for (const name of readdirSync(path.join(root, "supabase/migrations"))
   file(`supabase/migrations/${name}`);
 }
 file("supabase/pending-canonical/20260809010000_place_cod_order_v1.sql");
+// CM-COM-3A.1 forward hotfix: create-or-replace the function with the
+// inventory-consistent implementation. Applied after the original so the proof
+// runs against the corrected function exactly as production will.
+file("supabase/pending-canonical/20260810120000_place_cod_order_v1_inventory_consistency.sql");
 
 const BUYER = "11111111-1111-1111-1111-111111111111";
 const PRODUCT = "22222222-2222-2222-2222-222222222222";
@@ -117,7 +121,9 @@ const seed = () =>
      insert into public.products (id, slug, status) values ('${PRODUCT}','contract-product','active') on conflict do nothing;
      insert into public.product_translations (product_id, lang, name) values ('${PRODUCT}','en','Contract Product') on conflict do nothing;
      insert into public.product_variants (id, product_id, sku, format_label, price_aed, stock, is_active, is_default)
-       values ('${VARIANT}','${PRODUCT}','CONTRACT-SKU','450 g', 25.50, 10, true, true) on conflict do nothing;`,
+       values ('${VARIANT}','${PRODUCT}','CONTRACT-SKU','450 g', 25.50, 10, true, true) on conflict do nothing;
+     insert into public.inventory (variant_id, quantity_on_hand, quantity_reserved)
+       values ('${VARIANT}', 10, 0) on conflict do nothing;`,
   ]);
 seed();
 
@@ -140,6 +146,16 @@ check(
 check(
   "stock decremented",
   query(`select stock from product_variants where id='${VARIANT}'`) === "8",
+);
+check(
+  "inventory quantity_on_hand decremented with stock",
+  query(`select quantity_on_hand from inventory where variant_id='${VARIANT}'`) === "8",
+);
+check(
+  "stock mirrors quantity_on_hand after a sale",
+  query(
+    `select (v.stock = i.quantity_on_hand)::text from product_variants v join inventory i on i.variant_id = v.id where v.id='${VARIANT}'`,
+  ) === "true",
 );
 check("order item inserted", query("select count(*) from order_items") === "1");
 check(
@@ -221,6 +237,12 @@ check(
 const stockBeforeDuplicate = Number(
   query(`select stock from product_variants where id='${VARIANT}'`),
 );
+const qohBeforeDuplicate = Number(
+  query(`select quantity_on_hand from inventory where variant_id='${VARIANT}'`),
+);
+const movementsBeforeDuplicate = Number(
+  query(`select count(*) from inventory_movements where variant_id='${VARIANT}'`),
+);
 const duplicate = JSON.parse(
   query(call(`[{"variant_id":"${VARIANT}","qty":1},{"variant_id":"${VARIANT}","qty":2}]`, 0, 0)),
 );
@@ -234,6 +256,16 @@ check(
   Number(query(`select stock from product_variants where id='${VARIANT}'`)) ===
     stockBeforeDuplicate - 3,
 );
+check(
+  "duplicate lines decrement quantity_on_hand once",
+  Number(query(`select quantity_on_hand from inventory where variant_id='${VARIANT}'`)) ===
+    qohBeforeDuplicate - 3,
+);
+check(
+  "duplicate lines record exactly one additional sale movement",
+  Number(query(`select count(*) from inventory_movements where variant_id='${VARIANT}'`)) ===
+    movementsBeforeDuplicate + 1,
+);
 
 // 6. Rollback: a failure while writing order items must undo everything.
 psql([
@@ -245,6 +277,9 @@ psql([
 ]);
 const ordersBeforeRollback = query("select count(*) from orders");
 const stockBeforeRollback = query(`select stock from product_variants where id='${VARIANT}'`);
+const qohBeforeRollback = query(
+  `select quantity_on_hand from inventory where variant_id='${VARIANT}'`,
+);
 const rollbackError = expectError(
   call(`[{"variant_id":"${VARIANT}","qty":1}]`, 0, 0),
   "cod_rollback_probe",
@@ -257,6 +292,11 @@ check(
 check(
   "stock is not decremented on failure",
   query(`select stock from product_variants where id='${VARIANT}'`) === stockBeforeRollback,
+);
+check(
+  "quantity_on_hand is not decremented on failure",
+  query(`select quantity_on_hand from inventory where variant_id='${VARIANT}'`) ===
+    qohBeforeRollback,
 );
 psql(["-q", "-c", "alter table order_items drop constraint cod_rollback_probe"]);
 
@@ -379,7 +419,7 @@ check(
 check(
   "inventory rows match variant stock",
   query(
-    "select string_agg(i.quantity_on_hand::text, ',' order by v.sku) from inventory i join product_variants v on v.id=i.variant_id",
+    "select string_agg(i.quantity_on_hand::text, ',' order by v.sku) from inventory i join product_variants v on v.id=i.variant_id join products p on p.id=v.product_id where p.slug='loader-salsa'",
   ) === "1,0",
 );
 check(
@@ -474,6 +514,611 @@ check(
   "no row from the aborted load survives",
   query("select count(*) from product_variants where sku='BAD-SKU'") === "0",
 );
+
+// 10. CM-COM-3A.1 inventory consistency. These would have caught the real
+//     production defect: the committed COD order decremented
+//     product_variants.stock and recorded a sale movement, but left
+//     inventory.quantity_on_hand untouched.
+console.log("CM-COM-3A.1 inventory consistency");
+
+// Create an isolated product + variant (+ optional inventory row) and return the
+// variant id. Data-modifying CTEs always execute; the inventory CTE is skipped
+// entirely when qoh is null, to exercise the missing-row path.
+const newVariant = ({ stock, qoh, reserved = 0, active = true, productActive = true }) =>
+  query(
+    `with p as (
+       insert into public.products (slug, status)
+       values ('cm31-' || gen_random_uuid(), '${productActive ? "active" : "draft"}')
+       returning id
+     ), v as (
+       insert into public.product_variants (product_id, price_aed, stock, is_active, is_default)
+       select id, 10.00, ${stock}, ${active}, true from p
+       returning id
+     )${
+       qoh === null || qoh === undefined
+         ? ""
+         : `, i as (
+       insert into public.inventory (variant_id, quantity_on_hand, quantity_reserved)
+       select id, ${qoh}, ${reserved} from v
+       returning variant_id
+     )`
+     }
+     select id from v`,
+  );
+const callVariant = (variantId, qty, shipping = 0, rate = 0) =>
+  `select public.place_cod_order_v1('${BUYER}'::uuid, '[{"variant_id":"${variantId}","qty":${qty}}]'::jsonb, '{"emirate":"DU"}'::jsonb, ${shipping}, ${rate}, '{"accepted_at":"t"}'::jsonb)`;
+const saleUnits = (variantId) =>
+  query(
+    `select coalesce(sum(quantity_delta),0)::text from inventory_movements where variant_id='${variantId}' and movement_type='sale'`,
+  );
+const movementRows = (variantId) =>
+  query(`select count(*) from inventory_movements where variant_id='${variantId}'`);
+
+// Mandatory production-defect assertion: stock 1, quantity_on_hand 1, one qty-1
+// COD order must commit stock 0, quantity_on_hand 0, exactly one sale delta -1.
+const vMand = newVariant({ stock: 1, qoh: 1, reserved: 0 });
+const ordersBeforeMand = Number(query("select count(*) from orders"));
+const mand = JSON.parse(query(callVariant(vMand, 1)));
+check("defect: order created", /^CM-\d{8}-[0-9A-F]{8}$/.test(mand.order_number), mand.order_number);
+check(
+  "defect: orders incremented by one",
+  Number(query("select count(*) from orders")) === ordersBeforeMand + 1,
+);
+check(
+  "defect: one order_item for the order",
+  query(`select count(*) from order_items where order_id='${mand.order_id}'`) === "1",
+);
+check(
+  "defect: stock 1 -> 0",
+  query(`select stock from product_variants where id='${vMand}'`) === "0",
+);
+check(
+  "defect: quantity_on_hand 1 -> 0",
+  query(`select quantity_on_hand from inventory where variant_id='${vMand}'`) === "0",
+);
+check("defect: exactly one sale movement row", movementRows(vMand) === "1");
+check("defect: sale movement delta is -1", saleUnits(vMand) === "-1");
+// H. after a successful order, stock and quantity_on_hand agree.
+check(
+  "H: stock == quantity_on_hand after the sale",
+  query(
+    `select (v.stock = i.quantity_on_hand)::text from product_variants v join inventory i on i.variant_id = v.id where v.id='${vMand}'`,
+  ) === "true",
+);
+
+// A. inventory row missing -> whole transaction fails, nothing survives.
+const vMissing = newVariant({ stock: 5, qoh: null });
+const ordersBeforeMissing = query("select count(*) from orders");
+check(
+  "A: missing inventory row rejected",
+  expectError(callVariant(vMissing, 1), "COD_ORDER_INVENTORY_NOT_FOUND") === null,
+);
+check("A: no order created", query("select count(*) from orders") === ordersBeforeMissing);
+check(
+  "A: no order_item created",
+  query(`select count(*) from order_items where variant_id='${vMissing}'`) === "0",
+);
+check(
+  "A: stock unchanged",
+  query(`select stock from product_variants where id='${vMissing}'`) === "5",
+);
+check("A: no inventory movement", movementRows(vMissing) === "0");
+
+// B. inventory insufficient (reservation consumes the on-hand quantity) ->
+//    rollback. stock still mirrors on-hand so the drift guard passes and the
+//    sufficiency guard fires.
+const vInsuff = newVariant({ stock: 3, qoh: 3, reserved: 2 });
+const ordersBeforeInsuff = query("select count(*) from orders");
+check(
+  "B: insufficient available inventory rejected",
+  expectError(callVariant(vInsuff, 2), "COD_ORDER_INVENTORY_INSUFFICIENT") === null,
+);
+check("B: no order created", query("select count(*) from orders") === ordersBeforeInsuff);
+check(
+  "B: stock unchanged",
+  query(`select stock from product_variants where id='${vInsuff}'`) === "3",
+);
+check(
+  "B: quantity_on_hand unchanged",
+  query(`select quantity_on_hand from inventory where variant_id='${vInsuff}'`) === "3",
+);
+check("B: no inventory movement", movementRows(vInsuff) === "0");
+
+// C. a decrement that would push quantity_on_hand below quantity_reserved is
+//    refused rather than violating the A2 quantity_reserved <= quantity_on_hand
+//    check. Without the guard, qty 1 would drive on-hand 1 -> 0 with reserved 1.
+const vReserved = newVariant({ stock: 1, qoh: 1, reserved: 1 });
+check(
+  "C: order that would violate the reserved constraint is rejected",
+  expectError(callVariant(vReserved, 1), "COD_ORDER_INVENTORY_INSUFFICIENT") === null,
+);
+check(
+  "C: quantity_on_hand unchanged (constraint never risked)",
+  query(`select quantity_on_hand from inventory where variant_id='${vReserved}'`) === "1",
+);
+check(
+  "C: reserved constraint still holds",
+  query(
+    `select (quantity_reserved <= quantity_on_hand)::text from inventory where variant_id='${vReserved}'`,
+  ) === "true",
+);
+check(
+  "C: stock unchanged",
+  query(`select stock from product_variants where id='${vReserved}'`) === "1",
+);
+check("C: no inventory movement", movementRows(vReserved) === "0");
+
+// D. product stock insufficient -> existing oversell protection still fires
+//    ahead of any inventory mutation, even with a healthy inventory row.
+const vStock = newVariant({ stock: 1, qoh: 1, reserved: 0 });
+check(
+  "D: oversell of product stock still rejected",
+  expectError(callVariant(vStock, 2), "COD_ORDER_INSUFFICIENT_STOCK") === null,
+);
+check(
+  "D: stock unchanged",
+  query(`select stock from product_variants where id='${vStock}'`) === "1",
+);
+check(
+  "D: quantity_on_hand unchanged",
+  query(`select quantity_on_hand from inventory where variant_id='${vStock}'`) === "1",
+);
+
+// E. duplicate requested lines for one variant normalise to a single coherent
+//    decrement of both stores and a single sale movement.
+const vDup = newVariant({ stock: 10, qoh: 10, reserved: 0 });
+const dup = JSON.parse(
+  query(
+    `select public.place_cod_order_v1('${BUYER}'::uuid, '[{"variant_id":"${vDup}","qty":1},{"variant_id":"${vDup}","qty":2}]'::jsonb, '{"emirate":"DU"}'::jsonb, 0, 0, '{"accepted_at":"t"}'::jsonb)`,
+  ),
+);
+check("E: duplicate lines priced once", Number(dup.subtotal_aed) === 30, `got ${dup.subtotal_aed}`);
+check(
+  "E: stock decremented once by the summed qty",
+  query(`select stock from product_variants where id='${vDup}'`) === "7",
+);
+check(
+  "E: quantity_on_hand decremented once by the summed qty",
+  query(`select quantity_on_hand from inventory where variant_id='${vDup}'`) === "7",
+);
+check("E: exactly one sale movement", movementRows(vDup) === "1");
+check("E: sale movement carries the summed delta", saleUnits(vDup) === "-3");
+
+// F. a failure after order insertion but before inventory completion must roll
+//    the whole thing back. A NOT VALID check on inventory_movements fails the
+//    movement insert, which happens after the order, item, stock and inventory
+//    writes in the same transaction.
+const vLate = newVariant({ stock: 4, qoh: 4, reserved: 0 });
+psql([
+  "-q",
+  "-c",
+  "alter table inventory_movements add constraint cod_inventory_probe check (reason <> 'cod_order') not valid",
+]);
+const ordersBeforeLate = query("select count(*) from orders");
+const lateError = expectError(callVariant(vLate, 1), "cod_inventory_probe");
+check("F: late failure aborts the call", lateError === null, lateError ?? "");
+check("F: no order survives", query("select count(*) from orders") === ordersBeforeLate);
+check(
+  "F: no order_item survives",
+  query(`select count(*) from order_items where variant_id='${vLate}'`) === "0",
+);
+check(
+  "F: stock not decremented",
+  query(`select stock from product_variants where id='${vLate}'`) === "4",
+);
+check(
+  "F: quantity_on_hand not decremented",
+  query(`select quantity_on_hand from inventory where variant_id='${vLate}'`) === "4",
+);
+check("F: no inventory movement survives", movementRows(vLate) === "0");
+psql(["-q", "-c", "alter table inventory_movements drop constraint cod_inventory_probe"]);
+
+// G. a successful multi-line order decrements stock and quantity_on_hand
+//    consistently for every affected variant.
+const vG1 = newVariant({ stock: 5, qoh: 5, reserved: 0 });
+const vG2 = newVariant({ stock: 3, qoh: 3, reserved: 0 });
+JSON.parse(
+  query(
+    `select public.place_cod_order_v1('${BUYER}'::uuid, '[{"variant_id":"${vG1}","qty":2},{"variant_id":"${vG2}","qty":1}]'::jsonb, '{"emirate":"DU"}'::jsonb, 0, 0, '{"accepted_at":"t"}'::jsonb)`,
+  ),
+);
+check(
+  "G: line 1 stock decremented",
+  query(`select stock from product_variants where id='${vG1}'`) === "3",
+);
+check(
+  "G: line 1 quantity_on_hand decremented",
+  query(`select quantity_on_hand from inventory where variant_id='${vG1}'`) === "3",
+);
+check(
+  "G: line 2 stock decremented",
+  query(`select stock from product_variants where id='${vG2}'`) === "2",
+);
+check(
+  "G: line 2 quantity_on_hand decremented",
+  query(`select quantity_on_hand from inventory where variant_id='${vG2}'`) === "2",
+);
+check(
+  "G: every affected variant keeps stock == quantity_on_hand",
+  query(
+    `select bool_and(v.stock = i.quantity_on_hand)::text from product_variants v join inventory i on i.variant_id = v.id where v.id in ('${vG1}','${vG2}')`,
+  ) === "true",
+);
+check(
+  "G: one sale movement per affected variant",
+  movementRows(vG1) === "1" && movementRows(vG2) === "1",
+);
+
+// Bonus fail-closed guard: a pre-existing drift (stock and on-hand disagree) is
+// refused rather than compounded inside a sale.
+const vDrift = newVariant({ stock: 2, qoh: 1, reserved: 0 });
+check(
+  "drift between stock and quantity_on_hand is rejected fail-closed",
+  expectError(callVariant(vDrift, 1), "COD_ORDER_INVENTORY_DRIFT") === null,
+);
+check(
+  "drift order leaves quantity_on_hand untouched",
+  query(`select quantity_on_hand from inventory where variant_id='${vDrift}'`) === "1",
+);
+check(
+  "drift order leaves stock untouched",
+  query(`select stock from product_variants where id='${vDrift}'`) === "2",
+);
+check("drift order creates no movement", movementRows(vDrift) === "0");
+
+// 11. CM-COM-3A.1 reconciliation artifact. These execute the ACTUAL file from
+//     disk (never a reimplementation) against a dedicated disposable database,
+//     so the global stock/quantity_on_hand drift universe is fully controlled.
+console.log("CM-COM-3A.1 reconciliation artifact (executed from disk)");
+
+const RDB = "cod_reconcile_contract_test";
+const ARTIFACT = "scripts/cm-com-3a/reconcile-inventory-consistency.sql";
+const RECONCILE_ORDER_NUMBER = "CM-20260810-51E1AC74";
+const RBUYER = "11111111-1111-1111-1111-111111111111";
+
+try {
+  execFileSync(
+    "psql",
+    [...base, "-v", "ON_ERROR_STOP=1", "-q", "-c", `drop database if exists ${RDB}`],
+    {
+      stdio: "ignore",
+    },
+  );
+} catch {
+  /* first run */
+}
+execFileSync("psql", [...base, "-v", "ON_ERROR_STOP=1", "-q", "-c", `create database ${RDB}`], {
+  stdio: "ignore",
+});
+const rpsql = (args) =>
+  execFileSync("psql", ["-d", RDB, "-v", "ON_ERROR_STOP=1", ...args], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+// -q suppresses command tags (e.g. "INSERT 0 1") so INSERT ... RETURNING yields
+// only the returned value.
+const rquery = (sql) => rpsql(["-q", "-t", "-A", "-c", sql]).trim();
+
+applyRoleIdempotentPrelude("tests/fixtures/supabase-canonical-platform-prelude.sql", RDB);
+for (const name of readdirSync(path.join(root, "supabase/migrations"))
+  .filter((n) => n.endsWith(".sql"))
+  .sort()) {
+  rpsql(["-q", "-f", path.join(root, `supabase/migrations/${name}`)]);
+}
+
+// Execute the real artifact file with merged output so both success NOTICEs and
+// fail-closed abort messages are captured.
+const runReconcile = () => {
+  try {
+    const out = execFileSync(
+      "bash",
+      ["-c", `psql -d "${RDB}" -v ON_ERROR_STOP=1 -f "${path.join(root, ARTIFACT)}" 2>&1`],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+    );
+    return { ok: true, out };
+  } catch (error) {
+    return { ok: false, out: `${error.stdout ?? ""}${error.stderr ?? ""}` };
+  }
+};
+
+const rReset = () =>
+  rpsql([
+    "-q",
+    "-c",
+    `truncate public.inventory_movements, public.order_items, public.orders, public.inventory, public.product_variants, public.products restart identity cascade;
+     insert into auth.users (id) values ('${RBUYER}') on conflict do nothing;`,
+  ]);
+
+// Build the canonical incident fixture in RDB; opts inject specific defects.
+const rBuildIncident = ({
+  paymentMethod = "cod",
+  paymentStatus = "pending",
+  stock = 0,
+  qoh = 1,
+  reserved = 0,
+  hasInventory = true,
+  itemQtys = [1], // [] => zero items; [1,1] => two items
+  saleDeltas = [-1], // number of sale movement rows and their deltas
+} = {}) => {
+  const productId = rquery(
+    "insert into public.products (slug, status) values ('rec-' || gen_random_uuid(), 'active') returning id",
+  );
+  const variantId = rquery(
+    `insert into public.product_variants (product_id, price_aed, stock, is_active, is_default) values ('${productId}', 10.00, ${stock}, true, true) returning id`,
+  );
+  if (hasInventory) {
+    rpsql([
+      "-q",
+      "-c",
+      `insert into public.inventory (variant_id, quantity_on_hand, quantity_reserved) values ('${variantId}', ${qoh}, ${reserved})`,
+    ]);
+  }
+  const orderId = rquery(
+    `insert into public.orders (order_number, buyer_id, status, payment_status, payment_method, subtotal_aed, shipping_aed, tax_aed, total_aed, shipping_address) values ('${RECONCILE_ORDER_NUMBER}', '${RBUYER}', 'pending', '${paymentStatus}', '${paymentMethod}', 10, 0, 0, 10, '{"emirate":"DU"}'::jsonb) returning id`,
+  );
+  for (const q of itemQtys) {
+    rpsql([
+      "-q",
+      "-c",
+      `insert into public.order_items (order_id, product_id, variant_id, product_name, qty, unit_price_aed, line_total_aed) values ('${orderId}', '${productId}', '${variantId}', 'contract item', ${q}, 10.00, ${(10 * q).toFixed(2)})`,
+    ]);
+  }
+  for (const d of saleDeltas) {
+    rpsql([
+      "-q",
+      "-c",
+      `insert into public.inventory_movements (variant_id, movement_type, quantity_delta, reference_type, reference_id, reason) values ('${variantId}', 'sale', ${d}, 'order', '${orderId}', 'cod_order')`,
+    ]);
+  }
+  return { productId, variantId, orderId };
+};
+
+// An unrelated variant that also drifts (stock 0, on-hand 1) with its own sale.
+const rExtraDrift = () => {
+  const productId = rquery(
+    "insert into public.products (slug, status) values ('rec-extra-' || gen_random_uuid(), 'active') returning id",
+  );
+  const variantId = rquery(
+    `insert into public.product_variants (product_id, price_aed, stock, is_active, is_default) values ('${productId}', 10.00, 0, true, true) returning id`,
+  );
+  rpsql([
+    "-q",
+    "-c",
+    `insert into public.inventory (variant_id, quantity_on_hand, quantity_reserved) values ('${variantId}', 1, 0);
+     insert into public.orders (order_number, buyer_id, status, payment_status, payment_method, subtotal_aed, shipping_aed, tax_aed, total_aed, shipping_address) values ('CM-20260810-UNRELATED', '${RBUYER}', 'pending', 'pending', 'cod', 10, 0, 0, 10, '{"emirate":"DU"}'::jsonb);`,
+  ]);
+  const otherOrderId = rquery(
+    "select id from public.orders where order_number = 'CM-20260810-UNRELATED'",
+  );
+  rpsql([
+    "-q",
+    "-c",
+    `insert into public.inventory_movements (variant_id, movement_type, quantity_delta, reference_type, reference_id, reason) values ('${variantId}', 'sale', -1, 'order', '${otherOrderId}', 'cod_order')`,
+  ]);
+  return { variantId };
+};
+
+const rQoh = (variantId) =>
+  rquery(`select quantity_on_hand from inventory where variant_id='${variantId}'`);
+const rStock = (variantId) => rquery(`select stock from product_variants where id='${variantId}'`);
+const rSnapshot = () =>
+  rquery(
+    "select (select count(*) from orders)||'|'||(select count(*) from order_items)||'|'||(select count(*) from inventory_movements)||'|'||(select coalesce(payment_method,'')||'/'||coalesce(payment_status,'') from orders order by created_at limit 1)",
+  );
+
+// R1 — exact known incident is reconciled: quantity_on_hand 1 -> 0, nothing else.
+rReset();
+const r1 = rBuildIncident();
+const r1Before = rSnapshot();
+const r1Run = runReconcile();
+check("R1: reconciliation succeeds on the exact incident", r1Run.ok, r1Run.out.slice(-200));
+check("R1: reports RECONCILED", /CM_COM_3A1_RECONCILED/.test(r1Run.out), r1Run.out.slice(-200));
+check("R1: quantity_on_hand 1 -> 0", rQoh(r1.variantId) === "0");
+check("R1: stock remains 0", rStock(r1.variantId) === "0");
+check("R1: orders/items/movements/payment unchanged", rSnapshot() === r1Before);
+check(
+  "R1: still exactly one sale movement of -1",
+  rquery(
+    `select count(*) from inventory_movements where variant_id='${r1.variantId}' and movement_type='sale' and quantity_delta=-1`,
+  ) === "1",
+);
+
+// R2 — idempotent rerun: no-op, zero writes.
+const r2Before = rSnapshot();
+const r2Run = runReconcile();
+check("R2: rerun succeeds", r2Run.ok, r2Run.out.slice(-200));
+check(
+  "R2: reports ALREADY_RECONCILED no-op",
+  /CM_COM_3A1_ALREADY_RECONCILED/.test(r2Run.out),
+  r2Run.out.slice(-200),
+);
+check("R2: quantity_on_hand stays 0", rQoh(r1.variantId) === "0");
+check("R2: orders/items/movements/payment unchanged", rSnapshot() === r2Before);
+
+// R3 — a second unrelated matching drift must abort fail-closed, repairing none.
+rReset();
+const r3 = rBuildIncident();
+const r3Extra = rExtraDrift();
+const r3Run = runReconcile();
+check("R3: aborts on unrelated extra drift", !r3Run.ok, r3Run.out.slice(-200));
+check("R3: abort cites global drift", /GLOBAL_DRIFT/.test(r3Run.out), r3Run.out.slice(-200));
+check("R3: Founder target remains quantity_on_hand 1", rQoh(r3.variantId) === "1");
+check("R3: unrelated variant remains quantity_on_hand 1", rQoh(r3Extra.variantId) === "1");
+
+// R4 — wrong movement cardinality (two sale rows summing to -1) aborts.
+rReset();
+const r4 = rBuildIncident({ saleDeltas: [-2, 1] });
+const r4Run = runReconcile();
+check("R4: aborts on multiple sale movements", !r4Run.ok, r4Run.out.slice(-200));
+check(
+  "R4: abort cites movement cardinality",
+  /MOVEMENT_CARDINALITY/.test(r4Run.out),
+  r4Run.out.slice(-200),
+);
+check("R4: quantity_on_hand untouched", rQoh(r4.variantId) === "1");
+
+// R4B — an extra NON-sale movement on the same order+variant (e.g. one correct
+// sale -1 PLUS one adjustment +1) must abort on total-movement cardinality, even
+// though the arithmetic nets to -1. This is incident provenance, not accounting.
+// (The pre-Delta-2 logic filtered the count on movement_type='sale' and would
+// have accepted this incident and reconciled — this test proves the fix.)
+rReset();
+const r4b = rBuildIncident();
+rpsql([
+  "-q",
+  "-c",
+  `insert into public.inventory_movements (variant_id, movement_type, quantity_delta, reference_type, reference_id, reason) values ('${r4b.variantId}', 'adjustment', 1, 'order', '${r4b.orderId}', 'manual correction')`,
+]);
+const r4bBefore = rSnapshot();
+const r4bMovementsBefore = rquery(
+  `select count(*) from inventory_movements where reference_type='order' and reference_id='${r4b.orderId}' and variant_id='${r4b.variantId}'`,
+);
+const r4bRun = runReconcile();
+check("R4B: aborts on an extra non-sale incident movement", !r4bRun.ok, r4bRun.out.slice(-200));
+check(
+  "R4B: abort cites movement cardinality",
+  /MOVEMENT_CARDINALITY/.test(r4bRun.out),
+  r4bRun.out.slice(-200),
+);
+check("R4B: quantity_on_hand remains 1", rQoh(r4b.variantId) === "1");
+check("R4B: stock remains 0", rStock(r4b.variantId) === "0");
+check("R4B: orders/items/movements/payment unchanged", rSnapshot() === r4bBefore);
+check(
+  "R4B: both movements unchanged, none added",
+  rquery(
+    `select count(*) from inventory_movements where reference_type='order' and reference_id='${r4b.orderId}' and variant_id='${r4b.variantId}'`,
+  ) === r4bMovementsBefore && r4bMovementsBefore === "2",
+);
+
+// R5 — missing sale movement aborts, no write.
+rReset();
+const r5 = rBuildIncident({ saleDeltas: [] });
+const r5Run = runReconcile();
+check("R5: aborts on missing movement", !r5Run.ok, r5Run.out.slice(-200));
+check(
+  "R5: abort cites movement cardinality",
+  /MOVEMENT_CARDINALITY/.test(r5Run.out),
+  r5Run.out.slice(-200),
+);
+check("R5: quantity_on_hand untouched", rQoh(r5.variantId) === "1");
+
+// R6 — wrong order-item cardinality (two items) aborts.
+rReset();
+const r6 = rBuildIncident({ itemQtys: [1, 1] });
+const r6Run = runReconcile();
+check("R6: aborts on wrong item cardinality", !r6Run.ok, r6Run.out.slice(-200));
+check(
+  "R6: abort cites item cardinality",
+  /ITEM_CARDINALITY/.test(r6Run.out),
+  r6Run.out.slice(-200),
+);
+check("R6: quantity_on_hand untouched", rQoh(r6.variantId) === "1");
+
+// R6b — zero order items aborts too.
+rReset();
+const r6b = rBuildIncident({ itemQtys: [] });
+const r6bRun = runReconcile();
+check(
+  "R6b: aborts on zero items",
+  !r6bRun.ok && /ITEM_CARDINALITY/.test(r6bRun.out),
+  r6bRun.out.slice(-200),
+);
+check("R6b: quantity_on_hand untouched", rQoh(r6b.variantId) === "1");
+
+// R7 — wrong item qty (qty != 1) aborts.
+rReset();
+const r7 = rBuildIncident({ itemQtys: [2] });
+const r7Run = runReconcile();
+check("R7: aborts on wrong item qty", !r7Run.ok, r7Run.out.slice(-200));
+check("R7: abort cites item qty", /ITEM_QTY/.test(r7Run.out), r7Run.out.slice(-200));
+check("R7: quantity_on_hand untouched", rQoh(r7.variantId) === "1");
+
+// R8 — unexpected stock (stock != 0) aborts.
+rReset();
+const r8 = rBuildIncident({ stock: 1, qoh: 1 });
+const r8Run = runReconcile();
+check("R8: aborts on unexpected stock", !r8Run.ok, r8Run.out.slice(-200));
+check(
+  "R8: abort cites unexpected stock",
+  /UNEXPECTED_STOCK/.test(r8Run.out),
+  r8Run.out.slice(-200),
+);
+check("R8: quantity_on_hand untouched", rQoh(r8.variantId) === "1");
+
+// R9 — unexpected quantity_on_hand (neither 1 nor 0) aborts.
+rReset();
+const r9 = rBuildIncident({ qoh: 2 });
+const r9Run = runReconcile();
+check("R9: aborts on unexpected on-hand", !r9Run.ok, r9Run.out.slice(-200));
+check(
+  "R9: abort cites unexpected on-hand",
+  /UNEXPECTED_QOH/.test(r9Run.out),
+  r9Run.out.slice(-200),
+);
+check("R9: quantity_on_hand untouched", rQoh(r9.variantId) === "2");
+
+// R10 — quantity_reserved != 0 aborts.
+rReset();
+const r10 = rBuildIncident({ qoh: 1, reserved: 1 });
+const r10Run = runReconcile();
+check("R10: aborts on non-zero reserved", !r10Run.ok, r10Run.out.slice(-200));
+check(
+  "R10: abort cites unexpected reserved",
+  /UNEXPECTED_RESERVED/.test(r10Run.out),
+  r10Run.out.slice(-200),
+);
+check("R10: quantity_on_hand untouched", rQoh(r10.variantId) === "1");
+
+// R11 — the artifact enforces an affected-row-count invariant, proven by R1
+//       (exactly one row updated) and R2 (zero writes), and statically present.
+const artifactSource = readFileSync(path.join(root, ARTIFACT), "utf8").toLowerCase();
+check(
+  "R11: artifact reads the affected row count",
+  /get\s+diagnostics\s+\w+\s*=\s*row_count/.test(artifactSource),
+);
+check(
+  "R11: artifact requires exactly one updated row",
+  /row_count.*<>\s*1|<>\s*1[\s\S]{0,40}row/.test(artifactSource) ||
+    artifactSource.includes("expected exactly 1 updated row"),
+);
+check("R11: artifact aborts on a row-count mismatch", artifactSource.includes("abort_rowcount"));
+
+// R12 — write boundaries after a successful reconciliation: only
+//       inventory.quantity_on_hand (+ updated_at) may change.
+rReset();
+const r12 = rBuildIncident();
+const r12OrdersBefore = rquery(
+  "select md5(coalesce(string_agg(order_number||'|'||status||'|'||payment_method||'|'||payment_status||'|'||total_aed::text, ',' order by order_number),''))  from orders",
+);
+const r12ItemsBefore = rquery(
+  "select md5(coalesce(string_agg(order_id::text||'|'||qty::text||'|'||unit_price_aed::text, ',' order by id),'')) from order_items",
+);
+const r12MovesBefore = rquery(
+  "select md5(coalesce(string_agg(variant_id::text||'|'||movement_type||'|'||quantity_delta::text||'|'||coalesce(reason,''), ',' order by id),'')) from inventory_movements",
+);
+const r12StockBefore = rStock(r12.variantId);
+const r12Run = runReconcile();
+check("R12: reconciliation succeeds", r12Run.ok, r12Run.out.slice(-200));
+check(
+  "R12: orders unchanged",
+  rquery(
+    "select md5(coalesce(string_agg(order_number||'|'||status||'|'||payment_method||'|'||payment_status||'|'||total_aed::text, ',' order by order_number),'')) from orders",
+  ) === r12OrdersBefore,
+);
+check(
+  "R12: order_items unchanged",
+  rquery(
+    "select md5(coalesce(string_agg(order_id::text||'|'||qty::text||'|'||unit_price_aed::text, ',' order by id),'')) from order_items",
+  ) === r12ItemsBefore,
+);
+check(
+  "R12: inventory_movements unchanged",
+  rquery(
+    "select md5(coalesce(string_agg(variant_id::text||'|'||movement_type||'|'||quantity_delta::text||'|'||coalesce(reason,''), ',' order by id),'')) from inventory_movements",
+  ) === r12MovesBefore,
+);
+check("R12: product_variants.stock unchanged", rStock(r12.variantId) === r12StockBefore);
+check("R12: only quantity_on_hand changed (1 -> 0)", rQoh(r12.variantId) === "0");
 
 console.log(
   JSON.stringify({

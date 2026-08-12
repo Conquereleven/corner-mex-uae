@@ -6,7 +6,8 @@ This roadmap prioritizes visible commercial progress. It records direction only 
 
 - Production frontend is live and healthy.
 - Production auto-deploy is disabled.
-- All reported commercial execution capabilities remain disabled.
+- CM-COM-3A commercial-active (Cash on Delivery) has been activated: the catalog is loaded and COD checkout is live under Founder authorization. Acceptance is **not** final — the first Founder COD acceptance order revealed an inventory consistency defect, now tracked as **CM-COM-3A.1** (see below), which is the current acceptance blocker.
+- All other commercial execution capabilities (marketplace, seller auth/payouts, commissions, external email/messaging, real payment execution) remain disabled.
 - Staging is the required proving ground for storefront and conversion changes.
 
 ## CM-COM-1 — Storefront Conversion Foundation
@@ -107,17 +108,31 @@ On hold until an approved, owned domain exists **and** the Founder authorizes it
 - configure DNS and TLS under explicit authorization;
 - preserve the Railway origin as the rollback route during cutover.
 
-## CM-COM-3A — Commercial Active MVP (Cash on Delivery) · CURRENT
+## CM-COM-3A — Commercial Active MVP (Cash on Delivery) · ACTIVATED / ACCEPTANCE BLOCKED BY CM-COM-3A.1
 
 Runs **ahead of** `CM-COM-2B1` under explicit Founder authorization, because revenue readiness
 does not depend on a custom domain.
 
 - one bounded order path: cash on delivery, single merchant, AED only;
 - server-authoritative money: per-emirate shipping, 5% VAT and a Founder-attested TRN;
-- transactional COD order function prepared and **unapplied**;
-- Intermex UAE public catalog ingestion (read-only) and a dry-run activation plan;
-- repository readiness only — **no** migration applied, catalog loaded, deployment or
-  checkout activation. See `CM-COM-3A_ACTIVATION_RUNBOOK.md`.
+- transactional COD order function **applied**, catalog **loaded**, and COD checkout **activated**
+  under Founder authorization (see `CM-COM-3A_ACTIVATION_RUNBOOK.md`);
+- Intermex UAE public catalog ingestion (read-only) and the executed activation plan;
+- the first Founder COD acceptance order committed successfully, but exposed an inventory
+  consistency defect (`inventory.quantity_on_hand` not decremented alongside
+  `product_variants.stock`). Final Commercial Active acceptance is **not** declared until
+  **CM-COM-3A.1** passes.
+
+### CM-COM-3A.1 — Inventory Consistency Hotfix · CURRENT (acceptance blocker)
+
+- corrected `place_cod_order_v1` decrements `product_variants.stock` **and**
+  `inventory.quantity_on_hand` atomically, with exactly one `sale` movement, failing closed on
+  missing/insufficient/drifted inventory;
+- delivered as a **new forward** pending-canonical migration; the applied migration is not rewritten;
+- includes a guarded, idempotent, one-time production reconciliation artifact (prepared, **not
+  executed**) and a regression suite that reproduces the production defect;
+- repository readiness only — **no** migration applied, reconciliation executed, deployment or
+  checkout change. See `CM-COM-3A1_HOTFIX_RUNBOOK.md`.
 
 ## CM-COM-3 — Controlled Order Intake
 
@@ -132,6 +147,24 @@ does not depend on a custom domain.
 - validate AED totals, tax, shipping and payment states;
 - connect the selected fulfilment workflow;
 - add order notifications and reconciliation only after successful controlled tests.
+
+### CM-COM-4A — Transactional Order Confirmation Email · DEFERRED / NOT CURRENT PRIORITY
+
+Deferred debt, recorded here so it is not lost. **Not** part of CM-COM-3A.1 and not started.
+
+Later scope (for a future sprint):
+
+- customer order-confirmation email after a successfully committed order;
+- COD-aware content: order number, item summary, AED totals, shipping emirate and rate,
+  payment state, delivery expectations, and company identity / TRN as legally appropriate;
+- provider selection and configuration, idempotency / duplicate-send protection,
+  delivery/failure observability, and a resend / manual recovery path.
+
+Hard future contract: **email failure must never rollback or invalidate a committed order.**
+
+Not now: no email provider is chosen, no SMTP/provider credentials are configured, no external
+email is sent, no email transport is implemented, no email secrets are added, and notifications
+are not activated. This item is roadmap-only.
 
 ## CM-COM-5 — B2B and Growth
 
@@ -156,7 +189,10 @@ requires the same explicit authorization.
 | `CM-COM-2A` — Trust Architecture     | **complete / merged** (PR #23)                                               |
 | `CM-COM-2B0` — Domain Readiness      | **complete / merged** (PR #24)                                               |
 | `CM-COM-2B1` — Domain Cutover        | **on hold** — no approved or owned domain exists                             |
-| `CM-COM-3A` — Commercial Active MVP  | **current sprint** (PR #25) — Founder-authorized reorder ahead of CM-COM-2B1 |
+| `CM-COM-3A` — Commercial Active MVP  | **activated** (PR #25) — catalog loaded, COD checkout live; acceptance blocked by CM-COM-3A.1 |
+| `CM-COM-3A.1` — Inventory Consistency Hotfix | **current** — repository fix prepared; production rollout separately authorized |
 | `CM-COM-3` — Controlled Order Intake | superseded in scope by CM-COM-3A; remaining items follow it                  |
 
-Production commerce execution remains safely off until separately authorized.
+COD checkout is live under Founder authorization; final CM-COM-3A acceptance and all other
+commercial execution capabilities remain gated until CM-COM-3A.1 passes and each is separately
+authorized.

@@ -11,7 +11,8 @@
   ],
   "pendingCanonicalMigrations": [
     "20260716010000_catalog_import_foundation_a3_2b.sql",
-    "20260809010000_place_cod_order_v1.sql"
+    "20260809010000_place_cod_order_v1.sql",
+    "20260810120000_place_cod_order_v1_inventory_consistency.sql"
   ],
   "migrations": [
     {
