@@ -17,6 +17,28 @@ export const Route = createFileRoute("/_authenticated/account/orders/$id")({
 
 const aed = (value: number | string) => `${Number(value).toFixed(2)} AED`;
 
+type CustomerOrderItem = {
+  id: string;
+  product_name: string;
+  variant_label: string | null;
+  qty: number;
+  line_total_aed: number | string;
+};
+
+type CustomerOrder = {
+  order_number: string;
+  created_at: string;
+  status: string;
+  payment_status: string;
+  payment_method: string | null;
+  subtotal_aed: number | string;
+  shipping_aed: number | string;
+  tax_aed: number | string;
+  total_aed: number | string;
+  shipping_address: Record<string, string | null> | null;
+  items: CustomerOrderItem[];
+};
+
 function CustomerOrderDetail() {
   const { id } = Route.useParams();
   const fetchOrder = useServerFn(getMyOrderDetail);
@@ -61,7 +83,7 @@ function CustomerOrderDetail() {
   );
 }
 
-function OrderDetail({ order }: { order: any }) {
+function OrderDetail({ order }: { order: CustomerOrder }) {
   const address = order.shipping_address ?? {};
   return (
     <div className="space-y-6">
@@ -87,7 +109,7 @@ function OrderDetail({ order }: { order: any }) {
         </CardHeader>
         <CardContent>
           <ul className="divide-y divide-border">
-            {(order.items ?? []).map((item: any) => (
+            {(order.items ?? []).map((item) => (
               <li key={item.id} className="flex justify-between gap-4 py-4 first:pt-0 last:pb-0">
                 <div>
                   <p className="font-medium">{item.product_name}</p>
