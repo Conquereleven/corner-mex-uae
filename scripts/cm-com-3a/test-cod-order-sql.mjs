@@ -957,6 +957,39 @@ check(
 );
 check("R4: quantity_on_hand untouched", rQoh(r4.variantId) === "1");
 
+// R4B — an extra NON-sale movement on the same order+variant (e.g. one correct
+// sale -1 PLUS one adjustment +1) must abort on total-movement cardinality, even
+// though the arithmetic nets to -1. This is incident provenance, not accounting.
+// (The pre-Delta-2 logic filtered the count on movement_type='sale' and would
+// have accepted this incident and reconciled — this test proves the fix.)
+rReset();
+const r4b = rBuildIncident();
+rpsql([
+  "-q",
+  "-c",
+  `insert into public.inventory_movements (variant_id, movement_type, quantity_delta, reference_type, reference_id, reason) values ('${r4b.variantId}', 'adjustment', 1, 'order', '${r4b.orderId}', 'manual correction')`,
+]);
+const r4bBefore = rSnapshot();
+const r4bMovementsBefore = rquery(
+  `select count(*) from inventory_movements where reference_type='order' and reference_id='${r4b.orderId}' and variant_id='${r4b.variantId}'`,
+);
+const r4bRun = runReconcile();
+check("R4B: aborts on an extra non-sale incident movement", !r4bRun.ok, r4bRun.out.slice(-200));
+check(
+  "R4B: abort cites movement cardinality",
+  /MOVEMENT_CARDINALITY/.test(r4bRun.out),
+  r4bRun.out.slice(-200),
+);
+check("R4B: quantity_on_hand remains 1", rQoh(r4b.variantId) === "1");
+check("R4B: stock remains 0", rStock(r4b.variantId) === "0");
+check("R4B: orders/items/movements/payment unchanged", rSnapshot() === r4bBefore);
+check(
+  "R4B: both movements unchanged, none added",
+  rquery(
+    `select count(*) from inventory_movements where reference_type='order' and reference_id='${r4b.orderId}' and variant_id='${r4b.variantId}'`,
+  ) === r4bMovementsBefore && r4bMovementsBefore === "2",
+);
+
 // R5 — missing sale movement aborts, no write.
 rReset();
 const r5 = rBuildIncident({ saleDeltas: [] });

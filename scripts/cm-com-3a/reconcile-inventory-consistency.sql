@@ -31,9 +31,12 @@
 --   * Requires exactly one order with the known order_number, in the expected
 --     COD/pending shape (order and payment state are never mutated).
 --   * Requires exactly one order_items row for that order, with qty = 1.
---   * Requires exactly ONE inventory_movements row for that exact order+variant
---     (reference_type='order', reference_id=<order>, movement_type='sale',
---     quantity_delta=-1, reason='cod_order') — a single row, not an aggregate.
+--   * Requires exactly ONE TOTAL inventory_movements row for that exact
+--     order+variant (reference_type='order', reference_id=<order>), regardless of
+--     movement_type — then requires that single row to be exactly
+--     movement_type='sale', quantity_delta=-1, reason='cod_order'. An extra
+--     non-sale movement (adjustment/receipt/correction) on the same order+variant
+--     aborts, even if the arithmetic nets to -1. Provenance, not aggregation.
 --   * Locks the target product_variants and inventory rows FOR UPDATE before the
 --     final validation and mutation.
 --   * Requires the target variant to be the ONLY stock/quantity_on_hand drift in
@@ -63,6 +66,9 @@ declare
   v_qoh integer;
   v_reserved integer;
   v_count integer;
+  v_movement_type text;
+  v_movement_delta integer;
+  v_movement_reason text;
   v_global_drift integer;
   v_rowcount integer;
 begin
@@ -96,28 +102,36 @@ begin
       v_order_id, v_variant_id, v_qty;
   end if;
 
-  -- F. Exactly ONE sale movement row for that exact order + variant, delta -1.
-  -- A single row is required, not merely an aggregate that sums to -1.
+  -- F. Exactly ONE TOTAL inventory movement for that exact order + variant,
+  -- regardless of movement_type. This is incident provenance validation, not
+  -- inventory accounting aggregation: the ONLY acceptable movement universe for
+  -- the target order+variant is a single row. An extra adjustment/receipt/
+  -- correction (even one that nets the arithmetic back to -1) is NOT the known
+  -- incident and must abort. The cardinality query deliberately does NOT filter
+  -- on movement_type.
   select count(*) into v_count
     from public.inventory_movements
     where reference_type = 'order'
       and reference_id = v_order_id
-      and variant_id = v_variant_id
-      and movement_type = 'sale';
+      and variant_id = v_variant_id;
   if v_count <> 1 then
-    raise exception 'CM_COM_3A1_RECONCILE_ABORT_MOVEMENT_CARDINALITY: order=% variant=% sale_rows=%',
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_MOVEMENT_CARDINALITY: order=% variant=% movement_rows=%',
       v_order_id, v_variant_id, v_count;
   end if;
-  select count(*) into v_count
+
+  -- Only after total cardinality = 1, inspect that exact unique row. It must be
+  -- exactly sale / -1 / cod_order; any deviation aborts.
+  select movement_type, quantity_delta, reason
+    into v_movement_type, v_movement_delta, v_movement_reason
     from public.inventory_movements
     where reference_type = 'order'
       and reference_id = v_order_id
-      and variant_id = v_variant_id
-      and movement_type = 'sale'
-      and quantity_delta = -1
-      and reason = 'cod_order';
-  if v_count <> 1 then
-    raise exception 'CM_COM_3A1_RECONCILE_ABORT_MOVEMENT_SHAPE: order=% variant=%', v_order_id, v_variant_id;
+      and variant_id = v_variant_id;
+  if v_movement_type is distinct from 'sale'
+     or v_movement_delta is distinct from -1
+     or v_movement_reason is distinct from 'cod_order' then
+    raise exception 'CM_COM_3A1_RECONCILE_ABORT_MOVEMENT_SHAPE: order=% variant=% type=% delta=% reason=%',
+      v_order_id, v_variant_id, v_movement_type, v_movement_delta, v_movement_reason;
   end if;
 
   -- Lock the exact target rows before final validation and mutation. Variant

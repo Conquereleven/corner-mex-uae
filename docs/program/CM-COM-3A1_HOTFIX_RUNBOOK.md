@@ -105,10 +105,13 @@ general-purpose drift auto-repair tool. It:
 - requires **exactly one** order with that number, in the expected COD /
   `pending` shape (order and payment state are verified, never mutated);
 - requires **exactly one** `order_items` row for that order, with `qty = 1`;
-- requires **exactly one** `inventory_movements` row for that exact order +
-  variant (`reference_type='order'`, `reference_id=<order>`,
-  `movement_type='sale'`, `quantity_delta=-1`, `reason='cod_order'`) — a single
-  row, not an aggregate that merely sums to `-1`;
+- requires **exactly one TOTAL** `inventory_movements` row for that exact order +
+  variant (`reference_type='order'`, `reference_id=<order>`) — regardless of
+  `movement_type` — and then requires that single row to be exactly
+  `movement_type='sale'`, `quantity_delta=-1`, `reason='cod_order'`. An extra
+  non-sale movement (adjustment/receipt/correction) on the same order+variant
+  aborts even if the arithmetic nets to `-1`; this is incident provenance
+  validation, not accounting aggregation;
 - **locks** the target `product_variants` and `inventory` rows `FOR UPDATE`
   before the final validation and mutation;
 - requires the target to be the **only** stock/`quantity_on_hand` drift in the
@@ -126,13 +129,15 @@ general-purpose drift auto-repair tool. It:
   reserved, on-hand, movement shape, or extra drift).
 
 The **actual artifact file** is executed by the automated disposable-PostgreSQL
-regression suite (`npm run test:cm-com-3a:sql`, scenarios R1–R12): exact incident
-reconciled (`quantity_on_hand 1 → 0`), idempotent rerun no-op, an unrelated
-second matching drift aborts and repairs nothing, wrong/missing movement
-cardinality aborts, wrong item cardinality/qty aborts, unexpected
-stock/on-hand/reserved aborts, the `ROW_COUNT = 1` invariant is present and
-enforced, and the write-boundary check confirms only `quantity_on_hand` (+
-`updated_at`) changes on success.
+regression suite (`npm run test:cm-com-3a:sql`, scenarios R1–R12 incl. R4B):
+exact incident reconciled (`quantity_on_hand 1 → 0`), idempotent rerun no-op, an
+unrelated second matching drift aborts and repairs nothing, wrong/missing sale
+movement cardinality aborts, an extra non-sale movement on the same order+variant
+aborts on total-movement cardinality (R4B, even when the arithmetic nets to
+`-1`), wrong item cardinality/qty aborts, unexpected stock/on-hand/reserved
+aborts, the `ROW_COUNT = 1` invariant is present and enforced, and the
+write-boundary check confirms only `quantity_on_hand` (+ `updated_at`) changes on
+success.
 
 ## Explicitly out of scope
 
