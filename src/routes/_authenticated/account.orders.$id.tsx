@@ -61,8 +61,8 @@ function CustomerOrderDetail() {
     <SiteLayout>
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <Button asChild variant="ghost" className="mb-5">
-          <Link to="/account">
-            <ArrowLeft className="mr-2 h-4 w-4" /> My orders
+          <Link to="/account/orders">
+            <ArrowLeft className="mr-2 h-4 w-4" /> My Orders
           </Link>
         </Button>
 
