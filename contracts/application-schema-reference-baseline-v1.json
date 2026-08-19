@@ -293,6 +293,7 @@
       "name": "notifications",
       "files": [
         "src/lib/admin.functions.ts",
+        "src/lib/notifications-persistence.ts",
         "src/lib/notifications.functions.ts",
         "src/lib/seller.functions.ts",
         "src/routes/api/public/hooks/auto-payouts.ts"
