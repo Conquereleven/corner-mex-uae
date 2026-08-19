@@ -4,15 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { AccountNavigation } from "@/components/account/AccountNavigation";
 import { CustomerOrderHistorySurface } from "@/components/account/CustomerOrderHistory";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import { getMyAccount, getMyOrders } from "@/lib/account.functions";
+import { getReviewableItems } from "@/lib/reviews.functions";
 import { isAdmin } from "@/lib/admin.functions";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { getCustomerOrderHistoryView } from "@/lib/order-experience-contract";
-import { getReviewableItems } from "@/lib/reviews.functions";
 
 export { CustomerOrderHistorySurface, OrderRow } from "@/components/account/CustomerOrderHistory";
 
@@ -33,11 +33,11 @@ function Account() {
   const fetchOrders = useServerFn(getMyOrders);
   const fetchIsAdmin = useServerFn(isAdmin);
   const fetchLoyalty = useServerFn(getMyLoyalty);
-  const fetchReviewable = useServerFn(getReviewableItems);
   const account = useQuery({ queryKey: ["account"], queryFn: () => fetchAccount({}) });
   const orders = useQuery({ queryKey: ["my-orders"], queryFn: () => fetchOrders({}) });
   const admin = useQuery({ queryKey: ["is-admin"], queryFn: () => fetchIsAdmin({}) });
   const loyalty = useQuery({ queryKey: ["my-loyalty"], queryFn: () => fetchLoyalty({}) });
+  const fetchReviewable = useServerFn(getReviewableItems);
   const reviewable = useQuery({ queryKey: ["my-reviewable"], queryFn: () => fetchReviewable({}) });
   const ordersView = getCustomerOrderHistoryView({
     isLoading: orders.isLoading,
@@ -62,14 +62,18 @@ function Account() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {account.data?.seller && (
-              <Button asChild variant="outline" className="rounded-full">
-                <Link to="/seller">Seller dashboard</Link>
-              </Button>
+              <Link to="/seller">
+                <Button variant="outline" className="rounded-full">
+                  Seller dashboard
+                </Button>
+              </Link>
             )}
             {admin.data?.admin && (
-              <Button asChild variant="outline" className="rounded-full">
-                <Link to="/admin">Admin</Link>
-              </Button>
+              <Link to="/admin">
+                <Button variant="outline" className="rounded-full">
+                  Admin
+                </Button>
+              </Link>
             )}
             <AccountNavigation includeHome={false} />
             <Button
@@ -132,11 +136,11 @@ function PendingReviewsCard({ items }: { items: ReviewableItem[] }) {
                 )}
               </div>
               {it.product_slug && (
-                <Button asChild size="sm" variant="outline" className="rounded-full">
-                  <Link to="/product/$slug" params={{ slug: it.product_slug }}>
+                <Link to="/product/$slug" params={{ slug: it.product_slug }}>
+                  <Button size="sm" variant="outline" className="rounded-full">
                     Review
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               )}
             </li>
           ))}
