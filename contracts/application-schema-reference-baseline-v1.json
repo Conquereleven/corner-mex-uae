@@ -298,8 +298,8 @@
         "src/lib/seller.functions.ts",
         "src/routes/api/public/hooks/auto-payouts.ts"
       ],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_migration"
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "table_or_storage_bucket",
@@ -483,8 +483,8 @@
       "files": [
         "src/lib/cod-order.functions.ts"
       ],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_migration"
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "function",
@@ -492,8 +492,8 @@
       "files": [
         "src/lib/admin.functions.ts"
       ],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_migration"
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "function",
@@ -501,8 +501,8 @@
       "files": [
         "src/lib/admin.functions.ts"
       ],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_migration"
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
     },
     {
       "kind": "table_or_storage_bucket",
@@ -510,8 +510,8 @@
       "files": [
         "src/lib/admin.functions.ts"
       ],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_migration"
+      "classification": "canonical_supported",
+      "rationale": "present_in_canonical_db2_inventory"
     }
   ]
 }

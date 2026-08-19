@@ -113,8 +113,8 @@ test("cart VAT and total use one coherent fils rounding policy", () => {
 
 test("pending lifecycle migration removes all service-role table writes", async () => {
   const [foundation, corrective] = await Promise.all([
-    read("supabase/pending-canonical/20260812180442_cm_com_4a_post_order_lifecycle.sql"),
-    read("supabase/pending-canonical/20260819190000_cm_launch_1_lifecycle_acl_hardening.sql"),
+    read("supabase/migrations/20260812180442_cm_com_4a_post_order_lifecycle.sql"),
+    read("supabase/migrations/20260819190000_cm_launch_1_lifecycle_acl_hardening.sql"),
   ]);
   assert.equal(
     createHash("sha256").update(foundation).digest("hex"),

@@ -433,20 +433,20 @@ test("checkout clears the cart only after a real order and guards double submit"
 
 // --- migration contract ---------------------------------------------------
 
-test("the COD migration is prepared but not applied", async () => {
+test("the COD migration is recorded as active after canonical application", async () => {
   const contract = JSON.parse(await read("contracts/lovable-cloud-migration-ownership-v1.json"));
   assert.ok(
-    contract.pendingCanonicalMigrations.some((n) => n.includes("place_cod_order_v1")),
-    "the COD migration must stay in the pending (unapplied) set",
+    !contract.pendingCanonicalMigrations.some((n) => n.includes("place_cod_order_v1")),
+    "the COD migration must no longer be pending",
   );
   assert.ok(
-    !contract.activeCanonicalMigrations.some((n) => n.includes("place_cod_order_v1")),
-    "the COD migration must not be listed as applied",
+    contract.activeCanonicalMigrations.some((n) => n.includes("place_cod_order_v1")),
+    "the COD migration must be listed as active",
   );
 });
 
 test("the migration generates an order number and locks stock", async () => {
-  const sql = await read("supabase/pending-canonical/20260809010000_place_cod_order_v1.sql");
+  const sql = await read("supabase/migrations/20260809010000_place_cod_order_v1.sql");
   assert.match(sql, /for update/i, "variants must be locked");
   assert.match(sql, /order_number/);
   assert.match(sql, /unique_violation/, "order number collisions must be retried");
@@ -459,7 +459,7 @@ test("the migration generates an order number and locks stock", async () => {
 
 test("the migration has no marketplace schema dependency", async () => {
   const sql = stripSqlComments(
-    await read("supabase/pending-canonical/20260809010000_place_cod_order_v1.sql"),
+    await read("supabase/migrations/20260809010000_place_cod_order_v1.sql"),
   );
   for (const forbidden of [
     "seller_id",

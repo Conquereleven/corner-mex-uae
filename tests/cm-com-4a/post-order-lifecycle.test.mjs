@@ -31,7 +31,7 @@ const adminListUi = await read("src/routes/_authenticated/admin.orders.index.tsx
 const lifecycle = await read("src/lib/order-lifecycle.ts");
 const experienceContract = await read("src/lib/order-experience-contract.ts");
 const migration = await read(
-  "supabase/pending-canonical/20260812180442_cm_com_4a_post_order_lifecycle.sql",
+  "supabase/migrations/20260812180442_cm_com_4a_post_order_lifecycle.sql",
 );
 
 test("canonical enum authority is exact", () => {

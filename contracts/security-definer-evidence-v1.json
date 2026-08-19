@@ -18,6 +18,24 @@
       "executionGrants": "authenticated and service_role only",
       "mutationScope": "none; stable authorization read",
       "rlsImplications": "used by authenticated admin policies; moved out of exposed API schema"
+    },
+    {
+      "identity": "public.place_cod_order_v1(uuid,jsonb,jsonb,numeric,numeric,jsonb)",
+      "owner": "postgres",
+      "searchPath": "public, pg_temp",
+      "callerIdentitySource": "validated p_buyer_id supplied only by the authenticated server function",
+      "executionGrants": "service_role only",
+      "mutationScope": "atomically creates one COD order and items, decrements matching stock and inventory, and appends inventory movements",
+      "rlsImplications": "SECURITY DEFINER is restricted to service_role and performs bounded transactional writes"
+    },
+    {
+      "identity": "public.admin_transition_order_lifecycle_v1(uuid,text,text,text)",
+      "owner": "postgres",
+      "searchPath": "pg_catalog",
+      "callerIdentitySource": "auth.uid() verified through commerce_private.is_admin",
+      "executionGrants": "authenticated only",
+      "mutationScope": "updates one locked order lifecycle field and appends one lifecycle event after state-machine validation",
+      "rlsImplications": "SECURITY DEFINER performs its own authenticated admin authorization before bounded mutation"
     }
   ]
 }

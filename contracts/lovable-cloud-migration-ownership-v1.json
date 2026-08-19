@@ -7,15 +7,74 @@
     "20260713222315_revoke_public_rls_auto_enable_execution.sql",
     "20260714010000_commerce_foundation_a2.sql",
     "20260714011000_private_admin_boundary_a2.sql",
-    "20260714012000_public_read_policy_boundary_a2.sql"
-  ],
-  "pendingCanonicalMigrations": [
-    "20260716010000_catalog_import_foundation_a3_2b.sql",
+    "20260714012000_public_read_policy_boundary_a2.sql",
     "20260809010000_place_cod_order_v1.sql",
     "20260810120000_place_cod_order_v1_inventory_consistency.sql",
     "20260812180442_cm_com_4a_post_order_lifecycle.sql",
     "20260819190000_cm_launch_1_lifecycle_acl_hardening.sql",
     "20260819220000_cm_launch_1_notifications_canonical.sql"
+  ],
+  "pendingCanonicalMigrations": [
+    "20260716010000_catalog_import_foundation_a3_2b.sql"
+  ],
+  "canonicalProductionMigrations": [
+    {
+      "version": "20260713223138",
+      "name": "revoke_public_rls_auto_enable_execution_a1",
+      "sourceFiles": [
+        "20260713222315_revoke_public_rls_auto_enable_execution.sql"
+      ]
+    },
+    {
+      "version": "20260713230958",
+      "name": "commerce_foundation_a2",
+      "sourceFiles": [
+        "20260714010000_commerce_foundation_a2.sql"
+      ]
+    },
+    {
+      "version": "20260713231133",
+      "name": "private_admin_boundary_a2",
+      "sourceFiles": [
+        "20260714011000_private_admin_boundary_a2.sql"
+      ]
+    },
+    {
+      "version": "20260713234156",
+      "name": "public_read_policy_boundary_a2",
+      "sourceFiles": [
+        "20260714012000_public_read_policy_boundary_a2.sql"
+      ]
+    },
+    {
+      "version": "20260809221200",
+      "name": "place_cod_order_v1",
+      "sourceFiles": [
+        "20260809010000_place_cod_order_v1.sql",
+        "20260810120000_place_cod_order_v1_inventory_consistency.sql"
+      ]
+    },
+    {
+      "version": "20260819181510",
+      "name": "cm_com_4a_post_order_lifecycle",
+      "sourceFiles": [
+        "20260812180442_cm_com_4a_post_order_lifecycle.sql"
+      ]
+    },
+    {
+      "version": "20260819202909",
+      "name": "cm_launch_1_lifecycle_acl_hardening",
+      "sourceFiles": [
+        "20260819190000_cm_launch_1_lifecycle_acl_hardening.sql"
+      ]
+    },
+    {
+      "version": "20260819215938",
+      "name": "cm_launch_1_notifications_canonical",
+      "sourceFiles": [
+        "20260819220000_cm_launch_1_notifications_canonical.sql"
+      ]
+    }
   ],
   "migrations": [
     {

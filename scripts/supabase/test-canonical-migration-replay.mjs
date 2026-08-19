@@ -23,7 +23,7 @@ for (const migration of migrations) psql("-f", `supabase/migrations/${migration}
 const metricsSql = `
 select json_build_object(
   'tables', (select count(*) from pg_tables where schemaname='public'),
-  'publicFunctions', (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('rls_auto_enable','set_updated_at')),
+  'publicFunctions', (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('admin_transition_order_lifecycle_v1','cm_com_4a_order_lifecycle_capability','place_cod_order_v1','rls_auto_enable','set_updated_at')),
   'privateFunctions', (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='commerce_private' and p.proname='is_admin'),
   'rlsTables', (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity),
   'policies', (select count(*) from pg_policies where schemaname='public')
@@ -31,16 +31,16 @@ select json_build_object(
 const first = JSON.parse(psql("-At", "-c", metricsSql));
 const second = JSON.parse(psql("-At", "-c", metricsSql));
 const expected = {
-  tables: 20,
-  publicFunctions: 2,
+  tables: 22,
+  publicFunctions: 5,
   privateFunctions: 1,
-  rlsTables: 20,
-  policies: 37,
+  rlsTables: 22,
+  policies: 38,
 };
 if (JSON.stringify(first) !== JSON.stringify(expected))
   throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);
 if (JSON.stringify(first) !== JSON.stringify(second))
   throw new Error("canonical replay validation is not deterministic");
 console.log(
-  `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=2, rls=${first.rlsTables}, policies=${first.policies}`,
+  `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=${first.publicFunctions}, rls=${first.rlsTables}, policies=${first.policies}`,
 );

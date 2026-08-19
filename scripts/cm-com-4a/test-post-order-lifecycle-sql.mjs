@@ -53,8 +53,6 @@ for (const migration of readdirSync(path.join(root, "supabase/migrations"))
   .filter((name) => name.endsWith(".sql"))
   .sort())
   file(`supabase/migrations/${migration}`);
-file("supabase/pending-canonical/20260812180442_cm_com_4a_post_order_lifecycle.sql");
-file("supabase/pending-canonical/20260819190000_cm_launch_1_lifecycle_acl_hardening.sql");
 
 psql([
   "-q",
