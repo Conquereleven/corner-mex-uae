@@ -42,9 +42,7 @@ if (active.length !== 9)
   errors.push(`expected 9 active canonical source migrations, found ${active.length}`);
 // Every pending canonical migration must be individually named here, so a new
 // unapplied migration cannot appear without an explicit contract update.
-const REQUIRED_PENDING = [
-  "catalog_import_foundation_a3_2b",
-];
+const REQUIRED_PENDING = ["catalog_import_foundation_a3_2b"];
 if (pending.length !== REQUIRED_PENDING.length) {
   errors.push("pending canonical migration count drift");
 }
@@ -66,7 +64,9 @@ const EXPECTED_PRODUCTION_MIGRATIONS = [
 const recordedProductionMigrations = (contract.canonicalProductionMigrations ?? []).map(
   ({ version, name }) => [version, name],
 );
-if (JSON.stringify(recordedProductionMigrations) !== JSON.stringify(EXPECTED_PRODUCTION_MIGRATIONS)) {
+if (
+  JSON.stringify(recordedProductionMigrations) !== JSON.stringify(EXPECTED_PRODUCTION_MIGRATIONS)
+) {
   errors.push("canonical production migration history drift");
 }
 for (const record of contract.canonicalProductionMigrations ?? []) {

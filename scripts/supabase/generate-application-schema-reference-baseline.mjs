@@ -28,10 +28,7 @@ const canonical = new Set([
   "admin_transition_order_lifecycle_v1",
   "cm_com_4a_order_lifecycle_capability",
 ]);
-const future = new Set([
-  "catalog_import_executions",
-  "catalog_import_reviews",
-]);
+const future = new Set(["catalog_import_executions", "catalog_import_reviews"]);
 const roots = ["src", "scripts"];
 const files = [];
 const walk = async (directory) => {
@@ -68,18 +65,16 @@ const references = [...found.values()]
   .map((reference) => ({
     ...reference,
     files: [...new Set(reference.files)].sort(),
-    classification:
-      canonical.has(reference.name)
-        ? "canonical_supported"
-        : future.has(reference.name)
-          ? "requires_future_migration"
-          : "lovable_live_only",
-    rationale:
-      canonical.has(reference.name)
-        ? "present_in_canonical_db2_inventory"
-        : future.has(reference.name)
-          ? "owned_by_pending_canonical_migration"
-          : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
+    classification: canonical.has(reference.name)
+      ? "canonical_supported"
+      : future.has(reference.name)
+        ? "requires_future_migration"
+        : "lovable_live_only",
+    rationale: canonical.has(reference.name)
+      ? "present_in_canonical_db2_inventory"
+      : future.has(reference.name)
+        ? "owned_by_pending_canonical_migration"
+        : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
   }))
   .sort((left, right) => {
     const leftKey = `${left.kind}:${left.name}`;

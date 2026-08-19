@@ -947,12 +947,12 @@ test("the generated SQL escapes source text rather than interpolating it", () =>
 
 // --- activation sequence ---------------------------------------------------
 
-test("the activation runbook proves the catalog first and enables checkout last", async () => {
+test("the activation runbook verifies the applied COD migration and enables checkout last", async () => {
   const runbook = await read("docs/program/CM-COM-3A_ACTIVATION_RUNBOOK.md");
   const crawl = runbook.search(/Fresh Intermex public crawl/i);
   const validate = runbook.search(/Validate the canonical manifest/i);
   const plan = runbook.search(/Generate the deterministic activation plan/i);
-  const migration = runbook.search(/apply the exact reviewed COD/i);
+  const migration = runbook.search(/reviewed COD transactional migration is now applied/i);
   const load = runbook.search(/Execute the exact reviewed loader/i);
   const deploy = runbook.search(/CHECKOUT_ENABLED` still false/i);
   const enable = runbook.indexOf("CORNERMEX_CHECKOUT_ENABLED=true");
@@ -963,8 +963,8 @@ test("the activation runbook proves the catalog first and enables checkout last"
   // Catalog validity is proved while the database is still untouched.
   assert.ok(crawl < validate, "the crawl must precede validation");
   assert.ok(validate < plan, "validation must precede plan generation");
-  assert.ok(plan < migration, "the catalog plan must be proved before the migration");
-  assert.ok(migration < load, "the migration must precede the catalog load");
+  assert.ok(plan < migration, "the catalog plan must precede applied-migration verification");
+  assert.ok(migration < load, "applied-migration verification must precede the catalog load");
   assert.ok(
     load < deploy && deploy < enable,
     "checkout must be enabled LAST, after the catalog is loaded and deployed",

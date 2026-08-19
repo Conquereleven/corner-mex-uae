@@ -30,8 +30,7 @@ if (contract.canonicalProjectRef !== "wlrfknmrhowldygmvtvn")
 if (JSON.stringify(tables) !== JSON.stringify(expected))
   errors.push(`table identity mismatch: ${JSON.stringify(tables)}`);
 if (
-  JSON.stringify(generatedFunctions) !==
-  JSON.stringify([...contract.generatedTypeFunctions].sort())
+  JSON.stringify(generatedFunctions) !== JSON.stringify([...contract.generatedTypeFunctions].sort())
 )
   errors.push(`generated function identity mismatch: ${JSON.stringify(generatedFunctions)}`);
 if (createHash("sha256").update(types).digest("hex") !== contract.typesSha256)
