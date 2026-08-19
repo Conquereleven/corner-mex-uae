@@ -1,7 +1,7 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-08-12T18:00:00Z",
+  "generatedAt": "2026-08-19T15:00:00Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
     "expectedMainSha": "e02960f0887d98e624b22a9333fde59175299847",
@@ -12,7 +12,7 @@
     "class": "verified_repository",
     "source": "CM-COM-4A is a repository-only implementation sprint from the production-accepted CM-COM-3A.1 merge. It performed NO Railway, Supabase, Lovable, DNS, registrar, OAuth or email-provider write. The lifecycle migration is prepared in Git only and remains unapplied.",
     "observedAt": "2026-08-08T00:45:00Z",
-    "freshUntil": "2026-08-15T00:45:00Z",
+    "freshUntil": "2026-08-26T15:00:00Z",
     "classMeaning": "This snapshot's own evidence is repository-verified. CM-COM-3A performed NO runtime observation, so it does not carry a verified_live class.",
     "repositoryEvidence": {
       "class": "verified_repository",
@@ -130,13 +130,24 @@
     "scope": "These readiness fields describe A3.2b EXECUTION readiness (reviewedRemediationHeadSha is the pinned A3.2b remediation head) and historical sprint reviews. They do NOT describe CM-COM-4A and must not be read as an independent review or release approval of the active sprint.",
     "currentSprintReadiness": {
       "sprint": "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION",
-      "pullRequest": null,
-      "state": "draft",
+      "pullRequest": 27,
+      "state": "draft_remediation",
       "independentReviewComplete": false,
       "independentReviewer": "Independent reviewer",
-      "reviewedHeadSha": null,
+      "reviewedHeadSha": "db5550b9d9d14702ad2b0d60e2eb1a20f235317a",
       "declaredReady": false,
-      "status": "pending_independent_review"
+      "status": "request_changes_cm_com_4a_r1_remediation_in_progress",
+      "independentReviewR1": {
+        "verdict": "REQUEST_CHANGES_CM_COM_4A",
+        "findings": [
+          "P1 combined lifecycle invariants",
+          "P1 audit ACL/read integration",
+          "P1 seller regression",
+          "P2 truthful order-detail backend error",
+          "P2 executable behavior coverage"
+        ],
+        "remediationStatus": "in_progress_not_independently_rereviewed"
+      }
     }
   },
   "program": {

@@ -28,6 +28,10 @@ create policy order_lifecycle_events_admin_read
 
 revoke all on public.order_lifecycle_events from public, anon, authenticated;
 grant select on public.order_lifecycle_events to authenticated;
+-- The server order-detail path uses its service-role client only after its own
+-- authenticated admin check. Grant only the read capability that path needs;
+-- no table write privilege is granted to any API role.
+grant select on public.order_lifecycle_events to service_role;
 
 -- Read-only capability probe. The UI calls this before enabling privileged
 -- controls; when the migration is absent, the missing RPC makes controls fail
@@ -65,6 +69,9 @@ declare
   v_order public.orders%rowtype;
   v_current text;
   v_allowed boolean := false;
+  v_result_order_status text;
+  v_result_payment_status text;
+  v_pair_allowed boolean := false;
   v_event_id uuid;
 begin
   if v_actor is null then
@@ -124,6 +131,30 @@ begin
   end if;
   if not v_allowed then
     raise exception 'CM_COM_4A_TRANSITION_NOT_ALLOWED';
+  end if;
+
+  v_result_order_status := case
+    when p_transition_type = 'order_status' then p_to
+    else v_order.status
+  end;
+  v_result_payment_status := case
+    when p_transition_type = 'payment_status' then p_to
+    else v_order.payment_status
+  end;
+
+  -- COD combined-state compatibility authority. This executes while the order
+  -- row is locked and before either the state row or audit log is mutated.
+  v_pair_allowed := case v_result_order_status
+    when 'pending' then v_result_payment_status in ('pending','under_review','failed','cancelled')
+    when 'confirmed' then v_result_payment_status in ('pending','under_review','paid')
+    when 'processing' then v_result_payment_status in ('pending','under_review','paid')
+    when 'shipped' then v_result_payment_status in ('pending','under_review','paid')
+    when 'delivered' then v_result_payment_status in ('paid','refunded')
+    when 'cancelled' then v_result_payment_status in ('pending','failed','refunded','cancelled')
+    else false
+  end;
+  if not v_pair_allowed then
+    raise exception 'CM_COM_4A_COMBINED_STATE_INCOMPATIBLE';
   end if;
 
   if p_transition_type = 'order_status' then

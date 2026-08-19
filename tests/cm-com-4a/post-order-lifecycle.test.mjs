@@ -5,18 +5,30 @@ import test from "node:test";
 import {
   ORDER_STATES,
   PAYMENT_STATES,
+  COD_COMBINED_STATES,
+  COD_PAYMENT_TRANSITIONS,
+  ORDER_TRANSITIONS,
   allowedOrderTransitions,
   allowedPaymentTransitions,
+  allowedCompatibleOrderTransitions,
+  allowedCompatiblePaymentTransitions,
+  isCodLifecyclePairCompatible,
 } from "../../src/lib/order-lifecycle.ts";
+import {
+  resolveLifecycleAudit,
+  resolveOwnedOrderDetail,
+} from "../../src/lib/order-detail-contract.ts";
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 const account = await read("src/lib/account.functions.ts");
 const accountUi = await read("src/routes/_authenticated/account.tsx");
 const customerDetail = await read("src/routes/_authenticated/account.orders.$id.tsx");
 const admin = await read("src/lib/admin.functions.ts");
-const adminUi = await read("src/components/site/OrderDetailView.tsx");
+const sellerUi = await read("src/components/site/OrderDetailView.tsx");
+const adminUi = await read("src/components/site/AdminOrderLifecycleView.tsx");
 const adminListUi = await read("src/routes/_authenticated/admin.orders.index.tsx");
 const lifecycle = await read("src/lib/order-lifecycle.ts");
+const detailContract = await read("src/lib/order-detail-contract.ts");
 const migration = await read(
   "supabase/pending-canonical/20260812180442_cm_com_4a_post_order_lifecycle.sql",
 );
@@ -61,6 +73,83 @@ test("COD payment transitions are separate and terminal", () => {
   assert.deepEqual(allowedPaymentTransitions("authorized", "cod"), []);
 });
 
+test("combined COD authority filters every destination pair", () => {
+  for (const order of ORDER_STATES) {
+    for (const payment of PAYMENT_STATES) {
+      assert.equal(
+        isCodLifecyclePairCompatible(order, payment),
+        COD_COMBINED_STATES[order].includes(payment),
+      );
+      assert.deepEqual(
+        allowedCompatibleOrderTransitions(order, payment, "cod"),
+        allowedOrderTransitions(order).filter((next) =>
+          COD_COMBINED_STATES[next].includes(payment),
+        ),
+      );
+      assert.deepEqual(
+        allowedCompatiblePaymentTransitions(order, payment, "cod"),
+        allowedPaymentTransitions(payment, "cod").filter((next) =>
+          COD_COMBINED_STATES[order].includes(next),
+        ),
+      );
+    }
+  }
+  assert.deepEqual(allowedCompatiblePaymentTransitions("cancelled", "pending", "cod"), [
+    "failed",
+    "cancelled",
+  ]);
+  assert.deepEqual(allowedCompatibleOrderTransitions("shipped", "pending", "cod"), []);
+});
+
+test("TypeScript and SQL lifecycle authorities have exhaustive parity", () => {
+  const values = (source, state) => {
+    const match = source.match(
+      new RegExp(`when '${state}' then [^\\n]*?(?:in \\(([^)]*)\\)|= '([^']*)')`),
+    );
+    assert.ok(match, `SQL authority missing ${state}`);
+    return match[2] ? [match[2]] : [...match[1].matchAll(/'([^']+)'/g)].map((entry) => entry[1]);
+  };
+  const orderSql = migration.slice(
+    migration.indexOf("v_allowed := case p_expected_from"),
+    migration.indexOf("elsif p_transition_type = 'payment_status'"),
+  );
+  const paymentSql = migration.slice(
+    migration.indexOf("elsif p_transition_type = 'payment_status'"),
+    migration.indexOf("else\n    raise exception 'CM_COM_4A_TRANSITION_TYPE_INVALID'"),
+  );
+  const combinedSql = migration.slice(migration.indexOf("v_pair_allowed := case"));
+  for (const state of ORDER_STATES) {
+    if (ORDER_TRANSITIONS[state].length) {
+      assert.deepEqual(values(orderSql, state), [...ORDER_TRANSITIONS[state]]);
+    }
+    assert.deepEqual(values(combinedSql, state), [...COD_COMBINED_STATES[state]]);
+  }
+  for (const state of PAYMENT_STATES) {
+    if (COD_PAYMENT_TRANSITIONS[state].length) {
+      assert.deepEqual(values(paymentSql, state), [...COD_PAYMENT_TRANSITIONS[state]]);
+    }
+  }
+});
+
+test("order detail result classifiers preserve truthful non-sensitive errors", () => {
+  const own = { id: "own", total_aed: 10.5 };
+  assert.equal(resolveOwnedOrderDetail({ data: own, error: null }), own);
+  assert.throws(
+    () => resolveOwnedOrderDetail({ data: null, error: null }),
+    /ACCOUNT_ORDER_NOT_FOUND/,
+  );
+  assert.throws(
+    () => resolveOwnedOrderDetail({ data: null, error: new Error("host secret") }),
+    (error) =>
+      error.message === "ACCOUNT_ORDER_DETAIL_QUERY_FAILED" && !error.message.includes("secret"),
+  );
+  assert.deepEqual(resolveLifecycleAudit({ data: [], error: null }), []);
+  assert.throws(
+    () => resolveLifecycleAudit({ data: null, error: new Error("database detail") }),
+    /CM_COM_4A_AUDIT_QUERY_FAILED/,
+  );
+});
+
 test("account history is server-bound to authenticated buyer and canonical items", () => {
   assert.match(account, /const \{ userId \} = context/);
   assert.match(account, /\.eq\("buyer_id", userId\)/);
@@ -82,7 +171,9 @@ test("customer detail enforces ownership server-side", () => {
   const detail = account.slice(account.indexOf("export const getMyOrderDetail"));
   assert.match(detail, /\.eq\("id", data\.orderId\)/);
   assert.match(detail, /\.eq\("buyer_id", context\.userId\)/);
-  assert.match(detail, /ACCOUNT_ORDER_NOT_FOUND/);
+  assert.match(detail, /resolveOwnedOrderDetail/);
+  assert.match(detailContract, /ACCOUNT_ORDER_NOT_FOUND/);
+  assert.match(detailContract, /ACCOUNT_ORDER_DETAIL_QUERY_FAILED/);
   assert.doesNotMatch(detail, /buyerId|buyer_id:\s*data/);
 });
 
@@ -139,11 +230,29 @@ test("audit event is append-only and in the same RPC transaction", () => {
 });
 
 test("admin UX exposes allowlisted buttons and fails closed", () => {
-  assert.match(adminUi, /allowedOrderTransitions/);
-  assert.match(adminUi, /allowedPaymentTransitions/);
+  assert.match(adminUi, /allowedCompatibleOrderTransitions/);
+  assert.match(adminUi, /allowedCompatiblePaymentTransitions/);
   assert.match(adminUi, /capabilityAvailable/);
   assert.match(adminUi, /Controls are disabled/);
   assert.doesNotMatch(adminUi, /SelectItem|free-form/);
+});
+
+test("seller detail preserves fulfillment, shipment and internal-note behavior", () => {
+  assert.match(sellerUi, /role === "seller"/);
+  assert.match(sellerUi, /setOrderItemStatus/);
+  assert.match(sellerUi, /Start preparing/);
+  assert.match(sellerUi, /Mark delivered/);
+  assert.match(sellerUi, /Shipments/);
+  assert.match(sellerUi, /Add note/);
+  assert.match(sellerUi, /sellerAddOrderNote/);
+  assert.doesNotMatch(sellerUi, /adminTransitionOrderLifecycle|Controlled lifecycle/);
+  assert.doesNotMatch(adminUi, /setOrderItemStatus|sellerAddOrderNote/);
+});
+
+test("audit errors cannot masquerade as empty lifecycle history", () => {
+  assert.match(admin, /resolveLifecycleAudit\(eventsRes\)/);
+  assert.match(adminUi, /No lifecycle transitions recorded/);
+  assert.match(admin, /CM_COM_4A_AUDIT_QUERY_FAILED|resolveLifecycleAudit/);
 });
 
 test("legacy lifecycle values are absent from CM-COM-4A authority and mutation UI", () => {

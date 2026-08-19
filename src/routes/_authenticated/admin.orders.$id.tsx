@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminGetOrderDetail } from "@/lib/admin.functions";
-import { OrderDetailView } from "@/components/site/OrderDetailView";
+import { AdminOrderLifecycleView } from "@/components/site/AdminOrderLifecycleView";
 import { EmptyState } from "@/components/site/EmptyState";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
@@ -47,8 +47,7 @@ function AdminOrderDetail() {
     );
 
   return (
-    <OrderDetailView
-      role="admin"
+    <AdminOrderLifecycleView
       data={q.data}
       invalidateKey={["admin-order", id]}
       backHref="/admin/orders"

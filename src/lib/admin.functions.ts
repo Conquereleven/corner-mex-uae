@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { ORDER_STATES, PAYMENT_STATES } from "@/lib/order-lifecycle";
+import { resolveLifecycleAudit } from "@/lib/order-detail-contract";
 
 let supabaseAdmin: any;
 
@@ -331,10 +332,11 @@ export const adminGetOrderDetail = createServerFn({ method: "GET" })
       (context.supabase as any).rpc("cm_com_4a_order_lifecycle_capability"),
     ]);
     if (itemsRes.error) throw new Error("CM_COM_4A_ORDER_ITEMS_QUERY_FAILED");
+    const events = resolveLifecycleAudit(eventsRes);
     return {
       order,
       items: itemsRes.data ?? [],
-      events: eventsRes.data ?? [],
+      events,
       lifecycleCapability: !capabilityRes.error && capabilityRes.data === true,
     };
   });

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { resolveOwnedOrderDetail } from "@/lib/order-detail-contract";
 
 export const getMyAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -59,8 +60,7 @@ export const getMyOrderDetail = createServerFn({ method: "GET" })
 
     // The same response is used for an absent order and an order owned by a
     // different buyer, so direct URL probing cannot disclose order existence.
-    if (error || !order) throw new Error("ACCOUNT_ORDER_NOT_FOUND");
-    return order;
+    return resolveOwnedOrderDetail({ data: order, error });
   });
 
 export const becomeSeller = createServerFn({ method: "POST" })

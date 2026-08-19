@@ -41,6 +41,20 @@ export const COD_PAYMENT_TRANSITIONS: Readonly<Record<PaymentState, readonly Pay
   cancelled: [],
 };
 
+// Third lifecycle authority: a transition is valid only when both the
+// individual state machine and this resulting COD pair allow it. Pending COD
+// collection may remain open after cancellation, but it can then only move to
+// a compatible failed/cancelled outcome. Collection and refund remain valid
+// for fulfilled orders.
+export const COD_COMBINED_STATES: Readonly<Record<OrderState, readonly PaymentState[]>> = {
+  pending: ["pending", "under_review", "failed", "cancelled"],
+  confirmed: ["pending", "under_review", "paid"],
+  processing: ["pending", "under_review", "paid"],
+  shipped: ["pending", "under_review", "paid"],
+  delivered: ["paid", "refunded"],
+  cancelled: ["pending", "failed", "refunded", "cancelled"],
+};
+
 export function isOrderState(value: string): value is OrderState {
   return (ORDER_STATES as readonly string[]).includes(value);
 }
@@ -59,4 +73,33 @@ export function allowedPaymentTransitions(
 ): readonly PaymentState[] {
   if (paymentMethod !== "cod" || !isPaymentState(current)) return [];
   return COD_PAYMENT_TRANSITIONS[current];
+}
+
+export function isCodLifecyclePairCompatible(orderState: string, paymentState: string): boolean {
+  return (
+    isOrderState(orderState) &&
+    isPaymentState(paymentState) &&
+    COD_COMBINED_STATES[orderState].includes(paymentState)
+  );
+}
+
+export function allowedCompatibleOrderTransitions(
+  currentOrder: string,
+  currentPayment: string,
+  paymentMethod: string | null,
+): readonly OrderState[] {
+  if (paymentMethod !== "cod") return [];
+  return allowedOrderTransitions(currentOrder).filter((next) =>
+    isCodLifecyclePairCompatible(next, currentPayment),
+  );
+}
+
+export function allowedCompatiblePaymentTransitions(
+  currentOrder: string,
+  currentPayment: string,
+  paymentMethod: string | null,
+): readonly PaymentState[] {
+  return allowedPaymentTransitions(currentPayment, paymentMethod).filter((next) =>
+    isCodLifecyclePairCompatible(currentOrder, next),
+  );
 }

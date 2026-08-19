@@ -150,15 +150,101 @@ check(
   "stale expected state fails closed",
   expectError(call("order_status", "pending", "confirmed"), "CM_COM_4A_STALE_STATE"),
 );
-psql(["-q", "-c", `update orders set status='delivered' where id='${ORDER}'`]);
+
+psql([
+  "-q",
+  "-c",
+  `update orders set status='pending', payment_status='pending' where id='${ORDER}'; truncate order_lifecycle_events`,
+]);
+check(
+  "cancelling a pending COD order is a valid combined transition",
+  query(call("order_status", "pending", "cancelled")).includes('"ok": true'),
+);
+check(
+  "cancelled order cannot later become paid",
+  expectError(call("payment_status", "pending", "paid"), "CM_COM_4A_COMBINED_STATE_INCOMPATIBLE"),
+);
+check(
+  "combined-state rejection leaves state unchanged",
+  query(`select status||'/'||payment_status from orders where id='${ORDER}'`) ===
+    "cancelled/pending",
+);
+check(
+  "combined-state rejection creates zero audit event",
+  query("select count(*) from order_lifecycle_events") === "1",
+);
+check(
+  "cancelled order cannot reactivate",
+  expectError(call("order_status", "cancelled", "pending"), "CM_COM_4A_TRANSITION_NOT_ALLOWED"),
+);
+
+psql([
+  "-q",
+  "-c",
+  `update orders set status='processing', payment_status='failed' where id='${ORDER}'; truncate order_lifecycle_events`,
+]);
+check(
+  "failed payment prevents impossible forward order progression",
+  expectError(
+    call("order_status", "processing", "shipped"),
+    "CM_COM_4A_COMBINED_STATE_INCOMPATIBLE",
+  ),
+);
+check(
+  "failed forward progression rolls back state and audit",
+  query(`select status||'/'||payment_status from orders where id='${ORDER}'`) ===
+    "processing/failed" && query("select count(*) from order_lifecycle_events") === "0",
+);
+
+psql([
+  "-q",
+  "-c",
+  `update orders set status='shipped', payment_status='pending' where id='${ORDER}'`,
+]);
+check(
+  "delivered rejects uncollected COD payment",
+  expectError(
+    call("order_status", "shipped", "delivered"),
+    "CM_COM_4A_COMBINED_STATE_INCOMPATIBLE",
+  ),
+);
+psql(["-q", "-c", `update orders set payment_status='paid' where id='${ORDER}'`]);
+check(
+  "delivered accepts collected COD payment",
+  query(call("order_status", "shipped", "delivered")).includes('"ok": true'),
+);
+check(
+  "delivered COD can be recorded as refunded",
+  query(call("payment_status", "paid", "refunded")).includes('"ok": true'),
+);
 check(
   "terminal delivered cannot revert",
   expectError(call("order_status", "delivered", "pending"), "CM_COM_4A_TRANSITION_NOT_ALLOWED"),
 );
-psql(["-q", "-c", `update orders set status='cancelled' where id='${ORDER}'`]);
+
 check(
-  "terminal cancelled cannot revert",
-  expectError(call("order_status", "cancelled", "pending"), "CM_COM_4A_TRANSITION_NOT_ALLOWED"),
+  "service-role server path has SELECT and no table writes",
+  query(
+    "select has_table_privilege('service_role','public.order_lifecycle_events','select')::text||'/'||has_table_privilege('service_role','public.order_lifecycle_events','insert,update,delete')::text",
+  ) === "true/false",
+);
+check(
+  "authenticated admin can read lifecycle events through RLS",
+  Number(
+    query(
+      `set role authenticated; set request.jwt.claim.sub='${ADMIN}'; select count(*) from public.order_lifecycle_events`,
+    )
+      .split("\n")
+      .at(-1),
+  ) > 0,
+);
+check(
+  "ordinary customer cannot read admin lifecycle events",
+  query(
+    `set role authenticated; set request.jwt.claim.sub='${CUSTOMER}'; select count(*) from public.order_lifecycle_events`,
+  )
+    .split("\n")
+    .at(-1) === "0",
 );
 const acl = query(
   "select coalesce(array_to_string(proacl,','),'') from pg_proc where proname='admin_transition_order_lifecycle_v1'",
