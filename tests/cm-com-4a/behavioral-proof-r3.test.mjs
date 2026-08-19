@@ -23,7 +23,7 @@ const vite = await createServer({
 
 after(() => vite.close());
 
-const accountModule = await vite.ssrLoadModule("/src/routes/_authenticated/account.tsx");
+const accountModule = await vite.ssrLoadModule("/src/routes/_authenticated/account.index.tsx");
 const detailModule = await vite.ssrLoadModule("/src/routes/_authenticated/account.orders.$id.tsx");
 const behaviorModule = await vite.ssrLoadModule(
   "/src/components/site/OrderExperienceBehaviorSurfaces.tsx",

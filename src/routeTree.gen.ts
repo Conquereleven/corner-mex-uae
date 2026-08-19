@@ -43,6 +43,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedSellerIndexRouteImport } from './routes/_authenticated/seller.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 import { Route as AuthenticatedSellerStorefrontRouteImport } from './routes/_authenticated/seller.storefront'
@@ -271,6 +272,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAccountIndexRoute =
+  AuthenticatedAccountIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   id: '/api/public/stripe-webhook',
   path: '/api/public/stripe-webhook',
@@ -678,6 +685,7 @@ export interface FileRoutesByFullPath {
   '/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/seller/': typeof AuthenticatedSellerIndexRoute
   '/account/orders/$id': typeof AuthenticatedAccountOrdersIdRoute
@@ -720,7 +728,6 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/account': typeof AuthenticatedAccountRouteWithChildren
   '/api/health': typeof ApiHealthRoute
   '/api/ready': typeof ApiReadyRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -761,6 +768,7 @@ export interface FileRoutesByTo {
   '/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/seller': typeof AuthenticatedSellerIndexRoute
   '/account/orders/$id': typeof AuthenticatedAccountOrdersIdRoute
@@ -855,6 +863,7 @@ export interface FileRoutesById {
   '/_authenticated/seller/storefront': typeof AuthenticatedSellerStorefrontRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
+  '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/seller/': typeof AuthenticatedSellerIndexRoute
   '/_authenticated/account/orders/$id': typeof AuthenticatedAccountOrdersIdRoute
@@ -949,6 +958,7 @@ export interface FileRouteTypes {
     | '/seller/storefront'
     | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
+    | '/account/'
     | '/admin/'
     | '/seller/'
     | '/account/orders/$id'
@@ -991,7 +1001,6 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/terms'
-    | '/account'
     | '/api/health'
     | '/api/ready'
     | '/auth/callback'
@@ -1032,6 +1041,7 @@ export interface FileRouteTypes {
     | '/seller/storefront'
     | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
+    | '/account'
     | '/admin'
     | '/seller'
     | '/account/orders/$id'
@@ -1125,6 +1135,7 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/storefront'
     | '/api/public/sitemap.xml'
     | '/api/public/stripe-webhook'
+    | '/_authenticated/account/'
     | '/_authenticated/admin/'
     | '/_authenticated/seller/'
     | '/_authenticated/account/orders/$id'
@@ -1422,6 +1433,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/account/': {
+      id: '/_authenticated/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AuthenticatedAccountIndexRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
     }
     '/api/public/stripe-webhook': {
       id: '/api/public/stripe-webhook'
@@ -1830,6 +1848,7 @@ interface AuthenticatedAccountRouteChildren {
   AuthenticatedAccountNotificationsRoute: typeof AuthenticatedAccountNotificationsRoute
   AuthenticatedAccountReturnsRoute: typeof AuthenticatedAccountReturnsRoute
   AuthenticatedAccountWishlistRoute: typeof AuthenticatedAccountWishlistRoute
+  AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
   AuthenticatedAccountOrdersIdRoute: typeof AuthenticatedAccountOrdersIdRoute
 }
 
@@ -1839,6 +1858,7 @@ const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
     AuthenticatedAccountNotificationsRoute,
   AuthenticatedAccountReturnsRoute: AuthenticatedAccountReturnsRoute,
   AuthenticatedAccountWishlistRoute: AuthenticatedAccountWishlistRoute,
+  AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
   AuthenticatedAccountOrdersIdRoute: AuthenticatedAccountOrdersIdRoute,
 }
 

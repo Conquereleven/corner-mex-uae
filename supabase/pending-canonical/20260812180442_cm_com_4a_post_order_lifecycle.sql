@@ -26,7 +26,7 @@ create policy order_lifecycle_events_admin_read
   to authenticated
   using (commerce_private.is_admin((select auth.uid())));
 
-revoke all on public.order_lifecycle_events from public, anon, authenticated;
+revoke all on public.order_lifecycle_events from public, anon, authenticated, service_role;
 grant select on public.order_lifecycle_events to authenticated;
 -- The server order-detail path uses its service-role client only after its own
 -- authenticated admin check. Grant only the read capability that path needs;

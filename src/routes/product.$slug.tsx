@@ -11,6 +11,7 @@ import { siteOrigin, siteUrl } from "@/lib/site-url";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
+import { productCopyToPlainText } from "@/lib/product-copy";
 
 function productUrl(slug: string) {
   return siteUrl(`/product/${encodeURIComponent(slug)}`);
@@ -26,7 +27,7 @@ function buildStructuredData(product: ProductDetail) {
         "@type": "Product",
         "@id": `${url}#product`,
         name: product.name,
-        description: product.seo?.long_description || product.description,
+        description: productCopyToPlainText(product.seo?.long_description || product.description),
         url,
         image: product.images,
         ...(product.brand && { brand: { "@type": "Brand", name: product.brand } }),
@@ -35,7 +36,7 @@ function buildStructuredData(product: ProductDetail) {
         additionalProperty: {
           "@type": "PropertyValue",
           name: "Commercial status",
-          value: "Preview only; availability and price require manual confirmation",
+          value: "Availability and price are verified at checkout",
         },
       },
       {
@@ -73,10 +74,11 @@ export const Route = createFileRoute("/product/$slug")({
     const title =
       product?.seo?.title ||
       (product ? `${product.name} in UAE | Corner Mex` : "Product | Corner Mex");
-    const description =
+    const description = productCopyToPlainText(
       product?.seo?.meta_description ||
-      product?.description ||
-      "Explore this Mexican pantry item in the CornerMex UAE commercial preview.";
+        product?.description ||
+        "Explore this Mexican pantry item in the CornerMex UAE commercial preview.",
+    );
     const image = product?.image;
     return {
       meta: [
@@ -278,12 +280,12 @@ function ProductPage() {
 
             <div className="mt-6 flex items-baseline gap-3">
               <span className="font-display text-3xl font-semibold">
-                AED {variant?.price_aed.toFixed(0)}
+                AED {variant?.price_aed.toFixed(2)}
               </span>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Indicative preview amount only; final AED pricing and availability require manual
-              confirmation.
+              AED price shown for the selected variant; current price and availability are verified
+              at checkout.
             </p>
             {variant?.label && (
               <p className="mt-1 text-sm text-muted-foreground">
@@ -292,7 +294,7 @@ function ProductPage() {
             )}
 
             <p className="mt-6 text-base leading-relaxed text-muted-foreground">
-              {product.seo?.short_description || product.description}
+              {productCopyToPlainText(product.seo?.short_description || product.description)}
             </p>
 
             {product.variants.length > 1 && (
@@ -345,8 +347,8 @@ function ProductPage() {
 
             <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
               <p className="text-sm leading-6 text-muted-foreground">
-                Cart preparation is available. Checkout execution, payment, final price,
-                availability and shipping remain subject to the controls shown at checkout.
+                Signed-in customers can place cash-on-delivery orders. Current price, availability
+                and shipping are verified before submission.
               </p>
               <a href={mailto(PUBLIC_CONTACT.b2b, `CornerMex quote enquiry: ${p.name}`)}>
                 <Button size="lg" className="mt-4 rounded-full">
@@ -367,7 +369,7 @@ function ProductPage() {
             About this product
           </h2>
           <p className="mt-4 text-base leading-7 text-muted-foreground">
-            {product.seo?.long_description || product.description}
+            {productCopyToPlainText(product.seo?.long_description || product.description)}
           </p>
           <dl className="mt-8 grid gap-4 text-sm sm:grid-cols-3">
             {product.brand && (

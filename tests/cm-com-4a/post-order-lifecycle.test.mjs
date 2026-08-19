@@ -21,7 +21,7 @@ import {
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 const account = await read("src/lib/account.functions.ts");
-const accountUi = await read("src/routes/_authenticated/account.tsx");
+const accountUi = await read("src/routes/_authenticated/account.index.tsx");
 const customerDetail = await read("src/routes/_authenticated/account.orders.$id.tsx");
 const admin = await read("src/lib/admin.functions.ts");
 const sellerUi = await read("src/components/site/OrderDetailView.tsx");

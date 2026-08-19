@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Explore a curated Mexican pantry catalogue for the UAE. Online ordering is off; business quotes are reviewed manually.",
+          "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
       },
       { property: "og:title", content: "Corner Mex — UAE commercial preview" },
       {

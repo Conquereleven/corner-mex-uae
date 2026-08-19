@@ -28,6 +28,7 @@ import { adminDashboardCounts } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
+    if (typeof window === "undefined") return;
     const r = await isAdmin({});
     if (!r.admin) throw redirect({ to: "/account" });
   },
@@ -69,8 +70,8 @@ function AdminLayout() {
               badge: c?.leads_new,
               badgeTone: "primary",
             },
-            { to: "/admin/products/new", label: "New product", icon: Plus },
-            { to: "/admin/products/import", label: t("dash.import.nav"), icon: Upload },
+            { to: "/admin/products/new", label: "New product", icon: Plus, soon: true },
+            { to: "/admin/products/import", label: t("dash.import.nav"), icon: Upload, soon: true },
           ],
         },
         {

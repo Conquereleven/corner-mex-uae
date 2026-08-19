@@ -18,7 +18,7 @@ const read = (path) => readFileSync(join(process.cwd(), path), "utf8");
 const login = read("src/routes/login.tsx");
 const protectedRoute = read("src/routes/_authenticated.tsx");
 const adminRoute = read("src/routes/_authenticated/admin.tsx");
-const account = read("src/routes/_authenticated/account.tsx");
+const account = read("src/routes/_authenticated/account.index.tsx");
 const header = read("src/components/site/Header.tsx");
 const product = read("src/routes/product.$slug.tsx");
 const cartStore = read("src/lib/cart.ts");
