@@ -3,7 +3,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminGetOrderDetail } from "@/lib/admin.functions";
-import { AdminOrderLifecycleView } from "@/components/site/AdminOrderLifecycleView";
+import {
+  AdminOrderLifecycleView,
+  type AdminOrderLifecycleData,
+} from "@/components/site/AdminOrderLifecycleView";
 import { EmptyState } from "@/components/site/EmptyState";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
@@ -25,6 +28,29 @@ function AdminOrderDetail() {
     data: q.data,
   });
 
+  return (
+    <AdminOrderDetailQuerySurface
+      view={view}
+      data={q.data}
+      onRetry={() => q.refetch()}
+      invalidateKey={["admin-order", id]}
+    />
+  );
+}
+
+export function AdminOrderDetailQuerySurface({
+  view,
+  data,
+  onRetry,
+  invalidateKey,
+  backAction,
+}: {
+  view: "loading" | "query_failed" | "ready";
+  data: AdminOrderLifecycleData | undefined;
+  onRetry: () => unknown;
+  invalidateKey: unknown[];
+  backAction?: React.ReactNode;
+}) {
   if (view === "loading")
     return (
       <div className="space-y-4">
@@ -38,15 +64,17 @@ function AdminOrderDetail() {
       <EmptyState
         icon={ShoppingCart}
         title="Order could not be loaded"
-        description={(q.error as Error)?.message ?? "Order not found"}
+        description="Order details are temporarily unavailable. Please try again."
         action={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => q.refetch()}>
+            <Button data-testid="admin-order-retry" variant="outline" onClick={onRetry}>
               Try again
             </Button>
-            <Button asChild>
-              <Link to="/admin/orders">Back to orders</Link>
-            </Button>
+            {backAction ?? (
+              <Button asChild>
+                <Link to="/admin/orders">Back to orders</Link>
+              </Button>
+            )}
           </div>
         }
       />
@@ -54,8 +82,8 @@ function AdminOrderDetail() {
 
   return (
     <AdminOrderLifecycleView
-      data={q.data}
-      invalidateKey={["admin-order", id]}
+      data={data!}
+      invalidateKey={invalidateKey}
       backHref="/admin/orders"
       customerHref="/admin/customers/$id"
     />

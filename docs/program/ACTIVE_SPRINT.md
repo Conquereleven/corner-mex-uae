@@ -4,7 +4,7 @@
 - Reviewer: independent reviewer
 - Branch: `feature/cm-com-4a-post-order-lifecycle`
 - Base/main source: `e02960f0887d98e624b22a9333fde59175299847`
-- Status: R2 remediation in progress after independent `REQUEST_CHANGES_CM_COM_4A_R1`; repository-only; not activated or deployed
+- Status: R3 behavioral-proof remediation in progress after independent `REQUEST_CHANGES_CM_COM_4A_R2`; repository-only; not activated or deployed
 
 ## Independent review R1
 
@@ -16,8 +16,14 @@ P2 findings:
 - P2 truthful customer order-detail backend errors;
 - P2 executable behavioral and parity coverage.
 
-Remediation is not yet independently re-reviewed or Founder accepted. The pending migration remains
-unapplied.
+## Independent review R2
+
+The exact R2 head `76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0` received
+`REQUEST_CHANGES_CM_COM_4A_R2`. P1-1, P1-2, P1-3 and P2-1 are independently CLOSED. R3 is
+strictly limited to executable mounted/server/query evidence for the remaining P2-2 behavioral
+coverage finding.
+
+R3 is not independently reviewed or Founder accepted. The pending migration remains unapplied.
 
 ## Entry state
 

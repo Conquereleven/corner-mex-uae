@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { ORDER_STATES, PAYMENT_STATES } from "@/lib/order-lifecycle";
 import { resolveLifecycleAudit } from "@/lib/order-detail-contract";
+import type { AdminOrderLifecycleData } from "@/components/site/AdminOrderLifecycleView";
 
 let supabaseAdmin: any;
 
@@ -315,31 +316,50 @@ export const adminGetOrderDetail = createServerFn({ method: "GET" })
     const { data: order, error } = await orderQuery.maybeSingle();
     if (error) throw new Error(error.message);
     if (!order) throw new Error("Order not found");
-    const [itemsRes, eventsRes, capabilityRes] = await Promise.all([
-      supabaseAdmin
+    return loadAdminOrderDetailRelated({
+      order,
+      itemsQuery: supabaseAdmin
         .from("order_items")
         .select(
           `id, product_id, variant_id, product_name, variant_label, qty,
             unit_price_aed, line_total_aed, fulfillment_status`,
         )
         .eq("order_id", order.id),
-      (supabaseAdmin as any)
+      eventsQuery: (supabaseAdmin as any)
         .from("order_lifecycle_events")
         .select("id, transition_type, previous_value, new_value, actor_id, created_at")
         .eq("order_id", order.id)
         .order("created_at", { ascending: false })
         .limit(100),
-      (context.supabase as any).rpc("cm_com_4a_order_lifecycle_capability"),
-    ]);
-    if (itemsRes.error) throw new Error("CM_COM_4A_ORDER_ITEMS_QUERY_FAILED");
-    const events = resolveLifecycleAudit(eventsRes);
-    return {
-      order,
-      items: itemsRes.data ?? [],
-      events,
-      lifecycleCapability: !capabilityRes.error && capabilityRes.data === true,
-    };
+      capabilityQuery: (context.supabase as any).rpc("cm_com_4a_order_lifecycle_capability"),
+    });
   });
+
+export async function loadAdminOrderDetailRelated({
+  order,
+  itemsQuery,
+  eventsQuery,
+  capabilityQuery,
+}: {
+  order: AdminOrderLifecycleData["order"];
+  itemsQuery: PromiseLike<{ data: AdminOrderLifecycleData["items"] | null; error: unknown }>;
+  eventsQuery: PromiseLike<{ data: AdminOrderLifecycleData["events"] | null; error: unknown }>;
+  capabilityQuery: PromiseLike<{ data: unknown; error: unknown }>;
+}) {
+  const [itemsRes, eventsRes, capabilityRes] = await Promise.all([
+    itemsQuery,
+    eventsQuery,
+    capabilityQuery,
+  ]);
+  if (itemsRes.error) throw new Error("CM_COM_4A_ORDER_ITEMS_QUERY_FAILED");
+  const events = resolveLifecycleAudit(eventsRes);
+  return {
+    order,
+    items: itemsRes.data ?? [],
+    events,
+    lifecycleCapability: !capabilityRes.error && capabilityRes.data === true,
+  };
+}
 
 export const adminAddOrderNote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

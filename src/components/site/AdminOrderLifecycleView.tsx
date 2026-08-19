@@ -1,13 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, CreditCard, History, MapPin, Package } from "lucide-react";
+import { ArrowLeft, CreditCard, MapPin, Package } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminTransitionOrderLifecycle } from "@/lib/admin.functions";
+import { AdminLifecycleAudit } from "@/components/site/OrderExperienceBehaviorSurfaces";
 import {
   allowedCompatibleOrderTransitions,
   allowedCompatiblePaymentTransitions,
@@ -16,7 +17,7 @@ import {
 
 const aed = (value: number | string) => `${Number(value ?? 0).toFixed(2)} AED`;
 
-type AdminOrderLifecycleData = {
+export type AdminOrderLifecycleData = {
   order: {
     id: string;
     order_number: string;
@@ -156,33 +157,7 @@ export function AdminOrderLifecycleView({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-4 w-4" /> Lifecycle audit
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {events.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No lifecycle transitions recorded.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {events.map((event) => (
-                    <li key={event.id} className="rounded-md border p-3 text-sm">
-                      <p className="font-medium">
-                        {event.transition_type.replace(/_/g, " ")}: {event.previous_value} →{" "}
-                        {event.new_value}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(event.created_at).toLocaleString()} · actor{" "}
-                        {String(event.actor_id).slice(0, 8)}…
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
+          <AdminLifecycleAudit events={events} />
         </div>
 
         <div className="space-y-6">

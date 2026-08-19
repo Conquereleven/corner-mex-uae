@@ -134,9 +134,9 @@
       "state": "draft_remediation",
       "independentReviewComplete": false,
       "independentReviewer": "Independent reviewer",
-      "reviewedHeadSha": "95894b002befbd77788e7279235e48c57012a9f8",
+      "reviewedHeadSha": "76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0",
       "declaredReady": false,
-      "status": "request_changes_cm_com_4a_r2_remediation_in_progress",
+      "status": "request_changes_cm_com_4a_r3_remediation_in_progress",
       "independentReviewR1": {
         "verdict": "REQUEST_CHANGES_CM_COM_4A_R1",
         "findings": [
@@ -146,7 +146,19 @@
           "P2 truthful order-detail backend error OPEN to R2 remediation",
           "P2 executable behavior coverage OPEN to R2 remediation"
         ],
-        "remediationStatus": "in_progress_not_independently_rereviewed"
+        "remediationStatus": "r2_reviewed"
+      },
+      "independentReviewR2": {
+        "verdict": "REQUEST_CHANGES_CM_COM_4A_R2",
+        "reviewedHeadSha": "76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0",
+        "findings": [
+          "P1-1 combined lifecycle CLOSED",
+          "P1-2 audit ACL/read path CLOSED",
+          "P1-3 seller regression CLOSED",
+          "P2-1 customer truthful error UX CLOSED",
+          "P2-2 behavioral coverage OPEN to R3 remediation"
+        ],
+        "remediationStatus": "r3_in_progress_not_independently_reviewed"
       }
     }
   },

@@ -28,40 +28,49 @@ export const getMyAccount = createServerFn({ method: "GET" })
 
 export const getMyOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { userId } = context;
-    return loadOwnedOrderHistory(() =>
-      supabaseAdmin
-        .from("orders")
-        .select(
-          `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
+  .handler(({ context }) => executeGetMyOrders(context.userId, supabaseAdmin));
+
+export function executeGetMyOrders(userId: string, client: typeof supabaseAdmin) {
+  return loadOwnedOrderHistory(() =>
+    client
+      .from("orders")
+      .select(
+        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
           items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
-        )
-        .eq("buyer_id", userId)
-        .order("created_at", { ascending: false }),
-    );
-  });
+      )
+      .eq("buyer_id", userId)
+      .order("created_at", { ascending: false }),
+  );
+}
 
 export const getMyOrderDetail = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { orderId: string }) =>
     z.object({ orderId: z.string().uuid() }).parse(input),
   )
-  .handler(async ({ data, context }) => {
-    // The same response is used for an absent order and an order owned by a
-    // different buyer, so direct URL probing cannot disclose order existence.
-    return loadOwnedOrderDetail(() =>
-      supabaseAdmin
-        .from("orders")
-        .select(
-          `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, shipping_address, created_at,
+  .handler(({ data, context }) =>
+    executeGetMyOrderDetail(data.orderId, context.userId, supabaseAdmin),
+  );
+
+export function executeGetMyOrderDetail(
+  orderId: string,
+  userId: string,
+  client: typeof supabaseAdmin,
+) {
+  // The same response is used for an absent order and an order owned by a
+  // different buyer, so direct URL probing cannot disclose order existence.
+  return loadOwnedOrderDetail(() =>
+    client
+      .from("orders")
+      .select(
+        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, shipping_address, created_at,
           items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
-        )
-        .eq("id", data.orderId)
-        .eq("buyer_id", context.userId)
-        .maybeSingle(),
-    );
-  });
+      )
+      .eq("id", orderId)
+      .eq("buyer_id", userId)
+      .maybeSingle(),
+  );
+}
 
 export const becomeSeller = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

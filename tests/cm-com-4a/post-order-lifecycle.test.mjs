@@ -26,6 +26,7 @@ const customerDetail = await read("src/routes/_authenticated/account.orders.$id.
 const admin = await read("src/lib/admin.functions.ts");
 const sellerUi = await read("src/components/site/OrderDetailView.tsx");
 const adminUi = await read("src/components/site/AdminOrderLifecycleView.tsx");
+const behaviorSurfaces = await read("src/components/site/OrderExperienceBehaviorSurfaces.tsx");
 const adminListUi = await read("src/routes/_authenticated/admin.orders.index.tsx");
 const lifecycle = await read("src/lib/order-lifecycle.ts");
 const experienceContract = await read("src/lib/order-experience-contract.ts");
@@ -164,14 +165,15 @@ test("account history is server-bound to authenticated buyer and canonical items
 test("account failures do not masquerade as empty history", () => {
   assert.match(account, /loadOwnedOrderHistory/);
   assert.match(experienceContract, /ACCOUNT_ORDER_HISTORY_QUERY_FAILED/);
-  assert.match(accountUi, /ordersView\.kind === "query_failed"/);
+  assert.match(accountUi, /CustomerOrderHistorySurface/);
+  assert.match(accountUi, /view\.kind === "query_failed"/);
   assert.match(experienceContract, /We couldn't load your orders/);
 });
 
 test("customer detail enforces ownership server-side", () => {
   const detail = account.slice(account.indexOf("export const getMyOrderDetail"));
-  assert.match(detail, /\.eq\("id", data\.orderId\)/);
-  assert.match(detail, /\.eq\("buyer_id", context\.userId\)/);
+  assert.match(detail, /\.eq\("id", orderId\)/);
+  assert.match(detail, /\.eq\("buyer_id", userId\)/);
   assert.match(detail, /loadOwnedOrderDetail/);
   assert.match(experienceContract, /ACCOUNT_ORDER_NOT_FOUND/);
   assert.match(experienceContract, /ACCOUNT_ORDER_DETAIL_QUERY_FAILED/);
@@ -241,9 +243,12 @@ test("admin UX exposes allowlisted buttons and fails closed", () => {
 test("seller detail preserves fulfillment, shipment and internal-note behavior", () => {
   assert.match(sellerUi, /role === "seller"/);
   assert.match(sellerUi, /setOrderItemStatus/);
-  assert.match(sellerUi, /getSellerItemActions/);
-  assert.match(sellerUi, /Shipments/);
-  assert.match(sellerUi, /Add note/);
+  assert.match(sellerUi, /SellerItemControls/);
+  assert.match(sellerUi, /SellerShipmentPresentation/);
+  assert.match(sellerUi, /SellerInternalNotes/);
+  assert.match(behaviorSurfaces, /getSellerItemActions/);
+  assert.match(behaviorSurfaces, /Shipments/);
+  assert.match(behaviorSurfaces, /Add note/);
   assert.match(sellerUi, /sellerAddOrderNote/);
   assert.doesNotMatch(sellerUi, /adminTransitionOrderLifecycle|Controlled lifecycle/);
   assert.doesNotMatch(adminUi, /setOrderItemStatus|sellerAddOrderNote/);
@@ -251,7 +256,8 @@ test("seller detail preserves fulfillment, shipment and internal-note behavior",
 
 test("audit errors cannot masquerade as empty lifecycle history", () => {
   assert.match(admin, /resolveLifecycleAudit\(eventsRes\)/);
-  assert.match(adminUi, /No lifecycle transitions recorded/);
+  assert.match(adminUi, /AdminLifecycleAudit/);
+  assert.match(behaviorSurfaces, /No lifecycle transitions recorded/);
   assert.match(admin, /CM_COM_4A_AUDIT_QUERY_FAILED|resolveLifecycleAudit/);
 });
 

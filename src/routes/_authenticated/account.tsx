@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import {
   getCustomerOrderHistoryView,
   presentCanonicalCustomerOrder,
+  type CustomerOrderHistoryView,
 } from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account")({
@@ -110,29 +111,7 @@ function Account() {
               <CardTitle>Recent orders</CardTitle>
             </CardHeader>
             <CardContent>
-              {ordersView.kind === "loading" ? (
-                <p className="text-sm text-muted-foreground">Loading…</p>
-              ) : ordersView.kind === "query_failed" ? (
-                <div className="space-y-2" role="alert">
-                  <p className="text-sm font-medium text-destructive">{ordersView.message}</p>
-                  <Button size="sm" variant="outline" onClick={() => orders.refetch()}>
-                    Try again
-                  </Button>
-                </div>
-              ) : ordersView.kind === "empty" ? (
-                <p className="text-sm text-muted-foreground">
-                  {ordersView.message}{" "}
-                  <Link to="/shop" className="underline">
-                    Start shopping →
-                  </Link>
-                </p>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {ordersView.orders.map((o: any) => (
-                    <OrderRow key={o.id} order={o} />
-                  ))}
-                </ul>
-              )}
+              <CustomerOrderHistorySurface view={ordersView} onRetry={() => orders.refetch()} />
             </CardContent>
           </Card>
 
@@ -145,6 +124,53 @@ function Account() {
         </div>
       </section>
     </SiteLayout>
+  );
+}
+
+export function CustomerOrderHistorySurface({
+  view,
+  onRetry,
+  renderShopLink,
+  renderOrderLink,
+}: {
+  view: CustomerOrderHistoryView;
+  onRetry: () => unknown;
+  renderShopLink?: () => React.ReactNode;
+  renderOrderLink?: (id: string) => React.ReactNode;
+}) {
+  if (view.kind === "loading") {
+    return <p className="text-sm text-muted-foreground">Loading…</p>;
+  }
+  if (view.kind === "query_failed") {
+    return (
+      <div className="space-y-2" role="alert">
+        <p className="text-sm font-medium text-destructive">{view.message}</p>
+        <Button data-testid="customer-history-retry" size="sm" variant="outline" onClick={onRetry}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
+  if (view.kind === "empty") {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {view.message}{" "}
+        {renderShopLink ? (
+          renderShopLink()
+        ) : (
+          <Link to="/shop" className="underline">
+            Start shopping →
+          </Link>
+        )}
+      </p>
+    );
+  }
+  return (
+    <ul className="divide-y divide-border">
+      {view.orders.map((order: any) => (
+        <OrderRow key={order.id} order={order} renderOrderLink={renderOrderLink} />
+      ))}
+    </ul>
   );
 }
 
@@ -185,7 +211,13 @@ function PendingReviewsCard({ items }: { items: any[] }) {
   );
 }
 
-function OrderRow({ order }: { order: any }) {
+export function OrderRow({
+  order,
+  renderOrderLink,
+}: {
+  order: any;
+  renderOrderLink?: (id: string) => React.ReactNode;
+}) {
   const display = presentCanonicalCustomerOrder(order);
   return (
     <li className="py-4">
@@ -206,11 +238,15 @@ function OrderRow({ order }: { order: any }) {
           <Badge variant="secondary">{display.orderStatus}</Badge>
           <Badge variant="outline">{display.paymentStatus}</Badge>
           <span className="font-medium tabular-nums">{display.total}</span>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/account/orders/$id" params={{ id: order.id }}>
-              View order
-            </Link>
-          </Button>
+          {renderOrderLink ? (
+            renderOrderLink(order.id)
+          ) : (
+            <Button asChild size="sm" variant="outline">
+              <Link to="/account/orders/$id" params={{ id: order.id }}>
+                View order
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground sm:grid-cols-4">

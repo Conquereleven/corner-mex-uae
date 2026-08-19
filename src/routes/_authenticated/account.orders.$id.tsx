@@ -12,6 +12,7 @@ import { getMyOrderDetail } from "@/lib/account.functions";
 import {
   getCustomerOrderDetailView,
   presentCanonicalCustomerOrder,
+  type CustomerOrderDetailView,
 } from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account/orders/$id")({
@@ -65,32 +66,46 @@ function CustomerOrderDetail() {
           </Link>
         </Button>
 
-        {view.kind === "loading" ? (
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-72" />
-            <Skeleton className="h-72 w-full" />
-          </div>
-        ) : view.kind === "not_found" || view.kind === "query_failed" ? (
-          <Card role="alert">
-            <CardHeader>
-              <CardTitle>{view.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">{view.message}</p>
-              <Button variant="outline" onClick={() => order.refetch()}>
-                Try again
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <OrderDetail order={view.order} />
-        )}
+        <CustomerOrderDetailSurface view={view} onRetry={() => order.refetch()} />
       </section>
     </SiteLayout>
   );
 }
 
-function OrderDetail({ order }: { order: CustomerOrder }) {
+export function CustomerOrderDetailSurface({
+  view,
+  onRetry,
+}: {
+  view: CustomerOrderDetailView<CustomerOrder>;
+  onRetry: () => unknown;
+}) {
+  if (view.kind === "loading") {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-72" />
+        <Skeleton className="h-72 w-full" />
+      </div>
+    );
+  }
+  if (view.kind === "not_found" || view.kind === "query_failed") {
+    return (
+      <Card role="alert" data-state={view.kind}>
+        <CardHeader>
+          <CardTitle>{view.title}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">{view.message}</p>
+          <Button data-testid="customer-detail-retry" variant="outline" onClick={onRetry}>
+            Try again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+  return <OrderDetail order={view.order} />;
+}
+
+export function OrderDetail({ order }: { order: CustomerOrder }) {
   const address = order.shipping_address ?? {};
   const display = presentCanonicalCustomerOrder(order);
   return (

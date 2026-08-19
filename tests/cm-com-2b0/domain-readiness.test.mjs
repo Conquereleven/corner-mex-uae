@@ -220,18 +220,20 @@ test("the CM-COM-2A remediation sequence is exactly R1 rejected, R2 rejected, R3
   );
 });
 
-test("the active sprint records the R1 re-review without presenting R2 as ready", async () => {
+test("the active sprint records the R2 re-review without presenting R3 as ready", async () => {
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
   const currentSprint = state.readiness.currentSprintReadiness;
   assert.ok(currentSprint, "current-sprint readiness must be recorded");
   assert.equal(currentSprint.sprint, "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION");
   assert.equal(currentSprint.independentReviewComplete, false);
   assert.equal(currentSprint.declaredReady, false);
-  assert.equal(currentSprint.reviewedHeadSha, "95894b002befbd77788e7279235e48c57012a9f8");
-  assert.equal(currentSprint.status, "request_changes_cm_com_4a_r2_remediation_in_progress");
+  assert.equal(currentSprint.reviewedHeadSha, "76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0");
+  assert.equal(currentSprint.status, "request_changes_cm_com_4a_r3_remediation_in_progress");
   assert.equal(currentSprint.state, "draft_remediation");
   assert.equal(currentSprint.independentReviewR1.verdict, "REQUEST_CHANGES_CM_COM_4A_R1");
   assert.equal(currentSprint.independentReviewR1.findings.length, 5);
+  assert.equal(currentSprint.independentReviewR2.verdict, "REQUEST_CHANGES_CM_COM_4A_R2");
+  assert.equal(currentSprint.independentReviewR2.findings.length, 5);
   assert.match(state.readiness.scope, /A3\.2b/);
   assert.match(state.readiness.scope, /do NOT describe CM-COM-4A/i);
 });
