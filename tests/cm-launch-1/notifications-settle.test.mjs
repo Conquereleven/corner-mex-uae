@@ -16,6 +16,10 @@ const bellSource = await readFile(
   new URL("../../src/components/site/NotificationsBell.tsx", import.meta.url),
   "utf8",
 );
+const headerSource = await readFile(
+  new URL("../../src/components/site/Header.tsx", import.meta.url),
+  "utf8",
+);
 const sellerSource = await readFile(
   new URL("../../src/routes/_authenticated/seller.notifications.tsx", import.meta.url),
   "utf8",
@@ -156,4 +160,8 @@ test("account, bell and seller mutations invalidate the shared notification cach
     assert.match(source, /doMarkRead\(\{ data: \{ id \} \}\)/);
     assert.match(source, /doMarkAll\(\{\}\)/);
   }
+});
+
+test("the global header mounts the authenticated notifications bell", () => {
+  assert.match(headerSource, /<NotificationsBell \/>/);
 });

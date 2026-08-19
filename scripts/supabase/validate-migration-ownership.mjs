@@ -38,24 +38,46 @@ for (const item of contract.migrations) {
   if (hash !== item.sha256) errors.push(`checksum drift: ${item.filename}`);
 }
 
-if (active.length !== 4)
-  errors.push(`expected 4 applied canonical migrations, found ${active.length}`);
+if (active.length !== 9)
+  errors.push(`expected 9 active canonical source migrations, found ${active.length}`);
 // Every pending canonical migration must be individually named here, so a new
 // unapplied migration cannot appear without an explicit contract update.
-const REQUIRED_PENDING = [
-  "catalog_import_foundation_a3_2b",
-  "place_cod_order_v1",
-  "place_cod_order_v1_inventory_consistency",
-  "cm_com_4a_post_order_lifecycle",
-  "cm_launch_1_lifecycle_acl_hardening",
-  "cm_launch_1_notifications_canonical",
-];
+const REQUIRED_PENDING = ["catalog_import_foundation_a3_2b"];
 if (pending.length !== REQUIRED_PENDING.length) {
   errors.push("pending canonical migration count drift");
 }
 for (const required of REQUIRED_PENDING) {
   if (!pending.some((name) => name.includes(required))) {
     errors.push(`pending canonical boundary is missing: ${required}`);
+  }
+}
+const EXPECTED_PRODUCTION_MIGRATIONS = [
+  ["20260713223138", "revoke_public_rls_auto_enable_execution_a1"],
+  ["20260713230958", "commerce_foundation_a2"],
+  ["20260713231133", "private_admin_boundary_a2"],
+  ["20260713234156", "public_read_policy_boundary_a2"],
+  ["20260809221200", "place_cod_order_v1"],
+  ["20260819181510", "cm_com_4a_post_order_lifecycle"],
+  ["20260819202909", "cm_launch_1_lifecycle_acl_hardening"],
+  ["20260819215938", "cm_launch_1_notifications_canonical"],
+];
+const recordedProductionMigrations = (contract.canonicalProductionMigrations ?? []).map(
+  ({ version, name }) => [version, name],
+);
+if (
+  JSON.stringify(recordedProductionMigrations) !== JSON.stringify(EXPECTED_PRODUCTION_MIGRATIONS)
+) {
+  errors.push("canonical production migration history drift");
+}
+for (const record of contract.canonicalProductionMigrations ?? []) {
+  if (!Array.isArray(record.sourceFiles) || record.sourceFiles.length === 0) {
+    errors.push(`canonical production migration source missing: ${record.name}`);
+    continue;
+  }
+  for (const filename of record.sourceFiles) {
+    if (!active.includes(filename)) {
+      errors.push(`canonical production migration source is not active: ${filename}`);
+    }
   }
 }
 const activeSql = (

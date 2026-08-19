@@ -7,7 +7,12 @@ const names = execFileSync("git", ["diff", "--name-only", "--diff-filter=ACMR", 
 });
 const files = names
   .split("\n")
-  .filter((file) => /\.(?:js|mjs|cjs|ts|tsx)$/.test(file) && file !== "src/routeTree.gen.ts");
+  .filter(
+    (file) =>
+      /\.(?:js|mjs|cjs|ts|tsx)$/.test(file) &&
+      file !== "src/routeTree.gen.ts" &&
+      file !== "src/integrations/supabase/types.ts",
+  );
 
 function lint(file, content) {
   const result = spawnSync(

@@ -24,8 +24,8 @@ of consistency for the ordered variant.
 
 ## Fix (in this PR — repository only)
 
-1. **Forward function migration** —
-   `supabase/pending-canonical/20260810120000_place_cod_order_v1_inventory_consistency.sql`
+1. **Applied forward function correction** —
+   `supabase/migrations/20260810120000_place_cod_order_v1_inventory_consistency.sql`
    `create or replace`s `public.place_cod_order_v1` (identical signature) so a
    successful COD transaction atomically decrements **both**
    `product_variants.stock` and `inventory.quantity_on_hand`, records exactly one

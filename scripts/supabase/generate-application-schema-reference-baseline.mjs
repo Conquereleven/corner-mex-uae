@@ -14,6 +14,7 @@ const canonical = new Set([
   "inventory_movements",
   "order_items",
   "orders",
+  "order_lifecycle_events",
   "payments",
   "product_images",
   "product_reviews",
@@ -21,20 +22,13 @@ const canonical = new Set([
   "product_variants",
   "products",
   "profiles",
+  "notifications",
   "user_roles",
-]);
-const future = new Set([
-  "catalog_import_executions",
-  "catalog_import_reviews",
-  // CM-COM-3A: created by the pending COD migration, not yet applied.
   "place_cod_order_v1",
-  // CM-COM-4A: table and RPCs are owned by one pending canonical migration.
-  "order_lifecycle_events",
   "admin_transition_order_lifecycle_v1",
   "cm_com_4a_order_lifecycle_capability",
-  // CM-LAUNCH-1: canonical support owned by the pending notifications migration.
-  "notifications",
 ]);
+const future = new Set(["catalog_import_executions", "catalog_import_reviews"]);
 const roots = ["src", "scripts"];
 const files = [];
 const walk = async (directory) => {
@@ -71,18 +65,16 @@ const references = [...found.values()]
   .map((reference) => ({
     ...reference,
     files: [...new Set(reference.files)].sort(),
-    classification:
-      reference.kind !== "function" && canonical.has(reference.name)
-        ? "canonical_supported"
-        : future.has(reference.name)
-          ? "requires_future_migration"
-          : "lovable_live_only",
-    rationale:
-      reference.kind !== "function" && canonical.has(reference.name)
-        ? "present_in_canonical_db2_inventory"
-        : future.has(reference.name)
-          ? "owned_by_pending_canonical_migration"
-          : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
+    classification: canonical.has(reference.name)
+      ? "canonical_supported"
+      : future.has(reference.name)
+        ? "requires_future_migration"
+        : "lovable_live_only",
+    rationale: canonical.has(reference.name)
+      ? "present_in_canonical_db2_inventory"
+      : future.has(reference.name)
+        ? "owned_by_pending_canonical_migration"
+        : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
   }))
   .sort((left, right) => {
     const leftKey = `${left.kind}:${left.name}`;

@@ -37,10 +37,9 @@ catalog is discovered while the database is still untouched.
    `node scripts/cm-com-3a/load-activation-plan.mjs <manifest.json> --sql <plan.sql>`.
 6. Founder reviews the activation evidence: counts, excluded rows and their
    stated reasons, sampled prices against the public source.
-7. **Only then** apply the exact reviewed COD transactional migration
-   (`supabase/pending-canonical/20260809010000_place_cod_order_v1.sql`), then
-   move it into `supabase/migrations/` and update the migration-ownership
-   contract in the same authorized change.
+7. The reviewed COD transactional migration is now applied and retained at
+   `supabase/migrations/20260809010000_place_cod_order_v1.sql`; verify its
+   production migration-history record before any activation operation.
 8. Execute the exact reviewed loader against the canonical manifest:
    `CORNERMEX_ACTIVATION_DATABASE_URL=… node scripts/cm-com-3a/load-activation-plan.mjs <manifest.json> --execute`.
    It applies in ONE transaction; a failure leaves no partial catalog.

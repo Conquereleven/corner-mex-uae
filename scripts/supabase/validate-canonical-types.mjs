@@ -19,18 +19,27 @@ const tables = [...tableBlock.matchAll(/^      ([a-z0-9_]+): \{$/gm)]
   .map((match) => match[1])
   .sort();
 const expected = [...contract.publicTables].sort();
+const functionBlock = types.match(/Functions:\s*\{([\s\S]*?)\n    Enums:/)?.[1] ?? "";
+const generatedFunctions = [...functionBlock.matchAll(/^      ([a-z0-9_]+):/gm)]
+  .map((match) => match[1])
+  .sort();
 const errors = validateCanonicalProvenance(contract);
 
 if (contract.canonicalProjectRef !== "wlrfknmrhowldygmvtvn")
   errors.push("canonical project ref mismatch");
 if (JSON.stringify(tables) !== JSON.stringify(expected))
   errors.push(`table identity mismatch: ${JSON.stringify(tables)}`);
+if (
+  JSON.stringify(generatedFunctions) !== JSON.stringify([...contract.generatedTypeFunctions].sort())
+)
+  errors.push(`generated function identity mismatch: ${JSON.stringify(generatedFunctions)}`);
 if (createHash("sha256").update(types).digest("hex") !== contract.typesSha256)
   errors.push("generated types checksum mismatch");
 const fingerprintPayload = {
   canonicalProjectRef: contract.canonicalProjectRef,
   publicTables: [...contract.publicTables].sort(),
   publicFunctions: [...contract.publicFunctions].sort(),
+  generatedTypeFunctions: [...contract.generatedTypeFunctions].sort(),
   rlsEnabledTables: contract.rlsEnabledTables,
   policyCount: contract.policyCount,
   typesSha256: contract.typesSha256,

@@ -410,6 +410,56 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          metadata: Json | null
+          order_id: string | null
+          read_at: string | null
+          shipment_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          read_at?: string | null
+          shipment_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          metadata?: Json | null
+          order_id?: string | null
+          read_at?: string | null
+          shipment_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -470,6 +520,44 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_lifecycle_events: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          new_value: string
+          order_id: string
+          previous_value: string
+          transition_type: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          new_value: string
+          order_id: string
+          previous_value: string
+          transition_type: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          new_value?: string
+          order_id?: string
+          previous_value?: string
+          transition_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_lifecycle_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -862,7 +950,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_transition_order_lifecycle_v1: {
+        Args: {
+          p_expected_from: string
+          p_order_id: string
+          p_to: string
+          p_transition_type: string
+        }
+        Returns: Json
+      }
+      cm_com_4a_order_lifecycle_capability: { Args: never; Returns: boolean }
+      place_cod_order_v1: {
+        Args: {
+          p_buyer_id: string
+          p_items: Json
+          p_legal_acceptance: Json
+          p_shipping_address: Json
+          p_shipping_aed: number
+          p_tax_rate: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

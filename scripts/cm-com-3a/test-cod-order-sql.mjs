@@ -1,6 +1,6 @@
 // CM-COM-3A — transactional COD order proof against a disposable PostgreSQL.
 //
-// Applies the canonical A2 chain plus the pending COD function to a throwaway
+// Applies the active canonical chain, including the COD function, to a throwaway
 // database and proves the correctness contract. It never connects to a
 // production database: it requires PG* / COD_SQL_TEST_DATABASE_URL pointing at a
 // disposable instance, and refuses to run against a Supabase host.
@@ -101,11 +101,6 @@ for (const name of readdirSync(path.join(root, "supabase/migrations"))
   .sort()) {
   file(`supabase/migrations/${name}`);
 }
-file("supabase/pending-canonical/20260809010000_place_cod_order_v1.sql");
-// CM-COM-3A.1 forward hotfix: create-or-replace the function with the
-// inventory-consistent implementation. Applied after the original so the proof
-// runs against the corrected function exactly as production will.
-file("supabase/pending-canonical/20260810120000_place_cod_order_v1_inventory_consistency.sql");
 
 const BUYER = "11111111-1111-1111-1111-111111111111";
 const PRODUCT = "22222222-2222-2222-2222-222222222222";

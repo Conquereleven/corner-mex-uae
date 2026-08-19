@@ -17,6 +17,7 @@ import {
   DesertGlassControl,
   DesertGlassHeader,
 } from "@/components/site/DesertGlass";
+import { NotificationsBell } from "@/components/site/NotificationsBell";
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -98,6 +99,7 @@ export function Header() {
                 Manual quote
               </Button>
             </Link>
+            <NotificationsBell />
             <Link to={user ? "/account" : "/login"} className="ms-1">
               <Button
                 variant="ghost"

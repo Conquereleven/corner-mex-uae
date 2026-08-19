@@ -54,7 +54,6 @@ for (const migration of readdirSync(path.join(root, "supabase/migrations"))
   .sort()) {
   file(`supabase/migrations/${migration}`);
 }
-file("supabase/pending-canonical/20260819220000_cm_launch_1_notifications_canonical.sql");
 
 psql([
   "-q",
