@@ -9,7 +9,37 @@ import { getSellerItemActions } from "@/lib/order-experience-contract";
 
 const FULFILLMENT_FLOW = ["pending", "preparing", "shipped", "delivered"];
 
-export function FulfillmentTimeline({ status, shipments }: { status: string; shipments: any[] }) {
+type SellerShipment = {
+  id: string;
+  carrier: string;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
+  status: string;
+  shipped_at?: string | null;
+};
+
+type SellerInternalNote = {
+  id: string;
+  author_role: string;
+  body: string;
+  created_at: string;
+};
+
+type SellerOrderEvent = {
+  id: string;
+  message?: string | null;
+  kind: string;
+  actor_role: string;
+  created_at: string;
+};
+
+export function FulfillmentTimeline({
+  status,
+  shipments,
+}: {
+  status: string;
+  shipments: SellerShipment[];
+}) {
   const current = FULFILLMENT_FLOW.indexOf(status);
   return (
     <ol className="grid gap-4 sm:grid-cols-4">
@@ -72,7 +102,7 @@ export function SellerItemControls({
   );
 }
 
-export function SellerShipmentPresentation({ shipments }: { shipments: any[] }) {
+export function SellerShipmentPresentation({ shipments }: { shipments: SellerShipment[] }) {
   return (
     <Card>
       <CardHeader>
@@ -120,8 +150,8 @@ export function SellerInternalNotes({
   onNoteTextChange,
   onAddNote,
 }: {
-  notes: any[];
-  events: any[];
+  notes: SellerInternalNote[];
+  events: SellerOrderEvent[];
   noteText: string;
   notePending: boolean;
   onNoteTextChange: (value: string) => void;
