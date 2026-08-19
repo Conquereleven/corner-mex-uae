@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyOrderDetail } from "@/lib/account.functions";
+import {
+  getCustomerOrderDetailView,
+  presentCanonicalCustomerOrder,
+} from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account/orders/$id")({
   head: () => ({ meta: [{ title: "My order — Corner Mex" }] }),
@@ -46,6 +50,11 @@ function CustomerOrderDetail() {
     queryKey: ["my-order", id],
     queryFn: () => fetchOrder({ data: { orderId: id } }),
   });
+  const view = getCustomerOrderDetailView<CustomerOrder>({
+    isLoading: order.isLoading,
+    error: order.error,
+    data: order.data as CustomerOrder | undefined,
+  });
 
   return (
     <SiteLayout>
@@ -56,27 +65,25 @@ function CustomerOrderDetail() {
           </Link>
         </Button>
 
-        {order.isLoading ? (
+        {view.kind === "loading" ? (
           <div className="space-y-4">
             <Skeleton className="h-12 w-72" />
             <Skeleton className="h-72 w-full" />
           </div>
-        ) : order.isError || !order.data ? (
+        ) : view.kind === "not_found" || view.kind === "query_failed" ? (
           <Card role="alert">
             <CardHeader>
-              <CardTitle>Order unavailable</CardTitle>
+              <CardTitle>{view.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                This order could not be found or does not belong to your account.
-              </p>
+              <p className="text-sm text-muted-foreground">{view.message}</p>
               <Button variant="outline" onClick={() => order.refetch()}>
                 Try again
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <OrderDetail order={order.data} />
+          <OrderDetail order={view.order} />
         )}
       </section>
     </SiteLayout>
@@ -85,19 +92,20 @@ function CustomerOrderDetail() {
 
 function OrderDetail({ order }: { order: CustomerOrder }) {
   const address = order.shipping_address ?? {};
+  const display = presentCanonicalCustomerOrder(order);
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">Order</p>
-          <h1 className="font-display text-4xl tracking-tight">{order.order_number}</h1>
+          <h1 className="font-display text-4xl tracking-tight">{display.orderNumber}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {new Date(order.created_at).toLocaleString()}
           </p>
         </div>
         <div className="flex gap-2">
-          <Badge variant="secondary">{order.status}</Badge>
-          <Badge variant="outline">{order.payment_status}</Badge>
+          <Badge variant="secondary">{display.orderStatus}</Badge>
+          <Badge variant="outline">{display.paymentStatus}</Badge>
         </div>
       </header>
 
@@ -131,14 +139,11 @@ function OrderDetail({ order }: { order: CustomerOrder }) {
           </CardHeader>
           <CardContent>
             <dl className="space-y-2 text-sm">
-              <Total label="Subtotal" value={aed(order.subtotal_aed)} />
-              <Total label="Shipping" value={aed(order.shipping_aed)} />
-              <Total label="Tax" value={aed(order.tax_aed)} />
-              <Total label="Total" value={aed(order.total_aed)} strong />
-              <Total
-                label="Payment method"
-                value={String(order.payment_method ?? "—").toUpperCase()}
-              />
+              <Total label="Subtotal" value={display.subtotal} />
+              <Total label="Shipping" value={display.shipping} />
+              <Total label="Tax" value={display.tax} />
+              <Total label="Total" value={display.total} strong />
+              <Total label="Payment method" value={display.paymentMethod} />
             </dl>
           </CardContent>
         </Card>

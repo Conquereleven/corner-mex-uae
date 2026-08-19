@@ -4,16 +4,15 @@
 - Reviewer: independent reviewer
 - Branch: `feature/cm-com-4a-post-order-lifecycle`
 - Base/main source: `e02960f0887d98e624b22a9333fde59175299847`
-- Status: R1 remediation in progress after independent `REQUEST_CHANGES_CM_COM_4A`; repository-only; not activated or deployed
+- Status: R2 remediation in progress after independent `REQUEST_CHANGES_CM_COM_4A_R1`; repository-only; not activated or deployed
 
 ## Independent review R1
 
-The exact reviewed head `db5550b9d9d14702ad2b0d60e2eb1a20f235317a` received
-`REQUEST_CHANGES_CM_COM_4A`. Remediation is limited to the five recorded findings:
+The exact R1 re-reviewed head `95894b002befbd77788e7279235e48c57012a9f8` received
+`REQUEST_CHANGES_CM_COM_4A_R1`. P1 combined lifecycle invariants, P1 audit ACL/read integration,
+and P1 seller regression are independently CLOSED. R2 remediation is limited to the two remaining
+P2 findings:
 
-- P1 combined order/payment lifecycle invariants;
-- P1 audit ACL and truthful read integration;
-- P1 seller order-detail regression;
 - P2 truthful customer order-detail backend errors;
 - P2 executable behavioral and parity coverage.
 

@@ -134,17 +134,17 @@
       "state": "draft_remediation",
       "independentReviewComplete": false,
       "independentReviewer": "Independent reviewer",
-      "reviewedHeadSha": "db5550b9d9d14702ad2b0d60e2eb1a20f235317a",
+      "reviewedHeadSha": "95894b002befbd77788e7279235e48c57012a9f8",
       "declaredReady": false,
-      "status": "request_changes_cm_com_4a_r1_remediation_in_progress",
+      "status": "request_changes_cm_com_4a_r2_remediation_in_progress",
       "independentReviewR1": {
-        "verdict": "REQUEST_CHANGES_CM_COM_4A",
+        "verdict": "REQUEST_CHANGES_CM_COM_4A_R1",
         "findings": [
-          "P1 combined lifecycle invariants",
-          "P1 audit ACL/read integration",
-          "P1 seller regression",
-          "P2 truthful order-detail backend error",
-          "P2 executable behavior coverage"
+          "P1 combined lifecycle invariants CLOSED",
+          "P1 audit ACL/read integration CLOSED",
+          "P1 seller regression CLOSED",
+          "P2 truthful order-detail backend error OPEN to R2 remediation",
+          "P2 executable behavior coverage OPEN to R2 remediation"
         ],
         "remediationStatus": "in_progress_not_independently_rereviewed"
       }

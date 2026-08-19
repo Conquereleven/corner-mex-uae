@@ -28,7 +28,7 @@ const sellerUi = await read("src/components/site/OrderDetailView.tsx");
 const adminUi = await read("src/components/site/AdminOrderLifecycleView.tsx");
 const adminListUi = await read("src/routes/_authenticated/admin.orders.index.tsx");
 const lifecycle = await read("src/lib/order-lifecycle.ts");
-const detailContract = await read("src/lib/order-detail-contract.ts");
+const experienceContract = await read("src/lib/order-experience-contract.ts");
 const migration = await read(
   "supabase/pending-canonical/20260812180442_cm_com_4a_post_order_lifecycle.sql",
 );
@@ -162,18 +162,19 @@ test("account history is server-bound to authenticated buyer and canonical items
 });
 
 test("account failures do not masquerade as empty history", () => {
-  assert.match(account, /ACCOUNT_ORDER_HISTORY_QUERY_FAILED/);
-  assert.match(accountUi, /orders\.isError/);
-  assert.match(accountUi, /We couldn't load your orders/);
+  assert.match(account, /loadOwnedOrderHistory/);
+  assert.match(experienceContract, /ACCOUNT_ORDER_HISTORY_QUERY_FAILED/);
+  assert.match(accountUi, /ordersView\.kind === "query_failed"/);
+  assert.match(experienceContract, /We couldn't load your orders/);
 });
 
 test("customer detail enforces ownership server-side", () => {
   const detail = account.slice(account.indexOf("export const getMyOrderDetail"));
   assert.match(detail, /\.eq\("id", data\.orderId\)/);
   assert.match(detail, /\.eq\("buyer_id", context\.userId\)/);
-  assert.match(detail, /resolveOwnedOrderDetail/);
-  assert.match(detailContract, /ACCOUNT_ORDER_NOT_FOUND/);
-  assert.match(detailContract, /ACCOUNT_ORDER_DETAIL_QUERY_FAILED/);
+  assert.match(detail, /loadOwnedOrderDetail/);
+  assert.match(experienceContract, /ACCOUNT_ORDER_NOT_FOUND/);
+  assert.match(experienceContract, /ACCOUNT_ORDER_DETAIL_QUERY_FAILED/);
   assert.doesNotMatch(detail, /buyerId|buyer_id:\s*data/);
 });
 
@@ -240,8 +241,7 @@ test("admin UX exposes allowlisted buttons and fails closed", () => {
 test("seller detail preserves fulfillment, shipment and internal-note behavior", () => {
   assert.match(sellerUi, /role === "seller"/);
   assert.match(sellerUi, /setOrderItemStatus/);
-  assert.match(sellerUi, /Start preparing/);
-  assert.match(sellerUi, /Mark delivered/);
+  assert.match(sellerUi, /getSellerItemActions/);
   assert.match(sellerUi, /Shipments/);
   assert.match(sellerUi, /Add note/);
   assert.match(sellerUi, /sellerAddOrderNote/);

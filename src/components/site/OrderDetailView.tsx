@@ -32,6 +32,10 @@ import {
 import { toast } from "sonner";
 import { statusColor } from "@/lib/dashboard-tokens";
 import { setOrderItemStatus, sellerAddOrderNote } from "@/lib/seller.functions";
+import {
+  getSellerItemActions,
+  getSellerOrderDetailExperience,
+} from "@/lib/order-experience-contract";
 
 const AED = (n: number | string) =>
   `${Number(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
@@ -62,6 +66,7 @@ export function OrderDetailView({
   const payments: any[] = data.payments ?? [];
   const buyer = data.buyer;
   const addr = order.shipping_address ?? {};
+  const experience = getSellerOrderDetailExperience(data);
 
   const sellerItem = useServerFn(setOrderItemStatus);
   const sellerNote = useServerFn(sellerAddOrderNote);
@@ -132,16 +137,18 @@ export function OrderDetailView({
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-4 w-4" /> Fulfillment progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FulfillmentTimeline status={order.status} shipments={shipments} />
-        </CardContent>
-      </Card>
+      {experience.fulfillmentProgress && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-4 w-4" /> Fulfillment progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FulfillmentTimeline status={order.status} shipments={shipments} />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -202,49 +209,26 @@ export function OrderDetailView({
                         <Badge variant="outline" className="capitalize">
                           {i.fulfillment_status}
                         </Badge>
-                        {i.fulfillment_status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                setPendingChange({
-                                  type: "item",
-                                  itemId: i.id,
-                                  status: "preparing",
-                                })
-                              }
-                            >
-                              Start preparing
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                setPendingChange({
-                                  type: "item",
-                                  itemId: i.id,
-                                  status: "cancelled",
-                                })
-                              }
-                            >
-                              Cancel item
-                            </Button>
-                          </>
-                        )}
+                        {getSellerItemActions(i.fulfillment_status).map((action) => (
+                          <Button
+                            key={action.nextStatus}
+                            size="sm"
+                            variant={action.variant}
+                            onClick={() =>
+                              setPendingChange({
+                                type: "item",
+                                itemId: i.id,
+                                status: action.nextStatus,
+                              })
+                            }
+                          >
+                            {action.label}
+                          </Button>
+                        ))}
                         {i.fulfillment_status === "preparing" && (
                           <span className="max-w-48 text-right text-xs text-muted-foreground">
                             Create a shipment from the orders list to mark it shipped.
                           </span>
-                        )}
-                        {i.fulfillment_status === "shipped" && (
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              setPendingChange({ type: "item", itemId: i.id, status: "delivered" })
-                            }
-                          >
-                            Mark delivered
-                          </Button>
                         )}
                       </div>
                     ) : (
@@ -275,7 +259,7 @@ export function OrderDetailView({
           </Card>
 
           {/* Shipments */}
-          {shipments.length > 0 && (
+          {experience.shipmentPresentation && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">

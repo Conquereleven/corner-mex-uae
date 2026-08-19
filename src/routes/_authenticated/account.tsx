@@ -15,6 +15,10 @@ import { isAdmin } from "@/lib/admin.functions";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  getCustomerOrderHistoryView,
+  presentCanonicalCustomerOrder,
+} from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "Account — Corner Mex" }] }),
@@ -32,6 +36,11 @@ function Account() {
   const loyalty = useQuery({ queryKey: ["my-loyalty"], queryFn: () => fetchLoyalty({}) });
   const fetchReviewable = useServerFn(getReviewableItems);
   const reviewable = useQuery({ queryKey: ["my-reviewable"], queryFn: () => fetchReviewable({}) });
+  const ordersView = getCustomerOrderHistoryView({
+    isLoading: orders.isLoading,
+    isError: orders.isError,
+    data: orders.data,
+  });
 
   return (
     <SiteLayout>
@@ -101,27 +110,25 @@ function Account() {
               <CardTitle>Recent orders</CardTitle>
             </CardHeader>
             <CardContent>
-              {orders.isLoading ? (
+              {ordersView.kind === "loading" ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
-              ) : orders.isError ? (
+              ) : ordersView.kind === "query_failed" ? (
                 <div className="space-y-2" role="alert">
-                  <p className="text-sm font-medium text-destructive">
-                    We couldn't load your orders.
-                  </p>
+                  <p className="text-sm font-medium text-destructive">{ordersView.message}</p>
                   <Button size="sm" variant="outline" onClick={() => orders.refetch()}>
                     Try again
                   </Button>
                 </div>
-              ) : (orders.data ?? []).length === 0 ? (
+              ) : ordersView.kind === "empty" ? (
                 <p className="text-sm text-muted-foreground">
-                  You have no orders yet.{" "}
+                  {ordersView.message}{" "}
                   <Link to="/shop" className="underline">
                     Start shopping →
                   </Link>
                 </p>
               ) : (
                 <ul className="divide-y divide-border">
-                  {(orders.data ?? []).map((o: any) => (
+                  {ordersView.orders.map((o: any) => (
                     <OrderRow key={o.id} order={o} />
                   ))}
                 </ul>
@@ -179,11 +186,12 @@ function PendingReviewsCard({ items }: { items: any[] }) {
 }
 
 function OrderRow({ order }: { order: any }) {
+  const display = presentCanonicalCustomerOrder(order);
   return (
     <li className="py-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-medium">{order.order_number}</p>
+          <p className="font-medium">{display.orderNumber}</p>
           <p className="text-xs text-muted-foreground">
             {new Date(order.created_at).toLocaleString()} · {order.items?.length ?? 0} items
             {order.sla_min_days ? (
@@ -195,9 +203,9 @@ function OrderRow({ order }: { order: any }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">{order.status}</Badge>
-          <Badge variant="outline">{order.payment_status}</Badge>
-          <span className="font-medium tabular-nums">{Number(order.total_aed).toFixed(2)} AED</span>
+          <Badge variant="secondary">{display.orderStatus}</Badge>
+          <Badge variant="outline">{display.paymentStatus}</Badge>
+          <span className="font-medium tabular-nums">{display.total}</span>
           <Button asChild size="sm" variant="outline">
             <Link to="/account/orders/$id" params={{ id: order.id }}>
               View order
@@ -208,19 +216,19 @@ function OrderRow({ order }: { order: any }) {
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground sm:grid-cols-4">
         <div>
           <dt>Subtotal</dt>
-          <dd>{Number(order.subtotal_aed).toFixed(2)} AED</dd>
+          <dd>{display.subtotal}</dd>
         </div>
         <div>
           <dt>Shipping</dt>
-          <dd>{Number(order.shipping_aed).toFixed(2)} AED</dd>
+          <dd>{display.shipping}</dd>
         </div>
         <div>
           <dt>Tax</dt>
-          <dd>{Number(order.tax_aed).toFixed(2)} AED</dd>
+          <dd>{display.tax}</dd>
         </div>
         <div>
           <dt>Payment</dt>
-          <dd className="uppercase">{order.payment_method ?? "—"}</dd>
+          <dd>{display.paymentMethod}</dd>
         </div>
       </dl>
     </li>

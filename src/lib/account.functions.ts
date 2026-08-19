@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { resolveOwnedOrderDetail } from "@/lib/order-detail-contract";
+import { loadOwnedOrderDetail, loadOwnedOrderHistory } from "@/lib/order-experience-contract";
 
 export const getMyAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -30,16 +30,16 @@ export const getMyOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId } = context;
-    const { data, error } = await supabaseAdmin
-      .from("orders")
-      .select(
-        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
-        items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
-      )
-      .eq("buyer_id", userId)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error("ACCOUNT_ORDER_HISTORY_QUERY_FAILED");
-    return data ?? [];
+    return loadOwnedOrderHistory(() =>
+      supabaseAdmin
+        .from("orders")
+        .select(
+          `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
+          items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
+        )
+        .eq("buyer_id", userId)
+        .order("created_at", { ascending: false }),
+    );
   });
 
 export const getMyOrderDetail = createServerFn({ method: "GET" })
@@ -48,19 +48,19 @@ export const getMyOrderDetail = createServerFn({ method: "GET" })
     z.object({ orderId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { data: order, error } = await supabaseAdmin
-      .from("orders")
-      .select(
-        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, shipping_address, created_at,
-        items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
-      )
-      .eq("id", data.orderId)
-      .eq("buyer_id", context.userId)
-      .maybeSingle();
-
     // The same response is used for an absent order and an order owned by a
     // different buyer, so direct URL probing cannot disclose order existence.
-    return resolveOwnedOrderDetail({ data: order, error });
+    return loadOwnedOrderDetail(() =>
+      supabaseAdmin
+        .from("orders")
+        .select(
+          `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, shipping_address, created_at,
+          items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
+        )
+        .eq("id", data.orderId)
+        .eq("buyer_id", context.userId)
+        .maybeSingle(),
+    );
   });
 
 export const becomeSeller = createServerFn({ method: "POST" })
