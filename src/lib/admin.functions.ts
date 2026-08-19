@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { ORDER_STATES, PAYMENT_STATES } from "@/lib/order-lifecycle";
+import { resolveLifecycleAudit } from "@/lib/order-detail-contract";
+import type { AdminOrderLifecycleData } from "@/components/site/AdminOrderLifecycleView";
 
 let supabaseAdmin: any;
 
@@ -249,96 +252,50 @@ export const adminListOrders = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
-export const adminSetOrderStatus = createServerFn({ method: "POST" })
+export const adminTransitionOrderLifecycle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { orderId: string; status: string }) =>
-    z
-      .object({
-        orderId: z.string().uuid(),
-        status: z.enum([
-          "pending",
-          "paid",
-          "preparing",
-          "shipped",
-          "delivered",
-          "cancelled",
-          "refunded",
-        ]),
-      })
-      .parse(input),
+  .inputValidator(
+    (input: {
+      orderId: string;
+      transitionType: "order_status" | "payment_status";
+      expectedCurrent: string;
+      next: string;
+    }) =>
+      z
+        .discriminatedUnion("transitionType", [
+          z.object({
+            orderId: z.string().uuid(),
+            transitionType: z.literal("order_status"),
+            expectedCurrent: z.enum(ORDER_STATES),
+            next: z.enum(ORDER_STATES),
+          }),
+          z.object({
+            orderId: z.string().uuid(),
+            transitionType: z.literal("payment_status"),
+            expectedCurrent: z.enum(PAYMENT_STATES),
+            next: z.enum(PAYMENT_STATES),
+          }),
+        ])
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { error } = await (context.supabase.rpc as any)("admin_update_order_state", {
-      p_order_id: data.orderId,
-      p_status: data.status,
-      p_payment_status: null,
-    });
-    if (error) throw new Error(error.message);
-    await supabaseAdmin.from("order_events").insert({
-      order_id: data.orderId,
-      actor_id: context.userId,
-      actor_role: "admin",
-      kind: "status_changed",
-      message: `Order status set to ${data.status}`,
-      payload: { status: data.status },
-    });
-    return { ok: true };
-  });
-
-export const adminSetPaymentStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { orderId: string; status: string; manual?: boolean }) =>
-    z
-      .object({
-        orderId: z.string().uuid(),
-        status: z.enum(["pending", "authorized", "paid", "failed", "refunded"]),
-        manual: z.boolean().optional(),
-      })
-      .parse(input),
-  )
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-    // Idempotency: skip if already in target state (avoid duplicate timeline events)
-    const { data: current } = await supabaseAdmin
-      .from("orders")
-      .select("payment_status, payment_method")
-      .eq("id", data.orderId)
-      .maybeSingle();
-    if (!current) throw new Error("Order not found");
-    if (current.payment_status === data.status) return { ok: true, unchanged: true };
-    if (data.manual && data.status === "paid") {
-      if (current.payment_method !== "bank_transfer" && current.payment_method !== "cod") {
-        throw new Error(
-          "Manual payment confirmation is only allowed for Bank Transfer or Cash on Delivery",
-        );
-      }
+    // The authenticated client calls one reviewed database transaction. No
+    // browser or service-role table UPDATE participates in this path.
+    const { data: result, error } = await (context.supabase as any).rpc(
+      "admin_transition_order_lifecycle_v1",
+      {
+        p_order_id: data.orderId,
+        p_transition_type: data.transitionType,
+        p_expected_from: data.expectedCurrent,
+        p_to: data.next,
+      },
+    );
+    if (error) {
+      const code = /CM_COM_4A_[A-Z_]+/.exec(error.message)?.[0] ?? "CM_COM_4A_TRANSITION_FAILED";
+      throw new Error(code);
     }
-    const { error } = await (context.supabase.rpc as any)("admin_update_order_state", {
-      p_order_id: data.orderId,
-      p_status: null,
-      p_payment_status: data.status,
-    });
-    if (error) throw new Error(error.message);
-    if (data.status === "paid") {
-      await supabaseAdmin
-        .from("orders")
-        .update({ paid_at: new Date().toISOString() })
-        .eq("id", data.orderId)
-        .is("paid_at", null);
-    }
-    await supabaseAdmin.from("order_events").insert({
-      order_id: data.orderId,
-      actor_id: context.userId,
-      actor_role: "admin",
-      kind: "payment_status_changed",
-      message:
-        data.manual && data.status === "paid"
-          ? "Payment manually marked as paid"
-          : `Payment status set to ${data.status}`,
-      payload: { payment_status: data.status, manual: !!data.manual },
-    });
-    return { ok: true };
+    return result;
   });
 
 export const adminGetOrderDetail = createServerFn({ method: "GET" })
@@ -359,60 +316,50 @@ export const adminGetOrderDetail = createServerFn({ method: "GET" })
     const { data: order, error } = await orderQuery.maybeSingle();
     if (error) throw new Error(error.message);
     if (!order) throw new Error("Order not found");
-    const [itemsRes, notesRes, eventsRes, shipmentsRes, paymentsRes, profileRes] =
-      await Promise.all([
-        supabaseAdmin
-          .from("order_items")
-          .select(
-            `
-        id, product_id, product_name, variant_label, qty, unit_price_aed, line_total_aed,
-        fulfillment_status, seller_id,
-        product:products(slug, images:product_images(url, sort_order)),
-        seller:sellers(store_name, slug)
-      `,
-          )
-          .eq("order_id", order.id),
-        supabaseAdmin
-          .from("order_notes")
-          .select("*")
-          .eq("order_id", order.id)
-          .order("created_at", { ascending: false }),
-        supabaseAdmin
-          .from("order_events")
-          .select("*")
-          .eq("order_id", order.id)
-          .order("created_at", { ascending: false })
-          .limit(100),
-        supabaseAdmin.from("shipments").select("*").eq("order_id", order.id),
-        supabaseAdmin.from("payments").select("*").eq("order_id", order.id),
-        order.buyer_id
-          ? supabaseAdmin
-              .from("profiles")
-              .select("id, full_name, phone, company_name, preferred_lang")
-              .eq("id", order.buyer_id)
-              .maybeSingle()
-          : Promise.resolve({ data: null }),
-      ]);
-    let buyer: any = profileRes.data ?? null;
-    if (order.buyer_id) {
-      try {
-        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(order.buyer_id);
-        const email = authUser?.user?.email ?? null;
-        buyer = { ...(buyer ?? { id: order.buyer_id }), email };
-      } catch {
-        // Ignore auth lookup failures; buyer info is best-effort.
-      }
-    }
-    return {
+    return loadAdminOrderDetailRelated({
       order,
-      items: itemsRes.data ?? [],
-      notes: notesRes.data ?? [],
-      events: eventsRes.data ?? [],
-      shipments: shipmentsRes.data ?? [],
-      payments: paymentsRes.data ?? [],
-      buyer,
-    };
+      itemsQuery: supabaseAdmin
+        .from("order_items")
+        .select(
+          `id, product_id, variant_id, product_name, variant_label, qty,
+            unit_price_aed, line_total_aed, fulfillment_status`,
+        )
+        .eq("order_id", order.id),
+      eventsQuery: (supabaseAdmin as any)
+        .from("order_lifecycle_events")
+        .select("id, transition_type, previous_value, new_value, actor_id, created_at")
+        .eq("order_id", order.id)
+        .order("created_at", { ascending: false })
+        .limit(100),
+      capabilityQuery: (context.supabase as any).rpc("cm_com_4a_order_lifecycle_capability"),
+    });
   });
+
+export async function loadAdminOrderDetailRelated({
+  order,
+  itemsQuery,
+  eventsQuery,
+  capabilityQuery,
+}: {
+  order: AdminOrderLifecycleData["order"];
+  itemsQuery: PromiseLike<{ data: AdminOrderLifecycleData["items"] | null; error: unknown }>;
+  eventsQuery: PromiseLike<{ data: AdminOrderLifecycleData["events"] | null; error: unknown }>;
+  capabilityQuery: PromiseLike<{ data: unknown; error: unknown }>;
+}) {
+  const [itemsRes, eventsRes, capabilityRes] = await Promise.all([
+    itemsQuery,
+    eventsQuery,
+    capabilityQuery,
+  ]);
+  if (itemsRes.error) throw new Error("CM_COM_4A_ORDER_ITEMS_QUERY_FAILED");
+  const events = resolveLifecycleAudit(eventsRes);
+  return {
+    order,
+    items: itemsRes.data ?? [],
+    events,
+    lifecycleCapability: !capabilityRes.error && capabilityRes.data === true,
+  };
+}
 
 export const adminAddOrderNote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

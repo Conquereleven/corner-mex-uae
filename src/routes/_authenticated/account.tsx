@@ -12,10 +12,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { getMyAccount, getMyOrders, becomeSeller } from "@/lib/account.functions";
 import { getReviewableItems } from "@/lib/reviews.functions";
 import { isAdmin } from "@/lib/admin.functions";
-import { buyerListOrderShipments } from "@/lib/shipments.functions";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  getCustomerOrderHistoryView,
+  presentCanonicalCustomerOrder,
+  type CustomerOrderHistoryView,
+} from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "Account — Corner Mex" }] }),
@@ -33,6 +37,11 @@ function Account() {
   const loyalty = useQuery({ queryKey: ["my-loyalty"], queryFn: () => fetchLoyalty({}) });
   const fetchReviewable = useServerFn(getReviewableItems);
   const reviewable = useQuery({ queryKey: ["my-reviewable"], queryFn: () => fetchReviewable({}) });
+  const ordersView = getCustomerOrderHistoryView({
+    isLoading: orders.isLoading,
+    isError: orders.isError,
+    data: orders.data,
+  });
 
   return (
     <SiteLayout>
@@ -102,22 +111,7 @@ function Account() {
               <CardTitle>Recent orders</CardTitle>
             </CardHeader>
             <CardContent>
-              {orders.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading…</p>
-              ) : (orders.data ?? []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  You have no orders yet.{" "}
-                  <Link to="/shop" className="underline">
-                    Start shopping →
-                  </Link>
-                </p>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {(orders.data ?? []).map((o: any) => (
-                    <OrderRow key={o.id} order={o} />
-                  ))}
-                </ul>
-              )}
+              <CustomerOrderHistorySurface view={ordersView} onRetry={() => orders.refetch()} />
             </CardContent>
           </Card>
 
@@ -130,6 +124,53 @@ function Account() {
         </div>
       </section>
     </SiteLayout>
+  );
+}
+
+export function CustomerOrderHistorySurface({
+  view,
+  onRetry,
+  renderShopLink,
+  renderOrderLink,
+}: {
+  view: CustomerOrderHistoryView;
+  onRetry: () => unknown;
+  renderShopLink?: () => React.ReactNode;
+  renderOrderLink?: (id: string) => React.ReactNode;
+}) {
+  if (view.kind === "loading") {
+    return <p className="text-sm text-muted-foreground">Loading…</p>;
+  }
+  if (view.kind === "query_failed") {
+    return (
+      <div className="space-y-2" role="alert">
+        <p className="text-sm font-medium text-destructive">{view.message}</p>
+        <Button data-testid="customer-history-retry" size="sm" variant="outline" onClick={onRetry}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
+  if (view.kind === "empty") {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {view.message}{" "}
+        {renderShopLink ? (
+          renderShopLink()
+        ) : (
+          <Link to="/shop" className="underline">
+            Start shopping →
+          </Link>
+        )}
+      </p>
+    );
+  }
+  return (
+    <ul className="divide-y divide-border">
+      {view.orders.map((order: any) => (
+        <OrderRow key={order.id} order={order} renderOrderLink={renderOrderLink} />
+      ))}
+    </ul>
   );
 }
 
@@ -170,19 +211,19 @@ function PendingReviewsCard({ items }: { items: any[] }) {
   );
 }
 
-function OrderRow({ order }: { order: any }) {
-  const fn = useServerFn(buyerListOrderShipments);
-  const [open, setOpen] = useState(false);
-  const q = useQuery({
-    queryKey: ["my-order-shipments", order.id],
-    queryFn: () => fn({ data: { orderId: order.id } }),
-    enabled: open,
-  });
+export function OrderRow({
+  order,
+  renderOrderLink,
+}: {
+  order: any;
+  renderOrderLink?: (id: string) => React.ReactNode;
+}) {
+  const display = presentCanonicalCustomerOrder(order);
   return (
     <li className="py-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="font-medium">{order.order_number}</p>
+          <p className="font-medium">{display.orderNumber}</p>
           <p className="text-xs text-muted-foreground">
             {new Date(order.created_at).toLocaleString()} · {order.items?.length ?? 0} items
             {order.sla_min_days ? (
@@ -194,54 +235,38 @@ function OrderRow({ order }: { order: any }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">{order.status}</Badge>
-          <Badge variant="outline">{order.payment_status}</Badge>
-          <span className="font-medium tabular-nums">{Number(order.total_aed).toFixed(2)} AED</span>
-          <Button size="sm" variant="ghost" onClick={() => setOpen((v) => !v)}>
-            {open ? "Hide" : "Track"}
-          </Button>
-        </div>
-      </div>
-      {open && (
-        <div className="mt-3 rounded-lg border bg-muted/30 p-3 text-sm">
-          {q.isLoading ? (
-            <p className="text-muted-foreground">Loading…</p>
-          ) : (q.data ?? []).length === 0 ? (
-            <p className="text-muted-foreground">
-              No shipments yet — your seller hasn't dispatched this order.
-            </p>
+          <Badge variant="secondary">{display.orderStatus}</Badge>
+          <Badge variant="outline">{display.paymentStatus}</Badge>
+          <span className="font-medium tabular-nums">{display.total}</span>
+          {renderOrderLink ? (
+            renderOrderLink(order.id)
           ) : (
-            <ul className="space-y-2">
-              {(q.data as any[]).map((s) => (
-                <li key={s.id} className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <span className="font-medium">{s.seller?.store_name}</span>
-                    <span className="ml-2 uppercase text-xs text-muted-foreground">
-                      {s.carrier}
-                    </span>
-                    {s.tracking_number && (
-                      <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{s.status}</Badge>
-                    {s.tracking_url && (
-                      <a
-                        className="text-xs underline"
-                        href={s.tracking_url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Track
-                      </a>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/account/orders/$id" params={{ id: order.id }}>
+                View order
+              </Link>
+            </Button>
           )}
         </div>
-      )}
+      </div>
+      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground sm:grid-cols-4">
+        <div>
+          <dt>Subtotal</dt>
+          <dd>{display.subtotal}</dd>
+        </div>
+        <div>
+          <dt>Shipping</dt>
+          <dd>{display.shipping}</dd>
+        </div>
+        <div>
+          <dt>Tax</dt>
+          <dd>{display.tax}</dd>
+        </div>
+        <div>
+          <dt>Payment</dt>
+          <dd>{display.paymentMethod}</dd>
+        </div>
+      </dl>
     </li>
   );
 }

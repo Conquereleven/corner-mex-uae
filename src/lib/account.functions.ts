@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { loadOwnedOrderDetail, loadOwnedOrderHistory } from "@/lib/order-experience-contract";
 
 export const getMyAccount = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -10,7 +11,11 @@ export const getMyAccount = createServerFn({ method: "GET" })
     const [profileRes, rolesRes, sellerRes] = await Promise.all([
       supabaseAdmin.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabaseAdmin.from("user_roles").select("role").eq("user_id", userId),
-      supabaseAdmin.from("sellers").select("id, slug, store_name, status").eq("user_id", userId).maybeSingle(),
+      supabaseAdmin
+        .from("sellers")
+        .select("id, slug, store_name, status")
+        .eq("user_id", userId)
+        .maybeSingle(),
     ]);
     return {
       userId,
@@ -23,56 +28,121 @@ export const getMyAccount = createServerFn({ method: "GET" })
 
 export const getMyOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { userId } = context;
-    const { data, error } = await supabaseAdmin
+  .handler(({ context }) => executeGetMyOrders(context.userId, supabaseAdmin));
+
+export function executeGetMyOrders(userId: string, client: typeof supabaseAdmin) {
+  return loadOwnedOrderHistory(() =>
+    client
       .from("orders")
-      .select(`id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
-        items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, seller_id, fulfillment_status)`)
+      .select(
+        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, created_at,
+          items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
+      )
       .eq("buyer_id", userId)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  });
+      .order("created_at", { ascending: false }),
+  );
+}
+
+export const getMyOrderDetail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { orderId: string }) =>
+    z.object({ orderId: z.string().uuid() }).parse(input),
+  )
+  .handler(({ data, context }) =>
+    executeGetMyOrderDetail(data.orderId, context.userId, supabaseAdmin),
+  );
+
+export function executeGetMyOrderDetail(
+  orderId: string,
+  userId: string,
+  client: typeof supabaseAdmin,
+) {
+  // The same response is used for an absent order and an order owned by a
+  // different buyer, so direct URL probing cannot disclose order existence.
+  return loadOwnedOrderDetail(() =>
+    client
+      .from("orders")
+      .select(
+        `id, order_number, status, payment_status, payment_method, total_aed, subtotal_aed, shipping_aed, tax_aed, shipping_address, created_at,
+          items:order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed, fulfillment_status)`,
+      )
+      .eq("id", orderId)
+      .eq("buyer_id", userId)
+      .maybeSingle(),
+  );
+}
 
 export const becomeSeller = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { store_name: string; tagline?: string; bio?: string; contact_email?: string; contact_phone?: string; trn?: string }) =>
-    z.object({
-      store_name: z.string().min(2).max(120),
-      tagline: z.string().max(160).optional(),
-      bio: z.string().max(1000).optional(),
-      contact_email: z.string().email().optional().or(z.literal("")),
-      contact_phone: z.string().max(30).optional(),
-      trn: z.string().max(30).optional(),
-    }).parse(input),
+  .inputValidator(
+    (input: {
+      store_name: string;
+      tagline?: string;
+      bio?: string;
+      contact_email?: string;
+      contact_phone?: string;
+      trn?: string;
+    }) =>
+      z
+        .object({
+          store_name: z.string().min(2).max(120),
+          tagline: z.string().max(160).optional(),
+          bio: z.string().max(1000).optional(),
+          contact_email: z.string().email().optional().or(z.literal("")),
+          contact_phone: z.string().max(30).optional(),
+          trn: z.string().max(30).optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    const existing = await supabaseAdmin.from("sellers").select("id").eq("user_id", userId).maybeSingle();
+    const existing = await supabaseAdmin
+      .from("sellers")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
     if (existing.data) throw new Error("You already have a seller account");
 
-    const baseSlug = data.store_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "seller";
+    const baseSlug =
+      data.store_name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 40) || "seller";
     let slug = baseSlug;
     for (let i = 1; i < 20; i++) {
-      const { data: hit } = await supabaseAdmin.from("sellers").select("id").eq("slug", slug).maybeSingle();
+      const { data: hit } = await supabaseAdmin
+        .from("sellers")
+        .select("id")
+        .eq("slug", slug)
+        .maybeSingle();
       if (!hit) break;
       slug = `${baseSlug}-${i}`;
     }
 
-    const { data: seller, error } = await supabaseAdmin.from("sellers").insert({
-      user_id: userId,
-      slug,
-      store_name: data.store_name,
-      tagline: data.tagline || null,
-      bio: data.bio || null,
-      contact_email: data.contact_email || null,
-      contact_phone: data.contact_phone || null,
-      trn: data.trn || null,
-      status: "pending",
-    }).select("id, slug, status").single();
+    const { data: seller, error } = await supabaseAdmin
+      .from("sellers")
+      .insert({
+        user_id: userId,
+        slug,
+        store_name: data.store_name,
+        tagline: data.tagline || null,
+        bio: data.bio || null,
+        contact_email: data.contact_email || null,
+        contact_phone: data.contact_phone || null,
+        trn: data.trn || null,
+        status: "pending",
+      })
+      .select("id, slug, status")
+      .single();
     if (error) throw new Error(error.message);
 
-    await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "seller" }).then(() => null, () => null);
+    await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: userId, role: "seller" })
+      .then(
+        () => null,
+        () => null,
+      );
     return seller;
   });

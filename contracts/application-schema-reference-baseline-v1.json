@@ -120,7 +120,7 @@
         "src/lib/admin.functions.ts"
       ],
       "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_a3_2b_migration"
+      "rationale": "owned_by_pending_canonical_migration"
     },
     {
       "kind": "table_or_storage_bucket",
@@ -129,7 +129,7 @@
         "src/lib/admin.functions.ts"
       ],
       "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_a3_2b_migration"
+      "rationale": "owned_by_pending_canonical_migration"
     },
     {
       "kind": "table_or_storage_bucket",
@@ -188,7 +188,6 @@
       "kind": "table_or_storage_bucket",
       "name": "shipments",
       "files": [
-        "src/lib/admin.functions.ts",
         "src/lib/seller.functions.ts",
         "src/lib/shipments.functions.ts"
       ],
@@ -199,7 +198,6 @@
       "kind": "table_or_storage_bucket",
       "name": "payments",
       "files": [
-        "src/lib/admin.functions.ts",
         "src/lib/payments.functions.ts",
         "src/routes/api/public/stripe-webhook.ts"
       ],
@@ -484,7 +482,34 @@
         "src/lib/cod-order.functions.ts"
       ],
       "classification": "requires_future_migration",
-      "rationale": "owned_by_pending_canonical_a3_2b_migration"
+      "rationale": "owned_by_pending_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_transition_order_lifecycle_v1",
+      "files": [
+        "src/lib/admin.functions.ts"
+      ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_com_4a_order_lifecycle_capability",
+      "files": [
+        "src/lib/admin.functions.ts"
+      ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_migration"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "order_lifecycle_events",
+      "files": [
+        "src/lib/admin.functions.ts"
+      ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_migration"
     }
   ]
 }

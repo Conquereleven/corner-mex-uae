@@ -28,6 +28,10 @@ const future = new Set([
   "catalog_import_reviews",
   // CM-COM-3A: created by the pending COD migration, not yet applied.
   "place_cod_order_v1",
+  // CM-COM-4A: table and RPCs are owned by one pending canonical migration.
+  "order_lifecycle_events",
+  "admin_transition_order_lifecycle_v1",
+  "cm_com_4a_order_lifecycle_capability",
 ]);
 const roots = ["src", "scripts"];
 const files = [];
@@ -75,7 +79,7 @@ const references = [...found.values()]
       reference.kind !== "function" && canonical.has(reference.name)
         ? "present_in_canonical_db2_inventory"
         : future.has(reference.name)
-          ? "owned_by_pending_canonical_a3_2b_migration"
+          ? "owned_by_pending_canonical_migration"
           : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
   }))
   .sort((left, right) => {

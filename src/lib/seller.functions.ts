@@ -236,14 +236,25 @@ export const setOrderItemStatus = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(async ({ data, context }) => {
-    const { error } = await (context.supabase.rpc as any)("seller_update_order_item_fulfillment", {
-      p_item_id: data.itemId,
-      p_status: data.status,
-    });
-    if (error) throw new Error(error.message);
-    return { ok: true };
+  .handler(({ data, context }) => executeSellerItemStatus(data, context.supabase));
+
+export async function executeSellerItemStatus(
+  data: { itemId: string; status: string },
+  supabase: {
+    rpc: (
+      name: string,
+      args: Record<string, string>,
+    ) => Promise<{ error: { message: string } | null }>;
+  },
+) {
+  const rpc = supabase.rpc;
+  const { error } = await rpc("seller_update_order_item_fulfillment", {
+    p_item_id: data.itemId,
+    p_status: data.status,
   });
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
 
 export const sellerGetOrderDetail = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -323,32 +334,41 @@ export const sellerAddOrderNote = createServerFn({ method: "POST" })
   .inputValidator((input: { orderId: string; body: string }) =>
     z.object({ orderId: z.string().uuid(), body: z.string().min(1).max(2000) }).parse(input),
   )
-  .handler(async ({ data, context }) => {
-    const seller = await getSellerForUser(context.userId);
-    const { data: own } = await supabaseAdmin
-      .from("order_items")
-      .select("id")
-      .eq("order_id", data.orderId)
-      .eq("seller_id", seller.id)
-      .limit(1);
-    if (!own || own.length === 0) throw new Error("Forbidden");
-    const { error } = await supabaseAdmin.from("order_notes").insert({
-      order_id: data.orderId,
-      author_id: context.userId,
-      author_role: "seller",
-      body: data.body,
-    });
-    if (error) throw new Error(error.message);
-    await supabaseAdmin.from("order_events").insert({
-      order_id: data.orderId,
-      actor_id: context.userId,
-      actor_role: "seller",
-      kind: "note_added",
-      message: "Seller note added",
-      payload: {},
-    });
-    return { ok: true };
+  .handler(({ data, context }) =>
+    executeSellerAddOrderNote(data, context.userId, getSellerForUser, supabaseAdmin),
+  );
+
+export async function executeSellerAddOrderNote(
+  data: { orderId: string; body: string },
+  userId: string,
+  getSeller: (userId: string) => Promise<{ id: string }>,
+  client: typeof supabaseAdmin,
+) {
+  const seller = await getSeller(userId);
+  const { data: own } = await client
+    .from("order_items")
+    .select("id")
+    .eq("order_id", data.orderId)
+    .eq("seller_id", seller.id)
+    .limit(1);
+  if (!own || own.length === 0) throw new Error("Forbidden");
+  const { error } = await client.from("order_notes").insert({
+    order_id: data.orderId,
+    author_id: userId,
+    author_role: "seller",
+    body: data.body,
   });
+  if (error) throw new Error(error.message);
+  await client.from("order_events").insert({
+    order_id: data.orderId,
+    actor_id: userId,
+    actor_role: "seller",
+    kind: "note_added",
+    message: "Seller note added",
+    payload: {},
+  });
+  return { ok: true };
+}
 
 const ProductInput = z.object({
   id: z.string().uuid().optional(),

@@ -6,7 +6,9 @@ This roadmap prioritizes visible commercial progress. It records direction only 
 
 - Production frontend is live and healthy.
 - Production auto-deploy is disabled.
-- CM-COM-3A commercial-active (Cash on Delivery) has been activated: the catalog is loaded and COD checkout is live under Founder authorization. Acceptance is **not** final — the first Founder COD acceptance order revealed an inventory consistency defect, now tracked as **CM-COM-3A.1** (see below), which is the current acceptance blocker.
+- CM-COM-3A commercial-active (Cash on Delivery) is activated and accepted.
+- CM-COM-3A.1 is **production accepted / complete**: Founder COD Acceptance Order #2 proved atomic stock/QOH consistency, exact movement cardinality and zero global drift.
+- CM-COM-4A is the **current repository implementation sprint** for post-order customer and admin lifecycle foundations. It is not activated or deployed.
 - All other commercial execution capabilities (marketplace, seller auth/payouts, commissions, external email/messaging, real payment execution) remain disabled.
 - Staging is the required proving ground for storefront and conversion changes.
 
@@ -108,7 +110,7 @@ On hold until an approved, owned domain exists **and** the Founder authorizes it
 - configure DNS and TLS under explicit authorization;
 - preserve the Railway origin as the rollback route during cutover.
 
-## CM-COM-3A — Commercial Active MVP (Cash on Delivery) · ACTIVATED / ACCEPTANCE BLOCKED BY CM-COM-3A.1
+## CM-COM-3A — Commercial Active MVP (Cash on Delivery) · ACTIVATED / ACCEPTED
 
 Runs **ahead of** `CM-COM-2B1` under explicit Founder authorization, because revenue readiness
 does not depend on a custom domain.
@@ -118,21 +120,17 @@ does not depend on a custom domain.
 - transactional COD order function **applied**, catalog **loaded**, and COD checkout **activated**
   under Founder authorization (see `CM-COM-3A_ACTIVATION_RUNBOOK.md`);
 - Intermex UAE public catalog ingestion (read-only) and the executed activation plan;
-- the first Founder COD acceptance order committed successfully, but exposed an inventory
-  consistency defect (`inventory.quantity_on_hand` not decremented alongside
-  `product_variants.stock`). Final Commercial Active acceptance is **not** declared until
-  **CM-COM-3A.1** passes.
+- the first Founder COD acceptance order exposed an inventory consistency defect; the corrected
+  function subsequently passed Founder Acceptance Order #2 and CM-COM-3A is accepted.
 
-### CM-COM-3A.1 — Inventory Consistency Hotfix · CURRENT (acceptance blocker)
+### CM-COM-3A.1 — Inventory Consistency Hotfix · PRODUCTION ACCEPTED / COMPLETE
 
 - corrected `place_cod_order_v1` decrements `product_variants.stock` **and**
   `inventory.quantity_on_hand` atomically, with exactly one `sale` movement, failing closed on
   missing/insufficient/drifted inventory;
-- delivered as a **new forward** pending-canonical migration; the applied migration is not rewritten;
-- includes a guarded, idempotent, one-time production reconciliation artifact (prepared, **not
-  executed**) and a regression suite that reproduces the production defect;
-- repository readiness only — **no** migration applied, reconciliation executed, deployment or
-  checkout change. See `CM-COM-3A1_HOTFIX_RUNBOOK.md`.
+- delivered and activated as a new forward migration without rewriting applied history;
+- Founder COD Acceptance Order #2 proved atomic stock/QOH decrement, one exact sale movement and
+  zero global drift. See `CM-COM-3A1_HOTFIX_RUNBOOK.md`.
 
 ## CM-COM-3 — Controlled Order Intake
 
@@ -148,9 +146,19 @@ does not depend on a custom domain.
 - connect the selected fulfilment workflow;
 - add order notifications and reconciliation only after successful controlled tests.
 
-### CM-COM-4A — Transactional Order Confirmation Email · DEFERRED / NOT CURRENT PRIORITY
+### CM-COM-4A — Post-Order Lifecycle Foundation · CURRENT IMPLEMENTATION SPRINT
 
-Deferred debt, recorded here so it is not lost. **Not** part of CM-COM-3A.1 and not started.
+- canonical customer order history and own-order detail;
+- canonical order and COD payment state machines;
+- admin-authorized, allowlisted and row-locked transitions;
+- append-only lifecycle audit trail;
+- fail-closed master-dashboard controls;
+- repository and pending migration only — not activated or deployed.
+
+### Transactional Order Confirmation Email · DEFERRED / NOT CURRENT PRIORITY
+
+Deferred debt, recorded here so it is not lost. **Not** part of the CM-COM-4A implementation and
+not started.
 
 Later scope (for a future sprint):
 
@@ -183,16 +191,25 @@ requires the same explicit authorization.
 
 ### Current position
 
-| Sprint                               | Status                                                                       |
-| ------------------------------------ | ---------------------------------------------------------------------------- |
-| `CM-COM-1` / `CM-COM-1A–1C`          | delivered (storefront, Desert Glass, dual B2C/B2B commerce)                  |
-| `CM-COM-2A` — Trust Architecture     | **complete / merged** (PR #23)                                               |
-| `CM-COM-2B0` — Domain Readiness      | **complete / merged** (PR #24)                                               |
-| `CM-COM-2B1` — Domain Cutover        | **on hold** — no approved or owned domain exists                             |
-| `CM-COM-3A` — Commercial Active MVP  | **activated** (PR #25) — catalog loaded, COD checkout live; acceptance blocked by CM-COM-3A.1 |
-| `CM-COM-3A.1` — Inventory Consistency Hotfix | **current** — repository fix prepared; production rollout separately authorized |
-| `CM-COM-3` — Controlled Order Intake | superseded in scope by CM-COM-3A; remaining items follow it                  |
+| Sprint                                        | Status                                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------ |
+| `CM-COM-1` / `CM-COM-1A–1C`                   | delivered (storefront, Desert Glass, dual B2C/B2B commerce)                    |
+| `CM-COM-2A` — Trust Architecture              | **complete / merged** (PR #23)                                                 |
+| `CM-COM-2B0` — Domain Readiness               | **complete / merged** (PR #24)                                                 |
+| `CM-COM-2B1` — Domain Cutover                 | **on hold** — no approved or owned domain exists                               |
+| `CM-COM-3A` — Commercial Active MVP           | **activated / accepted** (PR #25) — catalog loaded and COD checkout live       |
+| `CM-COM-3A.1` — Inventory Consistency Hotfix  | **production accepted / complete** — Founder Acceptance Order #2 passed        |
+| `CM-COM-4A` — Post-Order Lifecycle Foundation | **current implementation sprint** — repository-only, not activated or deployed |
+| `CM-COM-3` — Controlled Order Intake          | superseded in scope by CM-COM-3A; remaining items follow it                    |
 
-COD checkout is live under Founder authorization; final CM-COM-3A acceptance and all other
-commercial execution capabilities remain gated until CM-COM-3A.1 passes and each is separately
-authorized.
+COD checkout is live under Founder authorization. CM-COM-4A prepares customer order history,
+own-order detail, canonical lifecycle transitions and auditability; application and production
+activation remain separately gated.
+
+### Preserved later roadmap lines
+
+- `CM-DESIGN-2 — Anime.js Motion Language`
+- `CM-DESIGN-3 — Desert Glass v2`
+- `CM-B2B — Dubai/Sharjah commercial development`
+
+CM-COM-4A does not implement or reorder these lines.

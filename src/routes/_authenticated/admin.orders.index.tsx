@@ -34,13 +34,13 @@ export const Route = createFileRoute("/_authenticated/admin/orders/")({
   component: Orders,
 });
 
-const STATUSES = ["pending", "paid", "preparing", "shipped", "delivered", "cancelled", "refunded"];
+const STATUSES = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
 const TABS: Array<{ key: string; label: string; match: (o: any) => boolean }> = [
   { key: "all", label: "All", match: () => true },
   {
     key: "unfulfilled",
     label: "Unfulfilled",
-    match: (o) => ["pending", "preparing"].includes(o.status),
+    match: (o) => ["pending", "confirmed", "processing"].includes(o.status),
   },
   {
     key: "unpaid",
@@ -50,12 +50,12 @@ const TABS: Array<{ key: string; label: string; match: (o: any) => boolean }> = 
   {
     key: "open",
     label: "Open",
-    match: (o) => !["delivered", "cancelled", "refunded"].includes(o.status),
+    match: (o) => !["delivered", "cancelled"].includes(o.status),
   },
   {
     key: "closed",
     label: "Closed",
-    match: (o) => ["delivered", "cancelled", "refunded"].includes(o.status),
+    match: (o) => ["delivered", "cancelled"].includes(o.status),
   },
 ];
 

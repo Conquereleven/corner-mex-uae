@@ -5,14 +5,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
@@ -25,42 +17,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Package,
-  CreditCard,
-  Truck,
-  User,
-  MapPin,
-  FileText,
-  Clock,
-  Check,
-  Circle,
-} from "lucide-react";
+import { Package, CreditCard, User, MapPin, FileText, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { statusColor } from "@/lib/dashboard-tokens";
-import {
-  adminSetOrderStatus,
-  adminSetPaymentStatus,
-  adminAddOrderNote,
-} from "@/lib/admin.functions";
 import { setOrderItemStatus, sellerAddOrderNote } from "@/lib/seller.functions";
+import { getSellerOrderDetailExperience } from "@/lib/order-experience-contract";
+import {
+  FulfillmentTimeline,
+  SellerInternalNotes,
+  SellerItemControls,
+  SellerShipmentPresentation,
+} from "@/components/site/OrderExperienceBehaviorSurfaces";
 
 const AED = (n: number | string) =>
   `${Number(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
 
-const ORDER_STATUSES = [
-  "pending",
-  "paid",
-  "preparing",
-  "shipped",
-  "delivered",
-  "cancelled",
-  "refunded",
-];
-const PAYMENT_STATUSES = ["pending", "authorized", "paid", "failed", "refunded"];
-const FULFILLMENT_FLOW = ["pending", "preparing", "shipped", "delivered"];
-
-export type OrderDetailRole = "admin" | "seller";
+export type OrderDetailRole = "seller";
 
 export function OrderDetailView({
   role,
@@ -84,43 +56,18 @@ export function OrderDetailView({
   const payments: any[] = data.payments ?? [];
   const buyer = data.buyer;
   const addr = order.shipping_address ?? {};
+  const experience = getSellerOrderDetailExperience(data);
 
-  const adminStatus = useServerFn(adminSetOrderStatus);
-  const adminPayment = useServerFn(adminSetPaymentStatus);
-  const adminNote = useServerFn(adminAddOrderNote);
   const sellerItem = useServerFn(setOrderItemStatus);
   const sellerNote = useServerFn(sellerAddOrderNote);
   const [pendingChange, setPendingChange] = useState<{
-    type: "order" | "payment" | "item";
+    type: "item";
     status: string;
     itemId?: string;
   } | null>(null);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: invalidateKey });
 
-  const statusM = useMutation({
-    mutationFn: (s: string) => adminStatus({ data: { orderId: order.id, status: s } }),
-    onSuccess: () => {
-      toast.success("Order status updated");
-      setPendingChange(null);
-      invalidate();
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-  const payM = useMutation({
-    mutationFn: (v: string | { status: string; manual?: boolean }) =>
-      adminPayment({
-        data: typeof v === "string"
-          ? { orderId: order.id, status: v }
-          : { orderId: order.id, status: v.status, manual: v.manual },
-      }),
-    onSuccess: () => {
-      toast.success("Payment status updated");
-      setPendingChange(null);
-      invalidate();
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
   const itemM = useMutation({
     mutationFn: (v: { itemId: string; status: string }) => sellerItem({ data: v }),
     onSuccess: () => {
@@ -132,10 +79,7 @@ export function OrderDetailView({
   });
   const [noteText, setNoteText] = useState("");
   const noteM = useMutation({
-    mutationFn: () =>
-      role === "admin"
-        ? adminNote({ data: { orderId: order.id, body: noteText } })
-        : sellerNote({ data: { orderId: order.id, body: noteText } }),
+    mutationFn: () => sellerNote({ data: { orderId: order.id, body: noteText } }),
     onSuccess: () => {
       toast.success("Note added");
       setNoteText("");
@@ -181,85 +125,9 @@ export function OrderDetailView({
             {new Date(order.created_at).toLocaleString()}
           </p>
         </div>
-        {role === "admin" && (
-          <div className="flex flex-wrap items-center gap-2">
-            {order.payment_status !== "paid" &&
-              order.payment_status !== "refunded" &&
-              (order.payment_method === "bank_transfer" || order.payment_method === "cod") && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" disabled={payM.isPending}>
-                      {payM.isPending ? "Marking…" : "Mark as paid"}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Mark this order as paid?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Confirm you've received the {order.payment_method === "cod" ? "cash on delivery" : "bank transfer"} payment for this order. This action will update the payment status to paid.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => payM.mutate({ status: "paid", manual: true })}>
-                        Yes, mark as paid
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            {order.status !== "cancelled" && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Cancel order
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will mark the order as cancelled. The buyer will see the change
-                      immediately.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Keep order</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => statusM.mutate("cancelled")}>
-                      Yes, cancel
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-            {order.payment_status !== "refunded" && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    Mark refunded
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Mark payment refunded?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Use this after issuing the refund through your payment provider.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => payM.mutate("refunded")}>
-                      Confirm refund
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-        )}
       </div>
 
-      {role === "seller" && (
+      {experience.fulfillmentProgress && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -327,55 +195,12 @@ export function OrderDetailView({
                       <div className="font-medium">{AED(i.line_total_aed)}</div>
                     </div>
                     {role === "seller" ? (
-                      <div className="flex flex-wrap items-center justify-end gap-2">
-                        <Badge variant="outline" className="capitalize">
-                          {i.fulfillment_status}
-                        </Badge>
-                        {i.fulfillment_status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                setPendingChange({
-                                  type: "item",
-                                  itemId: i.id,
-                                  status: "preparing",
-                                })
-                              }
-                            >
-                              Start preparing
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                setPendingChange({
-                                  type: "item",
-                                  itemId: i.id,
-                                  status: "cancelled",
-                                })
-                              }
-                            >
-                              Cancel item
-                            </Button>
-                          </>
-                        )}
-                        {i.fulfillment_status === "preparing" && (
-                          <span className="max-w-48 text-right text-xs text-muted-foreground">
-                            Create a shipment from the orders list to mark it shipped.
-                          </span>
-                        )}
-                        {i.fulfillment_status === "shipped" && (
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              setPendingChange({ type: "item", itemId: i.id, status: "delivered" })
-                            }
-                          >
-                            Mark delivered
-                          </Button>
-                        )}
-                      </div>
+                      <SellerItemControls
+                        item={i}
+                        onSelect={(status) =>
+                          setPendingChange({ type: "item", itemId: i.id, status })
+                        }
+                      />
                     ) : (
                       <Badge variant="outline" className="capitalize">
                         {i.fulfillment_status}
@@ -404,151 +229,20 @@ export function OrderDetailView({
           </Card>
 
           {/* Shipments */}
-          {shipments.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Truck className="h-4 w-4" /> Shipments
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {shipments.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded border border-border/60 p-3"
-                  >
-                    <div>
-                      <span className="font-medium uppercase">{s.carrier}</span>
-                      {s.tracking_number && (
-                        <span className="ml-2 font-mono text-xs">{s.tracking_number}</span>
-                      )}
-                      {s.tracking_url && (
-                        <a
-                          className="ml-2 text-xs underline"
-                          href={s.tracking_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          track
-                        </a>
-                      )}
-                    </div>
-                    <Badge variant="secondary" className="capitalize">
-                      {s.status}
-                    </Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+          {experience.shipmentPresentation && <SellerShipmentPresentation shipments={shipments} />}
 
           {/* Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Clock className="h-4 w-4" /> Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-col gap-2">
-                <Textarea
-                  placeholder="Add an internal note…"
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  rows={2}
-                />
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    onClick={() => noteM.mutate()}
-                    disabled={!noteText.trim() || noteM.isPending}
-                  >
-                    {noteM.isPending ? "Saving…" : "Add note"}
-                  </Button>
-                </div>
-              </div>
-              <Separator />
-              <ul className="space-y-3 text-sm">
-                {notes.map((n) => (
-                  <li key={n.id} className="rounded border border-border/60 bg-muted/40 p-3">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="capitalize">{n.author_role} note</span>
-                      <span>{new Date(n.created_at).toLocaleString()}</span>
-                    </div>
-                    <p className="mt-1 whitespace-pre-wrap">{n.body}</p>
-                  </li>
-                ))}
-                {events.map((e) => (
-                  <li key={e.id} className="flex items-start gap-3">
-                    <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                    <div className="flex-1">
-                      <p className="text-sm">{e.message ?? e.kind}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(e.created_at).toLocaleString()} · {e.actor_role}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-                {notes.length === 0 && events.length === 0 && (
-                  <li className="text-sm text-muted-foreground">No activity yet.</li>
-                )}
-              </ul>
-            </CardContent>
-          </Card>
+          <SellerInternalNotes
+            notes={notes}
+            events={events}
+            noteText={noteText}
+            notePending={noteM.isPending}
+            onNoteTextChange={setNoteText}
+            onAddNote={() => noteM.mutate()}
+          />
         </div>
 
         <div className="space-y-6">
-          {/* Status controls */}
-          {role === "admin" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Manual controls</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
-                    Order status
-                  </p>
-                  <Select
-                    value={order.status}
-                    onValueChange={(v) => setPendingChange({ type: "order", status: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ORDER_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s} className="capitalize">
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <p className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
-                    Payment status
-                  </p>
-                  <Select
-                    value={order.payment_status}
-                    onValueChange={(v) => setPendingChange({ type: "payment", status: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_STATUSES.map((s) => (
-                        <SelectItem key={s} value={s} className="capitalize">
-                          {s.replace(/_/g, " ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Customer */}
           <Card>
             <CardHeader>
@@ -651,25 +345,17 @@ export function OrderDetailView({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm state change</AlertDialogTitle>
             <AlertDialogDescription>
-              Change{" "}
-              {pendingChange?.type === "payment"
-                ? "payment"
-                : pendingChange?.type === "item"
-                  ? "fulfillment"
-                  : "order"}{" "}
-              status to “{pendingChange?.status}”? This action is validated against your assigned
-              role.
+              Change fulfillment status to “{pendingChange?.status}”? This action is validated
+              against your assigned role.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              disabled={statusM.isPending || payM.isPending || itemM.isPending}
+              disabled={itemM.isPending}
               onClick={() => {
                 if (!pendingChange) return;
-                if (pendingChange.type === "order") statusM.mutate(pendingChange.status);
-                if (pendingChange.type === "payment") payM.mutate(pendingChange.status);
-                if (pendingChange.type === "item" && pendingChange.itemId) {
+                if (pendingChange.itemId) {
                   itemM.mutate({ itemId: pendingChange.itemId, status: pendingChange.status });
                 }
               }}
@@ -680,37 +366,6 @@ export function OrderDetailView({
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
-}
-
-function FulfillmentTimeline({ status, shipments }: { status: string; shipments: any[] }) {
-  const current = FULFILLMENT_FLOW.indexOf(status);
-  return (
-    <ol className="grid gap-4 sm:grid-cols-4">
-      {FULFILLMENT_FLOW.map((step, index) => {
-        const complete = current >= index || (step === "shipped" && shipments.length > 0);
-        const Icon = complete ? Check : Circle;
-        return (
-          <li key={step} className="flex gap-3 sm:flex-col">
-            <span
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border ${complete ? "border-primary bg-primary text-primary-foreground" : "bg-background text-muted-foreground"}`}
-            >
-              <Icon className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="font-medium capitalize">{step}</p>
-              <p className="text-xs text-muted-foreground">
-                {step === "shipped" && shipments[0]?.shipped_at
-                  ? new Date(shipments[0].shipped_at).toLocaleString()
-                  : complete
-                    ? "Completed"
-                    : "Pending"}
-              </p>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
   );
 }
 

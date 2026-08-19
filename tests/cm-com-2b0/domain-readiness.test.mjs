@@ -171,17 +171,17 @@ test("pre-activation email debt stays visible", async () => {
 // ---------------------------------------------------------------------------
 
 test("program state records current main and does not claim PR #23 is deployed", async () => {
-  // CM-COM-3A advanced main to the PR #24 merge commit. The invariant this test
-  // protects is unchanged: main is recorded truthfully, the active sprint owns
-  // the record, and no sprint claims a deployment it did not perform.
+  // The invariant survives sprint rotation: main is recorded truthfully, the
+  // active sprint owns the record, and no sprint claims a deployment it did not
+  // perform.
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
   assert.equal(state.authority.expectedMainSha, state.authority.observedMainSha);
   assert.equal(
     state.authority.observedMainSha,
-    "af822ba00866ccd75a8a0cf4431570f044317ad7",
-    "program state must record the PR #24 merge commit as main",
+    "e02960f0887d98e624b22a9333fde59175299847",
+    "program state must record the CM-COM-3A.1 merge commit as main",
   );
-  assert.equal(state.program.activeSprint, "CM-COM-3A_COMMERCIAL_ACTIVE_MVP");
+  assert.equal(state.program.activeSprint, "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION");
   assert.equal(state.platforms.railway.reobservedByCurrentSprint, false);
   assert.equal(state.platforms.railway.productionDeploymentPerformedByThisSprint, false);
   assert.equal(state.platforms.railway.productionDeploymentAuthorizedByThisSprint, false);
@@ -220,18 +220,22 @@ test("the CM-COM-2A remediation sequence is exactly R1 rejected, R2 rejected, R3
   );
 });
 
-test("the active sprint is not presented as independently reviewed or ready", async () => {
+test("the active sprint records the R2 re-review without presenting R3 as ready", async () => {
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
   const currentSprint = state.readiness.currentSprintReadiness;
   assert.ok(currentSprint, "current-sprint readiness must be recorded");
-  assert.equal(currentSprint.sprint, "CM-COM-3A_COMMERCIAL_ACTIVE_MVP");
+  assert.equal(currentSprint.sprint, "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION");
   assert.equal(currentSprint.independentReviewComplete, false);
   assert.equal(currentSprint.declaredReady, false);
-  assert.equal(currentSprint.reviewedHeadSha, null);
-  assert.equal(currentSprint.status, "pending_independent_review");
-  assert.equal(currentSprint.state, "draft");
+  assert.equal(currentSprint.reviewedHeadSha, "76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0");
+  assert.equal(currentSprint.status, "request_changes_cm_com_4a_r3_remediation_in_progress");
+  assert.equal(currentSprint.state, "draft_remediation");
+  assert.equal(currentSprint.independentReviewR1.verdict, "REQUEST_CHANGES_CM_COM_4A_R1");
+  assert.equal(currentSprint.independentReviewR1.findings.length, 5);
+  assert.equal(currentSprint.independentReviewR2.verdict, "REQUEST_CHANGES_CM_COM_4A_R2");
+  assert.equal(currentSprint.independentReviewR2.findings.length, 5);
   assert.match(state.readiness.scope, /A3\.2b/);
-  assert.match(state.readiness.scope, /do NOT describe CM-COM-3A/i);
+  assert.match(state.readiness.scope, /do NOT describe CM-COM-4A/i);
 });
 
 test("evidence separates re-verified repository identity from carried-forward runtime identity", async () => {
@@ -239,10 +243,10 @@ test("evidence separates re-verified repository identity from carried-forward ru
   const ev = state.evidence;
   assert.equal(ev.class, "verified_repository");
   assert.equal(ev.repositoryEvidence.class, "verified_repository");
-  assert.equal(ev.repositoryEvidence.verifiedBy, "CM-COM-3A");
+  assert.equal(ev.repositoryEvidence.verifiedBy, "CM-COM-4A");
   assert.equal(
     ev.repositoryEvidence.identity,
-    "github:af822ba00866ccd75a8a0cf4431570f044317ad7",
+    "github:e02960f0887d98e624b22a9333fde59175299847",
     "repository evidence identity must match current main",
   );
   assert.equal(ev.runtimeEvidence.class, "historical");

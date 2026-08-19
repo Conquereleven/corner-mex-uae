@@ -30,6 +30,8 @@
     "test:cm-com-2b0": "node --experimental-strip-types --test tests/cm-com-2b0/*.test.mjs",
     "test:cm-com-3a": "node --experimental-strip-types --test tests/cm-com-3a/*.test.mjs",
     "test:cm-com-3a:sql": "node scripts/cm-com-3a/test-cod-order-sql.mjs",
+    "test:cm-com-4a": "node --experimental-strip-types --test tests/cm-com-4a/*.test.mjs",
+    "test:cm-com-4a:sql": "node scripts/cm-com-4a/test-post-order-lifecycle-sql.mjs",
     "validate:cm-com-3a:manifest": "node scripts/cm-com-3a/validate-activation-manifest.mjs",
     "ingest:intermex-catalog": "node scripts/cm-com-3a/ingest-intermex-catalog.mjs",
     "plan:cm-com-3a:load": "node scripts/cm-com-3a/load-activation-plan.mjs",
