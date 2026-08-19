@@ -1,15 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { getRouteAuthState } from "@/lib/route-auth.functions";
+import { resolveRouteAccess } from "@/lib/route-auth";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ location }) => {
-    // Supabase Auth persists its PKCE session in browser storage. The server cannot
-    // observe that storage during a hard refresh, so defer this gate to hydration.
-    // Every protected server function still independently verifies the bearer token.
-    if (typeof window === "undefined") return;
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
-      throw redirect({ to: "/login", search: { redirect: location.href } as any });
+    const auth = await getRouteAuthState();
+    if (resolveRouteAccess(location.pathname, auth) === "login") {
+      throw redirect({ to: "/login", search: { redirect: location.href } });
     }
   },
   component: () => <Outlet />,

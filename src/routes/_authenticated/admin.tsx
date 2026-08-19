@@ -20,17 +20,23 @@ import {
   Inbox,
   Scale,
 } from "lucide-react";
-import { isAdmin } from "@/lib/admin.functions";
 import { DashboardShell } from "@/components/site/DashboardShell";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { adminDashboardCounts } from "@/lib/admin.functions";
+import { getRouteAdminState } from "@/lib/route-auth.functions";
+import { resolveRouteAccess } from "@/lib/route-auth";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    const r = await isAdmin({});
-    if (!r.admin) throw redirect({ to: "/account" });
+  beforeLoad: async ({ location }) => {
+    const auth = await getRouteAdminState();
+    const access = resolveRouteAccess(location.pathname, auth);
+    if (access === "login") {
+      throw redirect({ to: "/login", search: { redirect: location.href } });
+    }
+    if (access === "account") {
+      throw redirect({ to: "/account" });
+    }
   },
   component: AdminLayout,
 });

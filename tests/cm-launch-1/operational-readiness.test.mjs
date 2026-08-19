@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { cartTotals } from "../../src/lib/cart.ts";
 import { productCopyToPlainText } from "../../src/lib/product-copy.ts";
+import { resolveRouteAccess } from "../../src/lib/route-auth.ts";
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 
@@ -20,15 +22,62 @@ test("account route is a layout and its index owns the account surface", async (
   assert.match(index, /supabase\.auth\.signOut\(\)/);
 });
 
-test("browser-persisted auth is not rejected during SSR", async () => {
-  const [protectedLayout, adminLayout] = await Promise.all([
-    read("src/routes/_authenticated.tsx"),
-    read("src/routes/_authenticated/admin.tsx"),
+function protectedGet(pathname, auth) {
+  const access = resolveRouteAccess(pathname, auth);
+  if (access === "login") return { status: 302, location: `/login?redirect=${pathname}` };
+  if (access === "account") return { status: 302, location: "/account" };
+  return { status: 200, body: `SSR:${pathname}` };
+}
+
+test("protected GET auth decisions fail closed during SSR", () => {
+  assert.deepEqual(protectedGet("/account", { authenticated: false, admin: false }), {
+    status: 302,
+    location: "/login?redirect=/account",
+  });
+  assert.deepEqual(protectedGet("/account", { authenticated: true, admin: false }), {
+    status: 200,
+    body: "SSR:/account",
+  });
+  assert.deepEqual(protectedGet("/admin", { authenticated: false, admin: false }), {
+    status: 302,
+    location: "/login?redirect=/admin",
+  });
+  assert.deepEqual(protectedGet("/admin", { authenticated: true, admin: false }), {
+    status: 302,
+    location: "/account",
+  });
+  assert.deepEqual(protectedGet("/admin", { authenticated: true, admin: true }), {
+    status: 200,
+    body: "SSR:/admin",
+  });
+});
+
+test("cookie-backed PKCE session is shared by browser and SSR clients", async () => {
+  const [browserClient, serverClient, callback] = await Promise.all([
+    read("src/integrations/supabase/client.ts"),
+    read("src/integrations/supabase/client.ssr.server.ts"),
+    read("src/routes/auth.callback.tsx"),
   ]);
-  assert.match(protectedLayout, /typeof window === "undefined"\) return/);
-  assert.match(adminLayout, /typeof window === "undefined"\) return/);
-  assert.match(protectedLayout, /supabase\.auth\.getUser\(\)/);
-  assert.match(adminLayout, /await isAdmin\(\{\}\)/);
+  assert.match(browserClient, /createBrowserClient/);
+  assert.match(browserClient, /flowType: "pkce"/);
+  assert.doesNotMatch(browserClient, /localStorage/);
+  assert.match(serverClient, /createServerClient/);
+  assert.match(serverClient, /getCookies\(\)/);
+  assert.match(serverClient, /setCookie\(name, value, options\)/);
+  assert.match(callback, /exchangeCodeForSession\(search\.code\)/);
+});
+
+test("nested account order GET passes the shared gate and renders through Outlet", async () => {
+  const [layout, order] = await Promise.all([
+    read("src/routes/_authenticated/account.tsx"),
+    read("src/routes/_authenticated/account.orders.$id.tsx"),
+  ]);
+  assert.deepEqual(protectedGet("/account/orders/order-1", { authenticated: true, admin: false }), {
+    status: 200,
+    body: "SSR:/account/orders/order-1",
+  });
+  assert.match(layout, /<Outlet \/>/);
+  assert.match(order, /createFileRoute\("\/_authenticated\/account\/orders\/\$id"\)/);
 });
 
 test("catalog HTML is rendered as readable plain text", () => {
@@ -67,9 +116,9 @@ test("pending lifecycle migration removes all service-role table writes", async 
     read("supabase/pending-canonical/20260812180442_cm_com_4a_post_order_lifecycle.sql"),
     read("supabase/pending-canonical/20260819190000_cm_launch_1_lifecycle_acl_hardening.sql"),
   ]);
-  assert.match(
-    foundation,
-    /revoke all on public\.order_lifecycle_events from public, anon, authenticated, service_role/,
+  assert.equal(
+    createHash("sha256").update(foundation).digest("hex"),
+    "b2850c7a814b8f1ac4249eb7c187c83401c416d0e810add204688fa66f233608",
   );
   assert.match(
     corrective,
