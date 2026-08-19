@@ -56,7 +56,7 @@ const adminRoute = "src/routes/_authenticated/admin.tsx";
 requireMatch(adminRoute, /await isAdmin\(\{\}\)/, "admin route must invoke isAdmin");
 requireMatch(adminRoute, /if \(!r\.admin\) throw redirect/, "non-admin access must fail closed");
 
-const account = "src/routes/_authenticated/account.tsx";
+const account = "src/routes/_authenticated/account.index.tsx";
 requireMatch(
   account,
   /admin\.data\?\.admin &&[\s\S]*to="\/admin"/,

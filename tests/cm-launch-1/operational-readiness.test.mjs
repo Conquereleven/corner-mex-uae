@@ -16,6 +16,8 @@ test("account route is a layout and its index owns the account surface", async (
   assert.doesNotMatch(layout, /My account|Recent orders/);
   assert.match(index, /My account/);
   assert.match(index, /CustomerOrderHistorySurface/);
+  assert.match(index, /admin\.data\?\.admin &&[\s\S]*to="\/admin"/);
+  assert.match(index, /supabase\.auth\.signOut\(\)/);
 });
 
 test("browser-persisted auth is not rejected during SSR", async () => {
