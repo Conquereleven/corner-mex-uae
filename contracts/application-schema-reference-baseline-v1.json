@@ -70,6 +70,7 @@
         "src/lib/csv-import.functions.ts",
         "src/lib/live-view.functions.ts",
         "src/lib/performance.functions.ts",
+        "src/lib/route-auth.functions.ts",
         "src/lib/seller.functions.ts",
         "src/routes/api/public/hooks/auto-payouts.ts"
       ],

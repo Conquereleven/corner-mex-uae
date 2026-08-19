@@ -18,6 +18,8 @@ export type CartItem = {
 
 export const B2C_CART_STORAGE_KEY = "cornermex-cart-v1";
 
+const roundAed = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+
 type CartState = {
   items: CartItem[];
   add: (item: Omit<CartItem, "qty">, qty: number) => void;
@@ -64,10 +66,10 @@ export const useCart = create<CartState>()(
 );
 
 export function cartTotals(items: CartItem[]) {
-  const subtotal = items.reduce((a, i) => a + i.unitPrice * i.qty, 0);
+  const subtotal = roundAed(items.reduce((a, i) => a + i.unitPrice * i.qty, 0));
   const sellers = new Set(items.map((i) => i.sellerId));
-  const tax = subtotal * 0.05; // UAE VAT 5%
-  const totalBeforeShipping = subtotal + tax;
+  const tax = roundAed(subtotal * 0.05); // UAE VAT 5%, rounded to fils
+  const totalBeforeShipping = roundAed(subtotal + tax);
   return { subtotal, shipping: null, tax, totalBeforeShipping, sellerCount: sellers.size };
 }
 

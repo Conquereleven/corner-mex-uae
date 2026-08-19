@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Explore a curated Mexican pantry catalogue for the UAE. Online ordering is off and business quotes are reviewed manually.",
+          "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders and business quotes are reviewed manually.",
       },
       { property: "og:title", content: "Corner Mex — UAE commercial preview" },
       {

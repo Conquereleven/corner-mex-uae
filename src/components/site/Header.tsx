@@ -38,7 +38,7 @@ export function Header() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground lg:flex">
             <Link to="/shop" className="transition-colors hover:text-foreground">
               {t("nav.shop")}
             </Link>
@@ -126,7 +126,7 @@ export function Header() {
       <DesertGlassControl
         role="navigation"
         aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-3 z-40 grid min-h-14 grid-cols-5 rounded-2xl p-1.5 md:hidden"
+        className="fixed inset-x-3 bottom-3 z-40 grid min-h-14 grid-cols-5 rounded-2xl p-1.5 lg:hidden"
       >
         <MobileLink to="/" label="Home" icon={Home} />
         <MobileLink to="/shop" label="Shop" icon={Search} />

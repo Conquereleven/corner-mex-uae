@@ -43,9 +43,10 @@ requireMatch(redirect, /target\.origin !== INTERNAL_ORIGIN/, "redirect origin mu
 const protectedRoute = "src/routes/_authenticated.tsx";
 requireMatch(
   protectedRoute,
-  /supabase\.auth\.getUser\(\)/,
-  "protected routes must verify the user",
+  /await getRouteAuthState\(\)/,
+  "protected routes must invoke the SSR auth gate",
 );
+rejectMatch(protectedRoute, /typeof window/, "protected routes must not bypass SSR");
 requireMatch(
   protectedRoute,
   /redirect\(\{ to: "\/login"/,
@@ -53,10 +54,19 @@ requireMatch(
 );
 
 const adminRoute = "src/routes/_authenticated/admin.tsx";
-requireMatch(adminRoute, /await isAdmin\(\{\}\)/, "admin route must invoke isAdmin");
-requireMatch(adminRoute, /if \(!r\.admin\) throw redirect/, "non-admin access must fail closed");
+requireMatch(
+  adminRoute,
+  /await getRouteAdminState\(\)/,
+  "admin route must invoke the SSR role gate",
+);
+requireMatch(adminRoute, /access === "account"/, "non-admin access must fail closed");
+rejectMatch(adminRoute, /typeof window/, "admin route must not bypass SSR");
 
-const account = "src/routes/_authenticated/account.tsx";
+const routeAuth = "src/lib/route-auth.functions.ts";
+requireMatch(routeAuth, /supabase\.auth\.getClaims\(\)/, "SSR auth must validate token claims");
+requireMatch(routeAuth, /\.from\("user_roles"\)/, "admin SSR gate must use canonical roles");
+
+const account = "src/routes/_authenticated/account.index.tsx";
 requireMatch(
   account,
   /admin\.data\?\.admin &&[\s\S]*to="\/admin"/,

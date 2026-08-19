@@ -7,3 +7,7 @@ authorized for execution.
 
 The A3.2b migration remains owned by PR #8. This remediation does not alter PR
 #8 or authorize applying the migration.
+
+The CM-LAUNCH-1 lifecycle ACL hardening is a corrective, unapplied migration.
+Applying it to the canonical production project requires explicit Founder
+authorization and a separately controlled database execution.
