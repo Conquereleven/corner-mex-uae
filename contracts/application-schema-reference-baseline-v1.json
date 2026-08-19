@@ -297,8 +297,8 @@
         "src/lib/seller.functions.ts",
         "src/routes/api/public/hooks/auto-payouts.ts"
       ],
-      "classification": "lovable_live_only",
-      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_pending_canonical_migration"
     },
     {
       "kind": "table_or_storage_bucket",

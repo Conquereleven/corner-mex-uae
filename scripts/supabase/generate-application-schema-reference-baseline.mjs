@@ -32,6 +32,8 @@ const future = new Set([
   "order_lifecycle_events",
   "admin_transition_order_lifecycle_v1",
   "cm_com_4a_order_lifecycle_capability",
+  // CM-LAUNCH-1: canonical support owned by the pending notifications migration.
+  "notifications",
 ]);
 const roots = ["src", "scripts"];
 const files = [];

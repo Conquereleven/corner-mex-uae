@@ -38,6 +38,9 @@ function NotificationsPage() {
     isError: list.isError,
     isPending: list.isPending,
   });
+  const hasUnread =
+    view.status === "success" &&
+    view.notifications.some((notification: any) => !notification.read_at);
 
   return (
     <SiteLayout>
@@ -56,7 +59,7 @@ function NotificationsPage() {
             <Button
               variant="outline"
               onClick={() => mAll.mutate()}
-              disabled={mAll.isPending || view.status !== "success"}
+              disabled={mAll.isPending || !hasUnread}
             >
               <CheckCheck className="me-2 h-4 w-4" /> Mark all read
             </Button>

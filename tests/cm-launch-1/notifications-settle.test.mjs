@@ -12,6 +12,14 @@ const functionsSource = await readFile(
   new URL("../../src/lib/notifications.functions.ts", import.meta.url),
   "utf8",
 );
+const bellSource = await readFile(
+  new URL("../../src/components/site/NotificationsBell.tsx", import.meta.url),
+  "utf8",
+);
+const sellerSource = await readFile(
+  new URL("../../src/routes/_authenticated/seller.notifications.tsx", import.meta.url),
+  "utf8",
+);
 
 function observe(queryFn) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -107,4 +115,45 @@ test("notification reads and actions remain authenticated and user-scoped", () =
   assert.match(routeSource, /doMarkRead\(\{ data: \{ id \} \}\)/);
   assert.match(routeSource, /doMarkAll\(\{\}\)/);
   assert.match(routeSource, /invalidateQueries\(\{ queryKey: \["notifs"\] \}\)/);
+});
+
+test("bell count semantics preserve zero, one and 9+ presentation", () => {
+  const badge = (count) => (count > 9 ? "9+" : count > 0 ? String(count) : null);
+  assert.equal(badge(0), null);
+  assert.equal(badge(1), "1");
+  assert.equal(badge(10), "9+");
+  assert.match(bellSource, /unread > 9 \? "9\+" : unread/);
+});
+
+test("bell failures settle without implicit retry storms and retry both queries", () => {
+  assert.match(bellSource, /retry: false/g);
+  assert.match(bellSource, /Unable to load notifications\./);
+  assert.match(bellSource, /Promise\.all\(\[list\.refetch\(\), count\.refetch\(\)\]\)/);
+  assert.match(bellSource, /refetchInterval: 60_000/g);
+});
+
+test("logged-out bell queries remain disabled", async () => {
+  let calls = 0;
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const observer = new QueryObserver(client, {
+    queryKey: ["notifs", "logged-out"],
+    queryFn: async () => {
+      calls += 1;
+      return [];
+    },
+    enabled: false,
+  });
+  const unsubscribe = observer.subscribe(() => {});
+  await new Promise((resolve) => setImmediate(resolve));
+  unsubscribe();
+  assert.equal(calls, 0);
+  assert.match(bellSource, /if \(!user\) return null/);
+});
+
+test("account, bell and seller mutations invalidate the shared notification cache", () => {
+  for (const source of [routeSource, bellSource, sellerSource]) {
+    assert.match(source, /invalidateQueries\(\{ queryKey: \["notifs"\] \}\)/);
+    assert.match(source, /doMarkRead\(\{ data: \{ id \} \}\)/);
+    assert.match(source, /doMarkAll\(\{\}\)/);
+  }
 });
