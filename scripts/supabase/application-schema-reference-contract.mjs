@@ -6,8 +6,8 @@ export const APPLICATION_REFERENCE_CLASSIFICATIONS = Object.freeze([
 
 const EXPECTED_COUNTS = Object.freeze({
   canonical_supported: 16,
-  lovable_live_only: 25,
-  requires_future_migration: 6,
+  lovable_live_only: 24,
+  requires_future_migration: 7,
 });
 
 export function validateApplicationSchemaReferenceContract(contract) {

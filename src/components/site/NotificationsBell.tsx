@@ -5,10 +5,20 @@ import { Bell, Check, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { listMyNotifications, unreadCount, markRead, markAllRead } from "@/lib/notifications.functions";
+import {
+  listMyNotifications,
+  unreadCount,
+  markRead,
+  markAllRead,
+} from "@/lib/notifications.functions";
 import { useSession } from "@/lib/use-session";
+import { getNotificationsQueryState } from "@/lib/notifications-query-state";
 
-export function NotificationsBell({ accountHref = "/account/notifications" }: { accountHref?: string }) {
+export function NotificationsBell({
+  accountHref = "/account/notifications",
+}: {
+  accountHref?: string;
+}) {
   const { user } = useSession();
   const qc = useQueryClient();
   const fetchList = useServerFn(listMyNotifications);
@@ -22,12 +32,14 @@ export function NotificationsBell({ accountHref = "/account/notifications" }: { 
     queryFn: () => fetchCount({}),
     enabled,
     refetchInterval: 60_000,
+    retry: false,
   });
   const list = useQuery({
     queryKey: ["notifs", "recent", user?.id ?? "anon"],
     queryFn: () => fetchList({ data: { limit: 12 } }),
     enabled,
     refetchInterval: 60_000,
+    retry: false,
   });
 
   const mRead = useMutation({
@@ -43,6 +55,12 @@ export function NotificationsBell({ accountHref = "/account/notifications" }: { 
 
   if (!user) return null;
   const unread = count.data?.count ?? 0;
+  const view = getNotificationsQueryState({
+    data: list.data,
+    isError: list.isError || count.isError,
+    isPending: list.isPending || count.isPending,
+  });
+  const retry = () => void Promise.all([list.refetch(), count.refetch()]);
 
   return (
     <Popover>
@@ -56,11 +74,13 @@ export function NotificationsBell({ accountHref = "/account/notifications" }: { 
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[360px] p-0">
+      <PopoverContent align="end" className="w-[min(360px,calc(100vw-1rem))] p-0">
         <div className="flex items-center justify-between border-b border-border p-3">
           <p className="text-sm font-medium">Notifications</p>
           <Button
-            variant="ghost" size="sm" className="h-7 text-xs"
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
             disabled={!unread || mAll.isPending}
             onClick={() => mAll.mutate()}
           >
@@ -68,13 +88,26 @@ export function NotificationsBell({ accountHref = "/account/notifications" }: { 
           </Button>
         </div>
         <ScrollArea className="max-h-[420px]">
-          {list.isLoading ? (
+          {view.status === "loading" ? (
             <p className="p-4 text-sm text-muted-foreground">Loading…</p>
-          ) : (list.data ?? []).length === 0 ? (
+          ) : view.status === "error" ? (
+            <div className="p-4 text-center">
+              <p className="text-sm text-muted-foreground">Unable to load notifications.</p>
+              <Button
+                className="mt-2"
+                size="sm"
+                variant="outline"
+                onClick={retry}
+                disabled={list.isFetching || count.isFetching}
+              >
+                {list.isFetching || count.isFetching ? "Retrying…" : "Retry"}
+              </Button>
+            </div>
+          ) : view.status === "empty" ? (
             <p className="p-4 text-sm text-muted-foreground">No notifications yet.</p>
           ) : (
             <ul className="divide-y divide-border">
-              {(list.data ?? []).map((n: any) => {
+              {view.notifications.map((n: any) => {
                 const isUnread = !n.read_at;
                 const content = (
                   <div className="flex-1">
@@ -86,14 +119,29 @@ export function NotificationsBell({ accountHref = "/account/notifications" }: { 
                   </div>
                 );
                 return (
-                  <li key={n.id} className={`flex items-start gap-2 p-3 ${isUnread ? "bg-muted/30" : ""}`}>
+                  <li
+                    key={n.id}
+                    className={`flex items-start gap-2 p-3 ${isUnread ? "bg-muted/30" : ""}`}
+                  >
                     {n.link ? (
-                      <Link to={n.link} className="flex-1 hover:opacity-80" onClick={() => isUnread && mRead.mutate(n.id)}>
+                      <Link
+                        to={n.link}
+                        className="flex-1 hover:opacity-80"
+                        onClick={() => isUnread && mRead.mutate(n.id)}
+                      >
                         {content}
                       </Link>
-                    ) : content}
+                    ) : (
+                      content
+                    )}
                     {isUnread && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => mRead.mutate(n.id)} aria-label="Mark read">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => mRead.mutate(n.id)}
+                        aria-label="Mark read"
+                      >
                         <Check className="h-3.5 w-3.5" />
                       </Button>
                     )}

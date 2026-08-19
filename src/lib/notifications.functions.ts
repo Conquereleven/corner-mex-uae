@@ -2,51 +2,31 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  persistNotification,
+  type CreateNotificationResult,
+  type NotifyParams,
+} from "@/lib/notifications-persistence";
+export type {
+  CreateNotificationResult,
+  NotificationKind,
+  NotifyParams,
+} from "@/lib/notifications-persistence";
 
-export type NotificationKind =
-  | "order_placed"
-  | "order_shipped"
-  | "order_delivered"
-  | "new_sale"
-  | "shipment_created"
-  | "shipment_delivered"
-  | "quote_response"
-  | "payout_paid"
-  | "loyalty_earned"
-  | "return_requested"
-  | "return_resolved";
-
-export interface NotifyParams {
-  userId: string;
-  kind: NotificationKind;
-  title: string;
-  body?: string | null;
-  link?: string | null;
-  orderId?: string | null;
-  shipmentId?: string | null;
-  metadata?: Record<string, any> | null;
-}
-
-/** Server-only helper. Best-effort: failures are logged, never thrown. */
+/** Server-only helper. Best-effort for producers, with an observable result. */
 export async function createNotification(p: NotifyParams) {
-  try {
-    await supabaseAdmin.from("notifications").insert({
-      user_id: p.userId,
-      kind: p.kind,
-      title: p.title,
-      body: p.body ?? null,
-      link: p.link ?? null,
-      order_id: p.orderId ?? null,
-      shipment_id: p.shipmentId ?? null,
-      metadata: p.metadata ?? null,
-    });
-  } catch (e) {
-    console.error("[notifications] create failed", e);
+  const result = await persistNotification(supabaseAdmin, p);
+  if (!result.ok) {
+    console.error("[notifications] create failed", result.error);
   }
+  return result satisfies CreateNotificationResult;
 }
 
 /** Notify every seller involved in an order. */
-export async function notifyOrderSellers(orderId: string, params: Omit<NotifyParams, "userId" | "orderId">) {
+export async function notifyOrderSellers(
+  orderId: string,
+  params: Omit<NotifyParams, "userId" | "orderId">,
+) {
   try {
     const { data: items } = await supabaseAdmin
       .from("order_items")
@@ -58,7 +38,7 @@ export async function notifyOrderSellers(orderId: string, params: Omit<NotifyPar
       if (uid) userIds.add(uid);
     }
     await Promise.all(
-      Array.from(userIds).map((userId) => createNotification({ ...params, userId, orderId }))
+      Array.from(userIds).map((userId) => createNotification({ ...params, userId, orderId })),
     );
   } catch (e) {
     console.error("[notifications] notifyOrderSellers failed", e);
@@ -70,7 +50,13 @@ export async function notifyOrderSellers(orderId: string, params: Omit<NotifyPar
 export const listMyNotifications = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { limit?: number; onlyUnread?: boolean }) =>
-    z.object({ limit: z.number().int().min(1).max(200).optional(), onlyUnread: z.boolean().optional() }).parse(i))
+    z
+      .object({
+        limit: z.number().int().min(1).max(200).optional(),
+        onlyUnread: z.boolean().optional(),
+      })
+      .parse(i),
+  )
   .handler(async ({ data, context }) => {
     let q = supabaseAdmin
       .from("notifications")

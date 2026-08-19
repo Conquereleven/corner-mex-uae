@@ -14,7 +14,8 @@
     "20260809010000_place_cod_order_v1.sql",
     "20260810120000_place_cod_order_v1_inventory_consistency.sql",
     "20260812180442_cm_com_4a_post_order_lifecycle.sql",
-    "20260819190000_cm_launch_1_lifecycle_acl_hardening.sql"
+    "20260819190000_cm_launch_1_lifecycle_acl_hardening.sql",
+    "20260819220000_cm_launch_1_notifications_canonical.sql"
   ],
   "migrations": [
     {
