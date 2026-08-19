@@ -53,11 +53,17 @@ test("canonical admin authorization still reads user_roles.role = 'admin' server
   assert.match(adminFunctions, /async function assertAdmin/);
 });
 
-test("/admin remains guarded by the server-side isAdmin check", async () => {
-  const adminRoute = await readFile(path.join(root, "src/routes/_authenticated/admin.tsx"), "utf8");
+test("/admin remains guarded by the server-side canonical role check", async () => {
+  const [adminRoute, routeAuth] = await Promise.all([
+    readFile(path.join(root, "src/routes/_authenticated/admin.tsx"), "utf8"),
+    readFile(path.join(root, "src/lib/route-auth.functions.ts"), "utf8"),
+  ]);
   assert.match(adminRoute, /beforeLoad/);
-  assert.match(adminRoute, /isAdmin\(/);
+  assert.match(adminRoute, /getRouteAdminState\(/);
   assert.match(adminRoute, /redirect\(\{ to: "\/account" \}\)/);
+  assert.doesNotMatch(adminRoute, /typeof window/);
+  assert.match(routeAuth, /supabase\.auth\.getClaims\(\)/);
+  assert.match(routeAuth, /from\("user_roles"\)[\s\S]{0,120}\.eq\("role", "admin"\)/);
 });
 
 test("health and readiness share one environment-derived service identity", async () => {
