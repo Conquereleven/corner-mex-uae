@@ -1,28 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { AccountNavigation } from "@/components/account/AccountNavigation";
+import { CustomerOrderHistorySurface } from "@/components/account/CustomerOrderHistory";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import { getMyAccount, getMyOrders } from "@/lib/account.functions";
-import { getReviewableItems } from "@/lib/reviews.functions";
 import { isAdmin } from "@/lib/admin.functions";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  getCustomerOrderHistoryView,
-  presentCanonicalCustomerOrder,
-  type CustomerOrderHistoryView,
-} from "@/lib/order-experience-contract";
+import { getCustomerOrderHistoryView } from "@/lib/order-experience-contract";
+import { getReviewableItems } from "@/lib/reviews.functions";
 
-type CustomerOrderRow = Parameters<typeof presentCanonicalCustomerOrder>[0] & {
-  id: string;
-  created_at: string;
-  items?: unknown[];
-  sla_min_days?: number | null;
-  sla_max_days?: number | null;
-};
+export { CustomerOrderHistorySurface, OrderRow } from "@/components/account/CustomerOrderHistory";
 
 type ReviewableItem = {
   order_item_id: string;
@@ -41,11 +33,11 @@ function Account() {
   const fetchOrders = useServerFn(getMyOrders);
   const fetchIsAdmin = useServerFn(isAdmin);
   const fetchLoyalty = useServerFn(getMyLoyalty);
+  const fetchReviewable = useServerFn(getReviewableItems);
   const account = useQuery({ queryKey: ["account"], queryFn: () => fetchAccount({}) });
   const orders = useQuery({ queryKey: ["my-orders"], queryFn: () => fetchOrders({}) });
   const admin = useQuery({ queryKey: ["is-admin"], queryFn: () => fetchIsAdmin({}) });
   const loyalty = useQuery({ queryKey: ["my-loyalty"], queryFn: () => fetchLoyalty({}) });
-  const fetchReviewable = useServerFn(getReviewableItems);
   const reviewable = useQuery({ queryKey: ["my-reviewable"], queryFn: () => fetchReviewable({}) });
   const ordersView = getCustomerOrderHistoryView({
     isLoading: orders.isLoading,
@@ -68,41 +60,18 @@ function Account() {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {account.data?.seller && (
-              <Link to="/seller">
-                <Button variant="outline" className="rounded-full">
-                  Seller dashboard
-                </Button>
-              </Link>
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/seller">Seller dashboard</Link>
+              </Button>
             )}
             {admin.data?.admin && (
-              <Link to="/admin">
-                <Button variant="outline" className="rounded-full">
-                  Admin
-                </Button>
-              </Link>
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/admin">Admin</Link>
+              </Button>
             )}
-            <Link to="/account/notifications">
-              <Button variant="outline" className="rounded-full">
-                Notifications
-              </Button>
-            </Link>
-            <Link to="/account/wishlist">
-              <Button variant="outline" className="rounded-full">
-                Wishlist
-              </Button>
-            </Link>
-            <Link to="/account/loyalty">
-              <Button variant="outline" className="rounded-full">
-                Loyalty
-              </Button>
-            </Link>
-            <Link to="/account/returns">
-              <Button variant="outline" className="rounded-full">
-                Returns
-              </Button>
-            </Link>
+            <AccountNavigation includeHome={false} />
             <Button
               variant="ghost"
               onClick={async () => {
@@ -117,8 +86,11 @@ function Account() {
 
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           <Card className="md:col-span-2">
-            <CardHeader>
+            <CardHeader className="flex-row items-center justify-between gap-4">
               <CardTitle>Recent orders</CardTitle>
+              <Button asChild size="sm" variant="outline" className="rounded-full">
+                <Link to="/account/orders">View all orders</Link>
+              </Button>
             </CardHeader>
             <CardContent>
               <CustomerOrderHistorySurface view={ordersView} onRetry={() => orders.refetch()} />
@@ -134,60 +106,6 @@ function Account() {
         </div>
       </section>
     </SiteLayout>
-  );
-}
-
-export function CustomerOrderHistorySurface({
-  view,
-  onRetry,
-  renderShopLink,
-  renderOrderLink,
-}: {
-  view: CustomerOrderHistoryView;
-  onRetry: () => unknown;
-  renderShopLink?: () => React.ReactNode;
-  renderOrderLink?: (id: string) => React.ReactNode;
-}) {
-  if (view.kind === "loading") {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
-  }
-  if (view.kind === "query_failed") {
-    return (
-      <div className="space-y-2" role="alert">
-        <p className="text-sm font-medium text-destructive">{view.message}</p>
-        <Button data-testid="customer-history-retry" size="sm" variant="outline" onClick={onRetry}>
-          Try again
-        </Button>
-      </div>
-    );
-  }
-  if (view.kind === "empty") {
-    return (
-      <p className="text-sm text-muted-foreground">
-        {view.message}{" "}
-        {renderShopLink ? (
-          renderShopLink()
-        ) : (
-          <Link to="/shop" className="underline">
-            Start shopping →
-          </Link>
-        )}
-      </p>
-    );
-  }
-  return (
-    <ul className="divide-y divide-border">
-      {view.orders.map((order) => {
-        const customerOrder = order as CustomerOrderRow;
-        return (
-          <OrderRow
-            key={customerOrder.id}
-            order={customerOrder}
-            renderOrderLink={renderOrderLink}
-          />
-        );
-      })}
-    </ul>
   );
 }
 
@@ -214,77 +132,17 @@ function PendingReviewsCard({ items }: { items: ReviewableItem[] }) {
                 )}
               </div>
               {it.product_slug && (
-                <Link to="/product/$slug" params={{ slug: it.product_slug }}>
-                  <Button size="sm" variant="outline" className="rounded-full">
+                <Button asChild size="sm" variant="outline" className="rounded-full">
+                  <Link to="/product/$slug" params={{ slug: it.product_slug }}>
                     Review
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               )}
             </li>
           ))}
         </ul>
       </CardContent>
     </Card>
-  );
-}
-
-export function OrderRow({
-  order,
-  renderOrderLink,
-}: {
-  order: CustomerOrderRow;
-  renderOrderLink?: (id: string) => React.ReactNode;
-}) {
-  const display = presentCanonicalCustomerOrder(order);
-  return (
-    <li className="py-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="font-medium">{display.orderNumber}</p>
-          <p className="text-xs text-muted-foreground">
-            {new Date(order.created_at).toLocaleString()} · {order.items?.length ?? 0} items
-            {order.sla_min_days ? (
-              <>
-                {" "}
-                · ETA {order.sla_min_days}-{order.sla_max_days} days
-              </>
-            ) : null}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{display.orderStatus}</Badge>
-          <Badge variant="outline">{display.paymentStatus}</Badge>
-          <span className="font-medium tabular-nums">{display.total}</span>
-          {renderOrderLink ? (
-            renderOrderLink(order.id)
-          ) : (
-            <Button asChild size="sm" variant="outline">
-              <Link to="/account/orders/$id" params={{ id: order.id }}>
-                View order
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
-      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground sm:grid-cols-4">
-        <div>
-          <dt>Subtotal</dt>
-          <dd>{display.subtotal}</dd>
-        </div>
-        <div>
-          <dt>Shipping</dt>
-          <dd>{display.shipping}</dd>
-        </div>
-        <div>
-          <dt>Tax</dt>
-          <dd>{display.tax}</dd>
-        </div>
-        <div>
-          <dt>Payment</dt>
-          <dd>{display.paymentMethod}</dd>
-        </div>
-      </dl>
-    </li>
   );
 }
 
