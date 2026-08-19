@@ -18,6 +18,7 @@ const read = (path) => readFileSync(join(process.cwd(), path), "utf8");
 const login = read("src/routes/login.tsx");
 const protectedRoute = read("src/routes/_authenticated.tsx");
 const adminRoute = read("src/routes/_authenticated/admin.tsx");
+const routeAuth = read("src/lib/route-auth.functions.ts");
 const account = read("src/routes/_authenticated/account.index.tsx");
 const header = read("src/components/site/Header.tsx");
 const product = read("src/routes/product.$slug.tsx");
@@ -53,13 +54,17 @@ test("safe redirect accepts internal paths and rejects external forms", () => {
 });
 
 test("protected routes redirect unauthenticated users to login", () => {
-  assert.match(protectedRoute, /supabase\.auth\.getUser\(\)/);
+  assert.match(protectedRoute, /await getRouteAuthState\(\)/);
   assert.match(protectedRoute, /to: "\/login"/);
+  assert.doesNotMatch(protectedRoute, /typeof window/);
 });
 
 test("admin route invokes the role gate and rejects non-admins", () => {
-  assert.match(adminRoute, /await isAdmin\(\{\}\)/);
-  assert.match(adminRoute, /if \(!r\.admin\) throw redirect/);
+  assert.match(adminRoute, /await getRouteAdminState\(\)/);
+  assert.match(adminRoute, /access === "account"/);
+  assert.doesNotMatch(adminRoute, /typeof window/);
+  assert.match(routeAuth, /supabase\.auth\.getClaims\(\)/);
+  assert.match(routeAuth, /\.from\("user_roles"\)/);
 });
 
 test("account exposes Admin only for admin=true and restores sign-out", () => {
