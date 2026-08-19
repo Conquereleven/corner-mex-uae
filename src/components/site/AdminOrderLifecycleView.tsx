@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, CreditCard, History, MapPin, Package } from "lucide-react";
 import { toast } from "sonner";
@@ -16,19 +16,59 @@ import {
 
 const aed = (value: number | string) => `${Number(value ?? 0).toFixed(2)} AED`;
 
+type AdminOrderLifecycleData = {
+  order: {
+    id: string;
+    order_number: string;
+    created_at: string;
+    status: string;
+    payment_status: string;
+    payment_method: string | null;
+    subtotal_aed: number | string;
+    shipping_aed: number | string;
+    tax_aed: number | string;
+    total_aed: number | string;
+    shipping_address?: {
+      recipient_name?: string;
+      area?: string;
+      emirate?: string;
+      street?: string;
+      building?: string;
+      floor_apartment?: string;
+    } | null;
+  };
+  items?: Array<{
+    id: string;
+    product_name: string;
+    variant_label?: string | null;
+    qty: number;
+    fulfillment_status?: string | null;
+    line_total_aed: number | string;
+  }>;
+  events?: Array<{
+    id: string;
+    transition_type: string;
+    previous_value: string;
+    new_value: string;
+    actor_id: string;
+    created_at: string;
+  }>;
+  lifecycleCapability?: boolean;
+};
+
 export function AdminOrderLifecycleView({
   data,
   invalidateKey,
   backHref,
 }: {
-  data: any;
-  invalidateKey: any[];
+  data: AdminOrderLifecycleData;
+  invalidateKey: QueryKey;
   backHref: string;
   customerHref?: string;
 }) {
   const order = data.order;
-  const items: any[] = data.items ?? [];
-  const events: any[] = data.events ?? [];
+  const items = data.items ?? [];
+  const events = data.events ?? [];
   const capabilityAvailable = data.lifecycleCapability === true;
   const transition = useServerFn(adminTransitionOrderLifecycle);
   const queryClient = useQueryClient();
@@ -38,7 +78,7 @@ export function AdminOrderLifecycleView({
       transitionType: LifecycleTransitionType;
       expectedCurrent: string;
       next: string;
-    }) => transition({ data: { orderId: order.id, ...request } as any }),
+    }) => transition({ data: { orderId: order.id, ...request } }),
     onSuccess: async () => {
       toast.success("Lifecycle transition recorded");
       await queryClient.invalidateQueries({ queryKey: invalidateKey });
@@ -67,7 +107,7 @@ export function AdminOrderLifecycleView({
   return (
     <div className="space-y-6">
       <Button asChild variant="ghost">
-        <Link to={backHref as any}>
+        <Link to={backHref as "/admin/orders"}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to orders
         </Link>
       </Button>
