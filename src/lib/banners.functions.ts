@@ -1,21 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertAdmin } from "@/lib/admin-authorization.server";
 
-export const listActiveBanners = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const nowIso = new Date().toISOString();
-    const { data } = await supabaseAdmin
-      .from("promo_banners")
-      .select("id, title, subtitle, image_url, link_url, cta_label, sort_order")
-      .eq("is_active", true)
-      .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
-      .or(`ends_at.is.null,ends_at.gte.${nowIso}`)
-      .order("sort_order", { ascending: true })
-      .limit(6);
-    return data ?? [];
-  });
+const BANNER_CAPABILITY_UNAVAILABLE = "CM_ADMIN_BANNERS_UNAVAILABLE";
+
+export const listActiveBanners = createServerFn({ method: "GET" }).handler(async () => {
+  // No canonical promo_banners authority exists in production. Public callers
+  // get a truthful empty list instead of a database error or fabricated data.
+  return [];
+});
 
 const BannerInput = z.object({
   id: z.string().uuid().optional(),
@@ -32,31 +26,25 @@ const BannerInput = z.object({
 
 export const adminListBanners = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { data } = await supabaseAdmin.from("promo_banners").select("*").order("sort_order");
-    return data ?? [];
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    throw new Error(BANNER_CAPABILITY_UNAVAILABLE);
   });
 
 export const upsertBanner = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: z.input<typeof BannerInput>) => BannerInput.parse(i))
-  .handler(async ({ data }) => {
-    const payload = { ...data, starts_at: data.starts_at || null, ends_at: data.ends_at || null };
-    if (data.id) {
-      const { error } = await supabaseAdmin.from("promo_banners").update(payload).eq("id", data.id);
-      if (error) throw new Error(error.message);
-      return { id: data.id };
-    }
-    const { data: row, error } = await supabaseAdmin.from("promo_banners").insert(payload).select("id").single();
-    if (error) throw new Error(error.message);
-    return { id: row.id };
+  .inputValidator((input: z.input<typeof BannerInput>) => BannerInput.parse(input))
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    throw new Error(BANNER_CAPABILITY_UNAVAILABLE);
   });
 
 export const deleteBanner = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { id: string }) => z.object({ id: z.string().uuid() }).parse(i))
-  .handler(async ({ data }) => {
-    const { error } = await supabaseAdmin.from("promo_banners").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
-    return { ok: true };
+  .inputValidator((input: { id: string }) =>
+    z.object({ id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    throw new Error(BANNER_CAPABILITY_UNAVAILABLE);
   });
