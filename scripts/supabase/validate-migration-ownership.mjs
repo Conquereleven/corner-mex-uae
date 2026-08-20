@@ -149,7 +149,10 @@ const EXPECTED_PRODUCTION_MIGRATIONS = [
   ["20260820230100", "cm_launch_1_l5r_quote_draft_integrity"],
 ];
 const recordedProductionMigrations = [
-  ...(contract.canonicalProductionMigrations ?? []).map(({ version, name }) => [version, name]),
+  ...(contract.canonicalProductionMigrations ?? []).map(({ version, name }) => [
+    version,
+    name,
+  ]),
   ...extensionProductionMigrations,
 ].sort(([a], [b]) => a.localeCompare(b));
 const expectedProductionMigrations = [...EXPECTED_PRODUCTION_MIGRATIONS].sort(([a], [b]) =>
