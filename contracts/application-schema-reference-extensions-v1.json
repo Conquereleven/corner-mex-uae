@@ -81,6 +81,20 @@
     },
     {
       "kind": "function",
+      "name": "admin_update_b2b_lead_pipeline_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_save_b2b_quote_draft_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
       "name": "admin_add_b2b_lead_note_v1",
       "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
