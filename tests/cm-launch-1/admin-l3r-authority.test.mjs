@@ -13,16 +13,17 @@ const UNAVAILABLE_ROUTES = [
 ];
 
 test("privileged admin functions use a server-side role boundary", async () => {
-  const [guard, banners, shipping, shipments, returns, newsletter, reviews, coupons] = await Promise.all([
-    read("src/lib/admin-authorization.server.ts"),
-    read("src/lib/banners.functions.ts"),
-    read("src/lib/shipping.functions.ts"),
-    read("src/lib/shipments.functions.ts"),
-    read("src/lib/returns.functions.ts"),
-    read("src/lib/newsletter.functions.ts"),
-    read("src/lib/reviews.functions.ts"),
-    read("src/lib/coupons.functions.ts"),
-  ]);
+  const [guard, banners, shipping, shipments, returns, newsletter, reviews, coupons] =
+    await Promise.all([
+      read("src/lib/admin-authorization.server.ts"),
+      read("src/lib/banners.functions.ts"),
+      read("src/lib/shipping.functions.ts"),
+      read("src/lib/shipments.functions.ts"),
+      read("src/lib/returns.functions.ts"),
+      read("src/lib/newsletter.functions.ts"),
+      read("src/lib/reviews.functions.ts"),
+      read("src/lib/coupons.functions.ts"),
+    ]);
 
   assert.match(guard, /CM_ADMIN_ROLE_REQUIRED/);
   assert.match(guard, /\.eq\("role", "admin"\)/);
