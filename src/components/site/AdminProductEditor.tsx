@@ -8,7 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -192,67 +198,329 @@ export function AdminProductEditor({
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader><CardTitle>Product details</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Product details</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <div><Label>Name (English)</Label><Input value={form.name_en} onChange={(e) => setForm({ ...form, name_en: e.target.value })} /></div>
-            <div><Label>Slug</Label><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-") })} /></div>
+            <div>
+              <Label>Name (English)</Label>
+              <Input
+                value={form.name_en}
+                onChange={(e) => setForm({ ...form, name_en: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Slug</Label>
+              <Input
+                value={form.slug}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
+                  })
+                }
+              />
+            </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <div><Label>Name (Español)</Label><Input value={form.name_es} onChange={(e) => setForm({ ...form, name_es: e.target.value })} /></div>
-            <div><Label>Name (العربية)</Label><Input dir="rtl" value={form.name_ar} onChange={(e) => setForm({ ...form, name_ar: e.target.value })} /></div>
+            <div>
+              <Label>Name (Español)</Label>
+              <Input
+                value={form.name_es}
+                onChange={(e) => setForm({ ...form, name_es: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Name (العربية)</Label>
+              <Input
+                dir="rtl"
+                value={form.name_ar}
+                onChange={(e) => setForm({ ...form, name_ar: e.target.value })}
+              />
+            </div>
           </div>
-          <div><Label>Description (English)</Label><Textarea rows={4} value={form.description_en} onChange={(e) => setForm({ ...form, description_en: e.target.value })} /></div>
+          <div>
+            <Label>Description (English)</Label>
+            <Textarea
+              rows={4}
+              value={form.description_en}
+              onChange={(e) => setForm({ ...form, description_en: e.target.value })}
+            />
+          </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <div><Label>Description (Español)</Label><Textarea rows={3} value={form.description_es} onChange={(e) => setForm({ ...form, description_es: e.target.value })} /></div>
-            <div><Label>Description (العربية)</Label><Textarea dir="rtl" rows={3} value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} /></div>
+            <div>
+              <Label>Description (Español)</Label>
+              <Textarea
+                rows={3}
+                value={form.description_es}
+                onChange={(e) => setForm({ ...form, description_es: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Description (العربية)</Label>
+              <Textarea
+                dir="rtl"
+                rows={3}
+                value={form.description_ar}
+                onChange={(e) => setForm({ ...form, description_ar: e.target.value })}
+              />
+            </div>
           </div>
           <div className="grid gap-4 md:grid-cols-4">
-            <div><Label>Brand</Label><Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} /></div>
-            <div><Label>Origin</Label><Input value={form.origin_region} onChange={(e) => setForm({ ...form, origin_region: e.target.value })} /></div>
-            <div><Label>Spice level</Label><Input type="number" min={0} max={5} value={form.spice_level} onChange={(e) => setForm({ ...form, spice_level: Number(e.target.value) })} /></div>
-            <div><Label>Category</Label><Select value={form.category_id} onValueChange={(value) => setForm({ ...form, category_id: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Uncategorized</SelectItem>{categories.map((category) => <SelectItem key={category.id} value={category.id}>{category.name_en}</SelectItem>)}</SelectContent></Select></div>
+            <div>
+              <Label>Brand</Label>
+              <Input
+                value={form.brand}
+                onChange={(e) => setForm({ ...form, brand: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Origin</Label>
+              <Input
+                value={form.origin_region}
+                onChange={(e) => setForm({ ...form, origin_region: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Spice level</Label>
+              <Input
+                type="number"
+                min={0}
+                max={5}
+                value={form.spice_level}
+                onChange={(e) => setForm({ ...form, spice_level: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <Label>Category</Label>
+              <Select
+                value={form.category_id}
+                onValueChange={(value) => setForm({ ...form, category_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Uncategorized</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex flex-wrap gap-6">
-            <label className="flex items-center gap-2 text-sm"><Switch checked={form.is_halal} onCheckedChange={(value) => setForm({ ...form, is_halal: value })} /> Halal</label>
-            <label className="flex items-center gap-2 text-sm"><Switch checked={form.is_bulk} onCheckedChange={(value) => setForm({ ...form, is_bulk: value })} /> Bulk / wholesale</label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch
+                checked={form.is_halal}
+                onCheckedChange={(value) => setForm({ ...form, is_halal: value })}
+              />{" "}
+              Halal
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch
+                checked={form.is_bulk}
+                onCheckedChange={(value) => setForm({ ...form, is_bulk: value })}
+              />{" "}
+              Bulk / wholesale
+            </label>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <div><Label>Status</Label><Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value as typeof form.status })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="archived">Archived</SelectItem></SelectContent></Select><p className="mt-1 text-xs text-muted-foreground">Activation requires at least one active variant with a positive AED price.</p></div>
-            <div><Label>Attributes JSON</Label><Textarea rows={5} className="font-mono text-xs" value={form.attrs} onChange={(e) => setForm({ ...form, attrs: e.target.value })} /></div>
+            <div>
+              <Label>Status</Label>
+              <Select
+                value={form.status}
+                onValueChange={(value) => setForm({ ...form, status: value as typeof form.status })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Activation requires at least one active variant with a positive AED price.
+              </p>
+            </div>
+            <div>
+              <Label>Attributes JSON</Label>
+              <Textarea
+                rows={5}
+                className="font-mono text-xs"
+                value={form.attrs}
+                onChange={(e) => setForm({ ...form, attrs: e.target.value })}
+              />
+            </div>
           </div>
-          <div className="flex gap-2"><Button onClick={() => productMutation.mutate()} disabled={productMutation.isPending}>{productMutation.isPending ? "Saving…" : product ? "Save product" : "Create draft"}</Button><Button asChild variant="outline"><Link to="/admin/products">Back to products</Link></Button></div>
+          <div className="flex gap-2">
+            <Button onClick={() => productMutation.mutate()} disabled={productMutation.isPending}>
+              {productMutation.isPending ? "Saving…" : product ? "Save product" : "Create draft"}
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/admin/products">Back to products</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
       {product ? (
         <>
           <Card>
-            <CardHeader><CardTitle>Variants & inventory</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Variants & inventory</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">Stock is written through the canonical atomic inventory transaction. Variant stock and quantity on hand cannot diverge.</p>
+              <p className="text-sm text-muted-foreground">
+                Stock is written through the canonical atomic inventory transaction. Variant stock
+                and quantity on hand cannot diverge.
+              </p>
               {variantRows.map((row, index) => (
-                <div key={row.id ?? `new-${index}`} className="grid gap-3 rounded-lg border p-4 md:grid-cols-8">
-                  <div className="md:col-span-2"><Label>SKU</Label><Input value={row.sku ?? ""} onChange={(e) => patchVariant(index, { sku: e.target.value })} /></div>
-                  <div><Label>Format</Label><Input value={row.format_label ?? ""} onChange={(e) => patchVariant(index, { format_label: e.target.value })} /></div>
-                  <div><Label>Price AED</Label><Input type="number" step="0.01" min={0} value={row.price_aed} onChange={(e) => patchVariant(index, { price_aed: Number(e.target.value) })} /></div>
-                  <div><Label>Compare</Label><Input type="number" step="0.01" min={0} value={row.compare_at_price_aed ?? 0} onChange={(e) => patchVariant(index, { compare_at_price_aed: Number(e.target.value) || null })} /></div>
-                  <div><Label>Stock</Label><Input type="number" min={0} value={row.stock} onChange={(e) => patchVariant(index, { stock: Number(e.target.value) })} /></div>
-                  <div><Label>Weight g</Label><Input type="number" min={0} value={row.weight_grams ?? 0} onChange={(e) => patchVariant(index, { weight_grams: Number(e.target.value) || null })} /></div>
-                  <div className="flex items-end gap-2"><label className="flex items-center gap-2 text-xs"><Switch checked={row.is_default} onCheckedChange={(value) => patchVariant(index, { is_default: value })} /> Default</label></div>
-                  <div className="flex items-end gap-2"><label className="flex items-center gap-2 text-xs"><Switch checked={row.is_active} onCheckedChange={(value) => patchVariant(index, { is_active: value })} /> Active</label></div>
-                  <div className="md:col-span-8"><Button size="sm" onClick={() => persistVariant(row, index)}>{row.id ? "Save variant" : "Create variant"}</Button></div>
+                <div
+                  key={row.id ?? `new-${index}`}
+                  className="grid gap-3 rounded-lg border p-4 md:grid-cols-8"
+                >
+                  <div className="md:col-span-2">
+                    <Label>SKU</Label>
+                    <Input
+                      value={row.sku ?? ""}
+                      onChange={(e) => patchVariant(index, { sku: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Format</Label>
+                    <Input
+                      value={row.format_label ?? ""}
+                      onChange={(e) => patchVariant(index, { format_label: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Price AED</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      value={row.price_aed}
+                      onChange={(e) => patchVariant(index, { price_aed: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Compare</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      value={row.compare_at_price_aed ?? 0}
+                      onChange={(e) =>
+                        patchVariant(index, {
+                          compare_at_price_aed: Number(e.target.value) || null,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Stock</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={row.stock}
+                      onChange={(e) => patchVariant(index, { stock: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Weight g</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={row.weight_grams ?? 0}
+                      onChange={(e) =>
+                        patchVariant(index, { weight_grams: Number(e.target.value) || null })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <label className="flex items-center gap-2 text-xs">
+                      <Switch
+                        checked={row.is_default}
+                        onCheckedChange={(value) => patchVariant(index, { is_default: value })}
+                      />{" "}
+                      Default
+                    </label>
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <label className="flex items-center gap-2 text-xs">
+                      <Switch
+                        checked={row.is_active}
+                        onCheckedChange={(value) => patchVariant(index, { is_active: value })}
+                      />{" "}
+                      Active
+                    </label>
+                  </div>
+                  <div className="md:col-span-8">
+                    <Button size="sm" onClick={() => persistVariant(row, index)}>
+                      {row.id ? "Save variant" : "Create variant"}
+                    </Button>
+                  </div>
                 </div>
               ))}
-              <Button variant="outline" onClick={() => setVariantRows((current) => [...current, { price_aed: 0, stock: 0, is_default: current.length === 0, is_active: true }])}><Plus className="me-2 h-4 w-4" /> Add variant</Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setVariantRows((current) => [
+                    ...current,
+                    { price_aed: 0, stock: 0, is_default: current.length === 0, is_active: true },
+                  ])
+                }
+              >
+                <Plus className="me-2 h-4 w-4" /> Add variant
+              </Button>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Images</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Images</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]"><div><Label>Image URL</Label><Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} /></div><div><Label>Alt text</Label><Input value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} /></div><div className="flex items-end"><Button onClick={addProductImage}>Add image</Button></div></div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{imageRows.map((image) => <div key={image.id} className="overflow-hidden rounded-lg border"><img src={image.url} alt={image.alt_text ?? ""} className="aspect-square w-full object-cover" /><div className="flex items-center justify-between gap-2 p-2"><span className="truncate text-xs">{image.alt_text || "Product image"}</span><Button size="icon" variant="ghost" onClick={() => deleteProductImage(image.id)}><Trash2 className="h-4 w-4" /></Button></div></div>)}</div>
+              <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                <div>
+                  <Label>Image URL</Label>
+                  <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Alt text</Label>
+                  <Input value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} />
+                </div>
+                <div className="flex items-end">
+                  <Button onClick={addProductImage}>Add image</Button>
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {imageRows.map((image) => (
+                  <div key={image.id} className="overflow-hidden rounded-lg border">
+                    <img
+                      src={image.url}
+                      alt={image.alt_text ?? ""}
+                      className="aspect-square w-full object-cover"
+                    />
+                    <div className="flex items-center justify-between gap-2 p-2">
+                      <span className="truncate text-xs">{image.alt_text || "Product image"}</span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => deleteProductImage(image.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </>

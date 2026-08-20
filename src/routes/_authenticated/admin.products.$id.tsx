@@ -30,16 +30,22 @@ function AdminEditProduct() {
       {query.isError ? (
         <div className="space-y-2">
           <p className="text-sm text-destructive">Product could not be loaded.</p>
-          <Button size="sm" variant="outline" onClick={() => query.refetch()}>Retry</Button>
+          <Button size="sm" variant="outline" onClick={() => query.refetch()}>
+            Retry
+          </Button>
         </div>
       ) : null}
       {query.data ? (
         <AdminProductEditor
-          product={query.data.product as any}
-          translations={query.data.translations as any}
-          variants={query.data.variants as any}
-          images={query.data.images as any}
-          categories={query.data.categories as any}
+          product={query.data.product as Parameters<typeof AdminProductEditor>[0]["product"]}
+          translations={
+            query.data.translations as Parameters<typeof AdminProductEditor>[0]["translations"]
+          }
+          variants={query.data.variants as Parameters<typeof AdminProductEditor>[0]["variants"]}
+          images={query.data.images as Parameters<typeof AdminProductEditor>[0]["images"]}
+          categories={
+            query.data.categories as Parameters<typeof AdminProductEditor>[0]["categories"]
+          }
         />
       ) : null}
     </div>

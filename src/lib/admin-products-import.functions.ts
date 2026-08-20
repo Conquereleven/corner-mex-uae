@@ -3,8 +3,19 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertAdmin } from "@/lib/admin-authorization.server";
 
+type ProductImportRpcClient = {
+  rpc: (
+    fn: "admin_import_product_row_v1",
+    args: Record<string, unknown>,
+  ) => PromiseLike<{ data: { created?: boolean } | null; error: { message?: string } | null }>;
+};
+
 const rowSchema = z.object({
-  slug: z.string().min(1).max(80).regex(/^[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(1)
+    .max(80)
+    .regex(/^[a-z0-9-]+$/),
   name_en: z.string().min(1).max(160),
   name_es: z.string().max(160).optional().nullable(),
   name_ar: z.string().max(160).optional().nullable(),
@@ -64,30 +75,29 @@ export const adminImportProductsCanonical = createServerFn({ method: "POST" })
     for (const item of valid) {
       const row = item.value;
       const requestedStatus = row.status === "active" && row.price_aed <= 0 ? "draft" : row.status;
-      const { data: result, error } = await (context.supabase as any).rpc(
-        "admin_import_product_row_v1",
-        {
-          p_slug: row.slug,
-          p_name_en: row.name_en,
-          p_name_es: row.name_es ?? null,
-          p_name_ar: row.name_ar ?? null,
-          p_description_en: row.description_en ?? null,
-          p_brand: row.brand ?? null,
-          p_origin_region: row.origin_region ?? null,
-          p_spice_level: row.spice_level ?? null,
-          p_is_bulk: row.is_bulk,
-          p_is_halal: row.is_halal,
-          p_status: requestedStatus,
-          p_category_slug: row.category_slug ?? null,
-          p_sku: row.sku ?? null,
-          p_format_label: row.format_label ?? null,
-          p_weight_grams: row.weight_grams ?? null,
-          p_price_aed: row.price_aed,
-          p_compare_at_price_aed: row.compare_at_price_aed ?? null,
-          p_stock: row.stock,
-          p_image_urls: row.image_urls,
-        },
-      );
+      const { data: result, error } = await (
+        context.supabase as unknown as ProductImportRpcClient
+      ).rpc("admin_import_product_row_v1", {
+        p_slug: row.slug,
+        p_name_en: row.name_en,
+        p_name_es: row.name_es ?? null,
+        p_name_ar: row.name_ar ?? null,
+        p_description_en: row.description_en ?? null,
+        p_brand: row.brand ?? null,
+        p_origin_region: row.origin_region ?? null,
+        p_spice_level: row.spice_level ?? null,
+        p_is_bulk: row.is_bulk,
+        p_is_halal: row.is_halal,
+        p_status: requestedStatus,
+        p_category_slug: row.category_slug ?? null,
+        p_sku: row.sku ?? null,
+        p_format_label: row.format_label ?? null,
+        p_weight_grams: row.weight_grams ?? null,
+        p_price_aed: row.price_aed,
+        p_compare_at_price_aed: row.compare_at_price_aed ?? null,
+        p_stock: row.stock,
+        p_image_urls: row.image_urls,
+      });
       if (error) {
         errors.push({ row: item.rowNumber, slug: row.slug, error: rpcCode(error.message) });
         continue;

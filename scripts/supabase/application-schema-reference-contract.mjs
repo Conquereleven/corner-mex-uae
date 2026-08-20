@@ -31,8 +31,12 @@ export function expandApplicationSchemaReferenceContract(base, extensions) {
 
   for (const reference of extensions?.newReferences ?? []) {
     const identity = `${reference.kind}:${reference.name}`;
-    if (byIdentity.has(identity)) throw new Error(`duplicate schema reference extension: ${identity}`);
-    const next = { ...structuredClone(reference), files: [...new Set(reference.files ?? [])].sort() };
+    if (byIdentity.has(identity))
+      throw new Error(`duplicate schema reference extension: ${identity}`);
+    const next = {
+      ...structuredClone(reference),
+      files: [...new Set(reference.files ?? [])].sort(),
+    };
     references.push(next);
     byIdentity.set(identity, next);
   }
@@ -57,7 +61,8 @@ export function validateApplicationSchemaReferenceExtensions(base, extensions) {
   );
   for (const addition of extensions.fileAdditions ?? []) {
     const identity = `${addition.kind}:${addition.name}`;
-    if (!baseIdentities.has(identity)) errors.push(`schema reference extension target missing: ${identity}`);
+    if (!baseIdentities.has(identity))
+      errors.push(`schema reference extension target missing: ${identity}`);
     if (!Array.isArray(addition.files) || addition.files.length === 0)
       errors.push(`schema reference extension files missing: ${identity}`);
   }

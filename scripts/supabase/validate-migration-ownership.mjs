@@ -34,7 +34,8 @@ if (extensions.contractVersion !== "canonical-active-migration-extensions-v1")
 
 const extensionMigrations = (extensions.migrations ?? []).map((item) => item.filename).sort();
 for (const item of extensions.migrations ?? []) {
-  if (item.owner !== "canonical_cornermex") errors.push(`invalid canonical extension owner: ${item.filename}`);
+  if (item.owner !== "canonical_cornermex")
+    errors.push(`invalid canonical extension owner: ${item.filename}`);
   if (item.requiresFounderProductionGate !== true)
     errors.push(`canonical extension lacks Founder production gate: ${item.filename}`);
   if (item.productionApplied !== false)
@@ -62,7 +63,9 @@ for (const item of contract.migrations) {
 }
 
 if (active.length !== expectedActive.length)
-  errors.push(`expected ${expectedActive.length} active canonical source migrations, found ${active.length}`);
+  errors.push(
+    `expected ${expectedActive.length} active canonical source migrations, found ${active.length}`,
+  );
 
 const REQUIRED_PENDING = ["catalog_import_foundation_a3_2b"];
 if (pending.length !== REQUIRED_PENDING.length) {

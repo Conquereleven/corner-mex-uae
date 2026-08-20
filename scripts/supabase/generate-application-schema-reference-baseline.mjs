@@ -36,10 +36,16 @@ const extensionErrors = validateApplicationSchemaReferenceExtensions(committedCo
 if (extensionErrors.length) throw new Error(extensionErrors.join("\n"));
 const expectedContract = expandApplicationSchemaReferenceContract(committedContract, extensions);
 const expectedOrder = new Map(
-  expectedContract.references.map((reference, index) => [`${reference.kind}:${reference.name}`, index]),
+  expectedContract.references.map((reference, index) => [
+    `${reference.kind}:${reference.name}`,
+    index,
+  ]),
 );
 const expectedByIdentity = new Map(
-  expectedContract.references.map((reference) => [`${reference.kind}:${reference.name}`, reference]),
+  expectedContract.references.map((reference) => [
+    `${reference.kind}:${reference.name}`,
+    reference,
+  ]),
 );
 
 const references = [...found.values()]
@@ -78,12 +84,16 @@ if (process.argv.includes("--check")) {
     console.error("APPLICATION_SCHEMA_REFERENCE_GENERATED_BEGIN");
     console.error(output);
     console.error("APPLICATION_SCHEMA_REFERENCE_GENERATED_END");
-    throw new Error("application schema references changed outside the explicit baseline/extension authority");
+    throw new Error(
+      "application schema references changed outside the explicit baseline/extension authority",
+    );
   }
   console.log(`application schema reference authority unchanged: ${references.length} identities`);
 } else {
   if ((extensions.fileAdditions?.length ?? 0) || (extensions.newReferences?.length ?? 0)) {
-    throw new Error("compact application schema reference extensions before regenerating the base baseline");
+    throw new Error(
+      "compact application schema reference extensions before regenerating the base baseline",
+    );
   }
   await writeFile(outputPath, output);
   console.log(`application schema reference baseline written: ${references.length} identities`);

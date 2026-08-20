@@ -4,10 +4,21 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin } from "@/lib/admin-authorization.server";
 
+type ProductWriteRpcClient = {
+  rpc: (
+    fn: "admin_upsert_product_v1" | "admin_upsert_product_variant_v1",
+    args: Record<string, unknown>,
+  ) => PromiseLike<{ data: string | null; error: { message?: string } | null }>;
+};
+
 const productStatus = z.enum(["draft", "active", "archived"]);
 const productInput = z.object({
   id: z.string().uuid().optional(),
-  slug: z.string().min(1).max(80).regex(/^[a-z0-9-]+$/),
+  slug: z
+    .string()
+    .min(1)
+    .max(80)
+    .regex(/^[a-z0-9-]+$/),
   name_en: z.string().min(1).max(160),
   name_es: z.string().max(160).optional().nullable(),
   name_ar: z.string().max(160).optional().nullable(),
@@ -70,10 +81,15 @@ export const adminGetProductCanonical = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     const [product, translations, variants, images, categories] = await Promise.all([
       supabaseAdmin.from("products").select("*").eq("id", data.id).maybeSingle(),
-      supabaseAdmin.from("product_translations").select("lang,name,description").eq("product_id", data.id),
+      supabaseAdmin
+        .from("product_translations")
+        .select("lang,name,description")
+        .eq("product_id", data.id),
       supabaseAdmin
         .from("product_variants")
-        .select("id,sku,format_label,weight_grams,price_aed,compare_at_price_aed,stock,is_default,is_active")
+        .select(
+          "id,sku,format_label,weight_grams,price_aed,compare_at_price_aed,stock,is_default,is_active",
+        )
         .eq("product_id", data.id)
         .order("created_at"),
       supabaseAdmin
@@ -81,7 +97,11 @@ export const adminGetProductCanonical = createServerFn({ method: "GET" })
         .select("id,url,alt_text,sort_order")
         .eq("product_id", data.id)
         .order("sort_order"),
-      supabaseAdmin.from("categories").select("id,slug,name_en").eq("is_active", true).order("name_en"),
+      supabaseAdmin
+        .from("categories")
+        .select("id,slug,name_en")
+        .eq("is_active", true)
+        .order("name_en"),
     ]);
     if (product.error) throw new Error("CM_ADMIN_PRODUCT_QUERY_FAILED");
     if (!product.data) throw new Error("CM_ADMIN_PRODUCT_NOT_FOUND");
@@ -112,7 +132,9 @@ export const adminUpsertProductCanonical = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof productInput>) => productInput.parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { data: productId, error } = await (context.supabase as any).rpc("admin_upsert_product_v1", {
+    const { data: productId, error } = await (
+      context.supabase as unknown as ProductWriteRpcClient
+    ).rpc("admin_upsert_product_v1", {
       p_product_id: data.id ?? null,
       p_slug: data.slug,
       p_name_en: data.name_en,
@@ -132,7 +154,11 @@ export const adminUpsertProductCanonical = createServerFn({ method: "POST" })
     });
     const code = rpcError(error, "CM_ADMIN_PRODUCT_WRITE_FAILED");
     if (code) throw new Error(code);
-    return { productId: productId as string, created: !data.id, effectiveStatus: data.id ? data.status : "draft" };
+    return {
+      productId: productId as string,
+      created: !data.id,
+      effectiveStatus: data.id ? data.status : "draft",
+    };
   });
 
 export const adminUpsertVariantCanonical = createServerFn({ method: "POST" })
@@ -140,21 +166,20 @@ export const adminUpsertVariantCanonical = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof variantInput>) => variantInput.parse(input))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { data: variantId, error } = await (context.supabase as any).rpc(
-      "admin_upsert_product_variant_v1",
-      {
-        p_product_id: data.productId,
-        p_variant_id: data.id ?? null,
-        p_sku: data.sku ?? null,
-        p_format_label: data.format_label ?? null,
-        p_weight_grams: data.weight_grams ?? null,
-        p_price_aed: data.price_aed,
-        p_compare_at_price_aed: data.compare_at_price_aed ?? null,
-        p_stock: data.stock,
-        p_is_default: data.is_default,
-        p_is_active: data.is_active,
-      },
-    );
+    const { data: variantId, error } = await (
+      context.supabase as unknown as ProductWriteRpcClient
+    ).rpc("admin_upsert_product_variant_v1", {
+      p_product_id: data.productId,
+      p_variant_id: data.id ?? null,
+      p_sku: data.sku ?? null,
+      p_format_label: data.format_label ?? null,
+      p_weight_grams: data.weight_grams ?? null,
+      p_price_aed: data.price_aed,
+      p_compare_at_price_aed: data.compare_at_price_aed ?? null,
+      p_stock: data.stock,
+      p_is_default: data.is_default,
+      p_is_active: data.is_active,
+    });
     const code = rpcError(error, "CM_ADMIN_VARIANT_UPDATE_FAILED");
     if (code) throw new Error(code);
     return { id: variantId as string };

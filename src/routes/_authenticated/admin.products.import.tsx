@@ -47,7 +47,9 @@ function parseCsv(text: string) {
 function toObjects(matrix: string[][]) {
   const [headers, ...body] = matrix;
   return body.map((cells) => {
-    const raw = Object.fromEntries(headers.map((header, index) => [header.trim(), cells[index] ?? ""]));
+    const raw = Object.fromEntries(
+      headers.map((header, index) => [header.trim(), cells[index] ?? ""]),
+    );
     const number = (value: string) => {
       const parsed = Number(value);
       return Number.isFinite(parsed) ? parsed : undefined;
@@ -73,7 +75,10 @@ function toObjects(matrix: string[][]) {
       price_aed: number(raw.price_aed),
       compare_at_price_aed: raw.compare_at_price_aed ? number(raw.compare_at_price_aed) : null,
       stock: number(raw.stock) ?? 0,
-      image_urls: String(raw.image_urls ?? "").split("|").map((value) => value.trim()).filter(Boolean),
+      image_urls: String(raw.image_urls ?? "")
+        .split("|")
+        .map((value) => value.trim())
+        .filter(Boolean),
     };
   });
 }
@@ -85,7 +90,8 @@ function AdminProductsImport() {
   const [parseError, setParseError] = useState<string | null>(null);
   const mutation = useMutation({
     mutationFn: () => runImport({ data: { rows } }),
-    onSuccess: (result) => toast.success(`Import complete: ${result.created} created, ${result.updated} updated`),
+    onSuccess: (result) =>
+      toast.success(`Import complete: ${result.created} created, ${result.updated} updated`),
     onError: (error: Error) => toast.error(error.message),
   });
 
@@ -119,24 +125,63 @@ function AdminProductsImport() {
       <div>
         <h1 className="font-display text-3xl tracking-tight">Import products</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Single-merchant CornerMex import. No Seller assignment. Stock is committed through the canonical atomic inventory transaction.
+          Single-merchant CornerMex import. No Seller assignment. Stock is committed through the
+          canonical atomic inventory transaction.
         </p>
       </div>
       <Card>
         <CardHeader>
           <CardTitle>CSV import</CardTitle>
-          <CardDescription>Rows may create or update products by slug. Active rows require a positive price; otherwise they remain draft.</CardDescription>
+          <CardDescription>
+            Rows may create or update products by slug. Active rows require a positive price;
+            otherwise they remain draft.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3">
-            <a href="/templates/products-template.csv" download><Button variant="outline"><Download className="me-2 h-4 w-4" /> Download template</Button></a>
-            <label className="inline-flex h-10 cursor-pointer items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"><FileUp className="me-2 h-4 w-4" /> Choose CSV<input className="hidden" type="file" accept=".csv,text/csv" onChange={(event) => loadFile(event.target.files?.[0])} /></label>
-            <Button asChild variant="ghost"><Link to="/admin/products">Back to products</Link></Button>
+            <a href="/templates/products-template.csv" download>
+              <Button variant="outline">
+                <Download className="me-2 h-4 w-4" /> Download template
+              </Button>
+            </a>
+            <label className="inline-flex h-10 cursor-pointer items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+              <FileUp className="me-2 h-4 w-4" /> Choose CSV
+              <input
+                className="hidden"
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => loadFile(event.target.files?.[0])}
+              />
+            </label>
+            <Button asChild variant="ghost">
+              <Link to="/admin/products">Back to products</Link>
+            </Button>
           </div>
-          {fileName ? <p className="text-sm text-muted-foreground">{fileName} · {rows.length} rows ready</p> : null}
+          {fileName ? (
+            <p className="text-sm text-muted-foreground">
+              {fileName} · {rows.length} rows ready
+            </p>
+          ) : null}
           {parseError ? <p className="text-sm text-destructive">{parseError}</p> : null}
-          {rows.length ? <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>{mutation.isPending ? "Importing…" : `Import ${rows.length} rows`}</Button> : null}
-          {mutation.data ? <div className="rounded-lg border p-4 text-sm"><p>{mutation.data.created} created · {mutation.data.updated} updated · {mutation.data.errors.length} errors</p>{mutation.data.errors.slice(0, 20).map((error) => <p key={`${error.row}-${error.slug ?? "row"}`} className="text-destructive">Row {error.row}{error.slug ? ` (${error.slug})` : ""}: {error.error}</p>)}</div> : null}
+          {rows.length ? (
+            <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+              {mutation.isPending ? "Importing…" : `Import ${rows.length} rows`}
+            </Button>
+          ) : null}
+          {mutation.data ? (
+            <div className="rounded-lg border p-4 text-sm">
+              <p>
+                {mutation.data.created} created · {mutation.data.updated} updated ·{" "}
+                {mutation.data.errors.length} errors
+              </p>
+              {mutation.data.errors.slice(0, 20).map((error) => (
+                <p key={`${error.row}-${error.slug ?? "row"}`} className="text-destructive">
+                  Row {error.row}
+                  {error.slug ? ` (${error.slug})` : ""}: {error.error}
+                </p>
+              ))}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>
