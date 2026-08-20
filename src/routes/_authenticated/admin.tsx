@@ -77,8 +77,9 @@ function AdminLayout() {
               badge: c?.leads_new,
               badgeTone: "primary",
             },
-            { to: "/admin/products/new", label: "New product", icon: Plus, soon: true },
-            { to: "/admin/products/import", label: t("dash.import.nav"), icon: Upload, soon: true },
+            { to: "/admin/products", label: "Products", icon: Package },
+            { to: "/admin/products/new", label: "New product", icon: Plus },
+            { to: "/admin/products/import", label: t("dash.import.nav"), icon: Upload },
           ],
         },
         {
