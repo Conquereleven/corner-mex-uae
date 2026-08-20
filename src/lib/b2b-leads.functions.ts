@@ -3,7 +3,12 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin } from "@/lib/admin-authorization.server";
-import { B2B_LEAD_STATUSES, type B2bLeadStatus } from "@/lib/b2b-lead-lifecycle";
+import {
+  B2B_LEAD_PRIORITIES,
+  B2B_LEAD_STATUSES,
+  type B2bLeadPriority,
+  type B2bLeadStatus,
+} from "@/lib/b2b-lead-lifecycle";
 
 type RpcError = { message?: string } | null;
 type B2bRpcName =
@@ -11,6 +16,8 @@ type B2bRpcName =
   | "admin_list_b2b_leads_v1"
   | "admin_get_b2b_lead_v1"
   | "admin_update_b2b_lead_v1"
+  | "admin_update_b2b_lead_pipeline_v1"
+  | "admin_save_b2b_quote_draft_v1"
   | "admin_add_b2b_lead_note_v1"
   | "admin_delete_b2b_lead_note_v1";
 
@@ -20,6 +27,13 @@ type B2bRpcClient = {
     args: Record<string, unknown>,
   ) => PromiseLike<{ data: unknown; error: RpcError }>;
 };
+
+const httpUrl = z
+  .string()
+  .trim()
+  .url()
+  .max(1000)
+  .refine((value) => /^https?:\/\//i.test(value), "Use an http(s) URL");
 
 const LeadInput = z.object({
   full_name: z.string().trim().min(2).max(200),
@@ -37,6 +51,23 @@ const LeadInput = z.object({
 });
 
 const LeadStatusSchema = z.enum(B2B_LEAD_STATUSES);
+const LeadPrioritySchema = z.enum(B2B_LEAD_PRIORITIES);
+
+export const B2bQuoteDraftSchema = z
+  .object({
+    items_summary: z.string().trim().max(8000).nullable(),
+    delivery_fee_aed: z.number().min(0).max(999999).nullable(),
+    vat_treatment: z.string().trim().max(500).nullable(),
+    availability_note: z.string().trim().max(1000).nullable(),
+    valid_until: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .nullable(),
+    payment_terms: z.string().trim().max(1000).nullable(),
+    recipient: z.string().trim().max(320).nullable(),
+    notes: z.string().trim().max(4000).nullable(),
+  })
+  .strict();
 
 const B2bLeadSchema = z.object({
   id: z.string().uuid(),
@@ -54,6 +85,20 @@ const B2bLeadSchema = z.object({
   status: LeadStatusSchema,
   admin_note: z.string().nullable(),
   contacted_at: z.string().nullable(),
+  website: z.string().nullable(),
+  decision_maker: z.string().nullable(),
+  qualification_score: z.number().int().min(0).max(100).nullable(),
+  priority: LeadPrioritySchema,
+  owner: z.string().nullable(),
+  source_url: z.string().nullable(),
+  last_contact_at: z.string().nullable(),
+  next_action: z.string().nullable(),
+  next_action_at: z.string().nullable(),
+  blocker: z.string().nullable(),
+  first_order_id: z.string().uuid().nullable(),
+  first_order_linked_at: z.string().nullable(),
+  quote_draft: B2bQuoteDraftSchema.nullable(),
+  quote_draft_updated_at: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -89,6 +134,7 @@ const LeadDetailSchema = z.object({
 });
 
 export type B2bLead = z.infer<typeof B2bLeadSchema>;
+export type B2bQuoteDraft = z.infer<typeof B2bQuoteDraftSchema>;
 export type LeadStatusEvent = z.infer<typeof LeadStatusEventSchema>;
 export type LeadNote = z.infer<typeof LeadNoteSchema>;
 export type B2bLeadSubmissionResult = z.infer<typeof LeadSubmissionResultSchema>;
@@ -177,6 +223,71 @@ export const adminUpdateB2bLead = createServerFn({ method: "POST" })
       .parse(result);
   });
 
+const PipelineInput = z.object({
+  id: z.string().uuid(),
+  website: httpUrl.nullable(),
+  decision_maker: z.string().trim().max(200).nullable(),
+  qualification_score: z.number().int().min(0).max(100).nullable(),
+  priority: LeadPrioritySchema,
+  owner: z.string().trim().max(160).nullable(),
+  source_url: httpUrl.nullable(),
+  last_contact_at: z.string().datetime({ offset: true }).nullable(),
+  next_action: z.string().trim().max(1000).nullable(),
+  next_action_at: z.string().datetime({ offset: true }).nullable(),
+  blocker: z.string().trim().max(2000).nullable(),
+  first_order_id: z.string().uuid().nullable(),
+});
+
+export type B2bLeadPipelineInput = z.infer<typeof PipelineInput>;
+
+export const adminUpdateB2bLeadPipeline = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.input<typeof PipelineInput>) => PipelineInput.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: result, error } = await (context.supabase as unknown as B2bRpcClient).rpc(
+      "admin_update_b2b_lead_pipeline_v1",
+      {
+        p_lead_id: data.id,
+        p_website: data.website,
+        p_decision_maker: data.decision_maker,
+        p_qualification_score: data.qualification_score,
+        p_priority: data.priority,
+        p_owner: data.owner,
+        p_source_url: data.source_url,
+        p_last_contact_at: data.last_contact_at,
+        p_next_action: data.next_action,
+        p_next_action_at: data.next_action_at,
+        p_blocker: data.blocker,
+        p_first_order_id: data.first_order_id,
+      },
+    );
+    userFacingError(error, "CM_B2B_LEAD_PIPELINE_UPDATE_FAILED");
+    return z
+      .object({ ok: z.boolean(), lead_id: z.string().uuid(), first_order_linked: z.boolean() })
+      .parse(result);
+  });
+
+const QuoteDraftInput = z.object({
+  lead_id: z.string().uuid(),
+  draft: B2bQuoteDraftSchema.nullable(),
+});
+
+export const adminSaveB2bQuoteDraft = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.input<typeof QuoteDraftInput>) => QuoteDraftInput.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: result, error } = await (context.supabase as unknown as B2bRpcClient).rpc(
+      "admin_save_b2b_quote_draft_v1",
+      { p_lead_id: data.lead_id, p_quote_draft: data.draft },
+    );
+    userFacingError(error, "CM_B2B_QUOTE_DRAFT_SAVE_FAILED");
+    return z
+      .object({ ok: z.boolean(), lead_id: z.string().uuid(), draft_only: z.literal(true) })
+      .parse(result);
+  });
+
 export const adminGetB2bLead = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
@@ -221,4 +332,4 @@ export const adminDeleteLeadNote = createServerFn({ method: "POST" })
     return z.object({ ok: z.boolean(), lead_id: z.string().uuid() }).parse(result);
   });
 
-export type { B2bLeadStatus };
+export type { B2bLeadPriority, B2bLeadStatus };
