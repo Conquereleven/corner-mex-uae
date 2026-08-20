@@ -24,7 +24,10 @@ test("L5R public B2B intake is real, idempotent and server mediated", async () =
   assert.match(migration, /b2b_leads_idempotency_key_uidx/);
   assert.match(migration, /drop policy if exists b2b_leads_public_intake/);
   assert.match(migration, /revoke all on table public\.b2b_leads from anon, authenticated/);
-  assert.match(migration, /grant execute on function public\.submit_b2b_lead_v1[\s\S]*to service_role/);
+  assert.match(
+    migration,
+    /grant execute on function public\.submit_b2b_lead_v1[\s\S]*to service_role/,
+  );
   assert.doesNotMatch(
     migration,
     /grant execute on function public\.submit_b2b_lead_v1[\s\S]*to anon/,
@@ -48,9 +51,18 @@ test("L5R canonical lifecycle is aligned across SQL and UI", async () => {
     assert.doesNotMatch(listRoute, new RegExp(`\\b${legacy}\\b`));
     assert.doesNotMatch(detailRoute, new RegExp(`\\b${legacy}\\b`));
   }
-  assert.match(migration, /v_from_status = 'new' and p_status in \('contacted', 'lost'\)/);
-  assert.match(migration, /v_from_status = 'contacted' and p_status in \('quoting', 'lost'\)/);
-  assert.match(migration, /v_from_status = 'quoting' and p_status in \('won', 'lost'\)/);
+  assert.match(
+    migration,
+    /v_from_status = 'new' and p_status in \('contacted', 'lost'\)/,
+  );
+  assert.match(
+    migration,
+    /v_from_status = 'contacted' and p_status in \('quoting', 'lost'\)/,
+  );
+  assert.match(
+    migration,
+    /v_from_status = 'quoting' and p_status in \('won', 'lost'\)/,
+  );
   assert.match(migration, /CM_B2B_LEAD_TRANSITION_NOT_ALLOWED/);
 });
 
@@ -70,8 +82,14 @@ test("L5R admin pipeline uses authenticated RPCs and canonical admin guard", asy
   assert.match(server, /admin_delete_b2b_lead_note_v1/);
   assert.match(migration, /role = 'admin'/);
   assert.match(operatingMigration, /role = 'admin'/);
-  assert.match(migration, /grant execute on function public\.admin_list_b2b_leads_v1\(text\) to authenticated/);
-  assert.match(migration, /revoke all on function public\.admin_list_b2b_leads_v1\(text\) from public, anon, service_role/);
+  assert.match(
+    migration,
+    /grant execute on function public\.admin_list_b2b_leads_v1\(text\) to authenticated/,
+  );
+  assert.match(
+    migration,
+    /revoke all on function public\.admin_list_b2b_leads_v1\(text\) from public, anon, service_role/,
+  );
   assert.match(operatingMigration, /admin_update_b2b_lead_pipeline_v1/);
   assert.match(operatingMigration, /admin_save_b2b_quote_draft_v1/);
 });
@@ -116,9 +134,15 @@ test("L5R operating layer carries GTM profile, follow-up, blockers and first pur
 
   assert.match(migration, /qualification_score between 0 and 100/);
   assert.match(migration, /priority in \('unassigned', 'low', 'medium', 'high'\)/);
-  assert.match(migration, /first_order_id uuid references public\.orders\(id\) on delete set null/);
+  assert.match(
+    migration,
+    /first_order_id uuid references public\.orders\(id\) on delete set null/,
+  );
   assert.match(migration, /CM_B2B_LEAD_FIRST_ORDER_NOT_FOUND/);
-  assert.doesNotMatch(migration, /insert into public\.orders|update public\.orders|delete from public\.orders/i);
+  assert.doesNotMatch(
+    migration,
+    /insert into public\.orders|update public\.orders|delete from public\.orders/i,
+  );
   assert.match(listRoute, /Follow-up overdue/);
   assert.match(listRoute, /Needs owner/);
   assert.match(panel, /Human-owned GTM profile/);
@@ -143,7 +167,10 @@ test("L5R risk model marks last-mile work without inventing terminal follow-up",
     "BLOCKED",
   ]);
   assert.deepEqual(
-    b2bLeadRiskFlags({ ...base, status: "lost" }, Date.parse("2026-08-20T12:00:00.000Z")),
+    b2bLeadRiskFlags(
+      { ...base, status: "lost" },
+      Date.parse("2026-08-20T12:00:00.000Z"),
+    ),
     [],
   );
   assert.deepEqual(
