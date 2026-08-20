@@ -3,7 +3,10 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import test from "node:test";
 
-import { B2B_CATEGORIES, WAVE_1_PRODUCTS } from "../../src/features/b2b-catalog/wave1-products.ts";
+import {
+  B2B_CATEGORIES,
+  WAVE_1_PRODUCTS,
+} from "../../src/features/b2b-catalog/wave1-products.ts";
 import {
   QUOTE_SELECTION_STORAGE_KEY,
   readQuoteSelection,
