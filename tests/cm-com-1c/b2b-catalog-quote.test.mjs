@@ -12,7 +12,10 @@ import {
 
 const ROOT = process.cwd();
 const PUBLIC_B2B_COMPONENTS = [
+  "B2bCatalogHero.tsx",
+  "B2bCategoryNav.tsx",
   "B2bProductCard.tsx",
+  "B2bProductGrid.tsx",
   "B2bQuoteBar.tsx",
   "EmptyQuoteSelection.tsx",
   "ManualContactActions.tsx",
