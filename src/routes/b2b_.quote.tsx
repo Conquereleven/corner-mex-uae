@@ -109,8 +109,9 @@ function B2bQuoteRoute() {
     setPreview(formatManualQuoteRequest(fields, products));
   }
 
-  const submitError =
-    submit.error instanceof Error ? submit.error.message : submit.error ? "Could not submit enquiry." : undefined;
+  let submitError: string | undefined;
+  if (submit.error instanceof Error) submitError = submit.error.message;
+  else if (submit.error) submitError = "Could not submit enquiry.";
 
   return (
     <SiteLayout>
