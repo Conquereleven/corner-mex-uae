@@ -29,6 +29,11 @@ const canonical = new Set([
   "cm_com_4a_order_lifecycle_capability",
 ]);
 const future = new Set(["catalog_import_executions", "catalog_import_reviews"]);
+const unappliedCanonical = new Set([
+  "admin_import_product_row_v1",
+  "admin_upsert_product_v1",
+  "admin_upsert_product_variant_v1",
+]);
 const roots = ["src", "scripts"];
 const files = [];
 const walk = async (directory) => {
@@ -62,20 +67,27 @@ const committedOrder = new Map(
 );
 
 const references = [...found.values()]
-  .map((reference) => ({
-    ...reference,
-    files: [...new Set(reference.files)].sort(),
-    classification: canonical.has(reference.name)
-      ? "canonical_supported"
-      : future.has(reference.name)
-        ? "requires_future_migration"
-        : "lovable_live_only",
-    rationale: canonical.has(reference.name)
-      ? "present_in_canonical_db2_inventory"
-      : future.has(reference.name)
-        ? "owned_by_pending_canonical_migration"
-        : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
-  }))
+  .map((reference) => {
+    const isCanonical = canonical.has(reference.name);
+    const isPending = future.has(reference.name);
+    const isUnappliedCanonical = unappliedCanonical.has(reference.name);
+    return {
+      ...reference,
+      files: [...new Set(reference.files)].sort(),
+      classification: isCanonical
+        ? "canonical_supported"
+        : isPending || isUnappliedCanonical
+          ? "requires_future_migration"
+          : "lovable_live_only",
+      rationale: isCanonical
+        ? "present_in_canonical_db2_inventory"
+        : isPending
+          ? "owned_by_pending_canonical_migration"
+          : isUnappliedCanonical
+            ? "owned_by_unapplied_canonical_migration"
+            : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
+    };
+  })
   .sort((left, right) => {
     const leftKey = `${left.kind}:${left.name}`;
     const rightKey = `${right.kind}:${right.name}`;
