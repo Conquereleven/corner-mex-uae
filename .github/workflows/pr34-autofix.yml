@@ -58,8 +58,8 @@ jobs:
 
           p = Path("src/routes/_authenticated/admin.products.index.tsx")
           s = p.read_text()
-          s = s.replace("(product: any)", "(product)")
-          s = s.replace("(item: any)", "(item)")
+          s = s.replace("product: any", "product")
+          s = s.replace("item: any", "item")
           p.write_text(s)
           PY
       - name: Autofix changed files
