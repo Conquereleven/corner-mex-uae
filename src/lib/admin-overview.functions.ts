@@ -20,24 +20,25 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
       now.getDate(),
     ).toISOString();
 
-    const [orders, products, items, buyers, recent, lowStock] = await Promise.all([
-      supabaseAdmin
-        .from("orders")
-        .select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id")
-        .gte("created_at", since60),
-      supabaseAdmin.from("products").select("id, status"),
-      supabaseAdmin
-        .from("order_items")
-        .select("product_id, product_name, qty, line_total_aed")
-        .limit(5000),
-      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
-      supabaseAdmin
-        .from("orders")
-        .select("id, order_number, total_aed, status, payment_status, created_at")
-        .order("created_at", { ascending: false })
-        .limit(8),
-      supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
-    ]);
+    const [orders, products, items, buyers, recent, lowStock] =
+      await Promise.all([
+        supabaseAdmin
+          .from("orders")
+          .select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id")
+          .gte("created_at", since60),
+        supabaseAdmin.from("products").select("id, status"),
+        supabaseAdmin
+          .from("order_items")
+          .select("product_id, product_name, qty, line_total_aed")
+          .limit(5000),
+        supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
+        supabaseAdmin
+          .from("orders")
+          .select("id, order_number, total_aed, status, payment_status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(8),
+        supabaseAdmin.from("product_variants").select("product_id, stock").lte("stock", 5),
+      ]);
 
     for (const result of [orders, products, items, recent, lowStock]) {
       if (result.error) throw new Error("CM_ADMIN_OVERVIEW_QUERY_FAILED");
@@ -55,9 +56,7 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
     const gmv30 = +totalAed(o30).toFixed(2);
     const gmvPrev30 = +totalAed(o60to30).toFixed(2);
     const gmvDelta =
-      gmvPrev30 > 0
-        ? +(((gmv30 - gmvPrev30) / gmvPrev30) * 100).toFixed(1)
-        : null;
+      gmvPrev30 > 0 ? +(((gmv30 - gmvPrev30) / gmvPrev30) * 100).toFixed(1) : null;
 
     const statusBreakdown = ORDER_STATES.map((status) => ({
       status,
@@ -75,7 +74,10 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
       }, {}),
     ).map(([method, count]) => ({ method, count }));
 
-    const productAgg = new Map<string, { name: string; units: number; gmv: number }>();
+    const productAgg = new Map<
+      string,
+      { name: string; units: number; gmv: number }
+    >();
     for (const item of items.data ?? []) {
       const current = productAgg.get(item.product_id) ?? {
         name: item.product_name,
@@ -116,9 +118,8 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
       activeProducts: allProducts.filter((product) => product.status === "active").length,
       draftProducts: allProducts.filter((product) => product.status === "draft").length,
       lowStockCount: (lowStock.data ?? []).length,
-      pendingFulfillment: allOrders.filter((order) =>
-        pendingFulfillmentStates.has(order.status),
-      ).length,
+      pendingFulfillment: allOrders.filter((order) => pendingFulfillmentStates.has(order.status))
+        .length,
       statusBreakdown,
       paymentBreakdown,
       methodBreakdown,
