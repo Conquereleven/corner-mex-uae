@@ -562,7 +562,11 @@ test("remaining inherited email sender routes through the canonical capability g
     /from "@\/lib\/external-email\.server"/,
     "shipments.functions.ts must use the canonical external email gate",
   );
-  assert.doesNotMatch(shipments, /connector-gateway/, "shipments must not call the provider directly");
+  assert.doesNotMatch(
+    shipments,
+    /connector-gateway/,
+    "shipments must not call the provider directly",
+  );
   assert.doesNotMatch(
     shipments,
     /X-Connection-Api-Key/,
