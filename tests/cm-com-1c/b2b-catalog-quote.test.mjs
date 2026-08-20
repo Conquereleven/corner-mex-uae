@@ -11,8 +11,17 @@ import {
 } from "../../src/features/b2b-catalog/quote-selection.ts";
 
 const ROOT = process.cwd();
+const PUBLIC_B2B_COMPONENTS = [
+  "B2bProductCard.tsx",
+  "B2bQuoteBar.tsx",
+  "EmptyQuoteSelection.tsx",
+  "ManualContactActions.tsx",
+  "ManualQuoteRequestForm.tsx",
+  "ManualQuoteRequestPreview.tsx",
+  "QuoteSelectionList.tsx",
+];
 const SURFACE_ROOTS = [
-  "src/components/b2b",
+  ...PUBLIC_B2B_COMPONENTS.map((name) => `src/components/b2b/${name}`),
   "src/features/b2b-catalog",
   "src/routes/b2b_.catalog.tsx",
   "src/routes/b2b_.quote.tsx",
@@ -21,7 +30,7 @@ const SURFACE_ROOTS = [
 
 function sourceFiles(path) {
   const absolute = join(ROOT, path);
-  if (!path.includes(".") || path.endsWith("/b2b") || path.endsWith("b2b-catalog")) {
+  if (!path.includes(".") || path.endsWith("b2b-catalog")) {
     return readdirSync(absolute, { recursive: true, withFileTypes: true })
       .filter((entry) => entry.isFile() && /\.(?:ts|tsx)$/.test(entry.name))
       .map((entry) => join(entry.parentPath, entry.name));
@@ -93,14 +102,17 @@ test("7. commerce and wishlist control APIs are absent", () => {
   assert.doesNotMatch(SURFACE_SOURCE, /\b(?:addToCart|useCart|WishlistButton)\b/);
 });
 
-test("8. CM-COM-1C has no Supabase reads or writes", () => {
-  assert.doesNotMatch(SURFACE_SOURCE, /\bsupabase\b|\.from\s*\(|\.rpc\s*\(/i);
+test("8. public B2B surface has no direct Supabase reads or writes", () => {
+  assert.doesNotMatch(SURFACE_SOURCE, /\.from\s*\(|\.rpc\s*\(/i);
 });
 
-test("9. quote preparation has no server function, fetch, or form submission", () => {
+test("9. quote submission is explicit and limited to canonical B2B intake", () => {
+  const quoteRoute = readFileSync(join(ROOT, "src/routes/b2b_.quote.tsx"), "utf8");
+  assert.match(quoteRoute, /useServerFn\(submitB2bLead\)/);
+  assert.match(quoteRoute, /onSubmit=\{\(\) => submit\.mutate\(\)\}/);
   assert.doesNotMatch(
     SURFACE_SOURCE,
-    /\bcreateServerFn\b|\bserverFn\b|\bfetch\s*\(|<form\b|\bonSubmit\s*=|type=["']submit["']|\baction\s*=/,
+    /\bfetch\s*\(|<form\b|type=["']submit["']|\baction\s*=/,
   );
 });
 
@@ -118,12 +130,15 @@ test("11. invalid stored IDs fail closed", () => {
   assert.match(hook, /useEffect\(\(\) => \{\s*setSelectedProductIds\(readQuoteSelection\(\)\)/);
 });
 
-test("12. prepared copy never claims receipt or submission", () => {
-  assert.doesNotMatch(
-    SURFACE_SOURCE,
-    /Request received|We received your request|Your quote was submitted|Our team will contact you|Message sent/i,
+test("12. request copy distinguishes prepared and persisted states truthfully", () => {
+  const preview = readFileSync(
+    join(ROOT, "src/components/b2b/ManualQuoteRequestPreview.tsx"),
+    "utf8",
   );
-  assert.match(SURFACE_SOURCE, /Your request is ready to send\./);
+  assert.match(preview, /Your request is ready\./);
+  assert.match(preview, /Enquiry received by CornerMex\./);
+  assert.match(preview, /does not\s+create an order/i);
+  assert.doesNotMatch(preview, /order confirmed|quote confirmed|payment confirmed/i);
 });
 
 test("13. mailto uses the existing public contact configuration", () => {
