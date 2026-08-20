@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  BUSINESS_TYPES,
   QUANTITY_INTERESTS,
   quantityInterestLabel,
   type ManualQuoteRequestErrors,
@@ -46,7 +47,8 @@ export function ManualQuoteRequestForm({
           Tell us about your business
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          These details stay on this page until you choose a manual contact action.
+          Review these details before submitting. CornerMex stores the enquiry only after you press
+          Submit enquiry on the next step.
         </p>
       </div>
 
@@ -55,7 +57,7 @@ export function ManualQuoteRequestForm({
           role="alert"
           className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm"
         >
-          Complete the highlighted fields before preparing the request.
+          Complete the highlighted fields before reviewing the request.
         </div>
       )}
 
@@ -68,6 +70,26 @@ export function ManualQuoteRequestForm({
             className="min-h-11"
             autoComplete="organization"
           />
+        </Field>
+        <Field label="Business type" error={errors.businessType}>
+          <select
+            value={fields.businessType}
+            onChange={(event) =>
+              onChange(
+                "businessType",
+                event.target.value as ManualQuoteRequestFields["businessType"],
+              )
+            }
+            aria-invalid={Boolean(errors.businessType)}
+            className="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="">Select business type</option>
+            {BUSINESS_TYPES.map((businessType) => (
+              <option key={businessType} value={businessType}>
+                {businessType}
+              </option>
+            ))}
+          </select>
         </Field>
         <Field label="Contact person" error={errors.contactPerson}>
           <Input
@@ -111,12 +133,11 @@ export function ManualQuoteRequestForm({
             autoComplete="email"
           />
         </Field>
-        <Field label="Phone or WhatsApp" error={errors.phone}>
+        <Field label="Phone or WhatsApp">
           <Input
             type="tel"
             value={fields.phone}
             onChange={(event) => onChange("phone", event.target.value)}
-            aria-invalid={Boolean(errors.phone)}
             className="min-h-11"
             autoComplete="tel"
           />
@@ -144,7 +165,7 @@ export function ManualQuoteRequestForm({
             value={fields.notes}
             onChange={(event) => onChange("notes", event.target.value)}
             className="min-h-28 resize-y"
-            placeholder="Products, presentation preferences, or other context"
+            placeholder="Products, presentation preferences, target volume, or other context"
           />
         </Field>
       </div>
@@ -157,7 +178,7 @@ export function ManualQuoteRequestForm({
         disabled={selectedCount === 0}
         className="mt-7 min-h-11 w-full rounded-full sm:w-auto"
       >
-        <ClipboardCheck className="me-2 h-4 w-4" /> Prepare quote request
+        <ClipboardCheck className="me-2 h-4 w-4" /> Review quote request
       </Button>
     </section>
   );
