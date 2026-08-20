@@ -39,18 +39,19 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
       if (result.error) throw new Error("CM_ADMIN_OVERVIEW_QUERY_FAILED");
     }
 
-    const allOrders = (orders.data ?? []) as any[];
-    const sum = (xs: any[], key: string) =>
-      xs.reduce((total: number, row: any) => total + Number(row[key] ?? 0), 0);
+    const allOrders = orders.data ?? [];
+    const totalAed = (rows: typeof allOrders) =>
+      rows.reduce((total, row) => total + Number(row.total_aed ?? 0), 0);
     const inWindow = (iso: string, fromIso: string) => iso >= fromIso;
     const o30 = allOrders.filter((order) => inWindow(order.created_at, since30));
     const o60to30 = allOrders.filter((order) => order.created_at < since30);
     const o7 = allOrders.filter((order) => inWindow(order.created_at, since7));
     const oToday = allOrders.filter((order) => inWindow(order.created_at, startToday));
 
-    const gmv30 = +sum(o30, "total_aed").toFixed(2);
-    const gmvPrev30 = +sum(o60to30, "total_aed").toFixed(2);
-    const gmvDelta = gmvPrev30 > 0 ? +(((gmv30 - gmvPrev30) / gmvPrev30) * 100).toFixed(1) : null;
+    const gmv30 = +totalAed(o30).toFixed(2);
+    const gmvPrev30 = +totalAed(o60to30).toFixed(2);
+    const gmvDelta =
+      gmvPrev30 > 0 ? +(((gmv30 - gmvPrev30) / gmvPrev30) * 100).toFixed(1) : null;
 
     const statusBreakdown = ORDER_STATES.map((status) => ({
       status,
@@ -61,15 +62,15 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
       count: allOrders.filter((order) => order.payment_status === status).length,
     }));
     const methodBreakdown = Object.entries(
-      allOrders.reduce((acc: Record<string, number>, order: any) => {
+      allOrders.reduce<Record<string, number>>((acc, order) => {
         const key = order.payment_method ?? "unknown";
         acc[key] = (acc[key] ?? 0) + 1;
         return acc;
       }, {}),
-    ).map(([method, count]) => ({ method, count: Number(count) }));
+    ).map(([method, count]) => ({ method, count }));
 
     const productAgg = new Map<string, { name: string; units: number; gmv: number }>();
-    for (const item of (items.data ?? []) as any[]) {
+    for (const item of items.data ?? []) {
       const current = productAgg.get(item.product_id) ?? {
         name: item.product_name,
         units: 0,
@@ -97,8 +98,8 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
     return {
       gmv30,
       gmvDelta,
-      gmvToday: +sum(oToday, "total_aed").toFixed(2),
-      gmv7: +sum(o7, "total_aed").toFixed(2),
+      gmvToday: +totalAed(oToday).toFixed(2),
+      gmv7: +totalAed(o7).toFixed(2),
       orders30: o30.length,
       orders7: o7.length,
       ordersToday: oToday.length,
@@ -106,10 +107,11 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
       buyers: buyers.count ?? 0,
       uniqueBuyers30,
       products: allProducts.length,
-      activeProducts: allProducts.filter((product: any) => product.status === "active").length,
-      draftProducts: allProducts.filter((product: any) => product.status === "draft").length,
+      activeProducts: allProducts.filter((product) => product.status === "active").length,
+      draftProducts: allProducts.filter((product) => product.status === "draft").length,
       lowStockCount: (lowStock.data ?? []).length,
-      pendingFulfillment: allOrders.filter((order) => pendingFulfillmentStates.has(order.status)).length,
+      pendingFulfillment: allOrders.filter((order) => pendingFulfillmentStates.has(order.status))
+        .length,
       statusBreakdown,
       paymentBreakdown,
       methodBreakdown,
