@@ -2,6 +2,13 @@
   "contractVersion": "application-schema-reference-extensions-v1",
   "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
   "baseContractVersion": "application-schema-reference-baseline-v1",
+  "fileRemovals": [
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "b2b_leads",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    }
+  ],
   "fileAdditions": [
     {
       "kind": "table_or_storage_bucket",
