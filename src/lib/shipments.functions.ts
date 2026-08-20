@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin } from "@/lib/admin-authorization.server";
+import { isExternalEmailEnabled } from "@/lib/external-email.server";
+import { siteOrigin } from "@/lib/site-url";
 
 const SHIPMENT_CAPABILITY_UNAVAILABLE = "CM_SHIPMENT_CAPABILITY_UNAVAILABLE";
 const SELLER_CAPABILITY_UNAVAILABLE = "CM_SELLER_CAPABILITY_UNAVAILABLE";
@@ -25,16 +27,22 @@ const SendOrderEmail = z.object({
 });
 
 /**
- * The historical shipment email server function had no authentication boundary.
- * Shipment email delivery is now fail-closed until the canonical shipment model
- * and transactional-email outbox are activated.
+ * Shipment email remains behind the canonical external-email capability gate,
+ * but execution is additionally fail-closed while canonical shipment authority
+ * and transactional delivery infrastructure are absent.
  */
 export const sendOrderEmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof SendOrderEmail>) => SendOrderEmail.parse(input))
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
-    throw new Error(SHIPMENT_CAPABILITY_UNAVAILABLE);
+    return {
+      ok: false as const,
+      skipped: true as const,
+      reason: SHIPMENT_CAPABILITY_UNAVAILABLE,
+      externalEmailEnabled: isExternalEmailEnabled(),
+      applicationOrigin: siteOrigin(),
+    };
   });
 
 export const sellerListShipments = createServerFn({ method: "GET" })
