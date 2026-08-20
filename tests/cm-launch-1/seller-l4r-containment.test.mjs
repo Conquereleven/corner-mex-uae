@@ -27,7 +27,9 @@ test("L4R contains every server function exported from legacy seller.functions",
     true,
   );
   assert.equal(
-    isSellerCapabilityServerFn(meta("setOrderItemStatus", "C:\\repo\\src\\lib\\seller.functions.ts")),
+    isSellerCapabilityServerFn(
+      meta("setOrderItemStatus", "C:\\repo\\src\\lib\\seller.functions.ts"),
+    ),
     true,
   );
   assert.equal(
@@ -42,11 +44,15 @@ test("L4R contains seller entry points living in shared modules", () => {
     true,
   );
   assert.equal(
-    isSellerCapabilityServerFn(meta("sellerCreateShipment", "/workspace/src/lib/shipments.functions.ts")),
+    isSellerCapabilityServerFn(
+      meta("sellerCreateShipment", "/workspace/src/lib/shipments.functions.ts"),
+    ),
     true,
   );
   assert.equal(
-    isSellerCapabilityServerFn(meta("sellerUpdateShipment", "/workspace/src/lib/shipments.functions.ts")),
+    isSellerCapabilityServerFn(
+      meta("sellerUpdateShipment", "/workspace/src/lib/shipments.functions.ts"),
+    ),
     true,
   );
 });
