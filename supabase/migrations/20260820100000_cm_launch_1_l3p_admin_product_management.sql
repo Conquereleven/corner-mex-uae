@@ -131,6 +131,7 @@ as $$
 declare
   v_actor uuid := auth.uid();
   v_variant_id uuid;
+  v_reserved integer := 0;
 begin
   if v_actor is null or not exists (
     select 1 from public.user_roles
@@ -149,6 +150,16 @@ begin
   end if;
   if not exists (select 1 from public.products where id = p_product_id) then
     raise exception 'CM_ADMIN_PRODUCT_NOT_FOUND';
+  end if;
+
+  if p_variant_id is not null then
+    select coalesce(i.quantity_reserved, 0)
+      into v_reserved
+      from public.product_variants v
+      left join public.inventory i on i.variant_id = v.id
+     where v.id = p_variant_id and v.product_id = p_product_id;
+    if not found then raise exception 'CM_ADMIN_VARIANT_NOT_FOUND'; end if;
+    if p_stock < v_reserved then raise exception 'CM_ADMIN_PRODUCT_STOCK_BELOW_RESERVED'; end if;
   end if;
 
   if p_variant_id is null then
@@ -173,7 +184,6 @@ begin
            updated_at = now()
      where id = p_variant_id and product_id = p_product_id
      returning id into v_variant_id;
-    if v_variant_id is null then raise exception 'CM_ADMIN_VARIANT_NOT_FOUND'; end if;
   end if;
 
   if p_is_default then
@@ -194,3 +204,109 @@ $$;
 
 revoke all on function public.admin_upsert_product_variant_v1(uuid, uuid, text, text, integer, numeric, numeric, integer, boolean, boolean) from public, anon, service_role;
 grant execute on function public.admin_upsert_product_variant_v1(uuid, uuid, text, text, integer, numeric, numeric, integer, boolean, boolean) to authenticated;
+
+create or replace function public.admin_import_product_row_v1(
+  p_slug text,
+  p_name_en text,
+  p_name_es text,
+  p_name_ar text,
+  p_description_en text,
+  p_brand text,
+  p_origin_region text,
+  p_spice_level integer,
+  p_is_bulk boolean,
+  p_is_halal boolean,
+  p_status text,
+  p_category_slug text,
+  p_sku text,
+  p_format_label text,
+  p_weight_grams integer,
+  p_price_aed numeric,
+  p_compare_at_price_aed numeric,
+  p_stock integer,
+  p_image_urls jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_product_id uuid;
+  v_variant_id uuid;
+  v_category_id uuid;
+  v_created boolean := false;
+  v_image_url text;
+begin
+  if v_actor is null or not exists (
+    select 1 from public.user_roles
+    where user_id = v_actor and role = 'admin'
+  ) then
+    raise exception 'CM_ADMIN_ROLE_REQUIRED';
+  end if;
+
+  if p_category_slug is not null and length(trim(p_category_slug)) > 0 then
+    select id into v_category_id
+      from public.categories
+     where slug = p_category_slug and is_active = true;
+    if v_category_id is null then raise exception 'CM_ADMIN_PRODUCT_CATEGORY_INVALID'; end if;
+  end if;
+
+  select id into v_product_id from public.products where slug = p_slug;
+  if v_product_id is null then
+    v_created := true;
+    v_product_id := public.admin_upsert_product_v1(
+      null, p_slug, p_name_en, p_name_es, p_name_ar,
+      p_description_en, null, null, p_brand, p_origin_region,
+      p_spice_level, p_is_bulk, p_is_halal, 'draft', v_category_id, '{}'::jsonb
+    );
+  end if;
+
+  select id into v_variant_id
+    from public.product_variants
+   where product_id = v_product_id
+   order by is_default desc, created_at asc
+   limit 1;
+
+  perform public.admin_upsert_product_variant_v1(
+    v_product_id, v_variant_id, p_sku, p_format_label, p_weight_grams,
+    p_price_aed, p_compare_at_price_aed, p_stock, true, true
+  );
+
+  perform public.admin_upsert_product_v1(
+    v_product_id, p_slug, p_name_en, p_name_es, p_name_ar,
+    p_description_en, null, null, p_brand, p_origin_region,
+    p_spice_level, p_is_bulk, p_is_halal, p_status, v_category_id, '{}'::jsonb
+  );
+
+  if p_image_urls is not null and jsonb_typeof(p_image_urls) <> 'array' then
+    raise exception 'CM_ADMIN_PRODUCT_IMAGES_INVALID';
+  end if;
+  if p_image_urls is not null and jsonb_array_length(p_image_urls) > 8 then
+    raise exception 'CM_ADMIN_PRODUCT_IMAGE_LIMIT';
+  end if;
+  if p_image_urls is not null and jsonb_array_length(p_image_urls) > 0 then
+    delete from public.product_images where product_id = v_product_id;
+    for v_image_url in select jsonb_array_elements_text(p_image_urls)
+    loop
+      if v_image_url !~ '^https?://' then raise exception 'CM_ADMIN_PRODUCT_IMAGE_URL_INVALID'; end if;
+      insert into public.product_images (product_id, url, sort_order)
+      values (
+        v_product_id,
+        v_image_url,
+        (select count(*) from public.product_images where product_id = v_product_id)
+      );
+    end loop;
+  end if;
+
+  return jsonb_build_object(
+    'product_id', v_product_id,
+    'created', v_created,
+    'effective_status', p_status
+  );
+end;
+$$;
+
+revoke all on function public.admin_import_product_row_v1(text, text, text, text, text, text, text, integer, boolean, boolean, text, text, text, text, integer, numeric, numeric, integer, jsonb) from public, anon, service_role;
+grant execute on function public.admin_import_product_row_v1(text, text, text, text, text, text, text, integer, boolean, boolean, text, text, text, text, integer, numeric, numeric, integer, jsonb) to authenticated;
