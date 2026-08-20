@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertAdmin } from "@/lib/admin-authorization.server";
 
 export const listProductReviews = createServerFn({ method: "GET" })
   .inputValidator((i: { productId: string; limit?: number }) =>
@@ -60,10 +61,7 @@ export const getReviewableItems = createServerFn({ method: "GET" })
       .in("order_item_id", itemIds);
     const reviewedSet = new Set((reviewed ?? []).map((r: any) => r.order_item_id));
     const productIds = Array.from(new Set(items.map((i) => i.product_id)));
-    const { data: prods } = await supabaseAdmin
-      .from("products")
-      .select("id, slug")
-      .in("id", productIds);
+    const { data: prods } = await supabaseAdmin.from("products").select("id, slug").in("id", productIds);
     const slugs: Record<string, string> = {};
     for (const p of prods ?? []) slugs[p.id] = (p as any).slug;
     return items
@@ -90,7 +88,6 @@ export const submitReview = createServerFn({ method: "POST" })
     }).parse(i))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    // Find a delivered order_item the user owns for this product, without an existing review.
     const { data: candidates } = await supabaseAdmin
       .from("order_items")
       .select("id, order_id, orders!inner(buyer_id, status, created_at)")
@@ -102,7 +99,6 @@ export const submitReview = createServerFn({ method: "POST" })
     if (items.length === 0) {
       throw new Error("Solo puedes reseñar productos que compraste.");
     }
-    // Reuse the user's existing review for this product if any, else pick the newest delivered item
     const { data: existing } = await supabaseAdmin
       .from("product_reviews")
       .select("id, order_item_id")
@@ -149,18 +145,24 @@ export const myReviewForProduct = createServerFn({ method: "GET" })
 export const adminListReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { status?: string }) => z.object({ status: z.string().optional() }).parse(i ?? {}))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
     let q = supabaseAdmin
       .from("product_reviews")
       .select("id, rating, title, body, status, created_at, product_id, buyer_id")
       .order("created_at", { ascending: false })
       .limit(200);
     if (data.status) q = q.eq("status", data.status as any);
-    const { data: rows } = await q;
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
     const pids = Array.from(new Set((rows ?? []).map((r) => r.product_id)));
     const products: Record<string, string> = {};
     if (pids.length) {
-      const { data: ps } = await supabaseAdmin.from("products").select("id, slug").in("id", pids);
+      const { data: ps, error: productsError } = await supabaseAdmin
+        .from("products")
+        .select("id, slug")
+        .in("id", pids);
+      if (productsError) throw new Error(productsError.message);
       for (const p of ps ?? []) products[p.id] = p.slug;
     }
     return (rows ?? []).map((r) => ({ ...r, product_slug: products[r.product_id] ?? null }));
@@ -170,8 +172,15 @@ export const adminSetReviewStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { id: string; status: "pending" | "approved" | "hidden" }) =>
     z.object({ id: z.string().uuid(), status: z.enum(["pending", "approved", "hidden"]) }).parse(i))
-  .handler(async ({ data }) => {
-    const { error } = await supabaseAdmin.from("product_reviews").update({ status: data.status }).eq("id", data.id);
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: updated, error } = await supabaseAdmin
+      .from("product_reviews")
+      .update({ status: data.status })
+      .eq("id", data.id)
+      .select("id")
+      .maybeSingle();
     if (error) throw new Error(error.message);
+    if (!updated) throw new Error("CM_REVIEW_NOT_FOUND");
     return { ok: true };
   });
