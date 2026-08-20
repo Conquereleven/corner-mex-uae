@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertAdmin } from "@/lib/admin-authorization.server";
+
+const NEWSLETTER_CAPABILITY_UNAVAILABLE = "CM_NEWSLETTER_CAPABILITY_UNAVAILABLE";
 
 const EmailSchema = z.object({
   email: z.string().email().max(254),
@@ -10,23 +12,16 @@ const EmailSchema = z.object({
 });
 
 export const subscribeNewsletter = createServerFn({ method: "POST" })
-  .inputValidator((i: z.input<typeof EmailSchema>) => EmailSchema.parse(i))
-  .handler(async ({ data }) => {
-    const email = data.email.trim().toLowerCase();
-    const { error } = await supabaseAdmin
-      .from("newsletter_subscribers")
-      .upsert({ email, locale: data.locale, source: data.source ?? "footer", status: "subscribed" }, { onConflict: "email" });
-    if (error) throw new Error(error.message);
-    return { ok: true };
+  .inputValidator((input: z.input<typeof EmailSchema>) => EmailSchema.parse(input))
+  .handler(async () => {
+    // Do not pretend a subscription succeeded while the canonical subscriber
+    // authority is absent from production.
+    throw new Error(NEWSLETTER_CAPABILITY_UNAVAILABLE);
   });
 
 export const adminListNewsletter = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { data } = await supabaseAdmin
-      .from("newsletter_subscribers")
-      .select("id, email, locale, source, status, created_at")
-      .order("created_at", { ascending: false })
-      .limit(500);
-    return data ?? [];
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    throw new Error(NEWSLETTER_CAPABILITY_UNAVAILABLE);
   });
