@@ -555,40 +555,55 @@ test("capability on without provider configuration still sends nothing", async (
   assert.equal(called, 0);
 });
 
-test("both inherited senders route through the canonical capability gate", async () => {
-  for (const name of ["shipments.functions.ts", "b2b-leads.functions.ts"]) {
-    const text = await read(`src/lib/${name}`);
-    assert.match(
-      text,
-      /from "@\/lib\/external-email\.server"/,
-      `${name} must use the canonical external email gate`,
-    );
-    // No sender may talk to the provider directly any more.
-    assert.doesNotMatch(text, /connector-gateway/, `${name} must not call the provider directly`);
-    assert.doesNotMatch(text, /X-Connection-Api-Key/, `${name} must not build provider headers`);
-    assert.doesNotMatch(
-      text,
-      /process\.env\.RESEND_API_KEY/,
-      `${name} must not read provider keys directly`,
-    );
-  }
-  // The B2B sender additionally short-circuits before composing anything.
+test("remaining inherited email sender routes through the canonical capability gate", async () => {
+  const shipments = await read("src/lib/shipments.functions.ts");
+  assert.match(
+    shipments,
+    /from "@\/lib\/external-email\.server"/,
+    "shipments.functions.ts must use the canonical external email gate",
+  );
+  assert.doesNotMatch(shipments, /connector-gateway/, "shipments must not call the provider directly");
+  assert.doesNotMatch(
+    shipments,
+    /X-Connection-Api-Key/,
+    "shipments must not build provider headers",
+  );
+  assert.doesNotMatch(
+    shipments,
+    /process\.env\.RESEND_API_KEY/,
+    "shipments must not read provider keys directly",
+  );
+
   const b2b = await read("src/lib/b2b-leads.functions.ts");
-  assert.match(b2b, /if \(!isExternalEmailEnabled\(\)\)/);
+  assert.doesNotMatch(
+    b2b,
+    /external-email\.server|sendExternalEmail|isExternalEmailEnabled/,
+    "L5R B2B pipeline must have no outbound email capability",
+  );
+  assert.doesNotMatch(b2b, /connector-gateway|X-Connection-Api-Key|RESEND_API_KEY/);
 });
 
-test("the inherited email templates make no unauthorized commercial promise", async () => {
+test("B2B customer copy makes no unauthorized commercial promise", async () => {
   const b2b = await read("src/lib/b2b-leads.functions.ts");
+  assert.doesNotMatch(
+    b2b,
+    /sendExternalEmail|mailto\(|PUBLIC_CONTACT\.b2b/,
+    "canonical B2B lead persistence must not compose or send customer outreach",
+  );
+
+  const preview = await read("src/components/b2b/ManualQuoteRequestPreview.tsx");
+  const formatter = await read("src/features/b2b-catalog/manual-quote-request.ts");
+  const customerCopy = `${preview}\n${formatter}`;
   for (const pattern of [
     /within one business day/i,
     /business day/i,
     /delivery SLAs?/i,
     /guaranteed/i,
   ]) {
-    assert.doesNotMatch(b2b, pattern, `unauthorized promise in b2b email: ${pattern}`);
+    assert.doesNotMatch(customerCopy, pattern, `unauthorized B2B promise: ${pattern}`);
   }
-  assert.match(b2b, /not an order, a quote, or a commitment/i);
-  assert.match(b2b, /PUBLIC_CONTACT\.b2b/, "email contact must come from the registry");
+  assert.match(customerCopy, /not an order or confirmed quote/i);
+  assert.match(preview, /does not\s+create an order/i);
 });
 
 test("no application source falls back to an unowned origin for emails", async () => {
