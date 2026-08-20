@@ -24,9 +24,51 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Autofix changed TypeScript
+      - name: Remove explicit-any debt with narrow structural types
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path("src/lib/admin-products.functions.ts")
+          s = p.read_text()
+          marker = 'import { assertAdmin } from "@/lib/admin-authorization.server";\n'
+          addition = '''\n\ntype ProductWriteRpcClient = {\n  rpc: (\n    fn: "admin_upsert_product_v1" | "admin_upsert_product_variant_v1",\n    args: Record<string, unknown>,\n  ) => PromiseLike<{ data: string | null; error: { message?: string } | null }>;\n};\n'''
+          if "type ProductWriteRpcClient" not in s:
+              s = s.replace(marker, marker + addition)
+          s = s.replace("(context.supabase as any).rpc", "(context.supabase as unknown as ProductWriteRpcClient).rpc")
+          p.write_text(s)
+
+          p = Path("src/lib/admin-products-import.functions.ts")
+          s = p.read_text()
+          marker = 'import { assertAdmin } from "@/lib/admin-authorization.server";\n'
+          addition = '''\n\ntype ProductImportRpcClient = {\n  rpc: (\n    fn: "admin_import_product_row_v1",\n    args: Record<string, unknown>,\n  ) => PromiseLike<{ data: { created?: boolean } | null; error: { message?: string } | null }>;\n};\n'''
+          if "type ProductImportRpcClient" not in s:
+              s = s.replace(marker, marker + addition)
+          s = s.replace("(context.supabase as any).rpc", "(context.supabase as unknown as ProductImportRpcClient).rpc")
+          p.write_text(s)
+
+          p = Path("src/routes/_authenticated/admin.products.$id.tsx")
+          s = p.read_text()
+          s = s.replace('product={query.data.product as any}', 'product={query.data.product as Parameters<typeof AdminProductEditor>[0]["product"]}')
+          s = s.replace('translations={query.data.translations as any}', 'translations={query.data.translations as Parameters<typeof AdminProductEditor>[0]["translations"]}')
+          s = s.replace('variants={query.data.variants as any}', 'variants={query.data.variants as Parameters<typeof AdminProductEditor>[0]["variants"]}')
+          s = s.replace('images={query.data.images as any}', 'images={query.data.images as Parameters<typeof AdminProductEditor>[0]["images"]}')
+          s = s.replace('categories={query.data.categories as any}', 'categories={query.data.categories as Parameters<typeof AdminProductEditor>[0]["categories"]}')
+          p.write_text(s)
+
+          p = Path("src/routes/_authenticated/admin.products.index.tsx")
+          s = p.read_text()
+          s = s.replace("(product: any)", "(product)")
+          s = s.replace("(item: any)", "(item)")
+          p.write_text(s)
+          PY
+      - name: Autofix changed files
         run: |
           npx eslint --fix \
+            scripts/supabase/application-schema-reference-contract.mjs \
+            scripts/supabase/generate-application-schema-reference-baseline.mjs \
+            scripts/supabase/validate-application-schema-references.mjs \
+            scripts/supabase/validate-migration-ownership.mjs \
             src/components/site/AdminProductEditor.tsx \
             src/lib/admin-products-import.functions.ts \
             src/lib/admin-products.functions.ts \
@@ -34,9 +76,9 @@ jobs:
             src/routes/_authenticated/admin.products.import.tsx \
             src/routes/_authenticated/admin.products.index.tsx \
             src/routes/_authenticated/admin.products.new.tsx \
-            src/routes/_authenticated/admin.tsx || true
-      - name: Regenerate TanStack route tree
-        run: npm run generate:routes
+            src/routes/_authenticated/admin.tsx
+      - name: Regenerate TanStack route tree through Vite build
+        run: npm run build
       - name: Commit deterministic fixes
         run: |
           if git diff --quiet; then
@@ -47,6 +89,10 @@ jobs:
           git config user.name "corner-mex-ci"
           git config user.email "actions@users.noreply.github.com"
           git add \
+            scripts/supabase/application-schema-reference-contract.mjs \
+            scripts/supabase/generate-application-schema-reference-baseline.mjs \
+            scripts/supabase/validate-application-schema-references.mjs \
+            scripts/supabase/validate-migration-ownership.mjs \
             src/components/site/AdminProductEditor.tsx \
             src/lib/admin-products-import.functions.ts \
             src/lib/admin-products.functions.ts \
@@ -56,5 +102,5 @@ jobs:
             src/routes/_authenticated/admin.products.new.tsx \
             src/routes/_authenticated/admin.tsx \
             src/routeTree.gen.ts
-          git commit -m "style: format admin product management and regenerate routes"
+          git commit -m "fix: harden and format admin product management"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
