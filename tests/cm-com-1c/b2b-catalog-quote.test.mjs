@@ -3,10 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import test from "node:test";
 
-import {
-  B2B_CATEGORIES,
-  WAVE_1_PRODUCTS,
-} from "../../src/features/b2b-catalog/wave1-products.ts";
+import { B2B_CATEGORIES, WAVE_1_PRODUCTS } from "../../src/features/b2b-catalog/wave1-products.ts";
 import {
   QUOTE_SELECTION_STORAGE_KEY,
   readQuoteSelection,
@@ -116,10 +113,7 @@ test("9. quote submission is explicit and limited to canonical B2B intake", () =
   const quoteRoute = readFileSync(join(ROOT, "src/routes/b2b_.quote.tsx"), "utf8");
   assert.match(quoteRoute, /useServerFn\(submitB2bLead\)/);
   assert.match(quoteRoute, /onSubmit=\{\(\) => submit\.mutate\(\)\}/);
-  assert.doesNotMatch(
-    SURFACE_SOURCE,
-    /\bfetch\s*\(|<form\b|type=["']submit["']|\baction\s*=/,
-  );
+  assert.doesNotMatch(SURFACE_SOURCE, /\bfetch\s*\(|<form\b|type=["']submit["']|\baction\s*=/);
 });
 
 test("10. session storage key is exact", () => {
