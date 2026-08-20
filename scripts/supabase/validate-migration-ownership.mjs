@@ -66,7 +66,9 @@ for (const item of extensions.migrations ?? []) {
   if (item.requiresFounderProductionGate !== true)
     errors.push(`canonical extension lacks Founder production gate: ${item.filename}`);
 
-  const expectedProduction = EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS.get(item.filename);
+  const expectedProduction = EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS.get(
+    item.filename,
+  );
   if (item.productionApplied === true) {
     if (!expectedProduction) {
       errors.push(`unverified canonical extension claims production application: ${item.filename}`);
@@ -82,7 +84,10 @@ for (const item of extensions.migrations ?? []) {
       }
     }
 
-    if (typeof item.productionVersion === "string" && typeof item.purpose === "string") {
+    if (
+      typeof item.productionVersion === "string" &&
+      typeof item.purpose === "string"
+    ) {
       extensionProductionMigrations.push([item.productionVersion, item.purpose]);
     }
   } else if (item.productionApplied === false) {
@@ -97,7 +102,9 @@ for (const item of extensions.migrations ?? []) {
   }
 }
 for (const filename of EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS.keys()) {
-  if (!(extensions.migrations ?? []).some((item) => item.filename === filename)) {
+  if (
+    !(extensions.migrations ?? []).some((item) => item.filename === filename)
+  ) {
     errors.push(`verified canonical production extension missing: ${filename}`);
   }
 }
@@ -160,7 +167,10 @@ const recordedProductionMigrations = [
 const expectedProductionMigrations = [...EXPECTED_PRODUCTION_MIGRATIONS].sort(
   ([a], [b]) => a.localeCompare(b),
 );
-if (JSON.stringify(recordedProductionMigrations) !== JSON.stringify(expectedProductionMigrations)) {
+if (
+  JSON.stringify(recordedProductionMigrations) !==
+  JSON.stringify(expectedProductionMigrations)
+) {
   errors.push("canonical production migration history drift");
 }
 if (
