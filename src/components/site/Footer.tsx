@@ -71,15 +71,16 @@ export function Footer() {
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               B2C cart and account access are available. Checkout and order processing run only when
               authorized configuration is enabled; prices, availability, shipping and payment are
-              confirmed in the applicable flow. B2B quote requests remain manual, and this page does
-              not claim that an order, payment or quote request was processed.
+              confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
+              commercial pipeline for human review, but an enquiry is not an order, payment or
+              confirmed quote and creates no commercial commitment.
             </p>
           </div>
-          <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
+          <Link to="/b2b/catalog">
             <Button variant="outline" className="rounded-full">
-              <Mail className="me-2 h-4 w-4" /> Request a manual quote
+              Request B2B terms
             </Button>
-          </a>
+          </Link>
         </div>
       </div>
 

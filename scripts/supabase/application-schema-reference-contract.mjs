@@ -11,8 +11,8 @@ const BASE_COUNTS = Object.freeze({
 });
 const COMBINED_COUNTS = Object.freeze({
   canonical_supported: 21,
-  lovable_live_only: 21,
-  requires_future_migration: 5,
+  lovable_live_only: 19,
+  requires_future_migration: 13,
 });
 
 export function expandApplicationSchemaReferenceContract(base, extensions) {
@@ -21,6 +21,21 @@ export function expandApplicationSchemaReferenceContract(base, extensions) {
   const byIdentity = new Map(
     references.map((reference) => [`${reference.kind}:${reference.name}`, reference]),
   );
+
+  for (const removal of extensions?.fileRemovals ?? []) {
+    const identity = `${removal.kind}:${removal.name}`;
+    const reference = byIdentity.get(identity);
+    if (!reference) throw new Error(`schema reference removal target missing: ${identity}`);
+    const removedFiles = new Set(removal.files ?? []);
+    reference.files = (reference.files ?? []).filter((file) => !removedFiles.has(file));
+  }
+
+  for (let index = references.length - 1; index >= 0; index -= 1) {
+    const reference = references[index];
+    if ((reference.files ?? []).length > 0) continue;
+    byIdentity.delete(`${reference.kind}:${reference.name}`);
+    references.splice(index, 1);
+  }
 
   for (const addition of extensions?.fileAdditions ?? []) {
     const identity = `${addition.kind}:${addition.name}`;
@@ -56,9 +71,29 @@ export function validateApplicationSchemaReferenceExtensions(base, extensions) {
 
   const allowed = new Set(APPLICATION_REFERENCE_CLASSIFICATIONS);
   const extensionIdentities = new Set();
+  const baseReferences = base.references ?? [];
   const baseIdentities = new Set(
-    (base.references ?? []).map((reference) => `${reference.kind}:${reference.name}`),
+    baseReferences.map((reference) => `${reference.kind}:${reference.name}`),
   );
+  const baseByIdentity = new Map(
+    baseReferences.map((reference) => [`${reference.kind}:${reference.name}`, reference]),
+  );
+
+  for (const removal of extensions.fileRemovals ?? []) {
+    const identity = `${removal.kind}:${removal.name}`;
+    const reference = baseByIdentity.get(identity);
+    if (!reference) errors.push(`schema reference removal target missing: ${identity}`);
+    if (!Array.isArray(removal.files) || removal.files.length === 0) {
+      errors.push(`schema reference removal files missing: ${identity}`);
+      continue;
+    }
+    for (const file of removal.files) {
+      if (!reference?.files?.includes(file)) {
+        errors.push(`schema reference removal file missing from base: ${identity}:${file}`);
+      }
+    }
+  }
+
   for (const addition of extensions.fileAdditions ?? []) {
     const identity = `${addition.kind}:${addition.name}`;
     if (!baseIdentities.has(identity))
@@ -107,7 +142,7 @@ export function validateApplicationSchemaReferenceContract(contract) {
   }
 
   const isCombined = identities.has("function:admin_import_product_row_v1");
-  const expectedCount = isCombined ? 47 : 44;
+  const expectedCount = isCombined ? 53 : 44;
   const expectedCounts = isCombined ? COMBINED_COUNTS : BASE_COUNTS;
   if (contract.references.length !== expectedCount) errors.push("reference count mismatch");
   for (const [classification, expected] of Object.entries(expectedCounts)) {

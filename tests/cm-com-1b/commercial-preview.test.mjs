@@ -31,9 +31,10 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
     footer,
     /Checkout and order processing run only\s+when\s+authorized configuration is enabled/,
   );
-  assert.match(footer, /B2B quote requests remain manual/);
-  assert.match(footer, /does\s+not claim that an order, payment or quote request was processed/);
-  assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote request received/i);
+  assert.match(footer, /B2B enquiries can be submitted/);
+  assert.match(footer, /human review/);
+  assert.match(footer, /not an order, payment or\s+confirmed quote/);
+  assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote confirmed/i);
   assert.match(shop, /Product discovery only/);
   assert.match(home, /UAE commercial preview/);
   assert.doesNotMatch(filters, /In stock only|title="Availability"/);
@@ -43,32 +44,35 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
   assert.doesNotMatch(`${header}\n${footer}`, /to="\/(?:signup|sellers)/);
 });
 
-test("B2B conversion remains manual without order creation or automated messaging", async () => {
-  const paths = [
-    "src/components/site/Footer.tsx",
-    "src/routes/b2b_.lead.tsx",
-    "src/routes/b2b_.catalog.tsx",
-    "src/routes/b2b_.quote.tsx",
-    "src/components/b2b/ManualQuoteRequestForm.tsx",
-    "src/components/b2b/ManualQuoteRequestPreview.tsx",
-  ];
-  const combined = (await Promise.all(paths.map(source))).join("\n");
+test("B2B conversion persists an enquiry without creating orders, payments or automated messaging", async () => {
+  const [quote, leadServer, preview, leadPage, catalog] = await Promise.all([
+    source("src/routes/b2b_.quote.tsx"),
+    source("src/lib/b2b-leads.functions.ts"),
+    source("src/components/b2b/ManualQuoteRequestPreview.tsx"),
+    source("src/routes/b2b_.lead.tsx"),
+    source("src/routes/b2b_.catalog.tsx"),
+  ]);
+  const publicCombined = `${quote}\n${preview}\n${leadPage}\n${catalog}`;
+
+  assert.match(quote, /submitB2bLead/);
+  assert.match(preview, /Submit enquiry to CornerMex/);
+  assert.match(leadServer, /submit_b2b_lead_v1/);
+  assert.match(preview, /does not\s+create an order/i);
+  assert.match(publicCombined, /human/i);
 
   for (const forbidden of [
-    "subscribeNewsletter",
-    "submitB2bLead",
-    "createServerFn",
     "placeOrder",
     "createStripeSession",
     "sendEmail",
     "sendWhatsApp",
     "capturePayment",
-    "supabase",
+    "cornermex-cart-v1",
   ]) {
-    assert.doesNotMatch(combined, new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.doesNotMatch(
+      `${publicCombined}\n${leadServer}`,
+      new RegExp(forbidden.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    );
   }
-  assert.match(combined, /Nothing is submitted, sent, or\s+stored by this page/);
-  assert.match(combined, /reviewed manually/i);
 });
 
 test("canonical URLs are domain-ready and contain no legacy Lovable origin", async () => {

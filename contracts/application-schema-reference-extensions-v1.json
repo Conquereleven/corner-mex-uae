@@ -2,6 +2,28 @@
   "contractVersion": "application-schema-reference-extensions-v1",
   "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
   "baseContractVersion": "application-schema-reference-baseline-v1",
+  "fileRemovals": [
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "b2b_leads",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "user_roles",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_status_history",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_notes",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    }
+  ],
   "fileAdditions": [
     {
       "kind": "table_or_storage_bucket",
@@ -48,6 +70,62 @@
       "kind": "function",
       "name": "admin_upsert_product_variant_v1",
       "files": ["src/lib/admin-products.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "submit_b2b_lead_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_list_b2b_leads_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_get_b2b_lead_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_update_b2b_lead_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_update_b2b_lead_pipeline_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_save_b2b_quote_draft_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_add_b2b_lead_note_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_delete_b2b_lead_note_v1",
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }

@@ -35,7 +35,9 @@ const expected = {
   publicFunctions: 5,
   privateFunctions: 1,
   rlsTables: 22,
-  policies: 38,
+  // L5R retires the direct public b2b_leads intake policy. Enquiries now enter only
+  // through the server-mediated submit_b2b_lead_v1 RPC using the service role.
+  policies: 37,
 };
 if (JSON.stringify(first) !== JSON.stringify(expected))
   throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);
