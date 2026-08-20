@@ -8,6 +8,7 @@
       "files": [
         "scripts/seo-products-editorial.mjs",
         "scripts/seo-products.mjs",
+        "src/lib/admin-overview.functions.ts",
         "src/lib/admin.functions.ts",
         "src/lib/catalog-events.functions.ts",
         "src/lib/catalog.functions.ts",
@@ -50,6 +51,7 @@
       "name": "profiles",
       "files": [
         "src/lib/account.functions.ts",
+        "src/lib/admin-overview.functions.ts",
         "src/lib/admin.functions.ts",
         "src/lib/reviews.functions.ts",
         "src/lib/seller.functions.ts"
@@ -62,6 +64,7 @@
       "name": "user_roles",
       "files": [
         "src/lib/account.functions.ts",
+        "src/lib/admin-authorization.server.ts",
         "src/lib/admin.functions.ts",
         "src/lib/anomaly-cases.functions.ts",
         "src/lib/b2b-leads.functions.ts",
@@ -87,10 +90,7 @@
         "src/lib/coupons.functions.ts",
         "src/lib/csv-import.functions.ts",
         "src/lib/performance.functions.ts",
-        "src/lib/returns.functions.ts",
         "src/lib/seller.functions.ts",
-        "src/lib/shipments.functions.ts",
-        "src/lib/shipping.functions.ts",
         "src/routes/api/public/hooks/auto-payouts.ts",
         "src/routes/api/public/sitemap[.]xml.ts",
         "src/routes/sitemap[.]xml.ts"
@@ -103,6 +103,8 @@
       "name": "orders",
       "files": [
         "src/lib/account.functions.ts",
+        "src/lib/admin-dashboard-counts.functions.ts",
+        "src/lib/admin-overview.functions.ts",
         "src/lib/admin.functions.ts",
         "src/lib/live-view.functions.ts",
         "src/lib/orders.functions.ts",
@@ -136,6 +138,7 @@
       "kind": "table_or_storage_bucket",
       "name": "order_items",
       "files": [
+        "src/lib/admin-overview.functions.ts",
         "src/lib/admin.functions.ts",
         "src/lib/catalog.functions.ts",
         "src/lib/notifications.functions.ts",
@@ -144,7 +147,6 @@
         "src/lib/returns.functions.ts",
         "src/lib/reviews.functions.ts",
         "src/lib/seller.functions.ts",
-        "src/lib/shipments.functions.ts",
         "src/routes/api/public/hooks/auto-payouts.ts"
       ],
       "classification": "canonical_supported",
@@ -154,13 +156,14 @@
       "kind": "table_or_storage_bucket",
       "name": "product_variants",
       "files": [
+        "src/lib/admin-dashboard-counts.functions.ts",
+        "src/lib/admin-overview.functions.ts",
         "src/lib/admin.functions.ts",
         "src/lib/cod-order.functions.ts",
         "src/lib/csv-import.functions.ts",
         "src/lib/orders.functions.ts",
         "src/lib/performance.functions.ts",
-        "src/lib/seller.functions.ts",
-        "src/lib/shipping.functions.ts"
+        "src/lib/seller.functions.ts"
       ],
       "classification": "canonical_supported",
       "rationale": "present_in_canonical_db2_inventory"
@@ -189,8 +192,7 @@
       "kind": "table_or_storage_bucket",
       "name": "shipments",
       "files": [
-        "src/lib/seller.functions.ts",
-        "src/lib/shipments.functions.ts"
+        "src/lib/seller.functions.ts"
       ],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
@@ -209,6 +211,7 @@
       "kind": "table_or_storage_bucket",
       "name": "b2b_leads",
       "files": [
+        "src/lib/admin-dashboard-counts.functions.ts",
         "src/lib/admin.functions.ts",
         "src/lib/b2b-leads.functions.ts"
       ],
@@ -230,6 +233,7 @@
       "kind": "table_or_storage_bucket",
       "name": "product_reviews",
       "files": [
+        "src/lib/admin-dashboard-counts.functions.ts",
         "src/lib/admin.functions.ts",
         "src/lib/catalog.functions.ts",
         "src/lib/reviews.functions.ts"
@@ -242,7 +246,6 @@
       "name": "returns",
       "files": [
         "src/lib/admin.functions.ts",
-        "src/lib/returns.functions.ts",
         "src/lib/seller.functions.ts"
       ],
       "classification": "lovable_live_only",
@@ -330,15 +333,6 @@
     },
     {
       "kind": "table_or_storage_bucket",
-      "name": "promo_banners",
-      "files": [
-        "src/lib/banners.functions.ts"
-      ],
-      "classification": "lovable_live_only",
-      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
-    },
-    {
-      "kind": "table_or_storage_bucket",
       "name": "catalog_events",
       "files": [
         "src/lib/catalog-events.functions.ts",
@@ -395,19 +389,9 @@
     },
     {
       "kind": "table_or_storage_bucket",
-      "name": "newsletter_subscribers",
-      "files": [
-        "src/lib/newsletter.functions.ts"
-      ],
-      "classification": "lovable_live_only",
-      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
-    },
-    {
-      "kind": "table_or_storage_bucket",
       "name": "shipping_zones",
       "files": [
-        "src/lib/orders.functions.ts",
-        "src/lib/shipping.functions.ts"
+        "src/lib/orders.functions.ts"
       ],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
@@ -416,8 +400,7 @@
       "kind": "table_or_storage_bucket",
       "name": "shipping_rates",
       "files": [
-        "src/lib/orders.functions.ts",
-        "src/lib/shipping.functions.ts"
+        "src/lib/orders.functions.ts"
       ],
       "classification": "lovable_live_only",
       "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
@@ -430,15 +413,6 @@
       ],
       "classification": "canonical_supported",
       "rationale": "present_in_canonical_db2_inventory"
-    },
-    {
-      "kind": "table_or_storage_bucket",
-      "name": "order_notifications",
-      "files": [
-        "src/lib/shipments.functions.ts"
-      ],
-      "classification": "lovable_live_only",
-      "rationale": "preexisting_lovable_runtime_reference_not_in_canonical_db2"
     },
     {
       "kind": "function",

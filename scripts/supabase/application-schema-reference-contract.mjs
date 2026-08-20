@@ -6,9 +6,11 @@ export const APPLICATION_REFERENCE_CLASSIFICATIONS = Object.freeze([
 
 const EXPECTED_COUNTS = Object.freeze({
   canonical_supported: 21,
-  lovable_live_only: 24,
+  lovable_live_only: 21,
   requires_future_migration: 2,
 });
+
+const EXPECTED_REFERENCE_COUNT = 44;
 
 export function validateApplicationSchemaReferenceContract(contract) {
   const errors = [];
@@ -32,7 +34,8 @@ export function validateApplicationSchemaReferenceContract(contract) {
       counts[reference.classification] += 1;
     }
   }
-  if (contract.references.length !== 47) errors.push("reference count mismatch");
+  if (contract.references.length !== EXPECTED_REFERENCE_COUNT)
+    errors.push("reference count mismatch");
   for (const [classification, expected] of Object.entries(EXPECTED_COUNTS)) {
     if (counts[classification] !== expected)
       errors.push(`${classification} count mismatch: ${counts[classification]}`);
