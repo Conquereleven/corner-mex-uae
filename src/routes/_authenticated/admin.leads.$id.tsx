@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Copy, Mail, Phone, Trash2 } from "lucide-react";
+import { AdminB2bLeadPipeline } from "@/components/b2b/AdminB2bLeadPipeline";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,12 @@ import {
   adminAddLeadNote,
   adminDeleteLeadNote,
   adminGetB2bLead,
+  adminSaveB2bQuoteDraft,
   adminUpdateB2bLead,
+  adminUpdateB2bLeadPipeline,
   type B2bLead,
+  type B2bLeadPipelineInput,
+  type B2bQuoteDraft,
 } from "@/lib/b2b-leads.functions";
 import {
   allowedB2bLeadTransitions,
@@ -43,6 +48,8 @@ function LeadDetail() {
   const { id } = Route.useParams();
   const getFn = useServerFn(adminGetB2bLead);
   const updateFn = useServerFn(adminUpdateB2bLead);
+  const pipelineFn = useServerFn(adminUpdateB2bLeadPipeline);
+  const quoteFn = useServerFn(adminSaveB2bQuoteDraft);
   const addNoteFn = useServerFn(adminAddLeadNote);
   const deleteNoteFn = useServerFn(adminDeleteLeadNote);
   const queryClient = useQueryClient();
@@ -70,6 +77,24 @@ function LeadDetail() {
       invalidate();
     },
     onError: (error: unknown) => toast.error(errorMessage(error, "Could not update status")),
+  });
+
+  const pipelineMutation = useMutation({
+    mutationFn: (input: B2bLeadPipelineInput) => pipelineFn({ data: input }),
+    onSuccess: () => {
+      toast.success("Pipeline saved");
+      invalidate();
+    },
+    onError: (error: unknown) => toast.error(errorMessage(error, "Could not save pipeline")),
+  });
+
+  const quoteMutation = useMutation({
+    mutationFn: (draft: B2bQuoteDraft | null) => quoteFn({ data: { lead_id: id, draft } }),
+    onSuccess: () => {
+      toast.success("Quote draft saved");
+      invalidate();
+    },
+    onError: (error: unknown) => toast.error(errorMessage(error, "Could not save quote draft")),
   });
 
   const adminNoteMutation = useMutation({
@@ -181,12 +206,20 @@ function LeadDetail() {
               <Field label="Message" value={lead.message} full />
               {lead.contacted_at && (
                 <Field
-                  label="Contacted at"
+                  label="First contacted at"
                   value={new Date(lead.contacted_at).toLocaleString()}
                 />
               )}
             </CardContent>
           </Card>
+
+          <AdminB2bLeadPipeline
+            lead={lead}
+            pipelineSaving={pipelineMutation.isPending}
+            quoteSaving={quoteMutation.isPending}
+            onSavePipeline={(input) => pipelineMutation.mutate(input)}
+            onSaveQuote={(draft) => quoteMutation.mutate(draft)}
+          />
 
           <Card>
             <CardHeader>
