@@ -31,7 +31,7 @@ test("L5R quote drafts are shape-locked at storage", async () => {
   }
 });
 
-test("L5R quote integrity migration stays unapplied and Founder-gated", async () => {
+test("L5R quote integrity migration records production application and remains Founder-gated", async () => {
   const extension = JSON.parse(
     await readFile("contracts/canonical-active-migration-extensions-v1.json", "utf8"),
   );
@@ -41,6 +41,6 @@ test("L5R quote integrity migration stays unapplied and Founder-gated", async ()
 
   assert.ok(entry);
   assert.equal(entry.owner, "canonical_cornermex");
-  assert.equal(entry.productionApplied, false);
+  assert.equal(entry.productionApplied, true);
   assert.equal(entry.requiresFounderProductionGate, true);
 });
