@@ -17,6 +17,7 @@ const checkout = read("src/routes/checkout.tsx");
 const orders = read("src/lib/orders.functions.ts");
 const payments = read("src/lib/payments.functions.ts");
 const b2bActions = read("src/components/b2b/ManualContactActions.tsx");
+const b2bPreview = read("src/components/b2b/ManualQuoteRequestPreview.tsx");
 const b2bNav = read("src/components/b2b/B2bCategoryNav.tsx");
 const previewFormatter = read("src/features/b2b-catalog/manual-quote-request.ts");
 
@@ -113,10 +114,13 @@ test("checkout order and payment execution remain fail closed", () => {
   assert.equal((payments.match(/assertCheckoutExecutionEnabled\(\);/g) ?? []).length, 3);
 });
 
-test("B2B copy feedback is accessible and never implies sending", () => {
+test("B2B copy stays local while canonical enquiry submission remains non-transactional", () => {
   assert.match(b2bActions, /role="status" aria-live="polite"/);
   assert.match(b2bActions, /copied locally — not submitted or sent/i);
-  assert.match(previewFormatter, /Prepared locally — not submitted/);
+  assert.match(previewFormatter, /Request only — not an order or confirmed quote/);
+  assert.match(b2bPreview, /Submitting stores this enquiry in the CornerMex B2B pipeline/);
+  assert.match(b2bPreview, /does not\s+create an order/i);
+  assert.doesNotMatch(b2bPreview, /order confirmed|quote confirmed|payment confirmed/i);
 });
 
 test("B2B touch target correction preserves the exact approved catalogue", () => {
