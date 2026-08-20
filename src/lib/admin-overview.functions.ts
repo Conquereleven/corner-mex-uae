@@ -23,9 +23,7 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
     const [orders, products, items, buyers, recent, lowStock] = await Promise.all([
       supabaseAdmin
         .from("orders")
-        .select(
-          "id, total_aed, status, payment_status, payment_method, created_at, buyer_id",
-        )
+        .select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id")
         .gte("created_at", since60),
       supabaseAdmin.from("products").select("id, status"),
       supabaseAdmin
@@ -57,7 +55,9 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
     const gmv30 = +totalAed(o30).toFixed(2);
     const gmvPrev30 = +totalAed(o60to30).toFixed(2);
     const gmvDelta =
-      gmvPrev30 > 0 ? +(((gmv30 - gmvPrev30) / gmvPrev30) * 100).toFixed(1) : null;
+      gmvPrev30 > 0
+        ? +(((gmv30 - gmvPrev30) / gmvPrev30) * 100).toFixed(1)
+        : null;
 
     const statusBreakdown = ORDER_STATES.map((status) => ({
       status,
@@ -116,8 +116,9 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
       activeProducts: allProducts.filter((product) => product.status === "active").length,
       draftProducts: allProducts.filter((product) => product.status === "draft").length,
       lowStockCount: (lowStock.data ?? []).length,
-      pendingFulfillment: allOrders.filter((order) => pendingFulfillmentStates.has(order.status))
-        .length,
+      pendingFulfillment: allOrders.filter((order) =>
+        pendingFulfillmentStates.has(order.status),
+      ).length,
       statusBreakdown,
       paymentBreakdown,
       methodBreakdown,
