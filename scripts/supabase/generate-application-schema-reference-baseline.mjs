@@ -1,34 +1,10 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import {
+  expandApplicationSchemaReferenceContract,
+  validateApplicationSchemaReferenceExtensions,
+} from "./application-schema-reference-contract.mjs";
 
-const canonical = new Set([
-  "addresses",
-  "b2b_leads",
-  "cart_items",
-  "carts",
-  "catalog_events",
-  "categories",
-  "coupon_redemptions",
-  "coupons",
-  "inventory",
-  "inventory_movements",
-  "order_items",
-  "orders",
-  "order_lifecycle_events",
-  "payments",
-  "product_images",
-  "product_reviews",
-  "product_translations",
-  "product_variants",
-  "products",
-  "profiles",
-  "notifications",
-  "user_roles",
-  "place_cod_order_v1",
-  "admin_transition_order_lifecycle_v1",
-  "cm_com_4a_order_lifecycle_capability",
-]);
-const future = new Set(["catalog_import_executions", "catalog_import_reviews"]);
 const roots = ["src", "scripts"];
 const files = [];
 const walk = async (directory) => {
@@ -52,48 +28,73 @@ for (const file of files.sort()) {
 }
 
 const outputPath = "contracts/application-schema-reference-baseline-v1.json";
+const extensionPath = "contracts/application-schema-reference-extensions-v1.json";
 const committed = await readFile(outputPath, "utf8").catch(() => null);
 const committedContract = committed ? JSON.parse(committed) : null;
-const committedOrder = new Map(
-  (committedContract?.references ?? []).map((reference, index) => [
+const extensions = JSON.parse(await readFile(extensionPath, "utf8"));
+const extensionErrors = validateApplicationSchemaReferenceExtensions(committedContract, extensions);
+if (extensionErrors.length) throw new Error(extensionErrors.join("\n"));
+const expectedContract = expandApplicationSchemaReferenceContract(committedContract, extensions);
+const expectedOrder = new Map(
+  expectedContract.references.map((reference, index) => [
     `${reference.kind}:${reference.name}`,
     index,
   ]),
 );
+const expectedByIdentity = new Map(
+  expectedContract.references.map((reference) => [
+    `${reference.kind}:${reference.name}`,
+    reference,
+  ]),
+);
 
 const references = [...found.values()]
-  .map((reference) => ({
-    ...reference,
-    files: [...new Set(reference.files)].sort(),
-    classification: canonical.has(reference.name)
-      ? "canonical_supported"
-      : future.has(reference.name)
-        ? "requires_future_migration"
-        : "lovable_live_only",
-    rationale: canonical.has(reference.name)
-      ? "present_in_canonical_db2_inventory"
-      : future.has(reference.name)
-        ? "owned_by_pending_canonical_migration"
-        : "preexisting_lovable_runtime_reference_not_in_canonical_db2",
-  }))
+  .map((reference) => {
+    const identity = `${reference.kind}:${reference.name}`;
+    const authority = expectedByIdentity.get(identity);
+    return {
+      ...reference,
+      files: [...new Set(reference.files)].sort(),
+      classification: authority?.classification ?? "lovable_live_only",
+      rationale:
+        authority?.rationale ?? "preexisting_lovable_runtime_reference_not_in_canonical_db2",
+    };
+  })
   .sort((left, right) => {
     const leftKey = `${left.kind}:${left.name}`;
     const rightKey = `${right.kind}:${right.name}`;
-    const leftIndex = committedOrder.get(leftKey) ?? Number.MAX_SAFE_INTEGER;
-    const rightIndex = committedOrder.get(rightKey) ?? Number.MAX_SAFE_INTEGER;
+    const leftIndex = expectedOrder.get(leftKey) ?? Number.MAX_SAFE_INTEGER;
+    const rightIndex = expectedOrder.get(rightKey) ?? Number.MAX_SAFE_INTEGER;
     return leftIndex - rightIndex || leftKey.localeCompare(rightKey);
   });
 
-const output = `${JSON.stringify({ contractVersion: "application-schema-reference-baseline-v1", canonicalProjectRef: "wlrfknmrhowldygmvtvn", references }, null, 2)}\n`;
+const generated = {
+  contractVersion: committedContract.contractVersion,
+  canonicalProjectRef: committedContract.canonicalProjectRef,
+  references,
+};
+const output = `${JSON.stringify(generated, null, 2)}\n`;
+const expectedOutput = `${JSON.stringify(expectedContract, null, 2)}\n`;
+
 if (process.argv.includes("--check")) {
-  if (committed !== output) {
-    console.error("APPLICATION_SCHEMA_REFERENCE_BASELINE_EXPECTED_BEGIN");
+  if (output !== expectedOutput) {
+    console.error("APPLICATION_SCHEMA_REFERENCE_COMBINED_EXPECTED_BEGIN");
+    console.error(expectedOutput);
+    console.error("APPLICATION_SCHEMA_REFERENCE_COMBINED_EXPECTED_END");
+    console.error("APPLICATION_SCHEMA_REFERENCE_GENERATED_BEGIN");
     console.error(output);
-    console.error("APPLICATION_SCHEMA_REFERENCE_BASELINE_EXPECTED_END");
-    throw new Error("application schema references changed; regenerate and classify deliberately");
+    console.error("APPLICATION_SCHEMA_REFERENCE_GENERATED_END");
+    throw new Error(
+      "application schema references changed outside the explicit baseline/extension authority",
+    );
   }
-  console.log(`application schema reference baseline unchanged: ${references.length} identities`);
+  console.log(`application schema reference authority unchanged: ${references.length} identities`);
 } else {
+  if ((extensions.fileAdditions?.length ?? 0) || (extensions.newReferences?.length ?? 0)) {
+    throw new Error(
+      "compact application schema reference extensions before regenerating the base baseline",
+    );
+  }
   await writeFile(outputPath, output);
   console.log(`application schema reference baseline written: ${references.length} identities`);
 }

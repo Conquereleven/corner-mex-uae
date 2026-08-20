@@ -1,115 +1,189 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { adminCatalogImportVisibility, adminListSellers } from "@/lib/admin.functions";
-import { CsvImporter } from "@/components/site/CsvImporter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Download, FileUp } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminImportProductsCanonical } from "@/lib/admin-products-import.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/products/import")({
   head: () => ({ meta: [{ title: "Admin — Import products" }] }),
-  component: AdminImport,
+  component: AdminProductsImport,
 });
 
-function AdminImport() {
-  const { t } = useTranslation();
-  const fn = useServerFn(adminListSellers);
-  const sellers = useQuery({ queryKey: ["admin-sellers"], queryFn: () => fn({}) });
-  const visibilityFn = useServerFn(adminCatalogImportVisibility);
-  const visibility = useQuery({
-    queryKey: ["admin-cornerops-catalog-visibility"],
-    queryFn: () => visibilityFn({}),
+function parseCsv(text: string) {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (quoted) {
+      if (char === '"' && text[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else if (char === '"') quoted = false;
+      else cell += char;
+    } else if (char === '"') quoted = true;
+    else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\n") {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else if (char !== "\r") cell += char;
+  }
+  if (cell.length || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows.filter((values) => values.some((value) => value.trim()));
+}
+
+function toObjects(matrix: string[][]) {
+  const [headers, ...body] = matrix;
+  return body.map((cells) => {
+    const raw = Object.fromEntries(
+      headers.map((header, index) => [header.trim(), cells[index] ?? ""]),
+    );
+    const number = (value: string) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    };
+    const boolean = (value: string, fallback: boolean) =>
+      value.trim() === "" ? fallback : /^(true|1|yes|y)$/i.test(value.trim());
+    return {
+      slug: raw.slug,
+      name_en: raw.name_en,
+      name_es: raw.name_es || null,
+      name_ar: raw.name_ar || null,
+      description_en: raw.description_en || null,
+      category_slug: raw.category_slug || null,
+      brand: raw.brand || null,
+      is_halal: boolean(raw.is_halal ?? "", true),
+      is_bulk: boolean(raw.is_bulk ?? "", false),
+      spice_level: raw.spice_level ? number(raw.spice_level) : null,
+      origin_region: raw.origin_region || null,
+      status: raw.status || "draft",
+      sku: raw.sku || null,
+      format_label: raw.format_label || null,
+      weight_grams: raw.weight_grams ? number(raw.weight_grams) : null,
+      price_aed: number(raw.price_aed),
+      compare_at_price_aed: raw.compare_at_price_aed ? number(raw.compare_at_price_aed) : null,
+      stock: number(raw.stock) ?? 0,
+      image_urls: String(raw.image_urls ?? "")
+        .split("|")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    };
   });
-  const [sellerId, setSellerId] = useState<string>("");
-  const selected = (sellers.data ?? []).find((s: any) => s.id === sellerId);
+}
+
+function AdminProductsImport() {
+  const runImport = useServerFn(adminImportProductsCanonical);
+  const [fileName, setFileName] = useState("");
+  const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const mutation = useMutation({
+    mutationFn: () => runImport({ data: { rows } }),
+    onSuccess: (result) =>
+      toast.success(`Import complete: ${result.created} created, ${result.updated} updated`),
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  function loadFile(file?: File) {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setParseError("CSV exceeds 5 MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const matrix = parseCsv(String(reader.result ?? ""));
+        if (matrix.length < 2) throw new Error("CSV requires a header and at least one row");
+        const objects = toObjects(matrix);
+        if (objects.length > 1000) throw new Error("Maximum 1000 rows per import");
+        setRows(objects);
+        setFileName(file.name);
+        setParseError(null);
+        mutation.reset();
+      } catch (error) {
+        setRows([]);
+        setParseError(error instanceof Error ? error.message : "CSV parsing failed");
+      }
+    };
+    reader.readAsText(file);
+  }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h1 className="font-display text-3xl tracking-tight">{t("dash.import.title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("dash.import.adminSub")}</p>
+        <h1 className="font-display text-3xl tracking-tight">Import products</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Single-merchant CornerMex import. No Seller assignment. Stock is committed through the
+          canonical atomic inventory transaction.
+        </p>
       </div>
-      <Card className="border-amber-500/30">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            CornerOps catalog foundation <Badge variant="outline">internal only</Badge>
-          </CardTitle>
+          <CardTitle>CSV import</CardTitle>
+          <CardDescription>
+            Rows may create or update products by slug. Active rows require a positive price;
+            otherwise they remain draft.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            Validated packages appear here as draft products or explicit review records. Drafts are
-            hidden from customers, non-sellable and initialized with inventory zero.
-          </p>
-          <p>Publication, automatic inventory sync and unrestricted media copy remain disabled.</p>
-          <div className="grid grid-cols-3 gap-3 pt-2">
-            <div>
-              <span className="block text-2xl font-semibold text-foreground">
-                {visibility.data?.drafts.length ?? 0}
-              </span>
-              draft records
-            </div>
-            <div>
-              <span className="block text-2xl font-semibold text-foreground">
-                {visibility.data?.reviews.length ?? 0}
-              </span>
-              review records
-            </div>
-            <div>
-              <span className="block text-2xl font-semibold text-foreground">0</span>commercial
-              stock
-            </div>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-3">
+            <a href="/templates/products-template.csv" download>
+              <Button variant="outline">
+                <Download className="me-2 h-4 w-4" /> Download template
+              </Button>
+            </a>
+            <label className="inline-flex h-10 cursor-pointer items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+              <FileUp className="me-2 h-4 w-4" /> Choose CSV
+              <input
+                className="hidden"
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => loadFile(event.target.files?.[0])}
+              />
+            </label>
+            <Button asChild variant="ghost">
+              <Link to="/admin/products">Back to products</Link>
+            </Button>
           </div>
-          {(visibility.data?.reviews ?? []).slice(0, 8).map((item: any) => (
-            <div key={item.id} className="flex items-center justify-between rounded border p-2">
-              <span>
-                {item.sku || `source row ${item.source_row}`} —{" "}
-                {item.name || "Unnamed source record"}
-              </span>
-              <Badge variant="secondary">{item.classification}</Badge>
-            </div>
-          ))}
-          {visibility.data?.errors?.length ? (
-            <p className="text-destructive">
-              Catalog visibility is unavailable; no data was fabricated.
+          {fileName ? (
+            <p className="text-sm text-muted-foreground">
+              {fileName} · {rows.length} rows ready
             </p>
+          ) : null}
+          {parseError ? <p className="text-sm text-destructive">{parseError}</p> : null}
+          {rows.length ? (
+            <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+              {mutation.isPending ? "Importing…" : `Import ${rows.length} rows`}
+            </Button>
+          ) : null}
+          {mutation.data ? (
+            <div className="rounded-lg border p-4 text-sm">
+              <p>
+                {mutation.data.created} created · {mutation.data.updated} updated ·{" "}
+                {mutation.data.errors.length} errors
+              </p>
+              {mutation.data.errors.slice(0, 20).map((error) => (
+                <p key={`${error.row}-${error.slug ?? "row"}`} className="text-destructive">
+                  Row {error.row}
+                  {error.slug ? ` (${error.slug})` : ""}: {error.error}
+                </p>
+              ))}
+            </div>
           ) : null}
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("dash.import.seller")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={sellerId} onValueChange={setSellerId}>
-            <SelectTrigger className="max-w-md">
-              <SelectValue placeholder={t("dash.import.selectSeller")} />
-            </SelectTrigger>
-            <SelectContent>
-              {(sellers.data ?? [])
-                .filter((s: any) => s.status === "active")
-                .map((s: any) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.store_name} ({s.contact_email ?? "—"})
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-      {sellerId ? (
-        <CsvImporter sellerId={sellerId} sellerLabel={selected?.store_name} />
-      ) : (
-        <p className="text-sm text-muted-foreground">{t("dash.import.pickFirst")}</p>
-      )}
     </div>
   );
 }

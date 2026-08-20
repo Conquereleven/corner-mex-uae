@@ -1,0 +1,110 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdmin } from "@/lib/admin-authorization.server";
+
+type ProductImportRpcClient = {
+  rpc: (
+    fn: "admin_import_product_row_v1",
+    args: Record<string, unknown>,
+  ) => PromiseLike<{ data: { created?: boolean } | null; error: { message?: string } | null }>;
+};
+
+const rowSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .max(80)
+    .regex(/^[a-z0-9-]+$/),
+  name_en: z.string().min(1).max(160),
+  name_es: z.string().max(160).optional().nullable(),
+  name_ar: z.string().max(160).optional().nullable(),
+  description_en: z.string().max(4000).optional().nullable(),
+  category_slug: z.string().max(80).optional().nullable(),
+  brand: z.string().max(120).optional().nullable(),
+  is_halal: z.boolean().default(true),
+  is_bulk: z.boolean().default(false),
+  spice_level: z.number().int().min(0).max(5).optional().nullable(),
+  origin_region: z.string().max(120).optional().nullable(),
+  status: z.enum(["draft", "active", "archived"]).default("draft"),
+  sku: z.string().max(120).optional().nullable(),
+  format_label: z.string().max(120).optional().nullable(),
+  weight_grams: z.number().int().min(0).optional().nullable(),
+  price_aed: z.number().min(0).max(999999),
+  compare_at_price_aed: z.number().min(0).max(999999).optional().nullable(),
+  stock: z.number().int().min(0).max(1000000),
+  image_urls: z.array(z.string().url()).max(8).default([]),
+});
+
+const inputSchema = z.object({ rows: z.array(z.record(z.string(), z.unknown())).min(1).max(1000) });
+
+function rpcCode(message: string | undefined) {
+  return /CM_[A-Z_]+/.exec(message ?? "")?.[0] ?? "CM_ADMIN_PRODUCT_IMPORT_ROW_FAILED";
+}
+
+export const adminImportProductsCanonical = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.input<typeof inputSchema>) => inputSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const errors: { row: number; slug?: string; error: string }[] = [];
+    const valid: { rowNumber: number; value: z.infer<typeof rowSchema> }[] = [];
+    const seen = new Set<string>();
+
+    data.rows.forEach((raw, index) => {
+      const parsed = rowSchema.safeParse(raw);
+      if (!parsed.success) {
+        errors.push({
+          row: index + 2,
+          slug: typeof raw.slug === "string" ? raw.slug : undefined,
+          error: "invalid_row",
+        });
+        return;
+      }
+      if (seen.has(parsed.data.slug)) {
+        errors.push({ row: index + 2, slug: parsed.data.slug, error: "duplicate_slug_in_file" });
+        return;
+      }
+      seen.add(parsed.data.slug);
+      valid.push({ rowNumber: index + 2, value: parsed.data });
+    });
+
+    let created = 0;
+    let updated = 0;
+
+    for (const item of valid) {
+      const row = item.value;
+      const requestedStatus = row.status === "active" && row.price_aed <= 0 ? "draft" : row.status;
+      const { data: result, error } = await (
+        context.supabase as unknown as ProductImportRpcClient
+      ).rpc("admin_import_product_row_v1", {
+        p_slug: row.slug,
+        p_name_en: row.name_en,
+        p_name_es: row.name_es ?? null,
+        p_name_ar: row.name_ar ?? null,
+        p_description_en: row.description_en ?? null,
+        p_brand: row.brand ?? null,
+        p_origin_region: row.origin_region ?? null,
+        p_spice_level: row.spice_level ?? null,
+        p_is_bulk: row.is_bulk,
+        p_is_halal: row.is_halal,
+        p_status: requestedStatus,
+        p_category_slug: row.category_slug ?? null,
+        p_sku: row.sku ?? null,
+        p_format_label: row.format_label ?? null,
+        p_weight_grams: row.weight_grams ?? null,
+        p_price_aed: row.price_aed,
+        p_compare_at_price_aed: row.compare_at_price_aed ?? null,
+        p_stock: row.stock,
+        p_image_urls: row.image_urls,
+      });
+      if (error) {
+        errors.push({ row: item.rowNumber, slug: row.slug, error: rpcCode(error.message) });
+        continue;
+      }
+      if (result?.created) created += 1;
+      else updated += 1;
+    }
+
+    return { created, updated, errors, totalRows: data.rows.length };
+  });

@@ -1,0 +1,55 @@
+{
+  "contractVersion": "application-schema-reference-extensions-v1",
+  "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
+  "baseContractVersion": "application-schema-reference-baseline-v1",
+  "fileAdditions": [
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "products",
+      "files": ["src/lib/admin-products.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_translations",
+      "files": ["src/lib/admin-products.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_images",
+      "files": ["src/lib/admin-products.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_variants",
+      "files": ["src/lib/admin-products.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "categories",
+      "files": ["src/lib/admin-products.functions.ts"]
+    }
+  ],
+  "newReferences": [
+    {
+      "kind": "function",
+      "name": "admin_import_product_row_v1",
+      "files": ["src/lib/admin-products-import.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_upsert_product_v1",
+      "files": ["src/lib/admin-products.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "admin_upsert_product_variant_v1",
+      "files": ["src/lib/admin-products.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    }
+  ]
+}
