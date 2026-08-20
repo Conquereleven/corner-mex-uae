@@ -22,6 +22,14 @@ export function expandApplicationSchemaReferenceContract(base, extensions) {
     references.map((reference) => [`${reference.kind}:${reference.name}`, reference]),
   );
 
+  for (const removal of extensions?.fileRemovals ?? []) {
+    const identity = `${removal.kind}:${removal.name}`;
+    const reference = byIdentity.get(identity);
+    if (!reference) throw new Error(`schema reference removal target missing: ${identity}`);
+    const removedFiles = new Set(removal.files ?? []);
+    reference.files = (reference.files ?? []).filter((file) => !removedFiles.has(file));
+  }
+
   for (const addition of extensions?.fileAdditions ?? []) {
     const identity = `${addition.kind}:${addition.name}`;
     const reference = byIdentity.get(identity);
@@ -56,9 +64,29 @@ export function validateApplicationSchemaReferenceExtensions(base, extensions) {
 
   const allowed = new Set(APPLICATION_REFERENCE_CLASSIFICATIONS);
   const extensionIdentities = new Set();
+  const baseReferences = base.references ?? [];
   const baseIdentities = new Set(
-    (base.references ?? []).map((reference) => `${reference.kind}:${reference.name}`),
+    baseReferences.map((reference) => `${reference.kind}:${reference.name}`),
   );
+  const baseByIdentity = new Map(
+    baseReferences.map((reference) => [`${reference.kind}:${reference.name}`, reference]),
+  );
+
+  for (const removal of extensions.fileRemovals ?? []) {
+    const identity = `${removal.kind}:${removal.name}`;
+    const reference = baseByIdentity.get(identity);
+    if (!reference) errors.push(`schema reference removal target missing: ${identity}`);
+    if (!Array.isArray(removal.files) || removal.files.length === 0) {
+      errors.push(`schema reference removal files missing: ${identity}`);
+      continue;
+    }
+    for (const file of removal.files) {
+      if (!reference?.files?.includes(file)) {
+        errors.push(`schema reference removal file missing from base: ${identity}:${file}`);
+      }
+    }
+  }
+
   for (const addition of extensions.fileAdditions ?? []) {
     const identity = `${addition.kind}:${addition.name}`;
     if (!baseIdentities.has(identity))
