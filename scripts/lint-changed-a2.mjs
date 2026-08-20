@@ -14,7 +14,7 @@ const files = names
       file !== "src/integrations/supabase/types.ts",
   );
 
-function lint(file, content) {
+function lint(file, content, { diagnostics = false } = {}) {
   const result = spawnSync(
     "npx",
     ["eslint", "--stdin", "--stdin-filename", file, "--format", "json"],
@@ -23,7 +23,15 @@ function lint(file, content) {
       encoding: "utf8",
     },
   );
-  return JSON.parse(result.stdout || "[]")[0]?.errorCount ?? Number.POSITIVE_INFINITY;
+  const report = JSON.parse(result.stdout || "[]")[0];
+  if (diagnostics && report?.messages?.length) {
+    for (const message of report.messages) {
+      console.log(
+        `[lint-diagnostic] ${file}:${message.line ?? 0}:${message.column ?? 0} ${message.ruleId ?? "unknown"} ${message.message}`,
+      );
+    }
+  }
+  return report?.errorCount ?? Number.POSITIVE_INFINITY;
 }
 
 if (files.length === 0) {
@@ -34,7 +42,7 @@ if (files.length === 0) {
 let failed = false;
 
 for (const file of files) {
-  const currentErrors = lint(file, readFileSync(file));
+  const currentErrors = lint(file, readFileSync(file), { diagnostics: true });
   let baselineErrors = 0;
   try {
     const baseline = execFileSync("git", ["show", `${base}:${file}`]);
