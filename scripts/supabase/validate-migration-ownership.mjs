@@ -56,7 +56,9 @@ const EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS = new Map([
   ],
 ]);
 
-const extensionMigrations = (extensions.migrations ?? []).map((item) => item.filename).sort();
+const extensionMigrations = (extensions.migrations ?? [])
+  .map((item) => item.filename)
+  .sort();
 const extensionProductionMigrations = [];
 for (const item of extensions.migrations ?? []) {
   if (item.owner !== "canonical_cornermex")
@@ -149,10 +151,7 @@ const EXPECTED_PRODUCTION_MIGRATIONS = [
   ["20260820230100", "cm_launch_1_l5r_quote_draft_integrity"],
 ];
 const recordedProductionMigrations = [
-  ...(contract.canonicalProductionMigrations ?? []).map(({ version, name }) => [
-    version,
-    name,
-  ]),
+  ...(contract.canonicalProductionMigrations ?? []).map(({ version, name }) => [version, name]),
   ...extensionProductionMigrations,
 ].sort(([a], [b]) => a.localeCompare(b));
 const expectedProductionMigrations = [...EXPECTED_PRODUCTION_MIGRATIONS].sort(([a], [b]) =>
