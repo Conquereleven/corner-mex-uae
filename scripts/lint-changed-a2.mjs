@@ -23,7 +23,11 @@ function lint(file, content) {
       encoding: "utf8",
     },
   );
-  return JSON.parse(result.stdout || "[]")[0]?.errorCount ?? Number.POSITIVE_INFINITY;
+  const report = JSON.parse(result.stdout || "[]")[0];
+  return {
+    errorCount: report?.errorCount ?? Number.POSITIVE_INFINITY,
+    messages: report?.messages ?? [],
+  };
 }
 
 if (files.length === 0) {
@@ -34,18 +38,29 @@ if (files.length === 0) {
 let failed = false;
 
 for (const file of files) {
-  const currentErrors = lint(file, readFileSync(file));
+  const current = lint(file, readFileSync(file));
   let baselineErrors = 0;
   try {
     const baseline = execFileSync("git", ["show", `${base}:${file}`]);
-    baselineErrors = lint(file, baseline);
+    baselineErrors = lint(file, baseline).errorCount;
   } catch {
     baselineErrors = 0;
   }
 
-  const delta = currentErrors - baselineErrors;
-  console.log(`${file}: current=${currentErrors} baseline=${baselineErrors} delta=${delta}`);
-  if (delta > 0) failed = true;
+  const delta = current.errorCount - baselineErrors;
+  console.log(
+    `${file}: current=${current.errorCount} baseline=${baselineErrors} delta=${delta}`,
+  );
+  if (delta > 0) {
+    failed = true;
+    for (const message of current.messages) {
+      if (message.severity === 2) {
+        console.log(
+          `  ${message.line}:${message.column} ${message.ruleId ?? "unknown"} ${message.message}`,
+        );
+      }
+    }
+  }
 }
 
 if (failed) {
