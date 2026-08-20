@@ -51,18 +51,9 @@ test("L5R canonical lifecycle is aligned across SQL and UI", async () => {
     assert.doesNotMatch(listRoute, new RegExp(`\\b${legacy}\\b`));
     assert.doesNotMatch(detailRoute, new RegExp(`\\b${legacy}\\b`));
   }
-  assert.match(
-    migration,
-    /v_from_status = 'new' and p_status in \('contacted', 'lost'\)/,
-  );
-  assert.match(
-    migration,
-    /v_from_status = 'contacted' and p_status in \('quoting', 'lost'\)/,
-  );
-  assert.match(
-    migration,
-    /v_from_status = 'quoting' and p_status in \('won', 'lost'\)/,
-  );
+  assert.match(migration, /v_from_status = 'new' and p_status in \('contacted', 'lost'\)/);
+  assert.match(migration, /v_from_status = 'contacted' and p_status in \('quoting', 'lost'\)/);
+  assert.match(migration, /v_from_status = 'quoting' and p_status in \('won', 'lost'\)/);
   assert.match(migration, /CM_B2B_LEAD_TRANSITION_NOT_ALLOWED/);
 });
 
@@ -134,10 +125,7 @@ test("L5R operating layer carries GTM profile, follow-up, blockers and first pur
 
   assert.match(migration, /qualification_score between 0 and 100/);
   assert.match(migration, /priority in \('unassigned', 'low', 'medium', 'high'\)/);
-  assert.match(
-    migration,
-    /first_order_id uuid references public\.orders\(id\) on delete set null/,
-  );
+  assert.match(migration, /first_order_id uuid references public\.orders\(id\) on delete set null/);
   assert.match(migration, /CM_B2B_LEAD_FIRST_ORDER_NOT_FOUND/);
   assert.doesNotMatch(
     migration,
@@ -167,10 +155,7 @@ test("L5R risk model marks last-mile work without inventing terminal follow-up",
     "BLOCKED",
   ]);
   assert.deepEqual(
-    b2bLeadRiskFlags(
-      { ...base, status: "lost" },
-      Date.parse("2026-08-20T12:00:00.000Z"),
-    ),
+    b2bLeadRiskFlags({ ...base, status: "lost" }, Date.parse("2026-08-20T12:00:00.000Z")),
     [],
   );
   assert.deepEqual(
