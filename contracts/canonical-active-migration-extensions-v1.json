@@ -15,6 +15,13 @@
       "purpose": "cm_launch_1_l5r_canonical_b2b_lead_pipeline",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260820213000_cm_launch_1_l5r_pipeline_operations.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_launch_1_l5r_pipeline_operations",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }
