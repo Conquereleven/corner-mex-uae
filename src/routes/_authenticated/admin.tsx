@@ -1,24 +1,24 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard,
-  ShoppingCart,
-  Tags,
-  Users,
-  Settings,
   Activity,
-  Upload,
-  Truck,
-  Globe2,
-  Package,
-  Star,
-  RotateCcw,
-  Ticket,
-  Megaphone,
-  Mail,
-  Plus,
   Inbox,
+  LayoutDashboard,
+  Mail,
+  Megaphone,
+  Package,
+  Plus,
+  RotateCcw,
   Scale,
+  Settings,
+  ShoppingCart,
+  Star,
+  Tags,
+  Ticket,
+  Truck,
+  Upload,
+  Users,
+  Globe2,
 } from "lucide-react";
 import { DashboardShell } from "@/components/site/DashboardShell";
 import { useServerFn } from "@tanstack/react-start";
@@ -51,6 +51,7 @@ function AdminLayout() {
     staleTime: 30_000,
   });
   const c = counts.data;
+
   return (
     <DashboardShell
       title="Corner Mex Admin"
@@ -88,18 +89,13 @@ function AdminLayout() {
             { to: "/admin/live-view", label: "Live view", icon: Globe2 },
             { to: "/admin/performance", label: t("dash.nav.performance"), icon: Activity },
             { to: "/admin/catalog-analytics", label: "Catalog analytics", icon: Activity },
-            { to: "/admin/shipping", label: "Shipping", icon: Truck },
-            {
-              to: "/admin/shipments",
-              label: "Shipments",
-              icon: Package,
-              badge: c?.shipments_pending,
-            },
+            { to: "/admin/shipping", label: "Shipping", icon: Truck, soon: true },
+            { to: "/admin/shipments", label: "Shipments", icon: Package, soon: true },
             { to: "/admin/reviews", label: "Reviews", icon: Star, badge: c?.reviews_pending },
-            { to: "/admin/returns", label: "Returns", icon: RotateCcw, badge: c?.returns_pending },
+            { to: "/admin/returns", label: "Returns", icon: RotateCcw, soon: true },
             { to: "/admin/coupons", label: "Coupons", icon: Ticket },
-            { to: "/admin/banners", label: "Banners", icon: Megaphone },
-            { to: "/admin/newsletter", label: "Newsletter", icon: Mail },
+            { to: "/admin/banners", label: "Banners", icon: Megaphone, soon: true },
+            { to: "/admin/newsletter", label: "Newsletter", icon: Mail, soon: true },
           ],
         },
         {
