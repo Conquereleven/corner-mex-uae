@@ -23,7 +23,7 @@ import {
 import { DashboardShell } from "@/components/site/DashboardShell";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { adminDashboardCounts } from "@/lib/admin.functions";
+import { adminDashboardCountsCanonical } from "@/lib/admin-dashboard-counts.functions";
 import { getRouteAdminState } from "@/lib/route-auth.functions";
 import { resolveRouteAccess } from "@/lib/route-auth";
 
@@ -43,9 +43,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminLayout() {
   const { t } = useTranslation();
-  const countsFn = useServerFn(adminDashboardCounts);
+  const countsFn = useServerFn(adminDashboardCountsCanonical);
   const counts = useQuery({
-    queryKey: ["admin-dash-counts"],
+    queryKey: ["admin-dash-counts-canonical"],
     queryFn: () => countsFn({}),
     refetchInterval: 60_000,
     staleTime: 30_000,
