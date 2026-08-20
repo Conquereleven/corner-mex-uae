@@ -1,0 +1,13 @@
+{
+  "contractVersion": "canonical-active-migration-extensions-v1",
+  "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
+  "migrations": [
+    {
+      "filename": "20260820100000_cm_launch_1_l3p_admin_product_management.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_launch_1_l3p_admin_product_management",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    }
+  ]
+}
