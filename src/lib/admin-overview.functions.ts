@@ -14,7 +14,11 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
     const since30 = new Date(now.getTime() - 30 * day).toISOString();
     const since60 = new Date(now.getTime() - 60 * day).toISOString();
     const since7 = new Date(now.getTime() - 7 * day).toISOString();
-    const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const startToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).toISOString();
 
     const [orders, products, items, buyers, recent, lowStock] = await Promise.all([
       supabaseAdmin
