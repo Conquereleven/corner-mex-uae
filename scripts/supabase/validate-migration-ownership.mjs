@@ -32,14 +32,72 @@ if (extensions.canonicalProjectRef !== contract.canonicalProjectRef)
 if (extensions.contractVersion !== "canonical-active-migration-extensions-v1")
   errors.push("canonical migration extension version mismatch");
 
+const EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS = new Map([
+  [
+    "20260820210000_cm_launch_1_l5r_canonical_b2b_lead_pipeline.sql",
+    {
+      version: "20260820225944",
+      name: "cm_launch_1_l5r_canonical_b2b_lead_pipeline",
+    },
+  ],
+  [
+    "20260820213000_cm_launch_1_l5r_pipeline_operations.sql",
+    {
+      version: "20260820230032",
+      name: "cm_launch_1_l5r_pipeline_operations",
+    },
+  ],
+  [
+    "20260820214500_cm_launch_1_l5r_quote_draft_integrity.sql",
+    {
+      version: "20260820230100",
+      name: "cm_launch_1_l5r_quote_draft_integrity",
+    },
+  ],
+]);
+
 const extensionMigrations = (extensions.migrations ?? []).map((item) => item.filename).sort();
+const extensionProductionMigrations = [];
 for (const item of extensions.migrations ?? []) {
   if (item.owner !== "canonical_cornermex")
     errors.push(`invalid canonical extension owner: ${item.filename}`);
   if (item.requiresFounderProductionGate !== true)
     errors.push(`canonical extension lacks Founder production gate: ${item.filename}`);
-  if (item.productionApplied !== false)
-    errors.push(`unverified canonical extension claims production application: ${item.filename}`);
+
+  const expectedProduction = EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS.get(item.filename);
+  if (item.productionApplied === true) {
+    if (!expectedProduction) {
+      errors.push(`unverified canonical extension claims production application: ${item.filename}`);
+    } else {
+      if (item.productionVersion !== expectedProduction.version) {
+        errors.push(`canonical extension production version mismatch: ${item.filename}`);
+      }
+      if (item.purpose !== expectedProduction.name) {
+        errors.push(`canonical extension production name mismatch: ${item.filename}`);
+      }
+      if (item.productionProjectRef !== extensions.canonicalProjectRef) {
+        errors.push(`canonical extension production project mismatch: ${item.filename}`);
+      }
+    }
+
+    if (typeof item.productionVersion === "string" && typeof item.purpose === "string") {
+      extensionProductionMigrations.push([item.productionVersion, item.purpose]);
+    }
+  } else if (item.productionApplied === false) {
+    if (expectedProduction) {
+      errors.push(`verified canonical extension is not marked production applied: ${item.filename}`);
+    }
+    if ("productionVersion" in item || "productionProjectRef" in item) {
+      errors.push(`unapplied canonical extension carries production evidence: ${item.filename}`);
+    }
+  } else {
+    errors.push(`canonical extension productionApplied must be boolean: ${item.filename}`);
+  }
+}
+for (const filename of EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS.keys()) {
+  if (!(extensions.migrations ?? []).some((item) => item.filename === filename)) {
+    errors.push(`verified canonical production extension missing: ${filename}`);
+  }
 }
 if (new Set(extensionMigrations).size !== extensionMigrations.length)
   errors.push("duplicate canonical migration extension");
@@ -86,14 +144,31 @@ const EXPECTED_PRODUCTION_MIGRATIONS = [
   ["20260819181510", "cm_com_4a_post_order_lifecycle"],
   ["20260819202909", "cm_launch_1_lifecycle_acl_hardening"],
   ["20260819215938", "cm_launch_1_notifications_canonical"],
+  ["20260820225944", "cm_launch_1_l5r_canonical_b2b_lead_pipeline"],
+  ["20260820230032", "cm_launch_1_l5r_pipeline_operations"],
+  ["20260820230100", "cm_launch_1_l5r_quote_draft_integrity"],
 ];
-const recordedProductionMigrations = (contract.canonicalProductionMigrations ?? []).map(
-  ({ version, name }) => [version, name],
+const recordedProductionMigrations = [
+  ...(contract.canonicalProductionMigrations ?? []).map(({ version, name }) => [version, name]),
+  ...extensionProductionMigrations,
+].sort(([a], [b]) => a.localeCompare(b));
+const expectedProductionMigrations = [...EXPECTED_PRODUCTION_MIGRATIONS].sort(([a], [b]) =>
+  a.localeCompare(b),
 );
-if (
-  JSON.stringify(recordedProductionMigrations) !== JSON.stringify(EXPECTED_PRODUCTION_MIGRATIONS)
-) {
+if (JSON.stringify(recordedProductionMigrations) !== JSON.stringify(expectedProductionMigrations)) {
   errors.push("canonical production migration history drift");
+}
+if (
+  new Set(recordedProductionMigrations.map(([version]) => version)).size !==
+  recordedProductionMigrations.length
+) {
+  errors.push("duplicate canonical production migration version");
+}
+if (
+  new Set(recordedProductionMigrations.map(([, name]) => name)).size !==
+  recordedProductionMigrations.length
+) {
+  errors.push("duplicate canonical production migration name");
 }
 for (const record of contract.canonicalProductionMigrations ?? []) {
   if (!Array.isArray(record.sourceFiles) || record.sourceFiles.length === 0) {
@@ -104,6 +179,11 @@ for (const record of contract.canonicalProductionMigrations ?? []) {
     if (!active.includes(filename)) {
       errors.push(`canonical production migration source is not active: ${filename}`);
     }
+  }
+}
+for (const item of extensions.migrations ?? []) {
+  if (item.productionApplied === true && !active.includes(item.filename)) {
+    errors.push(`canonical extension production source is not active: ${item.filename}`);
   }
 }
 
