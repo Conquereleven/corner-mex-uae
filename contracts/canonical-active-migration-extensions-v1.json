@@ -22,6 +22,13 @@
       "purpose": "cm_launch_1_l5r_pipeline_operations",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260820214500_cm_launch_1_l5r_quote_draft_integrity.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_launch_1_l5r_quote_draft_integrity",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }
