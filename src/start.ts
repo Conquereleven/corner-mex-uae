@@ -3,6 +3,7 @@ import { createMiddleware } from "@tanstack/start-client-core";
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { assertSellerCapabilityServerFnAllowed } from "./lib/seller-capability-policy";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -27,7 +28,17 @@ const requestAuthContext = createMiddleware().server(({ request, next }) =>
   }),
 );
 
+const sellerCapabilityGuard = createMiddleware({ type: "function" }).server(
+  ({ serverFnMeta, next }) => {
+    assertSellerCapabilityServerFnAllowed(serverFnMeta);
+    return next();
+  },
+);
+
 export const startInstance = createStart(() => ({
   requestMiddleware: [errorMiddleware, requestAuthContext],
-  functionMiddleware: [attachSupabaseAuth],
+  // Capability authority must run before auth/database middleware. A dormant
+  // Seller server function therefore cannot become active merely because a
+  // seller table, RPC, storage bucket, or service-role-readable schema appears.
+  functionMiddleware: [sellerCapabilityGuard, attachSupabaseAuth],
 }));
