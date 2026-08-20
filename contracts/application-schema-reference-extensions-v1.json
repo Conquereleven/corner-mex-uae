@@ -7,6 +7,21 @@
       "kind": "table_or_storage_bucket",
       "name": "b2b_leads",
       "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "user_roles",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_status_history",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_notes",
+      "files": ["src/lib/b2b-leads.functions.ts"]
     }
   ],
   "fileAdditions": [
