@@ -23,7 +23,9 @@ export const adminOverviewCanonical = createServerFn({ method: "GET" })
     const [orders, products, items, buyers, recent, lowStock] = await Promise.all([
       supabaseAdmin
         .from("orders")
-        .select("id, total_aed, status, payment_status, payment_method, created_at, buyer_id")
+        .select(
+          "id, total_aed, status, payment_status, payment_method, created_at, buyer_id",
+        )
         .gte("created_at", since60),
       supabaseAdmin.from("products").select("id, status"),
       supabaseAdmin
