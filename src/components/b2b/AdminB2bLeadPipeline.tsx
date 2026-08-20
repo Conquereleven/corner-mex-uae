@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +108,13 @@ function quoteFromLead(lead: B2bLead): QuoteForm {
   };
 }
 
-export function AdminB2bLeadPipeline({
+export function AdminB2bLeadPipeline(props: Props) {
+  const { lead } = props;
+  const editorKey = `${lead.id}:${lead.updated_at}:${lead.quote_draft_updated_at ?? ""}`;
+  return <AdminB2bLeadPipelineEditor key={editorKey} {...props} />;
+}
+
+function AdminB2bLeadPipelineEditor({
   lead,
   pipelineSaving,
   quoteSaving,
@@ -117,13 +123,7 @@ export function AdminB2bLeadPipeline({
 }: Props) {
   const [pipeline, setPipeline] = useState<PipelineForm>(() => pipelineFromLead(lead));
   const [quote, setQuote] = useState<QuoteForm>(() => quoteFromLead(lead));
-
-  useEffect(() => {
-    setPipeline(pipelineFromLead(lead));
-    setQuote(quoteFromLead(lead));
-  }, [lead.id, lead.updated_at, lead.quote_draft_updated_at]);
-
-  const risks = useMemo(() => b2bLeadRiskFlags(lead), [lead]);
+  const risks = b2bLeadRiskFlags(lead);
 
   function savePipeline() {
     onSavePipeline({
@@ -280,7 +280,7 @@ export function AdminB2bLeadPipeline({
               }
             />
           </label>
-          <div className="sm:col-span-2 space-y-1">
+          <div className="space-y-1 sm:col-span-2">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Next action
             </p>
@@ -293,7 +293,7 @@ export function AdminB2bLeadPipeline({
               placeholder="The next human action required to move this lead"
             />
           </div>
-          <div className="sm:col-span-2 space-y-1">
+          <div className="space-y-1 sm:col-span-2">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Blocker / risk
             </p>
@@ -319,7 +319,7 @@ export function AdminB2bLeadPipeline({
               Linking only. The order must already exist; this action does not create or mutate it.
             </p>
           </div>
-          <div className="sm:col-span-2 flex justify-end">
+          <div className="flex justify-end sm:col-span-2">
             <Button onClick={savePipeline} disabled={pipelineSaving}>
               Save pipeline
             </Button>
@@ -339,14 +339,16 @@ export function AdminB2bLeadPipeline({
           </p>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2 space-y-1">
+          <div className="space-y-1 sm:col-span-2">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Quantity and AED pricing
             </p>
             <Textarea
               rows={4}
               value={quote.items_summary}
-              onChange={(event) => setQuote((current) => ({ ...current, items_summary: event.target.value }))}
+              onChange={(event) =>
+                setQuote((current) => ({ ...current, items_summary: event.target.value }))
+              }
               placeholder="Human-entered lines only. Example: Product · qty · AED unit price"
             />
           </div>
@@ -355,7 +357,9 @@ export function AdminB2bLeadPipeline({
             value={quote.delivery_fee_aed}
             type="number"
             placeholder="Unconfirmed"
-            onChange={(value) => setQuote((current) => ({ ...current, delivery_fee_aed: value }))}
+            onChange={(value) =>
+              setQuote((current) => ({ ...current, delivery_fee_aed: value }))
+            }
           />
           <InputField
             label="Valid until"
@@ -375,7 +379,7 @@ export function AdminB2bLeadPipeline({
             placeholder="Exact intended recipient"
             onChange={(value) => setQuote((current) => ({ ...current, recipient: value }))}
           />
-          <div className="sm:col-span-2 space-y-1">
+          <div className="space-y-1 sm:col-span-2">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Availability confirmation
             </p>
@@ -388,7 +392,7 @@ export function AdminB2bLeadPipeline({
               placeholder="Point-in-time human confirmation or leave blank"
             />
           </div>
-          <div className="sm:col-span-2 space-y-1">
+          <div className="space-y-1 sm:col-span-2">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Payment terms
             </p>
@@ -401,16 +405,18 @@ export function AdminB2bLeadPipeline({
               placeholder="Unconfirmed until approved"
             />
           </div>
-          <div className="sm:col-span-2 space-y-1">
+          <div className="space-y-1 sm:col-span-2">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Notes</p>
             <Textarea
               rows={3}
               value={quote.notes}
-              onChange={(event) => setQuote((current) => ({ ...current, notes: event.target.value }))}
+              onChange={(event) =>
+                setQuote((current) => ({ ...current, notes: event.target.value }))
+              }
               placeholder="Internal quote-preparation notes"
             />
           </div>
-          <div className="sm:col-span-2 flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 sm:col-span-2">
             <p className="text-[11px] text-muted-foreground">
               {lead.quote_draft_updated_at
                 ? `Last saved ${new Date(lead.quote_draft_updated_at).toLocaleString()}`
