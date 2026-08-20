@@ -175,7 +175,11 @@ function AdminB2bLeadPipelineEditor({
                 </Badge>
               ) : (
                 risks.map((risk) => (
-                  <Badge key={risk} variant="outline" className="border-amber-500/30 text-amber-700">
+                  <Badge
+                    key={risk}
+                    variant="outline"
+                    className="border-amber-500/30 text-amber-700"
+                  >
                     {b2bLeadRiskLabel(risk)}
                   </Badge>
                 ))
@@ -198,9 +202,7 @@ function AdminB2bLeadPipelineEditor({
             label="Decision maker"
             value={pipeline.decision_maker}
             placeholder="Name / role"
-            onChange={(value) =>
-              setPipeline((current) => ({ ...current, decision_maker: value }))
-            }
+            onChange={(value) => setPipeline((current) => ({ ...current, decision_maker: value }))}
           />
           <label className="space-y-1">
             <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -357,9 +359,7 @@ function AdminB2bLeadPipelineEditor({
             value={quote.delivery_fee_aed}
             type="number"
             placeholder="Unconfirmed"
-            onChange={(value) =>
-              setQuote((current) => ({ ...current, delivery_fee_aed: value }))
-            }
+            onChange={(value) => setQuote((current) => ({ ...current, delivery_fee_aed: value }))}
           />
           <InputField
             label="Valid until"
