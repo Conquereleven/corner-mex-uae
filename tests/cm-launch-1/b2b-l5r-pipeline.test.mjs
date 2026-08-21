@@ -9,15 +9,19 @@ const migrationPath =
   "supabase/migrations/20260820210000_cm_launch_1_l5r_canonical_b2b_lead_pipeline.sql";
 const operatingMigrationPath =
   "supabase/migrations/20260820213000_cm_launch_1_l5r_pipeline_operations.sql";
+const antiAbuseMigrationPath =
+  "supabase/migrations/20260821023000_cm_launch_1_l5r_b2b_intake_anti_abuse.sql";
 
-test("L5R public B2B intake is real, idempotent and server mediated", async () => {
-  const [server, quote, migration] = await Promise.all([
+test("L5R public B2B intake is real, idempotent, guarded and server mediated", async () => {
+  const [server, quote, migration, antiAbuseMigration] = await Promise.all([
     read("src/lib/b2b-leads.functions.ts"),
     read("src/routes/b2b_.quote.tsx"),
     read(migrationPath),
+    read(antiAbuseMigrationPath),
   ]);
 
-  assert.match(server, /submit_b2b_lead_v1/);
+  assert.match(server, /submit_b2b_lead_v2/);
+  assert.match(server, /getB2bIntakeAbuseKey/);
   assert.doesNotMatch(server, /sendExternalEmail|isExternalEmailEnabled/);
   assert.match(quote, /Submit enquiry to CornerMex|submitB2bLead/);
   assert.match(quote, /idempotency_key: submissionKey/);
@@ -25,12 +29,16 @@ test("L5R public B2B intake is real, idempotent and server mediated", async () =
   assert.match(migration, /drop policy if exists b2b_leads_public_intake/);
   assert.match(migration, /revoke all on table public\.b2b_leads from anon, authenticated/);
   assert.match(
-    migration,
-    /grant execute on function public\.submit_b2b_lead_v1[\s\S]*to service_role/,
+    antiAbuseMigration,
+    /revoke all on function public\.submit_b2b_lead_v1[\s\S]*service_role/,
+  );
+  assert.match(
+    antiAbuseMigration,
+    /grant execute on function public\.submit_b2b_lead_v2[\s\S]*to service_role/,
   );
   assert.doesNotMatch(
-    migration,
-    /grant execute on function public\.submit_b2b_lead_v1[\s\S]*to anon/,
+    antiAbuseMigration,
+    /grant execute on function public\.submit_b2b_lead_v2[\s\S]*to anon/,
   );
 });
 

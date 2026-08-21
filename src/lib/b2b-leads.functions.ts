@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
+import { setResponseHeader, setResponseStatus } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin } from "@/lib/admin-authorization.server";
+import { getB2bIntakeAbuseKey } from "@/lib/b2b-intake-abuse.server";
 import {
   B2B_LEAD_PRIORITIES,
   B2B_LEAD_STATUSES,
@@ -12,7 +14,7 @@ import {
 
 type RpcError = { message?: string } | null;
 type B2bRpcName =
-  | "submit_b2b_lead_v1"
+  | "submit_b2b_lead_v2"
   | "admin_list_b2b_leads_v1"
   | "admin_get_b2b_lead_v1"
   | "admin_update_b2b_lead_v1"
@@ -21,11 +23,9 @@ type B2bRpcName =
   | "admin_add_b2b_lead_note_v1"
   | "admin_delete_b2b_lead_note_v1";
 
+type B2bRpcResponse = { data: unknown; error: RpcError };
 type B2bRpcClient = {
-  rpc: (
-    fn: B2bRpcName,
-    args: Record<string, unknown>,
-  ) => PromiseLike<{ data: unknown; error: RpcError }>;
+  rpc: (fn: B2bRpcName, args: Record<string, unknown>) => PromiseLike<B2bRpcResponse>;
 };
 
 const httpUrl = z
@@ -127,6 +127,18 @@ const LeadSubmissionResultSchema = z.object({
   duplicate: z.boolean(),
 });
 
+const GuardedLeadSubmissionSchema = z.union([
+  z.object({
+    id: z.string().uuid(),
+    duplicate: z.boolean(),
+    rate_limited: z.literal(false),
+  }),
+  z.object({
+    rate_limited: z.literal(true),
+    retry_after_seconds: z.number().int().min(1).max(86400),
+  }),
+]);
+
 const LeadDetailSchema = z.object({
   lead: B2bLeadSchema,
   history: z.array(LeadStatusEventSchema),
@@ -149,12 +161,25 @@ function userFacingError(error: RpcError, fallback: string) {
   if (code) throw new Error(code);
 }
 
+function throwPublicIntakeUnavailable(): never {
+  setResponseStatus(503);
+  console.error("[B2B intake] guarded limiter or persistence backend unavailable");
+  throw new Error("Enquiry submission is temporarily unavailable. Please try again later.");
+}
+
 export const submitB2bLead = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof LeadInput>) => LeadInput.parse(input))
   .handler(async ({ data }): Promise<B2bLeadSubmissionResult> => {
-    const { data: result, error } = await (supabaseAdmin as unknown as B2bRpcClient).rpc(
-      "submit_b2b_lead_v1",
-      {
+    let abuseKey: string;
+    try {
+      abuseKey = getB2bIntakeAbuseKey();
+    } catch {
+      throwPublicIntakeUnavailable();
+    }
+
+    let response: B2bRpcResponse;
+    try {
+      response = await (supabaseAdmin as unknown as B2bRpcClient).rpc("submit_b2b_lead_v2", {
         p_full_name: data.full_name,
         p_company: data.company,
         p_email: data.email,
@@ -167,10 +192,25 @@ export const submitB2bLead = createServerFn({ method: "POST" })
         p_message: data.message ?? null,
         p_contact_preference: data.contact_preference ?? null,
         p_idempotency_key: data.idempotency_key,
-      },
-    );
-    userFacingError(error, "CM_B2B_LEAD_SUBMIT_FAILED");
-    return LeadSubmissionResultSchema.parse(result);
+        p_abuse_key: abuseKey,
+      });
+    } catch {
+      throwPublicIntakeUnavailable();
+    }
+
+    const { data: result, error } = response;
+    if (error) throwPublicIntakeUnavailable();
+
+    const guarded = GuardedLeadSubmissionSchema.safeParse(result);
+    if (!guarded.success) throwPublicIntakeUnavailable();
+    if (guarded.data.rate_limited) {
+      setResponseStatus(429);
+      setResponseHeader("Retry-After", String(guarded.data.retry_after_seconds));
+      console.warn("[B2B intake] request throttled");
+      throw new Error("Too many enquiry attempts. Please try again later.");
+    }
+
+    return LeadSubmissionResultSchema.parse(guarded.data);
   });
 
 export const adminListB2bLeads = createServerFn({ method: "GET" })
