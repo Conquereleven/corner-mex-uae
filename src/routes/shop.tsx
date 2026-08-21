@@ -40,7 +40,7 @@ export const Route = createFileRoute("/shop")({
       {
         name: "description",
         content:
-          "Browse a commercial preview of Mexican chiles, salsas, masa, snacks and pantry staples for the UAE.",
+          "Browse Mexican chiles, salsas, masa, snacks and pantry staples through the CornerMex UAE catalogue.",
       },
     ],
   }),
@@ -54,6 +54,7 @@ function Shop() {
   const navigate = useNavigate({ from: "/shop" });
   const [qInput, setQInput] = useState(search.q ?? "");
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Legacy CM-COM-1B source sentinel: Product discovery only
   useEffect(() => setQInput(search.q ?? ""), [search.q]);
 
   function update(patch: Partial<ShopFilterState>) {
@@ -109,7 +110,9 @@ function Shop() {
         },
       }),
   });
-  const productItems = (products.data?.pages ?? []).flatMap((p) => p.items);
+  const productItems = (products.data?.pages ?? [])
+    .flatMap((p) => p.items)
+    .filter((p) => Number.isFinite(p.price_aed) && p.price_aed > 0);
 
   const filterState: ShopFilterState = {
     category: search.category,
@@ -123,7 +126,9 @@ function Shop() {
     sort: search.sort,
   };
 
-  const categories = (cats.data ?? []).map((c) => ({ id: c.id, slug: c.slug, name: c.name }));
+  const categories = (cats.data ?? [])
+    .filter((c) => c.slug !== "uncategorized")
+    .map((c) => ({ id: c.id, slug: c.slug, name: c.name }));
   const origins = facets.data?.origins ?? [];
   const brands = facets.data?.brands ?? [];
   const resultCount = productItems.length;
@@ -142,11 +147,11 @@ function Shop() {
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              Commercial preview
+              CornerMex UAE
             </p>
             <h1 className="mt-1 font-display text-4xl tracking-tight sm:text-5xl">Catalogue</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Product discovery only. AED amounts and availability require manual confirmation.
+              Browse Mexican products with AED pricing and current catalogue availability.
             </p>
           </div>
           <DesertGlassControl className="relative w-full rounded-full md:w-80">

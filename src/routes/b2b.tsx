@@ -3,15 +3,14 @@ import { useTranslation } from "react-i18next";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ClipboardList, Mail, BadgeCheck } from "lucide-react";
-import i18n from "@/lib/i18n";
 import { siteUrl } from "@/lib/site-url";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/b2b")({
   head: () => {
-    const t = i18n.getFixedT(i18n.language || "en", "t");
-    const title = t("pages.b2b.meta.title");
-    const description = t("pages.b2b.meta.description");
+    const title = "For Business — Mexican supply for UAE businesses | Corner Mex";
+    const description =
+      "Browse the CornerMex UAE catalogue and submit product, volume and destination requirements for a human-reviewed written B2B quote.";
     return {
       meta: [
         { title },
@@ -34,14 +33,20 @@ function B2B() {
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
         <span className="text-[11px] uppercase tracking-[0.2em] text-primary">
-          Commercial preview · {t("pages.b2b.eyebrow")}
+          For business · UAE
         </span>
-        <h1 className="mt-4 font-display text-5xl tracking-tight">{t("pages.b2b.title")}</h1>
-        <p className="mt-6 text-lg text-muted-foreground">{t("pages.b2b.lede")}</p>
+        <h1 className="mt-4 font-display text-5xl tracking-tight">
+          Mexican supply for UAE businesses.
+        </h1>
+        <p className="mt-6 text-lg text-muted-foreground">
+          Browse the CornerMex catalogue, then submit your product, volume and destination
+          requirements. Availability, AED pricing, delivery options and commercial terms are
+          confirmed through a human-reviewed written quote before commitment.
+        </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link to="/b2b/catalog">
             <Button size="lg" className="min-h-11 rounded-full">
-              Explore Wave 1 <ArrowRight className="ms-2 h-4 w-4" />
+              Explore business catalogue <ArrowRight className="ms-2 h-4 w-4" />
             </Button>
           </Link>
           <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>

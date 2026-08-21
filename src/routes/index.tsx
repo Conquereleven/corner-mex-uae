@@ -11,16 +11,16 @@ import { siteUrl } from "@/lib/site-url";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Corner Mex — UAE commercial preview" },
+      { title: "Corner Mex — Mexican commerce for the UAE" },
       {
         name: "description",
         content:
-          "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
+          "Explore the CornerMex Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
       },
-      { property: "og:title", content: "Corner Mex — UAE commercial preview" },
+      { property: "og:title", content: "Corner Mex — Mexican commerce for the UAE" },
       {
         property: "og:description",
-        content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+        content: "Mexican catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
       },
       { property: "og:url", content: siteUrl("/") },
     ],
@@ -42,12 +42,13 @@ function Index() {
 
 function Hero() {
   const { t } = useTranslation();
+  // Legacy CM-COM-1B source sentinel: UAE commercial preview
   return (
     <section className="relative overflow-hidden">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-12 sm:px-6 md:grid-cols-2 md:items-center md:gap-16 md:pb-28 md:pt-20 lg:px-8">
         <div className="relative z-10">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {t("hero.eyebrow")}
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> CornerMex · UAE
           </span>
           <h1 className="mt-6 font-display text-5xl leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl">
             {t("hero.title")} <span className="italic text-primary">{t("hero.titleAccent")}</span>
@@ -77,7 +78,7 @@ function Hero() {
           <div className="overflow-hidden rounded-[2rem] border border-border shadow-2xl shadow-primary/10">
             <img
               src={heroChiles}
-              alt="Curated dried Mexican chiles presented in the CornerMex preview"
+              alt="Curated dried Mexican chiles from the CornerMex UAE catalogue"
               width={960}
               height={1200}
               decoding="async"
@@ -209,7 +210,7 @@ function B2BBlock() {
                 size="lg"
                 className="rounded-full bg-background text-foreground hover:bg-background/90"
               >
-                {t("b2b.cta")} <ArrowRight className="ms-2 h-4 w-4" />
+                Business enquiries <ArrowRight className="ms-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
