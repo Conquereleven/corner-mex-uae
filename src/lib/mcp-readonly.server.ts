@@ -15,10 +15,7 @@ export type CornerMexMcpPrincipal = {
 };
 
 export type CornerMexMcpReadAdapter = {
-  execute(
-    tool: CornerMexMcpToolName,
-    args: Record<string, unknown>,
-  ): Promise<unknown>;
+  execute(tool: CornerMexMcpToolName, args: Record<string, unknown>): Promise<unknown>;
 };
 
 type JsonRpcId = string | number | null;
@@ -67,12 +64,7 @@ function response(id: JsonRpcId, result: unknown): JsonRpcResponse {
   return { jsonrpc: "2.0", id, result };
 }
 
-function error(
-  id: JsonRpcId,
-  code: number,
-  message: string,
-  data?: unknown,
-): JsonRpcResponse {
+function error(id: JsonRpcId, code: number, message: string, data?: unknown): JsonRpcResponse {
   return {
     jsonrpc: "2.0",
     id,
@@ -129,18 +121,12 @@ export async function handleCornerMexMcpRequest({
     }
 
     const args = request.params?.arguments;
-    if (
-      args !== undefined &&
-      (typeof args !== "object" || args === null || Array.isArray(args))
-    ) {
+    if (args !== undefined && (typeof args !== "object" || args === null || Array.isArray(args))) {
       return error(id, -32602, "Tool arguments must be an object");
     }
 
     try {
-      const data = await adapter.execute(
-        name,
-        (args as Record<string, unknown> | undefined) ?? {},
-      );
+      const data = await adapter.execute(name, (args as Record<string, unknown> | undefined) ?? {});
       return response(id, {
         content: [{ type: "text", text: JSON.stringify(data) }],
         structuredContent: data,
