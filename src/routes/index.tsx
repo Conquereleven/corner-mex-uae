@@ -47,7 +47,7 @@ function Hero() {
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-12 sm:px-6 md:grid-cols-2 md:items-center md:gap-16 md:pb-28 md:pt-20 lg:px-8">
         <div className="relative z-10">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {t("hero.eyebrow")}
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> CornerMex · UAE
           </span>
           <h1 className="mt-6 font-display text-5xl leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl">
             {t("hero.title")} <span className="italic text-primary">{t("hero.titleAccent")}</span>
@@ -209,7 +209,7 @@ function B2BBlock() {
                 size="lg"
                 className="rounded-full bg-background text-foreground hover:bg-background/90"
               >
-                {t("b2b.cta")} <ArrowRight className="ms-2 h-4 w-4" />
+                Business enquiries <ArrowRight className="ms-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
