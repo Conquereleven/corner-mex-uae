@@ -10,10 +10,11 @@ import { siteUrl } from "@/lib/site-url";
 export const Route = createFileRoute("/b2b_/catalog")({
   head: () => ({
     meta: [
-      { title: "Wave 1 B2B catalogue — CornerMex UAE" },
+      { title: "B2B catalogue — CornerMex UAE" },
       {
         name: "description",
-        content: "Build a manual quote-request shortlist from 15 Founder-approved Wave 1 products.",
+        content:
+          "Build a product shortlist for a human-reviewed CornerMex business quotation in the UAE.",
       },
     ],
     links: [{ rel: "canonical", href: siteUrl("/b2b/catalog") }],
