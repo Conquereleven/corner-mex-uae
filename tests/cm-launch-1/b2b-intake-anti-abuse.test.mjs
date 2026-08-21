@@ -133,6 +133,11 @@ test("limiter backend failure and missing trusted identity fail closed before pe
   assert.match(abuse, /CM_B2B_ABUSE_BACKEND_UNAVAILABLE/);
   assert.match(server, /if \(error\) throwPublicIntakeUnavailable\(\)/);
   assert.match(server, /setResponseStatus\(503\)/);
+
+  const rpcStart = server.indexOf('rpc("submit_b2b_lead_v2"');
+  const rpcCatch = server.indexOf("catch {", rpcStart);
+  assert.ok(rpcStart >= 0 && rpcCatch > rpcStart);
+  assert.ok(server.indexOf("throwPublicIntakeUnavailable();", rpcCatch) > rpcCatch);
   assert.ok(
     migration.indexOf("consume_b2b_intake_budget_v1(p_abuse_key, now())") <
       migration.indexOf("v_result := public.submit_b2b_lead_v1"),
