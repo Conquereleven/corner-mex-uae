@@ -24,7 +24,10 @@ test("Product detail fails closed on non-positive variants and adds CornerMex ca
   const product = await read("src/routes/product.$slug.tsx");
   assert.match(product, /hasPublicSellableVariant/);
   assert.match(product, /variant\.price_aed > 0/);
-  assert.match(product, /if \(!product \|\| !hasPublicSellableVariant\(product\)\) throw notFound\(\)/);
+  assert.match(
+    product,
+    /if \(!product \|\| !hasPublicSellableVariant\(product\)\) throw notFound\(\)/,
+  );
   assert.match(product, /Sold by CornerMex/);
   assert.match(product, /addToCart/);
   assert.match(product, /Add to cart/);
