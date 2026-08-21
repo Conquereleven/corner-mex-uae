@@ -61,6 +61,13 @@ const EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS = new Map([
       name: "cm_launch_1_l5r_quote_draft_integrity",
     },
   ],
+  [
+    "20260821023000_cm_launch_1_l5r_b2b_intake_anti_abuse.sql",
+    {
+      version: "20260821033221",
+      name: "cm_launch_1_l5r_b2b_intake_anti_abuse",
+    },
+  ],
 ]);
 
 const extensionMigrations = (extensions.migrations ?? []).map((item) => item.filename).sort();
@@ -157,6 +164,7 @@ const EXPECTED_PRODUCTION_MIGRATIONS = [
   ["20260820225944", "cm_launch_1_l5r_canonical_b2b_lead_pipeline"],
   ["20260820230032", "cm_launch_1_l5r_pipeline_operations"],
   ["20260820230100", "cm_launch_1_l5r_quote_draft_integrity"],
+  ["20260821033221", "cm_launch_1_l5r_b2b_intake_anti_abuse"],
 ];
 const recordedProductionMigrations = [
   ...(contract.canonicalProductionMigrations ?? []).map(({ version, name }) => [version, name]),
