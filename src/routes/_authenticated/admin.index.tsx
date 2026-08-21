@@ -43,7 +43,7 @@ function AdminHome() {
       <div className="space-y-6">
         <div>
           <h1 className="font-display text-3xl tracking-tight">Commerce overview</h1>
-          <p className="text-sm text-muted-foreground">Loading canonical commerce metrics…</p>
+          <p className="text-sm text-muted-foreground">Loading live commerce metrics…</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 7 }).map((_, index) => (
@@ -60,7 +60,7 @@ function AdminHome() {
       <EmptyState
         icon={AlertTriangle}
         title="Admin overview could not be loaded"
-        description="Canonical commerce metrics are temporarily unavailable. No fallback data was fabricated."
+        description="Live commerce metrics are temporarily unavailable. Try again in a moment."
         action={
           <Button variant="outline" onClick={() => query.refetch()}>
             Try again
@@ -122,10 +122,10 @@ function AdminHome() {
         <div>
           <h1 className="font-display text-3xl tracking-tight">Commerce overview</h1>
           <p className="text-sm text-muted-foreground">
-            Canonical first-party order, customer and catalog metrics. Refreshed every 60 seconds.
+            Live first-party order, customer and catalogue metrics. Refreshed every 60 seconds.
           </p>
         </div>
-        <Badge variant="outline">Canonical production model</Badge>
+        <Badge variant="outline">UAE operations</Badge>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
