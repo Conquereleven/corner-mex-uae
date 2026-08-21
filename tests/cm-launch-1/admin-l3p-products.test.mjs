@@ -81,3 +81,18 @@ test("L3P dashboard exposes products, create and import without soon flags", asy
   assert.doesNotMatch(source, /\/admin\/products\/new"[^\n]*soon: true/);
   assert.doesNotMatch(source, /\/admin\/products\/import"[^\n]*soon: true/);
 });
+
+test("L3P production reconciliation is exact and Founder-gated", async () => {
+  const contractPath = "contracts/canonical-active-migration-extensions-v1.json";
+  const migrationFile = "20260820100000_cm_launch_1_l3p_admin_product_management.sql";
+  const extension = JSON.parse(await read(contractPath));
+  const entry = extension.migrations.find(({ filename }) => filename === migrationFile);
+
+  assert.ok(entry);
+  assert.equal(entry.owner, "canonical_cornermex");
+  assert.equal(entry.purpose, "cm_launch_1_l3p_admin_product_management");
+  assert.equal(entry.productionApplied, true);
+  assert.equal(entry.productionVersion, "20260820204004");
+  assert.equal(entry.productionProjectRef, "wlrfknmrhowldygmvtvn");
+  assert.equal(entry.requiresFounderProductionGate, true);
+});

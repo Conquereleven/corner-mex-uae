@@ -6,7 +6,9 @@
       "filename": "20260820100000_cm_launch_1_l3p_admin_product_management.sql",
       "owner": "canonical_cornermex",
       "purpose": "cm_launch_1_l3p_admin_product_management",
-      "productionApplied": false,
+      "productionApplied": true,
+      "productionVersion": "20260820204004",
+      "productionProjectRef": "wlrfknmrhowldygmvtvn",
       "requiresFounderProductionGate": true
     },
     {
