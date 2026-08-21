@@ -23,7 +23,9 @@ function Cart() {
       <SiteLayout>
         <section className="mx-auto max-w-3xl px-4 py-24 text-center sm:px-6">
           <h1 className="font-display text-4xl tracking-tight">Your cart is empty</h1>
-          <p className="mt-4 text-muted-foreground">Browse the shop and add products to your cart.</p>
+          <p className="mt-4 text-muted-foreground">
+            Browse the shop and add products to your cart.
+          </p>
           <Link to="/shop">
             <Button className="mt-8 rounded-full">Go to shop</Button>
           </Link>
