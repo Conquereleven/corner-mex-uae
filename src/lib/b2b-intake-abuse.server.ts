@@ -5,25 +5,15 @@ import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
 const ABUSE_KEY_NAMESPACE = "cornermex:b2b-intake:v1";
 
 export function selectTrustedClientIp({
-  forwardedFor,
   realIp,
   directIp,
   railwayRuntime,
 }: {
-  forwardedFor?: string;
   realIp?: string;
   directIp?: string;
   railwayRuntime: boolean;
 }): string | null {
-  if (railwayRuntime) {
-    const forwardedCandidates = (forwardedFor ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean);
-    const proxyCandidate = forwardedCandidates.at(-1) ?? realIp?.trim();
-    return normalizeIp(proxyCandidate);
-  }
-
+  if (railwayRuntime) return normalizeIp(realIp);
   return normalizeIp(directIp);
 }
 
@@ -33,9 +23,10 @@ export function hashB2bIntakeAbuseKey(ip: string, pepper: string): string {
 }
 
 export function getB2bIntakeAbuseKey(): string {
-  const railwayRuntime = Boolean(process.env.RAILWAY_ENVIRONMENT_ID || process.env.RAILWAY_PROJECT_ID);
+  const railwayRuntime = Boolean(
+    process.env.RAILWAY_ENVIRONMENT_ID || process.env.RAILWAY_PROJECT_ID,
+  );
   const ip = selectTrustedClientIp({
-    forwardedFor: getRequestHeader("x-forwarded-for"),
     realIp: getRequestHeader("x-real-ip"),
     directIp: railwayRuntime ? undefined : getRequestIP(),
     railwayRuntime,
