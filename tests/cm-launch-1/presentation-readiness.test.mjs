@@ -4,16 +4,21 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 
-test("public home and shop no longer present CornerMex as a commercial preview", async () => {
-  const [home, shop] = await Promise.all([
+test("public presentation surfaces use current operating language", async () => {
+  const [header, home, shop, b2b, about] = await Promise.all([
+    read("src/components/site/Header.tsx"),
     read("src/routes/index.tsx"),
     read("src/routes/shop.tsx"),
+    read("src/routes/b2b.tsx"),
+    read("src/routes/about.tsx"),
   ]);
 
-  assert.doesNotMatch(home, /commercial preview/i);
-  assert.doesNotMatch(shop, /commercial preview/i);
+  assert.match(header, />\s*UAE commerce\s*</);
+  assert.match(home, /> CornerMex · UAE\s*</);
   assert.match(home, /Mexican commerce for the UAE/);
-  assert.match(shop, /CornerMex UAE/);
+  assert.match(shop, />\s*CornerMex UAE\s*</);
+  assert.match(b2b, />\s*For business · UAE\s*</);
+  assert.match(about, /CornerMex combines a curated Mexican pantry catalogue/);
 });
 
 test("shop hides placeholder taxonomy from customer-facing filters", async () => {
