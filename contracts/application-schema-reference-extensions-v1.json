@@ -75,7 +75,7 @@
     },
     {
       "kind": "function",
-      "name": "submit_b2b_lead_v1",
+      "name": "submit_b2b_lead_v2",
       "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
