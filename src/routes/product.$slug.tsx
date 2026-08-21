@@ -148,7 +148,9 @@ function ProductPage() {
     queryKey: ["product", slug, lang],
     queryFn: async () => {
       const localizedProduct = await getProduct({ data: { slug, lang } });
-      return localizedProduct && hasPublicSellableVariant(localizedProduct) ? localizedProduct : null;
+      return localizedProduct && hasPublicSellableVariant(localizedProduct)
+        ? localizedProduct
+        : null;
     },
     initialData: lang === "en" ? initialProduct : undefined,
     staleTime: 60_000,
@@ -177,7 +179,8 @@ function ProductPage() {
   const goPrev = () =>
     gallery.length > 0 && setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
   const goNext = () => gallery.length > 0 && setActiveImg((i) => (i + 1) % gallery.length);
-  const variant = sellableVariants.find((candidate) => candidate.id === variantId) ?? sellableVariants[0];
+  const variant =
+    sellableVariants.find((candidate) => candidate.id === variantId) ?? sellableVariants[0];
 
   function addSelectedVariant() {
     if (!variant || variant.price_aed <= 0 || !p.seller) return;
