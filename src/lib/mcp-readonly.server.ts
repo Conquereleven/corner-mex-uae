@@ -15,7 +15,10 @@ export type CornerMexMcpPrincipal = {
 };
 
 export type CornerMexMcpReadAdapter = {
-  execute(tool: CornerMexMcpToolName, args: Record<string, unknown>): Promise<unknown>;
+  execute(
+    tool: CornerMexMcpToolName,
+    args: Record<string, unknown>,
+  ): Promise<unknown>;
 };
 
 type JsonRpcId = string | number | null;
@@ -64,8 +67,17 @@ function response(id: JsonRpcId, result: unknown): JsonRpcResponse {
   return { jsonrpc: "2.0", id, result };
 }
 
-function error(id: JsonRpcId, code: number, message: string, data?: unknown): JsonRpcResponse {
-  return { jsonrpc: "2.0", id, error: { code, message, ...(data === undefined ? {} : { data }) } };
+function error(
+  id: JsonRpcId,
+  code: number,
+  message: string,
+  data?: unknown,
+): JsonRpcResponse {
+  return {
+    jsonrpc: "2.0",
+    id,
+    error: { code, message, ...(data === undefined ? {} : { data }) },
+  };
 }
 
 function parseToolName(value: unknown): CornerMexMcpToolName | null {
@@ -98,16 +110,18 @@ export async function handleCornerMexMcpRequest({
 
   if (request.method === "tools/list") {
     return response(id, {
-      tools: CORNERMEX_MCP_READ_TOOLS.filter((tool) => principal.permissions.has(tool.permission)).map(
-        ({ permission: _permission, ...tool }) => tool,
-      ),
+      tools: CORNERMEX_MCP_READ_TOOLS.filter((tool) =>
+        principal.permissions.has(tool.permission),
+      ).map(({ permission: _permission, ...tool }) => tool),
     });
   }
 
   if (request.method === "tools/call") {
     const name = parseToolName(request.params?.name);
     if (!name) return error(id, -32602, "Unknown CornerMex MCP tool");
-    if (isMcpMutationTool(name)) return error(id, -32003, "Write tools are disabled in CM-MCP-2");
+    if (isMcpMutationTool(name)) {
+      return error(id, -32003, "Write tools are disabled in CM-MCP-2");
+    }
 
     const permission = requiredPermissionForMcpTool(name);
     if (!principal.permissions.has(permission)) {
@@ -115,12 +129,18 @@ export async function handleCornerMexMcpRequest({
     }
 
     const args = request.params?.arguments;
-    if (args !== undefined && (typeof args !== "object" || args === null || Array.isArray(args))) {
+    if (
+      args !== undefined &&
+      (typeof args !== "object" || args === null || Array.isArray(args))
+    ) {
       return error(id, -32602, "Tool arguments must be an object");
     }
 
     try {
-      const data = await adapter.execute(name, (args as Record<string, unknown> | undefined) ?? {});
+      const data = await adapter.execute(
+        name,
+        (args as Record<string, unknown> | undefined) ?? {},
+      );
       return response(id, {
         content: [{ type: "text", text: JSON.stringify(data) }],
         structuredContent: data,
