@@ -18,17 +18,17 @@ export function B2bCatalogHero({ selectedCount }: { selectedCount: number }) {
         <div className="absolute inset-0 bg-gradient-to-r from-obsidian via-obsidian/90 to-obsidian/20" />
         <div className="relative max-w-3xl px-6 py-14 sm:px-10 sm:py-20 lg:px-16 lg:py-24">
           <span className="inline-flex min-h-8 items-center rounded-full border border-background/25 bg-background/10 px-3 text-[11px] uppercase tracking-[0.2em] text-background/80 backdrop-blur">
-            Wave 1 · B2B catalogue
+            CornerMex · Business catalogue
           </span>
           <h1 className="mt-6 font-display text-5xl leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
             Build a Mexican pantry shortlist for your business.
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-background/75 sm:text-lg">
-            Explore 15 Founder-approved products for UAE hospitality and retail. Pricing and
-            availability are confirmed only through a manually reviewed quotation.
+            Explore a curated selection for UAE hospitality and retail. Pricing, availability,
+            delivery and commercial terms are confirmed through a human-reviewed written quote.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#wave-1-products">
+            <a href="#business-products">
               <Button
                 size="lg"
                 className="min-h-11 rounded-full bg-background text-foreground hover:bg-background/90"

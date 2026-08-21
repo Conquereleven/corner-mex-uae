@@ -23,7 +23,9 @@ function Cart() {
       <SiteLayout>
         <section className="mx-auto max-w-3xl px-4 py-24 text-center sm:px-6">
           <h1 className="font-display text-4xl tracking-tight">Your cart is empty</h1>
-          <p className="mt-4 text-muted-foreground">Browse the shop to prepare a B2C cart.</p>
+          <p className="mt-4 text-muted-foreground">
+            Browse the shop and add products to your cart.
+          </p>
           <Link to="/shop">
             <Button className="mt-8 rounded-full">Go to shop</Button>
           </Link>
@@ -37,7 +39,8 @@ function Cart() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <h1 className="font-display text-4xl tracking-tight">Your cart</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          B2C cart · prices are shown in AED and remain subject to checkout verification.
+          Prices are shown in AED. Current price, availability and shipping are verified at
+          checkout.
         </p>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
