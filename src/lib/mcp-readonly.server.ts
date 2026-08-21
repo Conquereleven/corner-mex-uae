@@ -4,7 +4,7 @@ import {
   type CornerMexMcpToolName,
   isMcpMutationTool,
   requiredPermissionForMcpTool,
-} from "@/lib/mcp-contract";
+} from "./mcp-contract.ts";
 
 export const CORNERMEX_MCP_PROTOCOL_VERSION = "2026-07-28";
 
