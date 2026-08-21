@@ -56,9 +56,7 @@ const EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS = new Map([
   ],
 ]);
 
-const extensionMigrations = (extensions.migrations ?? [])
-  .map((item) => item.filename)
-  .sort();
+const extensionMigrations = (extensions.migrations ?? []).map((item) => item.filename).sort();
 const extensionProductionMigrations = [];
 for (const item of extensions.migrations ?? []) {
   if (item.owner !== "canonical_cornermex")
@@ -87,7 +85,9 @@ for (const item of extensions.migrations ?? []) {
     }
   } else if (item.productionApplied === false) {
     if (expectedProduction) {
-      errors.push(`verified canonical extension is not marked production applied: ${item.filename}`);
+      errors.push(
+        `verified canonical extension is not marked production applied: ${item.filename}`,
+      );
     }
     if ("productionVersion" in item || "productionProjectRef" in item) {
       errors.push(`unapplied canonical extension carries production evidence: ${item.filename}`);
