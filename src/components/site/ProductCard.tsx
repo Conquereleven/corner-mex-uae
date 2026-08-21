@@ -43,9 +43,6 @@ export function ProductCard({
             HORECA
           </span>
         )}
-        <span className="absolute end-3 top-3 rounded-full border border-white/40 bg-background/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-foreground backdrop-blur">
-          Preview
-        </span>
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -53,14 +50,9 @@ export function ProductCard({
         </span>
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         <div className="mt-auto flex items-end justify-between pt-3">
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-lg font-semibold text-foreground">
-              {cur.format(p.price_aed)}
-            </span>
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              indicative
-            </span>
-          </div>
+          <span className="font-display text-lg font-semibold text-foreground">
+            {cur.format(p.price_aed)}
+          </span>
           {p.spice_level && p.spice_level > 0 && (
             <span className="flex items-center gap-0.5 text-primary">
               {Array.from({ length: Math.min(p.spice_level, 4) }).map((_, i) => (
