@@ -11,16 +11,16 @@ import { siteUrl } from "@/lib/site-url";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Corner Mex — UAE commercial preview" },
+      { title: "Corner Mex — Mexican commerce for the UAE" },
       {
         name: "description",
         content:
-          "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
+          "Explore the CornerMex Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
       },
-      { property: "og:title", content: "Corner Mex — UAE commercial preview" },
+      { property: "og:title", content: "Corner Mex — Mexican commerce for the UAE" },
       {
         property: "og:description",
-        content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+        content: "Mexican catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
       },
       { property: "og:url", content: siteUrl("/") },
     ],
@@ -77,7 +77,7 @@ function Hero() {
           <div className="overflow-hidden rounded-[2rem] border border-border shadow-2xl shadow-primary/10">
             <img
               src={heroChiles}
-              alt="Curated dried Mexican chiles presented in the CornerMex preview"
+              alt="Curated dried Mexican chiles from the CornerMex UAE catalogue"
               width={960}
               height={1200}
               decoding="async"
