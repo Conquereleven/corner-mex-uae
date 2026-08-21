@@ -42,6 +42,7 @@ function Index() {
 
 function Hero() {
   const { t } = useTranslation();
+  // Legacy CM-COM-1B source sentinel: UAE commercial preview
   return (
     <section className="relative overflow-hidden">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-12 sm:px-6 md:grid-cols-2 md:items-center md:gap-16 md:pb-28 md:pt-20 lg:px-8">
