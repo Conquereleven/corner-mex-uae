@@ -54,6 +54,7 @@ function Shop() {
   const navigate = useNavigate({ from: "/shop" });
   const [qInput, setQInput] = useState(search.q ?? "");
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Legacy CM-COM-1B source sentinel: Product discovery only
   useEffect(() => setQInput(search.q ?? ""), [search.q]);
 
   function update(patch: Partial<ShopFilterState>) {
