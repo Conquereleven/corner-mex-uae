@@ -10,7 +10,10 @@ export function B2bProductGrid({
   onToggle: (productId: string) => void;
 }) {
   return (
-    <div id="wave-1-products" className="mx-auto max-w-7xl scroll-mt-28 px-4 pt-10 sm:px-6 lg:px-8">
+    <div
+      id="business-products"
+      className="mx-auto max-w-7xl scroll-mt-28 px-4 pt-10 sm:px-6 lg:px-8"
+    >
       {B2B_CATEGORIES.map((category, categoryIndex) => {
         const products = productsInCategory(category.id);
         return (
