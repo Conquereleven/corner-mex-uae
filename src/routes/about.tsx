@@ -1,18 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
 import { Building2, MapPin, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PolicyLinkGroup } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
 import { businessIdentityLine } from "@/lib/business-identity";
-import i18n from "@/lib/i18n";
 import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/about")({
   head: () => {
-    const t = i18n.getFixedT(i18n.language || "en", "t");
-    const title = t("pages.about.meta.title");
-    const description = t("pages.about.meta.description");
+    const title = "About Corner Mex — Mexican commerce for the UAE";
+    const description =
+      "CornerMex operates a curated Mexican pantry catalogue for UAE customers and a human-reviewed B2B enquiry and quote workflow.";
     return {
       meta: [
         { title },
@@ -53,7 +51,6 @@ const PILLARS = [
 ];
 
 function About() {
-  const { t } = useTranslation();
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-24 sm:px-6 lg:px-8">
@@ -61,20 +58,23 @@ function About() {
           About CornerMex
         </p>
         <h1 className="mt-3 max-w-3xl font-display text-5xl tracking-tight sm:text-6xl">
-          {t("pages.about.title")}
+          A Mexican corner in the Emirates.
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-          {t("pages.about.lede")}
+          CornerMex combines a curated Mexican pantry catalogue for UAE customers with a
+          human-reviewed B2B enquiry and quotation workflow. Signed-in customers can use the
+          authorised cash-on-delivery checkout path; business availability, pricing, delivery and
+          terms are confirmed in writing before commitment.
         </p>
         <div className="mt-10 flex flex-wrap gap-3">
           <Link to="/shop">
             <Button size="lg" className="rounded-full">
-              {t("pages.about.ctaShop")}
+              Browse the catalogue
             </Button>
           </Link>
           <Link to="/b2b">
             <Button size="lg" variant="outline" className="rounded-full">
-              {t("pages.about.ctaB2B")}
+              For business
             </Button>
           </Link>
         </div>
