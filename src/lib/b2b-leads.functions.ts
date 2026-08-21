@@ -23,11 +23,9 @@ type B2bRpcName =
   | "admin_add_b2b_lead_note_v1"
   | "admin_delete_b2b_lead_note_v1";
 
+type B2bRpcResponse = { data: unknown; error: RpcError };
 type B2bRpcClient = {
-  rpc: (
-    fn: B2bRpcName,
-    args: Record<string, unknown>,
-  ) => PromiseLike<{ data: unknown; error: RpcError }>;
+  rpc: (fn: B2bRpcName, args: Record<string, unknown>) => PromiseLike<B2bRpcResponse>;
 };
 
 const httpUrl = z
@@ -179,9 +177,9 @@ export const submitB2bLead = createServerFn({ method: "POST" })
       throwPublicIntakeUnavailable();
     }
 
-    const { data: result, error } = await (supabaseAdmin as unknown as B2bRpcClient).rpc(
-      "submit_b2b_lead_v2",
-      {
+    let response: B2bRpcResponse;
+    try {
+      response = await (supabaseAdmin as unknown as B2bRpcClient).rpc("submit_b2b_lead_v2", {
         p_full_name: data.full_name,
         p_company: data.company,
         p_email: data.email,
@@ -195,9 +193,12 @@ export const submitB2bLead = createServerFn({ method: "POST" })
         p_contact_preference: data.contact_preference ?? null,
         p_idempotency_key: data.idempotency_key,
         p_abuse_key: abuseKey,
-      },
-    );
+      });
+    } catch {
+      throwPublicIntakeUnavailable();
+    }
 
+    const { data: result, error } = response;
     if (error) throwPublicIntakeUnavailable();
 
     const guarded = GuardedLeadSubmissionSchema.safeParse(result);
