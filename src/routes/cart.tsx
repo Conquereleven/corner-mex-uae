@@ -39,7 +39,8 @@ function Cart() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <h1 className="font-display text-4xl tracking-tight">Your cart</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Prices are shown in AED. Current price, availability and shipping are verified at checkout.
+          Prices are shown in AED. Current price, availability and shipping are verified at
+          checkout.
         </p>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
