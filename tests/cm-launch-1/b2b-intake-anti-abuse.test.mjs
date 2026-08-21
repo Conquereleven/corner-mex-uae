@@ -11,11 +11,10 @@ const read = (path) => readFile(path, "utf8");
 const migrationPath =
   "supabase/migrations/20260821023000_cm_launch_1_l5r_b2b_intake_anti_abuse.sql";
 
-test("B2B abuse identity trusts the Railway-adjacent proxy hop, not client-spoofed left entries", () => {
+test("Railway runtime trusts proxy-owned X-Real-IP and rejects missing or invalid identity", () => {
   assert.equal(
     selectTrustedClientIp({
-      forwardedFor: "203.0.113.99, 198.51.100.24",
-      realIp: "192.0.2.50",
+      realIp: "198.51.100.24",
       directIp: "10.0.0.4",
       railwayRuntime: true,
     }),
@@ -23,17 +22,15 @@ test("B2B abuse identity trusts the Railway-adjacent proxy hop, not client-spoof
   );
   assert.equal(
     selectTrustedClientIp({
-      forwardedFor: undefined,
-      realIp: "198.51.100.25",
+      realIp: undefined,
       directIp: "10.0.0.4",
       railwayRuntime: true,
     }),
-    "198.51.100.25",
+    null,
   );
   assert.equal(
     selectTrustedClientIp({
-      forwardedFor: "spoofed",
-      realIp: undefined,
+      realIp: "spoofed",
       directIp: "10.0.0.4",
       railwayRuntime: true,
     }),
@@ -41,16 +38,22 @@ test("B2B abuse identity trusts the Railway-adjacent proxy hop, not client-spoof
   );
 });
 
-test("non-Railway runtime uses transport IP and ignores forwarded spoofing", () => {
+test("non-Railway runtime uses transport IP", () => {
   assert.equal(
     selectTrustedClientIp({
-      forwardedFor: "203.0.113.99",
       realIp: "192.0.2.50",
       directIp: "127.0.0.1",
       railwayRuntime: false,
     }),
     "127.0.0.1",
   );
+});
+
+test("Railway abuse identity does not depend on forwarded-for chains", async () => {
+  const abuse = await read("src/lib/b2b-intake-abuse.server.ts");
+
+  assert.match(abuse, /getRequestHeader\("x-real-ip"\)/);
+  assert.doesNotMatch(abuse, /x-forwarded-for/i);
 });
 
 test("abuse identity is deterministic pseudonymous HMAC rather than retained IP", () => {
@@ -146,7 +149,10 @@ test("throttling is safe to users and observable without lead PII", async () => 
   assert.match(server, /setResponseHeader\("Retry-After"/);
   assert.match(server, /Too many enquiry attempts\. Please try again later\./);
   assert.match(server, /\[B2B intake\] request throttled/);
-  assert.doesNotMatch(server, /console\.(?:warn|error)\([^\n]*(?:data\.email|data\.phone|abuseKey)/);
+  assert.doesNotMatch(
+    server,
+    /console\.(?:warn|error)\([^\n]*(?:data\.email|data\.phone|abuseKey)/,
+  );
   assert.match(migration, /allowed_count bigint/);
   assert.match(migration, /blocked_count bigint/);
   assert.match(migration, /last_seen_at < p_now - interval '7 days'/);
