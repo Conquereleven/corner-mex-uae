@@ -173,3 +173,17 @@ test("throttled path cannot mutate commerce or external messaging", async () => 
   assert.doesNotMatch(migration, /inventory_movements|payments|payment_intents|send.*email/i);
   assert.doesNotMatch(migration, /insert into public\.b2b_leads/i);
 });
+
+test("anti-abuse production migration evidence is pinned to the canonical runtime", async () => {
+  const contract = JSON.parse(
+    await read("contracts/canonical-active-migration-extensions-v1.json"),
+  );
+  const filename = "20260821023000_cm_launch_1_l5r_b2b_intake_anti_abuse.sql";
+  const record = contract.migrations.find((item) => item.filename === filename);
+
+  assert.ok(record);
+  assert.equal(record.productionApplied, true);
+  assert.equal(record.productionVersion, "20260821033221");
+  assert.equal(record.productionProjectRef, "wlrfknmrhowldygmvtvn");
+  assert.equal(record.requiresFounderProductionGate, true);
+});
