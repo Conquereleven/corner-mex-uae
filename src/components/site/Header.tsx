@@ -53,7 +53,7 @@ export function Header() {
 
           <div className="flex items-center gap-0.5">
             <DesertGlassBadge className="me-1 hidden border-primary/40 bg-primary/10 text-primary sm:inline-flex">
-              Commercial preview
+              UAE commerce
             </DesertGlassBadge>
             <Link to="/shop" search={{ sort: "newest" }} className="hidden sm:block">
               <Button variant="ghost" size="icon" aria-label="Search products">
