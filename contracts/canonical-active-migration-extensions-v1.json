@@ -42,7 +42,9 @@
       "filename": "20260821023000_cm_launch_1_l5r_b2b_intake_anti_abuse.sql",
       "owner": "canonical_cornermex",
       "purpose": "cm_launch_1_l5r_b2b_intake_anti_abuse",
-      "productionApplied": false,
+      "productionApplied": true,
+      "productionVersion": "20260821033221",
+      "productionProjectRef": "wlrfknmrhowldygmvtvn",
       "requiresFounderProductionGate": true
     }
   ]
