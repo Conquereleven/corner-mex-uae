@@ -41,14 +41,12 @@ test("CM-MCP-2 lists only read tools allowed by the principal", async () => {
   });
 
   const names = result.result.tools.map((tool) => tool.name);
-  assert.deepEqual(names, [
-    "catalog.search",
-    "catalog.get_product",
-    "orders.list",
-    "orders.get",
-  ]);
+  assert.deepEqual(names, ["catalog.search", "catalog.get_product", "orders.list", "orders.get"]);
   assert.equal(CORNERMEX_MCP_READ_TOOLS.length, 8);
-  assert.equal(names.some((name) => name.includes("transition")), false);
+  assert.equal(
+    names.some((name) => name.includes("transition")),
+    false,
+  );
 });
 
 test("CM-MCP-2 rejects all tool use without authorization", async () => {
@@ -110,16 +108,11 @@ test("CM-MCP-2 executes an authorized read through the injected adapter", async 
   });
 
   assert.equal(result.result.isError, false);
-  assert.deepEqual(adapter.calls, [
-    { tool: "catalog.search", args: { q: "tajin" } },
-  ]);
+  assert.deepEqual(adapter.calls, [{ tool: "catalog.search", args: { q: "tajin" } }]);
 });
 
 test("CM-MCP-2 HTTP route is fail-closed until OAuth wiring is separately activated", async () => {
-  const route = await readFile(
-    new URL("../../src/routes/api/mcp.ts", import.meta.url),
-    "utf8",
-  );
+  const route = await readFile(new URL("../../src/routes/api/mcp.ts", import.meta.url), "utf8");
 
   assert.match(route, /principal: null/);
   assert.match(route, /inactiveAdapter/);
