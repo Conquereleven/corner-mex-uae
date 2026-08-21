@@ -12,14 +12,27 @@ import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
 import { productCopyToPlainText } from "@/lib/product-copy";
+import { publicProductBrand } from "@/lib/public-product-brand";
 
 function productUrl(slug: string) {
   return siteUrl(`/product/${encodeURIComponent(slug)}`);
 }
 
+function hasPublicSellableVariant(product: ProductDetail | null | undefined): boolean {
+  return Boolean(
+    product?.variants.some(
+      (variant) => Number.isFinite(variant.price_aed) && variant.price_aed > 0,
+    ),
+  );
+}
+
 function buildStructuredData(product: ProductDetail) {
   const url = productUrl(product.slug);
-  const defaultVariant = product.variants[0];
+  const defaultVariant =
+    product.variants.find(
+      (variant) => Number.isFinite(variant.price_aed) && variant.price_aed > 0,
+    ) ?? null;
+  const brand = publicProductBrand(product.brand);
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -30,7 +43,7 @@ function buildStructuredData(product: ProductDetail) {
         description: productCopyToPlainText(product.seo?.long_description || product.description),
         url,
         image: product.images,
-        ...(product.brand && { brand: { "@type": "Brand", name: product.brand } }),
+        ...(brand && { brand: { "@type": "Brand", name: brand } }),
         ...(defaultVariant?.sku && { sku: defaultVariant.sku }),
         ...(product.category?.name && { category: product.category.name }),
         additionalProperty: {
@@ -67,7 +80,11 @@ function buildStructuredData(product: ProductDetail) {
 }
 
 export const Route = createFileRoute("/product/$slug")({
-  loader: ({ params }) => getProduct({ data: { slug: params.slug, lang: "en" } }),
+  loader: async ({ params }) => {
+    const product = await getProduct({ data: { slug: params.slug, lang: "en" } });
+    if (!product || !hasPublicSellableVariant(product)) throw notFound();
+    return product;
+  },
   head: ({ loaderData, params }) => {
     const product = loaderData;
     const canonical = productUrl(params.slug);
@@ -77,7 +94,7 @@ export const Route = createFileRoute("/product/$slug")({
     const description = productCopyToPlainText(
       product?.seo?.meta_description ||
         product?.description ||
-        "Explore this Mexican pantry item in the CornerMex UAE commercial preview.",
+        "Explore this Mexican pantry item through the CornerMex UAE catalogue.",
     );
     const image = product?.image;
     return {
@@ -129,7 +146,10 @@ function ProductPage() {
 
   const { data: product, isLoading } = useQuery<ProductDetail | null>({
     queryKey: ["product", slug, lang],
-    queryFn: () => getProduct({ data: { slug, lang } }),
+    queryFn: async () => {
+      const localizedProduct = await getProduct({ data: { slug, lang } });
+      return localizedProduct && hasPublicSellableVariant(localizedProduct) ? localizedProduct : null;
+    },
     initialData: lang === "en" ? initialProduct : undefined,
     staleTime: 60_000,
   });
@@ -147,16 +167,20 @@ function ProductPage() {
     throw notFound();
   }
   const p = product;
+  const publicBrand = publicProductBrand(p.brand);
+  const sellableVariants = p.variants.filter(
+    (candidate) => Number.isFinite(candidate.price_aed) && candidate.price_aed > 0,
+  );
   const gallery = p.images && p.images.length > 0 ? p.images : p.image ? [p.image] : [];
   const safeIndex = gallery.length > 0 ? Math.min(activeImg, gallery.length - 1) : 0;
   const currentImg = gallery[safeIndex];
   const goPrev = () =>
     gallery.length > 0 && setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
   const goNext = () => gallery.length > 0 && setActiveImg((i) => (i + 1) % gallery.length);
-  const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
+  const variant = sellableVariants.find((candidate) => candidate.id === variantId) ?? sellableVariants[0];
 
   function addSelectedVariant() {
-    if (!variant || !p.seller) return;
+    if (!variant || variant.price_aed <= 0 || !p.seller) return;
     addToCart(
       {
         productId: p.id,
@@ -280,14 +304,14 @@ function ProductPage() {
 
             <div className="mt-6 flex items-baseline gap-3">
               <span className="font-display text-3xl font-semibold">
-                AED {variant?.price_aed.toFixed(2)}
+                AED {variant.price_aed.toFixed(2)}
               </span>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               AED price shown for the selected variant; current price and availability are verified
               at checkout.
             </p>
-            {variant?.label && (
+            {variant.label && (
               <p className="mt-1 text-sm text-muted-foreground">
                 {variant.label} · SKU {variant.sku}
               </p>
@@ -297,17 +321,17 @@ function ProductPage() {
               {productCopyToPlainText(product.seo?.short_description || product.description)}
             </p>
 
-            {product.variants.length > 1 && (
+            {sellableVariants.length > 1 && (
               <div className="mt-8">
                 <h3 className="text-xs uppercase tracking-widest text-muted-foreground">Format</h3>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {product.variants.map((v) => (
+                  {sellableVariants.map((candidate) => (
                     <button
-                      key={v.id}
-                      onClick={() => setVariantId(v.id)}
-                      className={`rounded-full px-4 py-1.5 text-sm transition-colors ${(variantId ?? product.variants[0].id) === v.id ? "bg-foreground text-background" : "border border-border text-muted-foreground hover:text-foreground"}`}
+                      key={candidate.id}
+                      onClick={() => setVariantId(candidate.id)}
+                      className={`rounded-full px-4 py-1.5 text-sm transition-colors ${(variantId ?? sellableVariants[0].id) === candidate.id ? "bg-foreground text-background" : "border border-border text-muted-foreground hover:text-foreground"}`}
                     >
-                      {v.label}
+                      {candidate.label}
                     </button>
                   ))}
                 </div>
@@ -338,7 +362,7 @@ function ProductPage() {
                 type="button"
                 size="lg"
                 className="flex-1 rounded-full"
-                disabled={!variant || !p.seller}
+                disabled={!variant || variant.price_aed <= 0 || !p.seller}
                 onClick={addSelectedVariant}
               >
                 <ShoppingBag className="me-2 h-4 w-4" /> Add to cart
@@ -372,10 +396,10 @@ function ProductPage() {
             {productCopyToPlainText(product.seo?.long_description || product.description)}
           </p>
           <dl className="mt-8 grid gap-4 text-sm sm:grid-cols-3">
-            {product.brand && (
+            {publicBrand && (
               <div>
                 <dt className="text-muted-foreground">Brand</dt>
-                <dd className="mt-1 font-medium">{product.brand}</dd>
+                <dd className="mt-1 font-medium">{publicBrand}</dd>
               </div>
             )}
             {product.category && (
