@@ -34,6 +34,13 @@ if (extensions.contractVersion !== "canonical-active-migration-extensions-v1")
 
 const EXPECTED_EXTENSION_PRODUCTION_MIGRATIONS = new Map([
   [
+    "20260820100000_cm_launch_1_l3p_admin_product_management.sql",
+    {
+      version: "20260820204004",
+      name: "cm_launch_1_l3p_admin_product_management",
+    },
+  ],
+  [
     "20260820210000_cm_launch_1_l5r_canonical_b2b_lead_pipeline.sql",
     {
       version: "20260820225944",
@@ -146,6 +153,7 @@ const EXPECTED_PRODUCTION_MIGRATIONS = [
   ["20260819181510", "cm_com_4a_post_order_lifecycle"],
   ["20260819202909", "cm_launch_1_lifecycle_acl_hardening"],
   ["20260819215938", "cm_launch_1_notifications_canonical"],
+  ["20260820204004", "cm_launch_1_l3p_admin_product_management"],
   ["20260820225944", "cm_launch_1_l5r_canonical_b2b_lead_pipeline"],
   ["20260820230032", "cm_launch_1_l5r_pipeline_operations"],
   ["20260820230100", "cm_launch_1_l5r_quote_draft_integrity"],
