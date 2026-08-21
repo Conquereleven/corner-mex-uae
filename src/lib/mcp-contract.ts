@@ -11,6 +11,11 @@ export const CORNERMEX_MCP_PERMISSIONS = [
 
 export type CornerMexMcpPermission = (typeof CORNERMEX_MCP_PERMISSIONS)[number];
 
+type CornerMexMcpToolContract = {
+  permission: CornerMexMcpPermission;
+  mode: "read" | "write";
+};
+
 export const CORNERMEX_MCP_TOOLS = {
   "catalog.search": { permission: "catalog:read", mode: "read" },
   "catalog.get_product": { permission: "catalog:read", mode: "read" },
@@ -24,10 +29,7 @@ export const CORNERMEX_MCP_TOOLS = {
   "b2b.add_note": { permission: "b2b:write", mode: "write" },
   "orders.add_note": { permission: "orders:note", mode: "write" },
   "orders.transition_status": { permission: "orders:transition", mode: "write" },
-} as const satisfies Record<
-  string,
-  { permission: CornerMexMcpPermission; mode: "read" | "write" }
->;
+} as const satisfies Record<string, CornerMexMcpToolContract>;
 
 export type CornerMexMcpToolName = keyof typeof CORNERMEX_MCP_TOOLS;
 
