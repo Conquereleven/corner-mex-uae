@@ -21,7 +21,9 @@ test("CM-MCP-1 registry contains only the approved v1 operations", async () => {
     "orders.transition_status",
   ];
 
-  for (const tool of approvedTools) assert.match(source, new RegExp(`"${tool.replaceAll(".", "\\.")}"`));
+  for (const tool of approvedTools) {
+    assert.match(source, new RegExp(`"${tool.replaceAll(".", "\\.")}"`));
+  }
 
   assert.doesNotMatch(source, /sql\.execute|inventory\.adjust|price\.update|payments?\.execute/i);
 });
