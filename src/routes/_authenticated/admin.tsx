@@ -54,7 +54,7 @@ function AdminLayout() {
 
   return (
     <DashboardShell
-      title="Corner Mex Admin"
+      title="CornerMex Admin"
       subtitle="Commerce cockpit"
       nav={[
         {

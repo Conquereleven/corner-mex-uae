@@ -75,15 +75,22 @@ test("B2B catalogue flows into the guarded human-reviewed lead pipeline without 
   assert.match(leads, /submit_b2b_lead_v2/);
 });
 
-test("Admin journey stays role-gated and exposes Orders plus B2B Leads", async () => {
-  const [admin, leads] = await Promise.all([
+test("Admin journey stays role-gated, presentation-ready and operationally truthful", async () => {
+  const [admin, overview, leads] = await Promise.all([
     read("src/routes/_authenticated/admin.tsx"),
+    read("src/routes/_authenticated/admin.index.tsx"),
     read("src/routes/_authenticated/admin.leads.index.tsx"),
   ]);
   assert.match(admin, /getRouteAdminState/);
   assert.match(admin, /resolveRouteAccess/);
+  assert.match(admin, /title="CornerMex Admin"/);
   assert.match(admin, /to: "\/admin\/orders"/);
   assert.match(admin, /to: "\/admin\/leads"/);
+  assert.match(overview, /Live first-party order, customer and catalogue metrics/);
+  assert.match(overview, /UAE operations/);
+  assert.doesNotMatch(overview, /Canonical production model/);
   assert.match(leads, /adminListB2bLeads/);
   assert.match(leads, /Human-owned commercial pipeline/);
+  assert.match(leads, /No B2B enquiries yet/);
+  assert.match(leads, /human review, ownership and follow-up/);
 });

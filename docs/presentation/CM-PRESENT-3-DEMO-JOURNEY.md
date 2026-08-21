@@ -1,16 +1,20 @@
-# CM-PRESENT-3 Demo Journey
+# CornerMex Presentation Demo Journey
 
 Purpose: present CornerMex as an operating UAE commerce system without creating fake commercial activity or mutating production during the meeting.
 
 ## Current verified baseline
 
-- Staging service: `cornermex-web-staging.up.railway.app`
-- Starting application commit for this sprint: `908b9eb532b99c1ece9d2c1caf39c3135a0c36fb`
+- Primary presentation target: production at `corner-mex-uae-production.up.railway.app`
+- Production deployment: SUCCESS on `f61c044f5db23c1a715fee6e281fb9bf0909789c`
+- Fallback presentation target: staging at `cornermex-web-staging.up.railway.app`
+- Staging deployment: SUCCESS on the same commit
 - Active catalogue products: 195
 - Public canonical taxonomy: 9 categories
 - Active products in `uncategorized`: 0
 - Existing orders: 2, both delivered
 - Existing B2B leads: 0
+- Authorized admin roles available: 1
+- Rehearsal product: `Tajin Classico Seasoning 400gm`, AED 33.50, 1 available unit at the last pre-demo verification
 - Real payment execution remains outside the demo path
 - B2B pricing and commercial terms remain human-reviewed
 
@@ -18,11 +22,14 @@ Do not put credentials, personal customer data, API keys or Supabase secrets in 
 
 ## Pre-demo check
 
-1. Open `/api/health` and confirm `status: ok` and the expected deployed commit.
+1. Start on production. Open `/api/health` and confirm `status: ok` and the expected deployed commit.
 2. Open `/api/ready` and confirm `status: ready` and `target: reachable`.
-3. Sign in with an existing authorized account before the meeting if the private admin segment will be shown.
-4. Open `/admin` once and confirm Orders and B2B Leads render before starting the presentation.
-5. Do not change Railway capability flags during the meeting.
+3. Sign in with the existing authorized admin account before the meeting if the private admin segment will be shown.
+4. Open `/admin` once and confirm Overview, Orders and B2B Leads render before starting the presentation.
+5. Keep staging ready as the fallback target if production connectivity is interrupted.
+6. Do not change Railway capability flags during the meeting.
+
+If the machine used for the meeting cannot complete the production health/readiness checks, switch to staging rather than changing data, permissions or capability flags.
 
 If checkout execution is disabled by environment policy, keep the demo at the server-priced checkout preview and explain that execution is feature-gated. Do not activate a flag as part of the presentation.
 
@@ -116,12 +123,14 @@ Show the structured business enquiry form and preview step. Do not submit a fake
 
 ### 7. Admin operations
 
-Navigate to `/admin` using an already-authorized account.
+Navigate to `/admin` using the already-authorized account.
 
 Primary demo path only:
 1. Overview
 2. Orders
 3. B2B Leads
+
+In **Overview**, use the live UAE operations metrics to show that the storefront and the operating layer are one system.
 
 In **Orders**, show the existing delivered-order history and operational status model.
 
@@ -132,10 +141,11 @@ Do not detour into navigation items marked `soon` during the core presentation.
 ## Safe fallback path
 
 If any public data fetch is temporarily unavailable:
-1. keep Home and B2B narrative available;
-2. use the route's explicit retry/error state rather than refreshing repeatedly;
-3. move to Admin Orders if authentication is already established;
-4. never change database rows or Railway flags to rescue a live demo.
+1. switch from production to the verified staging target if necessary;
+2. keep Home and B2B narrative available;
+3. use the route's explicit retry/error state rather than refreshing repeatedly;
+4. move to Admin Orders if authentication is already established;
+5. never change database rows or Railway flags to rescue a live demo.
 
 If admin authentication expires:
 1. continue the public storefront/B2B portion;
@@ -152,4 +162,4 @@ and one coherent business-operations loop:
 
 `For Business → B2B Catalogue → Quote Enquiry → Admin B2B Leads`
 
-with Orders demonstrating that CornerMex already has a real post-checkout operational surface.
+with Overview and Orders demonstrating that CornerMex already has a real post-checkout operational surface.

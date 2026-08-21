@@ -110,13 +110,16 @@ function AdminLeads() {
       ) : query.isError ? (
         <Card>
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            Could not load B2B leads. Retry the page or verify the canonical pipeline is available.
+            Could not load B2B leads. Try again in a moment.
           </CardContent>
         </Card>
       ) : leads.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            No leads in this view yet.
+          <CardContent className="space-y-1 py-12 text-center text-sm text-muted-foreground">
+            <p>No B2B enquiries yet.</p>
+            <p>
+              New business enquiries will appear here for human review, ownership and follow-up.
+            </p>
           </CardContent>
         </Card>
       ) : (
