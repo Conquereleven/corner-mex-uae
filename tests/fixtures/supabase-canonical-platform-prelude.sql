@@ -10,6 +10,7 @@ create table auth.users (
 );
 
 create function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
+create function auth.jwt() returns jsonb language sql stable as $$ select '{}'::jsonb $$;
 
 create or replace function public.rls_auto_enable()
 returns event_trigger
