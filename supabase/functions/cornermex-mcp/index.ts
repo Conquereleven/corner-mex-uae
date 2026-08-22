@@ -1,8 +1,10 @@
 import {
   createMcpHandler,
+  hostHeaderValidationResponse,
   McpServer,
   OAuthError,
   OAuthErrorCode,
+  originValidationResponse,
   requireBearerAuth,
   type AuthInfo,
 } from "npm:@modelcontextprotocol/server@2.0.0";
@@ -31,6 +33,26 @@ function requiredEnv(name: string): string {
   const value = Deno.env.get(name)?.trim();
   if (!value) throw new Error(`Missing required CornerMex MCP environment: ${name}`);
   return value;
+}
+
+function optionalHostnameList(name: string): string[] {
+  const value = Deno.env.get(name)?.trim();
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function allowedHostnames(): string[] {
+  const supabaseHostname = new URL(requiredEnv("SUPABASE_URL")).hostname;
+  return Array.from(
+    new Set([supabaseHostname, ...optionalHostnameList("MCP_ALLOWED_HOSTNAMES")]),
+  );
+}
+
+function allowedOriginHostnames(): string[] {
+  return optionalHostnameList("MCP_ALLOWED_ORIGIN_HOSTNAMES");
 }
 
 function decodeJwtPayload(token: string): JwtPayload {
@@ -269,21 +291,11 @@ const handler = createMcpHandler(
 );
 
 function validateRequestBoundary(request: Request): Response | null {
-  const requestUrl = new URL(request.url);
-  const host = request.headers.get("host");
-  if (host && host !== requestUrl.host) {
-    return Response.json({ error: "invalid_request_host" }, { status: 400 });
-  }
-
-  const origin = request.headers.get("origin");
-  if (origin) {
-    const allowedOrigin = Deno.env.get("MCP_ALLOWED_ORIGIN")?.trim();
-    if (!allowedOrigin || origin !== allowedOrigin) {
-      return Response.json({ error: "invalid_request_origin" }, { status: 403 });
-    }
-  }
-
-  return null;
+  return (
+    hostHeaderValidationResponse(request, allowedHostnames()) ??
+    originValidationResponse(request, allowedOriginHostnames()) ??
+    null
+  );
 }
 
 Deno.serve(async (request: Request): Promise<Response> => {
