@@ -64,7 +64,7 @@ test("SEC-RLS-1 preserves the reviewed RPC-only access model", async () => {
   );
   assert.match(
     antiAbuse,
-     /grant execute on function public\.submit_b2b_lead_v2[\s\S]*to service_role/,
+    /grant execute on function public\.submit_b2b_lead_v2[\s\S]*to service_role/,
   );
 });
 
