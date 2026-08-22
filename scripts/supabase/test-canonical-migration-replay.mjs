@@ -26,7 +26,30 @@ select json_build_object(
   'publicFunctions', (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('admin_transition_order_lifecycle_v1','cm_com_4a_order_lifecycle_capability','place_cod_order_v1','rls_auto_enable','set_updated_at')),
   'privateFunctions', (select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='commerce_private' and p.proname='is_admin'),
   'rlsTables', (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity),
-  'policies', (select count(*) from pg_policies where schemaname='public')
+  'policies', (select count(*) from pg_policies where schemaname='public'),
+  'privateB2bRlsTables', (
+    select count(*)
+      from pg_class c
+      join pg_namespace n on n.oid=c.relnamespace
+     where n.nspname='commerce_private'
+       and c.relkind='r'
+       and c.relname in ('b2b_lead_status_history','b2b_lead_notes','b2b_intake_abuse_budget')
+       and c.relrowsecurity
+       and not c.relforcerowsecurity
+  ),
+  'privateB2bPolicies', (
+    select count(*)
+      from pg_policies
+     where schemaname='commerce_private'
+       and tablename in ('b2b_lead_status_history','b2b_lead_notes','b2b_intake_abuse_budget')
+  ),
+  'privateB2bDirectGrants', (
+    select count(*)
+      from information_schema.table_privileges
+     where table_schema='commerce_private'
+       and table_name in ('b2b_lead_status_history','b2b_lead_notes','b2b_intake_abuse_budget')
+       and grantee in ('PUBLIC','anon','authenticated','service_role')
+  )
 )::text;`;
 const first = JSON.parse(psql("-At", "-c", metricsSql));
 const second = JSON.parse(psql("-At", "-c", metricsSql));
@@ -36,13 +59,18 @@ const expected = {
   privateFunctions: 1,
   rlsTables: 22,
   // L5R retires the direct public b2b_leads intake policy. Enquiries now enter only
-  // through the server-mediated submit_b2b_lead_v1 RPC using the service role.
+  // through the server-mediated submit_b2b_lead_v2 RPC using the service role.
   policies: 37,
+  // SEC-RLS-1 keeps the private B2B tables non-direct: RLS is enabled without
+  // FORCE RLS or row policies, and no application role has table privileges.
+  privateB2bRlsTables: 3,
+  privateB2bPolicies: 0,
+  privateB2bDirectGrants: 0,
 };
 if (JSON.stringify(first) !== JSON.stringify(expected))
   throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);
 if (JSON.stringify(first) !== JSON.stringify(second))
   throw new Error("canonical replay validation is not deterministic");
 console.log(
-  `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=${first.publicFunctions}, rls=${first.rlsTables}, policies=${first.policies}`,
+  `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=${first.publicFunctions}, rls=${first.rlsTables}, privateB2bRls=${first.privateB2bRlsTables}, policies=${first.policies}`,
 );
