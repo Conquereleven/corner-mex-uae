@@ -40,6 +40,17 @@ test("CM-MCP-3 uses the official modern MCP server and bearer-auth boundary", as
   assert.match(edge, /audienceIncludesAuthenticated/);
 });
 
+test("CM-MCP-3 uses SDK Host and Origin validation with explicit allowlists", async () => {
+  const edge = await readFile(edgeUrl, "utf8");
+
+  assert.match(edge, /hostHeaderValidationResponse/);
+  assert.match(edge, /originValidationResponse/);
+  assert.match(edge, /MCP_ALLOWED_HOSTNAMES/);
+  assert.match(edge, /MCP_ALLOWED_ORIGIN_HOSTNAMES/);
+  assert.match(edge, /new URL\(requiredEnv\("SUPABASE_URL"\)\)\.hostname/);
+  assert.doesNotMatch(edge, /host\s*!==\s*requestUrl\.host/);
+});
+
 test("CM-MCP-3 never uses privileged Supabase credentials or direct table access", async () => {
   const edge = await readFile(edgeUrl, "utf8");
 
