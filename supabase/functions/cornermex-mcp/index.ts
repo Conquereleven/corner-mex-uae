@@ -155,7 +155,10 @@ async function fetchSupabaseOAuthMetadata(): Promise<OAuthMetadata> {
     `/.well-known/oauth-authorization-server${issuer.pathname}`,
     issuer.origin,
   );
-  const issuerLocalDiscovery = new URL(`${issuer.pathname}/.well-known/oauth-authorization-server`, issuer.origin);
+  const issuerLocalDiscovery = new URL(
+    `${issuer.pathname}/.well-known/oauth-authorization-server`,
+    issuer.origin,
+  );
 
   let lastError: unknown;
   for (const url of [pathAwareDiscovery, issuerLocalDiscovery]) {
@@ -195,7 +198,9 @@ function metadataCorsHeaders(): Record<string, string> {
 
 async function protectedResourceMetadataResponse(request: Request): Promise<Response | null> {
   const metadataUrl = new URL(protectedResourceMetadataUrl());
-  if (new URL(request.url).pathname.replace(/\/$/, "") !== metadataUrl.pathname.replace(/\/$/, "")) {
+  if (
+    new URL(request.url).pathname.replace(/\/$/, "") !== metadataUrl.pathname.replace(/\/$/, "")
+  ) {
     return null;
   }
 
@@ -207,7 +212,9 @@ async function protectedResourceMetadataResponse(request: Request): Promise<Resp
         "access-control-allow-methods": "GET, HEAD, OPTIONS",
         ...(request.headers.get("access-control-request-headers")
           ? {
-              "access-control-allow-headers": request.headers.get("access-control-request-headers")!,
+              "access-control-allow-headers": request.headers.get(
+                "access-control-request-headers",
+              )!,
               vary: "Access-Control-Request-Headers",
             }
           : {}),
