@@ -11,7 +11,7 @@ activating remote access.
 ```text
 MCP client / approved agent
         |
-        | Supabase OAuth access token
+        | OAuth discovery + Supabase access token
         v
 cornermex-mcp Edge Function
         |
@@ -42,23 +42,45 @@ CM-MCP-2's hand-written JSON-RPC `initialize` implementation is removed so the
 application does not claim modern protocol compliance through a legacy
 handshake.
 
+## OAuth discovery
+
+`MCP_PUBLIC_URL` defines the future public HTTPS resource URL. It is required by
+the isolated service and may not contain a query string or fragment.
+
+The bearer middleware advertises a protected-resource metadata URL in its
+`WWW-Authenticate` challenge. The Edge Function serves that RFC 9728 document
+under the MCP resource path and identifies Supabase Auth as the authorization
+server. This avoids depending on root-level `/.well-known` routing at the
+Supabase Edge gateway while still giving an MCP client the exact metadata URL in
+the 401 challenge.
+
+When that metadata document is requested, the service reads and validates
+Supabase's OAuth authorization-server discovery document. It tries the current
+path-aware RFC 8414 location first and retains the issuer-local form as a
+compatibility fallback. The returned issuer must exactly match the expected
+`SUPABASE_URL/auth/v1` issuer.
+
+Protected-resource metadata is intentionally available before browser Origin
+validation and carries permissive CORS, as required for web-based MCP discovery.
+Host validation still runs first. No OAuth endpoint is enabled by this PR.
+
 ## Request boundary
 
 The fetch-native Edge Function uses the SDK's own
-`hostHeaderValidationResponse` and `originValidationResponse` helpers before
-bearer authentication. This follows the official DNS-rebinding posture for
-web-standard MCP servers instead of comparing the incoming `Host` header with a
-URL derived from the same request.
+`hostHeaderValidationResponse` and `originValidationResponse` helpers. This
+follows the official DNS-rebinding posture for web-standard MCP servers instead
+of comparing the incoming `Host` header with a URL derived from the same request.
 
 Allowed Host values are port-agnostic hostnames. The canonical Supabase hostname
-is derived from `SUPABASE_URL`. Additional deployment hostnames may be supplied
-later through `MCP_ALLOWED_HOSTNAMES` as a comma-separated list.
+and the hostname from `MCP_PUBLIC_URL` are included automatically. Additional
+deployment hostnames may be supplied later through `MCP_ALLOWED_HOSTNAMES` as a
+comma-separated list.
 
-Browser Origin values are denied unless their hostname is explicitly listed in
-`MCP_ALLOWED_ORIGIN_HOSTNAMES`. A request with no Origin header is allowed at
-this layer because normal non-browser MCP clients do not send one. No Host or
-Origin allowlist configuration is changed by this PR because the Edge Function
-is not deployed.
+Browser Origin values for the MCP endpoint are denied unless their hostname is
+explicitly listed in `MCP_ALLOWED_ORIGIN_HOSTNAMES`. A request with no Origin
+header is allowed at this layer because normal non-browser MCP clients do not
+send one. No Host or Origin allowlist configuration is changed by this PR because
+the Edge Function is not deployed.
 
 ## Authentication
 
@@ -136,12 +158,13 @@ export.
 This change does not:
 
 - enable Supabase OAuth;
+- enable dynamic client registration;
 - register an OAuth client;
 - add, alter or apply a canonical migration;
 - create live MCP grants;
 - create the proposed RPCs in any database;
 - deploy the Edge Function;
-- configure MCP Host or Origin allowlists in a live environment;
+- configure `MCP_PUBLIC_URL`, Host or Origin allowlists in a live environment;
 - add a service-role credential;
 - enable write tools;
 - mutate Railway configuration.
