@@ -15,7 +15,9 @@ test("CM-MCP-4 consent route preserves a bounded authorization id through safe i
   assert.match(consent, /authorization_id: z\.string\(\)\.trim\(\)\.min\(1\)\.max\(512\)\.optional\(\)/);
   assert.match(consent, /supabase\.auth\.getUser\(\)/);
   assert.match(consent, /\/oauth\/consent\?authorization_id=/);
-  assert.match(consent, /navigate\(\{ to: "\/login", search: \{ redirect: returnTo \}/);
+  assert.match(consent, /to: "\/login"/);
+  assert.match(consent, /search: \{ redirect: returnTo \}/);
+  assert.match(consent, /replace: true/);
   assert.doesNotMatch(consent, /window\.location\.assign\(authorizationId\)/);
 });
 
