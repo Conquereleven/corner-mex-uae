@@ -1,9 +1,11 @@
 import {
+  buildOAuthProtectedResourceMetadata,
   createMcpHandler,
   hostHeaderValidationResponse,
   McpServer,
   OAuthError,
   OAuthErrorCode,
+  OAuthMetadataSchema,
   originValidationResponse,
   requireBearerAuth,
   type AuthInfo,
@@ -19,6 +21,7 @@ type JwtPayload = {
   sub?: string;
 };
 
+type OAuthMetadata = z.infer<typeof OAuthMetadataSchema>;
 type McpPermission = "catalog:read" | "inventory:read" | "orders:read" | "b2b:read" | "ops:read";
 
 const READ_PERMISSIONS = new Set<McpPermission>([
@@ -44,10 +47,32 @@ function optionalHostnameList(name: string): string[] {
     .filter(Boolean);
 }
 
+function publicMcpUrl(): URL {
+  const url = new URL(requiredEnv("MCP_PUBLIC_URL"));
+  if (url.protocol !== "https:" || url.search || url.hash) {
+    throw new Error("CornerMex MCP public URL must be HTTPS without query or fragment");
+  }
+  return url;
+}
+
+function supabaseIssuer(): string {
+  return `${requiredEnv("SUPABASE_URL").replace(/\/$/, "")}/auth/v1`;
+}
+
+function protectedResourceMetadataUrl(): string {
+  const resourceUrl = publicMcpUrl();
+  const resourcePath = resourceUrl.pathname.replace(/\/$/, "");
+  return new URL(`${resourcePath}/.well-known/oauth-protected-resource`, resourceUrl.origin).href;
+}
+
 function allowedHostnames(): string[] {
   const supabaseHostname = new URL(requiredEnv("SUPABASE_URL")).hostname;
   return Array.from(
-    new Set([supabaseHostname, ...optionalHostnameList("MCP_ALLOWED_HOSTNAMES")]),
+    new Set([
+      supabaseHostname,
+      publicMcpUrl().hostname,
+      ...optionalHostnameList("MCP_ALLOWED_HOSTNAMES"),
+    ]),
   );
 }
 
@@ -97,13 +122,12 @@ async function verifyAccessToken(token: string): Promise<AuthInfo> {
     if (error || !data.user) throw new Error("Supabase Auth rejected access token");
 
     const payload = decodeJwtPayload(token);
-    const expectedIssuer = `${requiredEnv("SUPABASE_URL").replace(/\/$/, "")}/auth/v1`;
     const now = Math.floor(Date.now() / 1000);
 
     if (!payload.sub || payload.sub !== data.user.id) throw new Error("JWT subject mismatch");
     if (!payload.client_id?.trim()) throw new Error("OAuth client_id is required");
     if (!payload.exp || payload.exp <= now) throw new Error("JWT expired");
-    if (payload.iss !== expectedIssuer) throw new Error("JWT issuer mismatch");
+    if (payload.iss !== supabaseIssuer()) throw new Error("JWT issuer mismatch");
     if (!audienceIncludesAuthenticated(payload.aud)) throw new Error("JWT audience mismatch");
 
     return {
@@ -118,7 +142,107 @@ async function verifyAccessToken(token: string): Promise<AuthInfo> {
 }
 
 const verifier = { verifyAccessToken };
-const authGate = requireBearerAuth({ verifier });
+const authGate = requireBearerAuth({
+  verifier,
+  resourceMetadataUrl: protectedResourceMetadataUrl(),
+});
+
+let oauthMetadataPromise: Promise<OAuthMetadata> | undefined;
+
+async function fetchSupabaseOAuthMetadata(): Promise<OAuthMetadata> {
+  const issuer = new URL(supabaseIssuer());
+  const pathAwareDiscovery = new URL(
+    `/.well-known/oauth-authorization-server${issuer.pathname}`,
+    issuer.origin,
+  );
+  const issuerLocalDiscovery = new URL(`${issuer.pathname}/.well-known/oauth-authorization-server`, issuer.origin);
+
+  let lastError: unknown;
+  for (const url of [pathAwareDiscovery, issuerLocalDiscovery]) {
+    try {
+      const response = await fetch(url, {
+        headers: { accept: "application/json" },
+        redirect: "error",
+      });
+      if (!response.ok) throw new Error("OAuth discovery request failed");
+      const metadata = OAuthMetadataSchema.parse(await response.json());
+      if (metadata.issuer !== issuer.href.replace(/\/$/, "")) {
+        throw new Error("OAuth discovery issuer mismatch");
+      }
+      return metadata;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError ?? new Error("Supabase OAuth discovery unavailable");
+}
+
+function currentOAuthMetadata(): Promise<OAuthMetadata> {
+  oauthMetadataPromise ??= fetchSupabaseOAuthMetadata().catch((error) => {
+    oauthMetadataPromise = undefined;
+    throw error;
+  });
+  return oauthMetadataPromise;
+}
+
+function metadataCorsHeaders(): Record<string, string> {
+  return {
+    "access-control-allow-origin": "*",
+    "cache-control": "no-store",
+  };
+}
+
+async function protectedResourceMetadataResponse(request: Request): Promise<Response | null> {
+  const metadataUrl = new URL(protectedResourceMetadataUrl());
+  if (new URL(request.url).pathname.replace(/\/$/, "") !== metadataUrl.pathname.replace(/\/$/, "")) {
+    return null;
+  }
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        ...metadataCorsHeaders(),
+        "access-control-allow-methods": "GET, HEAD, OPTIONS",
+        ...(request.headers.get("access-control-request-headers")
+          ? {
+              "access-control-allow-headers": request.headers.get("access-control-request-headers")!,
+              vary: "Access-Control-Request-Headers",
+            }
+          : {}),
+      },
+    });
+  }
+
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return Response.json(
+      { error: "method_not_allowed" },
+      {
+        status: 405,
+        headers: { ...metadataCorsHeaders(), allow: "GET, HEAD, OPTIONS" },
+      },
+    );
+  }
+
+  try {
+    const oauthMetadata = await currentOAuthMetadata();
+    const metadata = buildOAuthProtectedResourceMetadata({
+      oauthMetadata,
+      resourceServerUrl: publicMcpUrl(),
+      resourceName: "CornerMex Operations MCP",
+    });
+    const response = Response.json(metadata, { headers: metadataCorsHeaders() });
+    return request.method === "HEAD"
+      ? new Response(null, { status: response.status, headers: response.headers })
+      : response;
+  } catch {
+    return Response.json(
+      { error: "oauth_metadata_unavailable" },
+      { status: 503, headers: metadataCorsHeaders() },
+    );
+  }
+}
 
 async function currentPermissions(client: SupabaseClient): Promise<Set<McpPermission>> {
   const { data, error } = await client.rpc("mcp_current_permissions");
@@ -290,17 +414,15 @@ const handler = createMcpHandler(
   },
 );
 
-function validateRequestBoundary(request: Request): Response | null {
-  return (
-    hostHeaderValidationResponse(request, allowedHostnames()) ??
-    originValidationResponse(request, allowedOriginHostnames()) ??
-    null
-  );
-}
-
 Deno.serve(async (request: Request): Promise<Response> => {
-  const boundaryFailure = validateRequestBoundary(request);
-  if (boundaryFailure) return boundaryFailure;
+  const hostFailure = hostHeaderValidationResponse(request, allowedHostnames());
+  if (hostFailure) return hostFailure;
+
+  const metadata = await protectedResourceMetadataResponse(request);
+  if (metadata) return metadata;
+
+  const originFailure = originValidationResponse(request, allowedOriginHostnames());
+  if (originFailure) return originFailure;
 
   const auth = await authGate(request);
   if (auth instanceof Response) return auth;
