@@ -53,6 +53,13 @@
       "purpose": "sec_rls_1_b2b_private_rls",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260822050535_cm_mcp_db2_read_boundary.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_mcp_db2_read_boundary",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }
