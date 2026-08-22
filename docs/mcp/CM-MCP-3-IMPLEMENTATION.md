@@ -15,6 +15,7 @@ MCP client / approved agent
         v
 cornermex-mcp Edge Function
         |
+        | Host + Origin allowlist
         | verify bearer token + user + client_id
         v
 CornerMex MCP policy layer
@@ -40,6 +41,24 @@ setting `legacy: "reject"`.
 CM-MCP-2's hand-written JSON-RPC `initialize` implementation is removed so the
 application does not claim modern protocol compliance through a legacy
 handshake.
+
+## Request boundary
+
+The fetch-native Edge Function uses the SDK's own
+`hostHeaderValidationResponse` and `originValidationResponse` helpers before
+bearer authentication. This follows the official DNS-rebinding posture for
+web-standard MCP servers instead of comparing the incoming `Host` header with a
+URL derived from the same request.
+
+Allowed Host values are port-agnostic hostnames. The canonical Supabase hostname
+is derived from `SUPABASE_URL`. Additional deployment hostnames may be supplied
+later through `MCP_ALLOWED_HOSTNAMES` as a comma-separated list.
+
+Browser Origin values are denied unless their hostname is explicitly listed in
+`MCP_ALLOWED_ORIGIN_HOSTNAMES`. A request with no Origin header is allowed at
+this layer because normal non-browser MCP clients do not send one. No Host or
+Origin allowlist configuration is changed by this PR because the Edge Function
+is not deployed.
 
 ## Authentication
 
@@ -122,6 +141,7 @@ This change does not:
 - create live MCP grants;
 - create the proposed RPCs in any database;
 - deploy the Edge Function;
+- configure MCP Host or Origin allowlists in a live environment;
 - add a service-role credential;
 - enable write tools;
 - mutate Railway configuration.
