@@ -22,7 +22,9 @@ const rpcNames = [
 function functionSection(sql, name, nextName) {
   const start = sql.indexOf(`create or replace function public.${name}`);
   assert.notEqual(start, -1, `${name} must exist`);
-  const end = nextName ? sql.indexOf(`create or replace function public.${nextName}`, start) : sql.length;
+  const end = nextName
+    ? sql.indexOf(`create or replace function public.${nextName}`, start)
+    : sql.length;
   return sql.slice(start, end === -1 ? sql.length : end);
 }
 
@@ -60,7 +62,10 @@ test("CM-MCP-DB2 exposes exactly the Edge Function RPC contract to authenticated
     assert.match(migration, new RegExp(`create or replace function public\\.${name}\\(`, "i"));
     assert.match(
       migration,
-      new RegExp(`revoke all on function public\\.${name}\\([\\s\\S]*from public, anon, authenticated, service_role`, "i"),
+      new RegExp(
+        `revoke all on function public\\.${name}\\([\\s\\S]*from public, anon, authenticated, service_role`,
+        "i",
+      ),
     );
     assert.match(
       migration,
