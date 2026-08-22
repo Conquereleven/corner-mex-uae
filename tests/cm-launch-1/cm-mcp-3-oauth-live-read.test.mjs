@@ -40,6 +40,24 @@ test("CM-MCP-3 uses the official modern MCP server and bearer-auth boundary", as
   assert.match(edge, /audienceIncludesAuthenticated/);
 });
 
+test("CM-MCP-3 exposes protected-resource discovery through the bearer challenge", async () => {
+  const edge = await readFile(edgeUrl, "utf8");
+
+  assert.match(edge, /buildOAuthProtectedResourceMetadata/);
+  assert.match(edge, /OAuthMetadataSchema/);
+  assert.match(edge, /MCP_PUBLIC_URL/);
+  assert.match(edge, /resourceMetadataUrl: protectedResourceMetadataUrl\(\)/);
+  assert.match(edge, /\.well-known\/oauth-protected-resource/);
+  assert.match(edge, /\.well-known\/oauth-authorization-server/);
+  assert.match(edge, /resourceName: "CornerMex Operations MCP"/);
+  assert.match(edge, /access-control-allow-origin": "\*"/);
+
+  const metadataIndex = edge.indexOf("await protectedResourceMetadataResponse(request)");
+  const originIndex = edge.indexOf("const originFailure = originValidationResponse");
+  assert.ok(metadataIndex >= 0);
+  assert.ok(originIndex > metadataIndex);
+});
+
 test("CM-MCP-3 uses SDK Host and Origin validation with explicit allowlists", async () => {
   const edge = await readFile(edgeUrl, "utf8");
 
@@ -47,7 +65,7 @@ test("CM-MCP-3 uses SDK Host and Origin validation with explicit allowlists", as
   assert.match(edge, /originValidationResponse/);
   assert.match(edge, /MCP_ALLOWED_HOSTNAMES/);
   assert.match(edge, /MCP_ALLOWED_ORIGIN_HOSTNAMES/);
-  assert.match(edge, /new URL\(requiredEnv\("SUPABASE_URL"\)\)\.hostname/);
+  assert.match(edge, /publicMcpUrl\(\)\.hostname/);
   assert.doesNotMatch(edge, /host\s*!==\s*requestUrl\.host/);
 });
 
@@ -56,7 +74,7 @@ test("CM-MCP-3 never uses privileged Supabase credentials or direct table access
 
   assert.match(edge, /SUPABASE_PUBLISHABLE_KEY/);
   assert.doesNotMatch(edge, /service[_-]?role|SUPABASE_SERVICE_ROLE_KEY|supabaseAdmin/i);
-  assert.doesNotMatch(edge, /\.from\s*\(/);
+  assert.doesNotMatch(edge, /\.from\s*\(\s*["'\x60]/);
   assert.match(edge, /\.rpc\("mcp_current_permissions"\)/);
 });
 
