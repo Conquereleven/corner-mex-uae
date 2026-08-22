@@ -49,6 +49,67 @@ select json_build_object(
      where table_schema='commerce_private'
        and table_name in ('b2b_lead_status_history','b2b_lead_notes','b2b_intake_abuse_budget')
        and grantee in ('PUBLIC','anon','authenticated','service_role')
+  ),
+  'mcpGrantRlsTables', (
+    select count(*)
+      from pg_class c
+      join pg_namespace n on n.oid=c.relnamespace
+     where n.nspname='commerce_private'
+       and c.relkind='r'
+       and c.relname='mcp_grants'
+       and c.relrowsecurity
+       and not c.relforcerowsecurity
+  ),
+  'mcpGrantPolicies', (
+    select count(*)
+      from pg_policies
+     where schemaname='commerce_private'
+       and tablename='mcp_grants'
+  ),
+  'mcpGrantDirectGrants', (
+    select count(*)
+      from information_schema.table_privileges
+     where table_schema='commerce_private'
+       and table_name='mcp_grants'
+       and grantee in ('PUBLIC','anon','authenticated','service_role')
+  ),
+  'mcpReadFunctions', (
+    select count(*)
+      from pg_proc p
+      join pg_namespace n on n.oid=p.pronamespace
+     where n.nspname='public'
+       and p.proname in (
+         'mcp_current_permissions',
+         'mcp_catalog_search',
+         'mcp_catalog_get_product',
+         'mcp_inventory_get_availability',
+         'mcp_orders_list',
+         'mcp_orders_get',
+         'mcp_b2b_list_leads',
+         'mcp_b2b_get_lead',
+         'mcp_ops_summary'
+       )
+       and p.prosecdef
+  ),
+  'mcpAuthenticatedExecuteFunctions', (
+    select count(*)
+      from pg_proc p
+      join pg_namespace n on n.oid=p.pronamespace
+     where n.nspname='public'
+       and p.proname in (
+         'mcp_current_permissions',
+         'mcp_catalog_search',
+         'mcp_catalog_get_product',
+         'mcp_inventory_get_availability',
+         'mcp_orders_list',
+         'mcp_orders_get',
+         'mcp_b2b_list_leads',
+         'mcp_b2b_get_lead',
+         'mcp_ops_summary'
+       )
+       and has_function_privilege('authenticated', p.oid, 'EXECUTE')
+       and not has_function_privilege('anon', p.oid, 'EXECUTE')
+       and not has_function_privilege('service_role', p.oid, 'EXECUTE')
   )
 )::text;`;
 const first = JSON.parse(psql("-At", "-c", metricsSql));
@@ -66,11 +127,18 @@ const expected = {
   privateB2bRlsTables: 3,
   privateB2bPolicies: 0,
   privateB2bDirectGrants: 0,
+  // CM-MCP-DB2 keeps the grant store private while exposing exactly nine guarded
+  // SECURITY DEFINER read RPCs to authenticated OAuth callers only.
+  mcpGrantRlsTables: 1,
+  mcpGrantPolicies: 0,
+  mcpGrantDirectGrants: 0,
+  mcpReadFunctions: 9,
+  mcpAuthenticatedExecuteFunctions: 9,
 };
 if (JSON.stringify(first) !== JSON.stringify(expected))
   throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);
 if (JSON.stringify(first) !== JSON.stringify(second))
   throw new Error("canonical replay validation is not deterministic");
 console.log(
-  `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=${first.publicFunctions}, rls=${first.rlsTables}, privateB2bRls=${first.privateB2bRlsTables}, policies=${first.policies}`,
+  `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=${first.publicFunctions}, rls=${first.rlsTables}, privateB2bRls=${first.privateB2bRlsTables}, mcpReadFunctions=${first.mcpReadFunctions}, policies=${first.policies}`,
 );
