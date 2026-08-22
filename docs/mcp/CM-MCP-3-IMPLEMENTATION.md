@@ -21,7 +21,7 @@ CornerMex MCP policy layer
         |
         | authenticated JWT, never service-role
         v
-reviewed read-only RPCs
+reviewed read-only RPC contract
         |
         v
 canonical CornerMex data
@@ -56,14 +56,19 @@ The bearer verifier:
 5. validates expiry, issuer and the `authenticated` audience;
 6. returns MCP `AuthInfo` without mapping CornerMex permissions to OAuth scopes.
 
-CornerMex permissions are resolved separately from the private MCP grant store.
-This is deliberate because the current Supabase OAuth server only exposes
-standard identity scopes, not CornerMex application permissions.
+CornerMex permissions are resolved separately from the proposed private MCP
+grant store. This is deliberate because the current Supabase OAuth server only
+exposes standard identity scopes, not CornerMex application permissions.
 
-## Authorization
+## Authorization proposal
 
-The pending canonical migration defines `commerce_private.mcp_grants`, keyed by
+`CM-MCP-3-DB-PROPOSAL.md` specifies a future
+`commerce_private.mcp_grants` relation keyed by
 `user_id + client_id + permission`. A grant must be active and unexpired.
+
+CM-MCP-3 does not add or alter any canonical or pending migration. The database
+proposal must be promoted later through the repository's migration-ownership
+process and a separately authorized DB2 gate.
 
 The permission vocabulary remains the CM-MCP-1 contract:
 
@@ -92,10 +97,13 @@ CM-MCP-3 registers eight tools when their required grant is present:
 - `b2b.get_lead`
 - `ops.summary`
 
-The Edge Function does not query tables directly. Every tool calls a reviewed
-read-only Postgres RPC using the caller's OAuth JWT. Each RPC independently
-checks `auth.uid()` plus the token's `client_id`, providing a second
-fail-closed authorization boundary.
+The Edge Function does not query tables directly. Every tool calls a proposed
+read-only Postgres RPC using the caller's OAuth JWT. The future DB2 implementation
+must independently check `auth.uid()` plus the token's `client_id`, providing a
+second fail-closed authorization boundary.
+
+Until those RPCs exist, the undeployed Edge Function cannot become a functioning
+remote data path.
 
 ## Data minimization
 
@@ -110,8 +118,9 @@ This change does not:
 
 - enable Supabase OAuth;
 - register an OAuth client;
-- apply the pending migration;
+- add, alter or apply a canonical migration;
 - create live MCP grants;
+- create the proposed RPCs in any database;
 - deploy the Edge Function;
 - add a service-role credential;
 - enable write tools;
