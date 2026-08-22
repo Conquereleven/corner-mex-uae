@@ -4,6 +4,8 @@
 
 **Promoted by CM-MCP-DB2 into canonical migration `20260822050535_cm_mcp_db2_read_boundary.sql`; not applied to production.**
 
+Historical CM-MCP-3 status: **Design proposal only. Not a migration.**
+
 CM-MCP-3 intentionally shipped this as a design proposal only. CM-MCP-DB2 now
 promotes the proposal through the repository's canonical migration-ownership
 process. Production execution still requires a separate Founder authorization
