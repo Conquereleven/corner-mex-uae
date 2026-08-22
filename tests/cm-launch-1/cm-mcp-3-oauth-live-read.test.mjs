@@ -3,10 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const edgeUrl = new URL("../../supabase/functions/cornermex-mcp/index.ts", import.meta.url);
-const sqlUrl = new URL(
-  "../../supabase/pending-canonical/20260822004500_cm_mcp_3_read_boundary.sql",
-  import.meta.url,
-);
+const proposalUrl = new URL("../../docs/mcp/CM-MCP-3-DB-PROPOSAL.md", import.meta.url);
 const routeUrl = new URL("../../src/routes/api/mcp.ts", import.meta.url);
 
 const readTools = [
@@ -55,21 +52,24 @@ test("CM-MCP-3 never uses privileged Supabase credentials or direct table access
 test("CM-MCP-3 exposes exactly the reviewed read tool family and no write tools", async () => {
   const edge = await readFile(edgeUrl, "utf8");
 
-  for (const tool of readTools) assert.match(edge, new RegExp(`"${tool.replace(".", "\\.")}"`));
-  for (const tool of writeTools) assert.doesNotMatch(edge, new RegExp(tool.replace(".", "\\.")));
+  for (const tool of readTools) {
+    assert.match(edge, new RegExp(`"${tool.replace(".", "\\.")}"`));
+  }
+  for (const tool of writeTools) {
+    assert.doesNotMatch(edge, new RegExp(tool.replace(".", "\\.")));
+  }
 });
 
-test("CM-MCP-3 grant and RPC schema remains unapplied and client-bound", async () => {
-  const sql = await readFile(sqlUrl, "utf8");
+test("CM-MCP-3 keeps the database change as a non-executable proposal", async () => {
+  const proposal = await readFile(proposalUrl, "utf8");
 
-  assert.match(sql, /intentionally UNAPPLIED/i);
-  assert.match(sql, /commerce_private\.mcp_grants/);
-  assert.match(sql, /enable row level security/i);
-  assert.match(sql, /revoke all on table commerce_private\.mcp_grants from public, anon, authenticated/i);
-  assert.match(sql, /auth\.uid\(\)/);
-  assert.match(sql, /auth\.jwt\(\) ->> 'client_id'/);
-  assert.match(sql, /g\.active = true/);
-  assert.match(sql, /g\.expires_at is null or g\.expires_at > now\(\)/);
+  assert.match(proposal, /Design proposal only\. Not a migration/i);
+  assert.match(proposal, /commerce_private\.mcp_grants/);
+  assert.match(proposal, /auth\.uid\(\)/);
+  assert.match(proposal, /auth\.jwt\(\)->>'client_id'/);
+  assert.match(proposal, /active and unexpired/i);
+  assert.match(proposal, /RLS enabled/i);
+  assert.match(proposal, /revoke/i);
 
   for (const permission of [
     "catalog:read",
@@ -81,19 +81,19 @@ test("CM-MCP-3 grant and RPC schema remains unapplied and client-bound", async (
     "b2b:write",
     "ops:read",
   ]) {
-    assert.match(sql, new RegExp(`'${permission}'`));
+    assert.match(proposal, new RegExp(`\`${permission}\``));
   }
 });
 
-test("CM-MCP-3 minimizes order and B2B data at the RPC boundary", async () => {
-  const sql = await readFile(sqlUrl, "utf8");
+test("CM-MCP-3 documents minimized order and B2B RPC boundaries", async () => {
+  const proposal = await readFile(proposalUrl, "utf8");
 
-  assert.doesNotMatch(sql, /shipping_address|legal_acceptance/);
-  assert.doesNotMatch(sql, /l\.email|l\.phone|l\.contact_name|l\.message|l\.admin_note/);
-  assert.match(sql, /mcp_orders_list/);
-  assert.match(sql, /mcp_orders_get/);
-  assert.match(sql, /mcp_b2b_list_leads/);
-  assert.match(sql, /mcp_b2b_get_lead/);
+  assert.match(proposal, /exclude `buyer_id`, `shipping_address` and `legal_acceptance`/);
+  assert.match(proposal, /exclude `contact_name`, `email`, `phone`/);
+  assert.match(proposal, /mcp_orders_list/);
+  assert.match(proposal, /mcp_orders_get/);
+  assert.match(proposal, /mcp_b2b_list_leads/);
+  assert.match(proposal, /mcp_b2b_get_lead/);
 });
 
 test("CM-MCP-3 keeps the storefront MCP route hard fail-closed", async () => {
