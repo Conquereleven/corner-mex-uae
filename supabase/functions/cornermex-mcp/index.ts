@@ -17,12 +17,7 @@ type JwtPayload = {
   sub?: string;
 };
 
-type McpPermission =
-  | "catalog:read"
-  | "inventory:read"
-  | "orders:read"
-  | "b2b:read"
-  | "ops:read";
+type McpPermission = "catalog:read" | "inventory:read" | "orders:read" | "b2b:read" | "ops:read";
 
 const READ_PERMISSIONS = new Set<McpPermission>([
   "catalog:read",
@@ -217,7 +212,8 @@ const handler = createMcpHandler(
       server.registerTool(
         "orders.get",
         {
-          description: "Get one minimized CornerMex order and line-item summary without shipping PII.",
+          description:
+            "Get one minimized CornerMex order and line-item summary without shipping PII.",
           inputSchema: z.object({ identifier: z.string().trim().min(1).max(160) }),
         },
         async ({ identifier }) =>
