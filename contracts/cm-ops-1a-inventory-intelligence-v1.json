@@ -1,0 +1,68 @@
+{
+  "contractVersion": "cm-inventory-intelligence-v1",
+  "formulas": {
+    "availableStock": "quantityOnHand - quantityReserved",
+    "demandDuringLeadTime": "avgDailyDemand * leadTimeDays",
+    "reorderPoint": "demandDuringLeadTime + safetyStock",
+    "daysOfCover": "availableStock / avgDailyDemand when avgDailyDemand > 0; otherwise null",
+    "rawSuggestedQuantity": "max(targetStock - availableStock, 0) when reorder is needed",
+    "roundedSuggestedQuantity": "ceil(max(rawSuggestedQuantity, minimumOrderQuantity) / casePack) * casePack"
+  },
+  "zeroDemandSemantics": "Days of cover is null, NO_DEMAND_SIGNAL is emitted, no reorder is recommended, and overstock is still evaluated when target stock exists.",
+  "noHistorySemantics": "Average daily demand remains null and the result is insufficient_data; demand is never fabricated.",
+  "qualitySemantics": "Quality is based only on input completeness and validity; no ML confidence score is produced.",
+  "reasonCodes": [
+    "INACTIVE_SKU",
+    "INVALID_INVENTORY",
+    "RESERVATIONS_EXCEED_ON_HAND",
+    "INVALID_DEMAND_INPUT",
+    "EXTREME_NUMERIC_VALUE",
+    "NO_DEMAND_HISTORY",
+    "NO_DEMAND_SIGNAL",
+    "MISSING_POLICY",
+    "MISSING_LEAD_TIME",
+    "MISSING_SAFETY_STOCK",
+    "MISSING_TARGET_STOCK",
+    "MISSING_MOQ",
+    "MISSING_CASE_PACK",
+    "INVALID_POLICY",
+    "TARGET_BELOW_REORDER_POINT",
+    "CONFIGURED_REORDER_POINT_MISMATCH",
+    "STOCKOUT",
+    "STOCKOUT_RISK",
+    "LOW_COVER",
+    "REORDER_NEEDED",
+    "OVERSTOCK",
+    "MOQ_APPLIED",
+    "CASE_PACK_ROUNDING_APPLIED"
+  ],
+  "readIntegration": {
+    "mode": "server-side batch repository",
+    "canonicalSources": [
+      "public.products",
+      "public.product_variants",
+      "public.inventory",
+      "public.orders",
+      "public.order_items",
+      "commerce_private.inventory_policies"
+    ],
+    "browserPrivatePolicyExposure": false,
+    "catalogReads": 1,
+    "inventoryReads": 1,
+    "policyReads": 1,
+    "demandAggregateReads": 1
+  },
+  "sideEffects": {
+    "createsPurchaseOrders": false,
+    "writesInventory": false,
+    "writesSupplierState": false,
+    "appliesProductionMigration": false,
+    "activatesMcpOrOAuth": false,
+    "mutatesRailway": false
+  },
+  "migration": null,
+  "followUps": [
+    "CM-OPS-1B Inventory Control Tower UX",
+    "CM-OPS-2 supplier and replenishment planning extensions"
+  ]
+}
