@@ -19,6 +19,7 @@ import {
   Upload,
   Users,
   Globe2,
+  Warehouse,
 } from "lucide-react";
 import { DashboardShell } from "@/components/site/DashboardShell";
 import { useServerFn } from "@tanstack/react-start";
@@ -90,6 +91,7 @@ function AdminLayout() {
             { to: "/admin/live-view", label: "Live view", icon: Globe2 },
             { to: "/admin/performance", label: t("dash.nav.performance"), icon: Activity },
             { to: "/admin/catalog-analytics", label: "Catalog analytics", icon: Activity },
+            { to: "/admin/inventory", label: "Inventory control tower", icon: Warehouse },
             { to: "/admin/shipping", label: "Shipping", icon: Truck, soon: true },
             { to: "/admin/shipments", label: "Shipments", icon: Package, soon: true },
             { to: "/admin/reviews", label: "Reviews", icon: Star, badge: c?.reviews_pending },

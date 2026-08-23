@@ -27,6 +27,21 @@
   "fileAdditions": [
     {
       "kind": "table_or_storage_bucket",
+      "name": "orders",
+      "files": ["src/lib/inventory-intelligence.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "order_items",
+      "files": ["src/lib/inventory-intelligence.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "product_variants",
+      "files": ["src/lib/inventory-intelligence.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
       "name": "products",
       "files": ["src/lib/admin-products.functions.ts"]
     },
