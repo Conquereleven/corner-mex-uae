@@ -49,7 +49,10 @@ test("CM-MCP-4 keeps the isolated Edge deployment configuration fail-closed", as
     "MCP_ALLOWED_HOSTNAMES=",
     "MCP_ALLOWED_ORIGIN_HOSTNAMES=",
   ]) {
-    assert.ok(envLines.has(required), `.env.example must contain exact empty placeholder: ${required}`);
+    assert.ok(
+      envLines.has(required),
+      `.env.example must contain exact empty placeholder: ${required}`,
+    );
   }
 
   assert.equal(
@@ -58,9 +61,9 @@ test("CM-MCP-4 keeps the isolated Edge deployment configuration fail-closed", as
   );
 
   for (const required of [
-    'Deno.env.get("MCP_PUBLIC_URL")',
-    'Deno.env.get("MCP_ALLOWED_HOSTNAMES")',
-    'Deno.env.get("MCP_ALLOWED_ORIGIN_HOSTNAMES")',
+    'requiredEnv("MCP_PUBLIC_URL")',
+    'optionalHostnameList("MCP_ALLOWED_HOSTNAMES")',
+    'optionalHostnameList("MCP_ALLOWED_ORIGIN_HOSTNAMES")',
   ]) {
     assert.ok(edge.includes(required), `Edge boundary must consume: ${required}`);
   }

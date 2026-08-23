@@ -116,8 +116,8 @@ function OAuthConsent() {
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight">Authorize application</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Review the application and identity scopes before allowing it to connect to your
-          CornerMex account.
+          Review the application and identity scopes before allowing it to connect to your CornerMex
+          account.
         </p>
 
         {loading && (
@@ -127,7 +127,10 @@ function OAuthConsent() {
         )}
 
         {error && (
-          <div className="mt-8 rounded-2xl border border-destructive/40 bg-destructive/10 p-5 text-sm text-destructive" role="alert">
+          <div
+            className="mt-8 rounded-2xl border border-destructive/40 bg-destructive/10 p-5 text-sm text-destructive"
+            role="alert"
+          >
             {error}
           </div>
         )}
