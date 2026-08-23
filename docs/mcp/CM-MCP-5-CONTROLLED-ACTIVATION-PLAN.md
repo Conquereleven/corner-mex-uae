@@ -8,12 +8,12 @@ CM-MCP-5 defines the smallest auditable sequence for a future first remote MCP r
 
 ## Repository baseline
 
-- `main`: `14c8b58ccf05abb45659b3634158c5d0bff133f9` (PR #58 merged).
+- `main`: `04fe1fdd5fd94fff91fa050ab788d8ab78186e75` (PR #59 merged).
 - SEC-RLS-1: issue #55 closed with canonical production reconciliation on `main`.
 - PR #58: merged from exact head `ab102761df3b96c5c16f20fd7eddb209fde2017b` as merge commit `14c8b58ccf05abb45659b3634158c5d0bff133f9`.
-- PR #59: ready but unmerged at `4de02a90e8603b68ba4428142ffdd82d62728fe8`.
+- PR #59: merged from exact head `638e57553302a35d6af2653db39cf556795825a4` as merge commit `04fe1fdd5fd94fff91fa050ab788d8ab78186e75`.
 
-The heads above are evidence inputs, not merge authorizations. Any head change requires fresh CI, independent review, and a new exact-head Founder decision. CM-MCP-5 cannot advance to a production gate until PR #59 is merged and its merge commit is reconciled into the activation evidence. The merge of PR #58 does not authorize applying CM-MCP-DB2 to production.
+Both repository prerequisites are now merged and reconciled. Their landing authorizations do not carry into CM-MCP-5 or any production gate. Applying CM-MCP-DB2, enabling OAuth, registering a client, provisioning grants, deploying the Edge Function, and running the first remote rehearsal remain separately unauthorized.
 
 ## First rehearsal boundary
 
