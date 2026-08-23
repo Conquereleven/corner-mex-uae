@@ -35,6 +35,7 @@
     "test:cm-launch-1": "node --experimental-strip-types --test tests/cm-launch-1/*.test.mjs",
     "test:cm-b2b-ops-foundation-1": "node --experimental-strip-types --test tests/cm-b2b-ops-foundation-1/*.test.mjs",
     "test:cm-ops-1a": "node --experimental-strip-types --test tests/cm-ops-1a/*.test.mjs",
+    "test:cm-ops-1b": "node --experimental-strip-types --test tests/cm-ops-1b/*.test.mjs",
     "test:cm-b2b-portal-1a": "node --experimental-strip-types --test tests/cm-b2b-portal-1a/*.test.mjs",
     "test:cm-launch-1:notifications-sql": "node --experimental-strip-types scripts/cm-launch-1/test-notifications-sql.mjs",
     "validate:cm-com-3a:manifest": "node scripts/cm-com-3a/validate-activation-manifest.mjs",
