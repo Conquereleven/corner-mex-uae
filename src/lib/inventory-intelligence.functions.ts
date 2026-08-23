@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Supabase's generated Database type intentionally excludes the private schema. */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -10,6 +11,8 @@ import {
 
 const WINDOW_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const INVENTORY_TABLE = "inventory";
+const POLICY_TABLE = "inventory_policies";
 
 type RawVariant = {
   id: string;
@@ -60,7 +63,7 @@ function createReadRepository(window: { startInclusive: string; endExclusive: st
     async readInventoryBatch(variantIds) {
       if (!variantIds.length) return [];
       const { data, error } = await (supabaseAdmin as any)
-        .from("inventory")
+        .from(INVENTORY_TABLE)
         .select("variant_id, quantity_on_hand, quantity_reserved")
         .in("variant_id", [...variantIds]);
       if (error) throw new Error("CM_INVENTORY_STOCK_READ_FAILED");
@@ -77,7 +80,7 @@ function createReadRepository(window: { startInclusive: string; endExclusive: st
       // If its additive migration is not applied yet, missing policies are surfaced by the engine.
       const { data, error } = await (supabaseAdmin as any)
         .schema("commerce_private")
-        .from("inventory_policies")
+        .from(POLICY_TABLE)
         .select(
           "variant_id, lead_time_days, safety_stock, reorder_point, target_stock, minimum_order_quantity, case_pack",
         )
