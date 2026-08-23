@@ -50,6 +50,50 @@ select json_build_object(
        and table_name in ('b2b_lead_status_history','b2b_lead_notes','b2b_intake_abuse_budget')
        and grantee in ('PUBLIC','anon','authenticated','service_role')
   ),
+  'b2bOpsPrivateTables', (
+    select count(*)
+      from pg_class c
+      join pg_namespace n on n.oid=c.relnamespace
+     where n.nspname='commerce_private'
+       and c.relkind='r'
+       and c.relname in (
+         'b2b_customer_accounts',
+         'b2b_account_users',
+         'b2b_account_variant_prices',
+         'saved_lists',
+         'saved_list_items',
+         'inventory_policies'
+       )
+       and c.relrowsecurity
+       and c.relforcerowsecurity
+  ),
+  'b2bOpsPrivatePolicies', (
+    select count(*)
+      from pg_policies
+     where schemaname='commerce_private'
+       and tablename in (
+         'b2b_customer_accounts',
+         'b2b_account_users',
+         'b2b_account_variant_prices',
+         'saved_lists',
+         'saved_list_items',
+         'inventory_policies'
+       )
+  ),
+  'b2bOpsPrivateDirectGrants', (
+    select count(*)
+      from information_schema.table_privileges
+     where table_schema='commerce_private'
+       and table_name in (
+         'b2b_customer_accounts',
+         'b2b_account_users',
+         'b2b_account_variant_prices',
+         'saved_lists',
+         'saved_list_items',
+         'inventory_policies'
+       )
+       and grantee in ('PUBLIC','anon','authenticated','service_role')
+  ),
   'mcpGrantRlsTables', (
     select count(*)
       from pg_class c
@@ -127,6 +171,11 @@ const expected = {
   privateB2bRlsTables: 3,
   privateB2bPolicies: 0,
   privateB2bDirectGrants: 0,
+  // CM-B2B-OPS-FOUNDATION-1 is closed by default: all six foundation tables
+  // use forced RLS, have no policies and expose no direct application grants.
+  b2bOpsPrivateTables: 6,
+  b2bOpsPrivatePolicies: 0,
+  b2bOpsPrivateDirectGrants: 0,
   // CM-MCP-DB2 keeps the grant store private while exposing exactly nine guarded
   // SECURITY DEFINER read RPCs to authenticated OAuth callers only.
   mcpGrantRlsTables: 1,
