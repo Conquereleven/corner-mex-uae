@@ -68,12 +68,14 @@ test("SEC-RLS-1 preserves the reviewed RPC-only access model", async () => {
   );
 });
 
-test("SEC-RLS-1 is Founder-gated and canonical replay verifies RLS plus zero direct grants", async () => {
-  const [contractText, replay] = await Promise.all([
+test("SEC-RLS-1 records the verified production postflight without changing its canonical identity", async () => {
+  const [contractText, replay, postflightText] = await Promise.all([
     read("contracts/canonical-active-migration-extensions-v1.json"),
     read("scripts/supabase/test-canonical-migration-replay.mjs"),
+    read("docs/evidence/sec-rls-1-production-postflight-2026-08-23.json"),
   ]);
   const contract = JSON.parse(contractText);
+  const postflight = JSON.parse(postflightText);
   const entry = contract.migrations.find(
     (item) => item.filename === "20260822034500_sec_rls_1_b2b_private_rls.sql",
   );
@@ -81,10 +83,86 @@ test("SEC-RLS-1 is Founder-gated and canonical replay verifies RLS plus zero dir
   assert.ok(entry);
   assert.equal(entry.owner, "canonical_cornermex");
   assert.equal(entry.purpose, "sec_rls_1_b2b_private_rls");
-  assert.equal(entry.productionApplied, false);
+  assert.equal(entry.productionApplied, true);
+  assert.equal(entry.productionVersion, "20260823004146");
+  assert.equal(entry.productionProjectRef, "wlrfknmrhowldygmvtvn");
   assert.equal(entry.requiresFounderProductionGate, true);
-  assert.equal("productionVersion" in entry, false);
-  assert.equal("productionProjectRef" in entry, false);
+
+  assert.equal(postflight.projectRef, "wlrfknmrhowldygmvtvn");
+  assert.deepEqual(postflight.canonicalMigration, {
+    filename: "20260822034500_sec_rls_1_b2b_private_rls.sql",
+    runtimeVersion: "20260823004146",
+    runtimeName: "sec_rls_1_b2b_private_rls",
+    productionApplied: true,
+  });
+  assert.deepEqual(
+    postflight.privateTables.map(({ name }) => name),
+    ["b2b_lead_status_history", "b2b_lead_notes", "b2b_intake_abuse_budget"],
+  );
+  for (const table of postflight.privateTables) {
+    assert.equal(table.schema, "commerce_private");
+    assert.equal(table.rlsEnabled, true);
+    assert.equal(table.forceRls, false);
+    assert.equal(table.policyCount, 0);
+    assert.equal(table.directGrantCount, 0);
+    assert.deepEqual(table.directAccess, {
+      PUBLIC: false,
+      anon: false,
+      authenticated: false,
+      service_role: false,
+    });
+  }
+
+  assert.deepEqual(postflight.privateLimiter.directExecute, {
+    PUBLIC: false,
+    anon: false,
+    authenticated: false,
+    service_role: false,
+  });
+  assert.equal(postflight.privateLimiter.securityDefiner, true);
+  assert.equal(postflight.privateLimiter.owner, "postgres");
+  assert.deepEqual(postflight.publicIntakeRpc.execute, {
+    PUBLIC: false,
+    anon: false,
+    authenticated: false,
+    service_role: true,
+  });
+  assert.equal(postflight.publicIntakeRpc.securityDefiner, true);
+  assert.equal(postflight.publicIntakeRpc.owner, "postgres");
+  assert.equal(postflight.adminRpcs.length, 7);
+  assert.deepEqual(
+    postflight.adminRpcs.map(({ qualifiedName }) => qualifiedName),
+    [
+      "public.admin_add_b2b_lead_note_v1",
+      "public.admin_delete_b2b_lead_note_v1",
+      "public.admin_get_b2b_lead_v1",
+      "public.admin_list_b2b_leads_v1",
+      "public.admin_save_b2b_quote_draft_v1",
+      "public.admin_update_b2b_lead_pipeline_v1",
+      "public.admin_update_b2b_lead_v1",
+    ],
+  );
+  for (const rpc of postflight.adminRpcs) {
+    assert.equal(rpc.securityDefiner, true);
+    assert.equal(rpc.owner, "postgres");
+    assert.deepEqual(rpc.execute, {
+      PUBLIC: false,
+      anon: false,
+      authenticated: true,
+      service_role: false,
+    });
+    assert.deepEqual(rpc.internalAuthorization, {
+      authUidValidation: true,
+      userRolesAdminCheck: true,
+    });
+  }
+  assert.equal(postflight.advisorAcceptance.rlsEnabledNoPolicy.code, "rls_enabled_no_policy");
+  assert.equal(postflight.advisorAcceptance.rlsEnabledNoPolicy.expectedByDesign, true);
+  assert.equal(
+    postflight.advisorAcceptance.authenticatedAdminSecurityDefiner.expectedByDesign,
+    true,
+  );
+  assert.equal(postflight.boundary.productionMutationPerformedByThisReconciliation, false);
 
   assert.match(replay, /privateB2bRlsTables: 3/);
   assert.match(replay, /privateB2bPolicies: 0/);
