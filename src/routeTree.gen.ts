@@ -31,12 +31,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as SellersSlugRouteImport } from './routes/sellers.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as OauthConsentRouteImport } from './routes/oauth.consent'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as B2bQuoteRouteImport } from './routes/b2b_.quote'
 import { Route as B2bLeadRouteImport } from './routes/b2b_.lead'
 import { Route as B2bCatalogRouteImport } from './routes/b2b_.catalog'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiReadyRouteImport } from './routes/api/ready'
+import { Route as ApiMcpRouteImport } from './routes/api/mcp'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedSellerRouteImport } from './routes/_authenticated/seller'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -214,6 +216,11 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OauthConsentRoute = OauthConsentRouteImport.update({
+  id: '/oauth/consent',
+  path: '/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalSlugRoute = LegalSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -242,6 +249,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
 const ApiReadyRoute = ApiReadyRouteImport.update({
   id: '/api/ready',
   path: '/api/ready',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpRoute = ApiMcpRouteImport.update({
+  id: '/api/mcp',
+  path: '/api/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -661,12 +673,14 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/seller': typeof AuthenticatedSellerRouteWithChildren
   '/api/health': typeof ApiHealthRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/api/ready': typeof ApiReadyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/b2b/catalog': typeof B2bCatalogRoute
   '/b2b/lead': typeof B2bLeadRoute
   '/b2b/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
+  '/oauth/consent': typeof OauthConsentRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/legal/': typeof LegalIndexRoute
@@ -753,12 +767,14 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/api/ready': typeof ApiReadyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/b2b/catalog': typeof B2bCatalogRoute
   '/b2b/lead': typeof B2bLeadRoute
   '/b2b/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
+  '/oauth/consent': typeof OauthConsentRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/legal': typeof LegalIndexRoute
@@ -845,12 +861,14 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/seller': typeof AuthenticatedSellerRouteWithChildren
   '/api/health': typeof ApiHealthRoute
+  '/api/mcp': typeof ApiMcpRoute
   '/api/ready': typeof ApiReadyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/b2b_/catalog': typeof B2bCatalogRoute
   '/b2b_/lead': typeof B2bLeadRoute
   '/b2b_/quote': typeof B2bQuoteRoute
   '/legal/$slug': typeof LegalSlugRoute
+  '/oauth/consent': typeof OauthConsentRoute
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/legal/': typeof LegalIndexRoute
@@ -943,12 +961,14 @@ export interface FileRouteTypes {
     | '/admin'
     | '/seller'
     | '/api/health'
+    | '/api/mcp'
     | '/api/ready'
     | '/auth/callback'
     | '/b2b/catalog'
     | '/b2b/lead'
     | '/b2b/quote'
     | '/legal/$slug'
+    | '/oauth/consent'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/legal/'
@@ -1035,12 +1055,14 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/api/health'
+    | '/api/mcp'
     | '/api/ready'
     | '/auth/callback'
     | '/b2b/catalog'
     | '/b2b/lead'
     | '/b2b/quote'
     | '/legal/$slug'
+    | '/oauth/consent'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/legal'
@@ -1126,12 +1148,14 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/seller'
     | '/api/health'
+    | '/api/mcp'
     | '/api/ready'
     | '/auth/callback'
     | '/b2b_/catalog'
     | '/b2b_/lead'
     | '/b2b_/quote'
     | '/legal/$slug'
+    | '/oauth/consent'
     | '/product/$slug'
     | '/sellers/$slug'
     | '/legal/'
@@ -1221,11 +1245,13 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiMcpRoute: typeof ApiMcpRoute
   ApiReadyRoute: typeof ApiReadyRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   B2bCatalogRoute: typeof B2bCatalogRoute
   B2bLeadRoute: typeof B2bLeadRoute
   B2bQuoteRoute: typeof B2bQuoteRoute
+  OauthConsentRoute: typeof OauthConsentRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
@@ -1389,6 +1415,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oauth/consent': {
+      id: '/oauth/consent'
+      path: '/oauth/consent'
+      fullPath: '/oauth/consent'
+      preLoaderRoute: typeof OauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/$slug': {
       id: '/legal/$slug'
       path: '/$slug'
@@ -1429,6 +1462,13 @@ declare module '@tanstack/react-router' {
       path: '/api/ready'
       fullPath: '/api/ready'
       preLoaderRoute: typeof ApiReadyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mcp': {
+      id: '/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/api/mcp'
+      preLoaderRoute: typeof ApiMcpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -2211,11 +2251,13 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiMcpRoute: ApiMcpRoute,
   ApiReadyRoute: ApiReadyRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   B2bCatalogRoute: B2bCatalogRoute,
   B2bLeadRoute: B2bLeadRoute,
   B2bQuoteRoute: B2bQuoteRoute,
+  OauthConsentRoute: OauthConsentRoute,
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
