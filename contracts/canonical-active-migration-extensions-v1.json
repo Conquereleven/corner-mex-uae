@@ -51,7 +51,9 @@
       "filename": "20260822034500_sec_rls_1_b2b_private_rls.sql",
       "owner": "canonical_cornermex",
       "purpose": "sec_rls_1_b2b_private_rls",
-      "productionApplied": false,
+      "productionApplied": true,
+      "productionVersion": "20260823004146",
+      "productionProjectRef": "wlrfknmrhowldygmvtvn",
       "requiresFounderProductionGate": true
     }
   ]

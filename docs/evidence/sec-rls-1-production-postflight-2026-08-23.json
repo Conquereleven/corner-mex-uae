@@ -1,0 +1,207 @@
+{
+  "evidenceVersion": "sec-rls-1-production-postflight-v1",
+  "task": "SEC-RLS-1",
+  "verificationStatus": "verified",
+  "projectRef": "wlrfknmrhowldygmvtvn",
+  "canonicalMigration": {
+    "filename": "20260822034500_sec_rls_1_b2b_private_rls.sql",
+    "runtimeVersion": "20260823004146",
+    "runtimeName": "sec_rls_1_b2b_private_rls",
+    "productionApplied": true
+  },
+  "privateTables": [
+    {
+      "schema": "commerce_private",
+      "name": "b2b_lead_status_history",
+      "rlsEnabled": true,
+      "forceRls": false,
+      "policyCount": 0,
+      "directGrantCount": 0,
+      "directAccess": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": false,
+        "service_role": false
+      }
+    },
+    {
+      "schema": "commerce_private",
+      "name": "b2b_lead_notes",
+      "rlsEnabled": true,
+      "forceRls": false,
+      "policyCount": 0,
+      "directGrantCount": 0,
+      "directAccess": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": false,
+        "service_role": false
+      }
+    },
+    {
+      "schema": "commerce_private",
+      "name": "b2b_intake_abuse_budget",
+      "rlsEnabled": true,
+      "forceRls": false,
+      "policyCount": 0,
+      "directGrantCount": 0,
+      "directAccess": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": false,
+        "service_role": false
+      }
+    }
+  ],
+  "privateLimiter": {
+    "qualifiedName": "commerce_private.consume_b2b_intake_budget_v1",
+    "securityDefiner": true,
+    "owner": "postgres",
+    "directExecute": {
+      "PUBLIC": false,
+      "anon": false,
+      "authenticated": false,
+      "service_role": false
+    }
+  },
+  "publicIntakeRpc": {
+    "qualifiedName": "public.submit_b2b_lead_v2",
+    "securityDefiner": true,
+    "owner": "postgres",
+    "execute": {
+      "PUBLIC": false,
+      "anon": false,
+      "authenticated": false,
+      "service_role": true
+    }
+  },
+  "adminRpcs": [
+    {
+      "qualifiedName": "public.admin_add_b2b_lead_note_v1",
+      "securityDefiner": true,
+      "owner": "postgres",
+      "execute": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": true,
+        "service_role": false
+      },
+      "internalAuthorization": {
+        "authUidValidation": true,
+        "userRolesAdminCheck": true
+      }
+    },
+    {
+      "qualifiedName": "public.admin_delete_b2b_lead_note_v1",
+      "securityDefiner": true,
+      "owner": "postgres",
+      "execute": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": true,
+        "service_role": false
+      },
+      "internalAuthorization": {
+        "authUidValidation": true,
+        "userRolesAdminCheck": true
+      }
+    },
+    {
+      "qualifiedName": "public.admin_get_b2b_lead_v1",
+      "securityDefiner": true,
+      "owner": "postgres",
+      "execute": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": true,
+        "service_role": false
+      },
+      "internalAuthorization": {
+        "authUidValidation": true,
+        "userRolesAdminCheck": true
+      }
+    },
+    {
+      "qualifiedName": "public.admin_list_b2b_leads_v1",
+      "securityDefiner": true,
+      "owner": "postgres",
+      "execute": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": true,
+        "service_role": false
+      },
+      "internalAuthorization": {
+        "authUidValidation": true,
+        "userRolesAdminCheck": true
+      }
+    },
+    {
+      "qualifiedName": "public.admin_save_b2b_quote_draft_v1",
+      "securityDefiner": true,
+      "owner": "postgres",
+      "execute": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": true,
+        "service_role": false
+      },
+      "internalAuthorization": {
+        "authUidValidation": true,
+        "userRolesAdminCheck": true
+      }
+    },
+    {
+      "qualifiedName": "public.admin_update_b2b_lead_pipeline_v1",
+      "securityDefiner": true,
+      "owner": "postgres",
+      "execute": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": true,
+        "service_role": false
+      },
+      "internalAuthorization": {
+        "authUidValidation": true,
+        "userRolesAdminCheck": true
+      }
+    },
+    {
+      "qualifiedName": "public.admin_update_b2b_lead_v1",
+      "securityDefiner": true,
+      "owner": "postgres",
+      "execute": {
+        "PUBLIC": false,
+        "anon": false,
+        "authenticated": true,
+        "service_role": false
+      },
+      "internalAuthorization": {
+        "authUidValidation": true,
+        "userRolesAdminCheck": true
+      }
+    }
+  ],
+  "advisorAcceptance": {
+    "rlsEnabledNoPolicy": {
+      "code": "rls_enabled_no_policy",
+      "severity": "INFO",
+      "expectedByDesign": true,
+      "disposition": "accepted",
+      "rationale": "Private tables intentionally use ordinary RLS with FORCE RLS disabled, zero policies, zero direct grants, and reviewed SECURITY DEFINER RPC access only."
+    },
+    "authenticatedAdminSecurityDefiner": {
+      "severity": "WARN",
+      "expectedByDesign": true,
+      "disposition": "accepted",
+      "rationale": "The seven authenticated admin RPCs remain bounded internally by auth.uid() validation and the user_roles admin check."
+    }
+  },
+  "boundary": {
+    "productionMutationPerformedByThisReconciliation": false,
+    "migrationAppliedByThisReconciliation": false,
+    "railwayWritePerformed": false,
+    "oauthChangePerformed": false,
+    "deploymentPerformed": false
+  }
+}
