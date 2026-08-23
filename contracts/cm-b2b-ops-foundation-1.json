@@ -1,0 +1,51 @@
+{
+  "contractVersion": "cm-b2b-ops-foundation-1",
+  "canonicalAuthorities": {
+    "catalog": ["public.products", "public.product_variants", "public.categories"],
+    "inventory": "public.inventory",
+    "people": ["auth.users", "public.profiles"],
+    "orderHistory": ["public.orders", "public.order_items"],
+    "privateFoundationSchema": "commerce_private"
+  },
+  "privateTables": [
+    "b2b_customer_accounts",
+    "b2b_account_users",
+    "b2b_account_variant_prices",
+    "saved_lists",
+    "saved_list_items",
+    "inventory_policies"
+  ],
+  "pricingPrecedence": ["exact_account_variant", "default_sell_price"],
+  "currency": "AED",
+  "derivedMetrics": {
+    "availableStock": "quantity_on_hand - quantity_reserved",
+    "avgDailyDemand": "required external input; never fabricated",
+    "daysOfCover": "available_stock / avg_daily_demand",
+    "reorderPoint": "ceil(avg_daily_demand * lead_time_days + safety_stock)",
+    "recommendedReorderQuantity": "max(0, target_stock - available_stock), then MOQ and case-pack rounding"
+  },
+  "edgeCases": {
+    "zeroDemand": "days_of_cover is null with zero_demand status; no reorder inferred",
+    "negativeOrInconsistentInventory": "invalid_inventory; values are never clamped",
+    "missingLeadTime": "incomplete policy unless an explicit reorder point exists",
+    "missingSafetyStock": "incomplete policy unless an explicit reorder point exists",
+    "missingDemandHistory": "no_demand_history; no operational recommendation",
+    "moqAndCasePack": "positive demand is raised to MOQ and rounded up to a whole case pack",
+    "inactiveSku": "excluded from operational recommendations"
+  },
+  "sideEffects": {
+    "automaticOrdering": false,
+    "purchaseOrderCreation": false,
+    "supplierWrites": false,
+    "productionMigrationApply": false,
+    "mcpPermissionExpansion": false,
+    "oauthActivation": false,
+    "railwayMutation": false
+  },
+  "followUps": [
+    "CM-B2B-PORTAL-1A: Quick Order + Saved Lists + Reorder UX",
+    "CM-B2B-PORTAL-1B: account pricing + availability presentation",
+    "CM-OPS-1A: deterministic inventory intelligence engine",
+    "CM-OPS-1B: Inventory Control Tower UX"
+  ]
+}
