@@ -55,6 +55,13 @@
       "productionVersion": "20260823004146",
       "productionProjectRef": "wlrfknmrhowldygmvtvn",
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260822050535_cm_mcp_db2_read_boundary.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_mcp_db2_read_boundary",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }
