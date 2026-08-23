@@ -128,6 +128,13 @@
       "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "b2b_portal_v1",
+      "files": ["src/lib/b2b-portal.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
     }
   ]
 }
