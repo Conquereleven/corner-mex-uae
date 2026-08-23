@@ -1,0 +1,104 @@
+{
+  "evidenceVersion": "cm-b2b-ops-prod-readiness-1-readonly-snapshot-v1",
+  "capturedAt": "2026-08-23T04:19:29Z",
+  "projectRef": "wlrfknmrhowldygmvtvn",
+  "accessMode": "read_only",
+  "migrationLedger": {
+    "latest": {
+      "version": "20260823004146",
+      "name": "sec_rls_1_b2b_private_rls"
+    },
+    "cm_b2b_ops_foundation_1": "absent",
+    "cm_b2b_portal_1a_boundary": "absent"
+  },
+  "schemas": {
+    "auth": true,
+    "commerce_private": true,
+    "commerce_privateOwner": "postgres"
+  },
+  "requiredRoles": {
+    "anon": true,
+    "authenticated": true,
+    "service_role": true
+  },
+  "prerequisiteOwnership": {
+    "auth.users": "supabase_auth_admin",
+    "public.inventory": "postgres",
+    "public.order_items": "postgres",
+    "public.orders": "postgres",
+    "public.product_translations": "postgres",
+    "public.product_variants": "postgres",
+    "public.products": "postgres",
+    "public.set_updated_at()": "postgres"
+  },
+  "prerequisites": {
+    "auth.users": true,
+    "public.inventory": true,
+    "public.order_items": true,
+    "public.orders": true,
+    "public.product_translations": true,
+    "public.product_variants": true,
+    "public.products": true,
+    "public.set_updated_at()": true
+  },
+  "targetCollisions": {
+    "commerce_private.b2b_customer_accounts": false,
+    "commerce_private.b2b_account_users": false,
+    "commerce_private.b2b_account_variant_prices": false,
+    "commerce_private.saved_lists": false,
+    "commerce_private.saved_list_items": false,
+    "commerce_private.inventory_policies": false,
+    "public.b2b_portal_v1(text,uuid,jsonb)": false
+  },
+  "existingRpcIdentities": [
+    "admin_add_b2b_lead_note_v1(uuid,text)",
+    "admin_delete_b2b_lead_note_v1(uuid)",
+    "admin_get_b2b_lead_v1(uuid)",
+    "admin_list_b2b_leads_v1(text)",
+    "admin_save_b2b_quote_draft_v1(uuid,jsonb)",
+    "admin_transition_order_lifecycle_v1(uuid,text,text,text)",
+    "admin_update_b2b_lead_pipeline_v1(uuid,text,text,integer,text,text,text,timestamp with time zone,text,timestamp with time zone,text,uuid)",
+    "admin_update_b2b_lead_v1(uuid,text,text,boolean)",
+    "place_cod_order_v1(uuid,jsonb,jsonb,numeric,numeric,jsonb)",
+    "submit_b2b_lead_v2(text,text,text,text,text,text,text,text,text,text,text,text,text)"
+  ],
+  "existingRpcDefinitionMd5": {
+    "admin_add_b2b_lead_note_v1(uuid,text)": "73aaf6f8f8628c74aa9519282868aa25",
+    "admin_delete_b2b_lead_note_v1(uuid)": "16583493b823a4301596df2d9c6121f4",
+    "admin_get_b2b_lead_v1(uuid)": "9381c818c11ba7b0a365dd9c7717edd1",
+    "admin_list_b2b_leads_v1(text)": "c0e6479b051513dd09fee27e506ba924",
+    "admin_save_b2b_quote_draft_v1(uuid,jsonb)": "f23eb9f79b5c51192a97ec7399a7d41a",
+    "admin_transition_order_lifecycle_v1(uuid,text,text,text)": "d669707ea3b49127388ff1724b426fa5",
+    "admin_update_b2b_lead_pipeline_v1(uuid,text,text,integer,text,text,text,timestamp with time zone,text,timestamp with time zone,text,uuid)": "18d1a733ba0dd3f89f0b86af6df356c2",
+    "admin_update_b2b_lead_v1(uuid,text,text,boolean)": "4a1b36fde551922ba7938ffebd0a8786",
+    "place_cod_order_v1(uuid,jsonb,jsonb,numeric,numeric,jsonb)": "abc6581882992ed5693257d9cb5c4fe6",
+    "submit_b2b_lead_v2(text,text,text,text,text,text,text,text,text,text,text,text,text)": "52529991e97dd39bf0c470aad26ab178"
+  },
+  "gateAPreflightReadOnlyRehearsal": {
+    "status": "green",
+    "greenChecks": 9,
+    "stopChecks": 0,
+    "note": "Point-in-time rehearsal only; the authorized window requires a fresh run."
+  },
+  "securityAdvisors": {
+    "total": 16,
+    "counts": {
+      "INFO:rls_enabled_no_policy": 4,
+      "WARN:authenticated_security_definer_function_executable": 11,
+      "WARN:auth_leaked_password_protection": 1
+    },
+    "privateNoPolicyTables": [
+      "b2b_intake_abuse_budget",
+      "b2b_lead_notes",
+      "b2b_lead_status_history"
+    ],
+    "note": "This is a point-in-time baseline. Each future gate requires a fresh advisor run and delta comparison."
+  },
+  "boundary": {
+    "applyMigrationPerformed": false,
+    "executeSqlStatementsWereSelectOnly": true,
+    "productionMutationPerformed": false,
+    "productionGrantChanged": false,
+    "syntheticDataCreated": false
+  }
+}
