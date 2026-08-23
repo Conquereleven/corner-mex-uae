@@ -8,12 +8,12 @@ CM-MCP-5 defines the smallest auditable sequence for a future first remote MCP r
 
 ## Repository baseline
 
-- `main`: `5a248f724815aadf863c0290ca09006e0b43cd51` (PR #60 merged).
+- `main`: `14c8b58ccf05abb45659b3634158c5d0bff133f9` (PR #58 merged).
 - SEC-RLS-1: issue #55 closed with canonical production reconciliation on `main`.
-- PR #58: ready but unmerged at `ab102761df3b96c5c16f20fd7eddb209fde2017b`.
+- PR #58: merged from exact head `ab102761df3b96c5c16f20fd7eddb209fde2017b` as merge commit `14c8b58ccf05abb45659b3634158c5d0bff133f9`.
 - PR #59: ready but unmerged at `4de02a90e8603b68ba4428142ffdd82d62728fe8`.
 
-The heads above are evidence inputs, not merge authorizations. Any head change requires fresh CI, independent review, and a new exact-head Founder decision. CM-MCP-5 cannot advance to a production gate until both prerequisite PRs are merged and their merge commits are reconciled into the activation evidence.
+The heads above are evidence inputs, not merge authorizations. Any head change requires fresh CI, independent review, and a new exact-head Founder decision. CM-MCP-5 cannot advance to a production gate until PR #59 is merged and its merge commit is reconciled into the activation evidence. The merge of PR #58 does not authorize applying CM-MCP-DB2 to production.
 
 ## First rehearsal boundary
 

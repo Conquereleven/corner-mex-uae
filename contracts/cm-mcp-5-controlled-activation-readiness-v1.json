@@ -4,7 +4,7 @@
   "status": "planning_only",
   "preparedAt": "2026-08-23T01:36:53Z",
   "baseline": {
-    "mainSha": "5a248f724815aadf863c0290ca09006e0b43cd51",
+    "mainSha": "14c8b58ccf05abb45659b3634158c5d0bff133f9",
     "secRls1": {
       "issue": 55,
       "state": "closed",
@@ -15,7 +15,8 @@
       {
         "number": 58,
         "headSha": "ab102761df3b96c5c16f20fd7eddb209fde2017b",
-        "state": "ready_unmerged",
+        "state": "merged",
+        "mergeCommit": "14c8b58ccf05abb45659b3634158c5d0bff133f9",
         "purpose": "canonical_read_database_boundary"
       },
       {

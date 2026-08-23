@@ -24,10 +24,10 @@ test("CM-MCP-5 is repository planning with every production mutation false", asy
   assert.equal(contract.governance.railwayIsOutsideActivationPath, true);
 });
 
-test("CM-MCP-5 pins ready unmerged prerequisites without treating them as authorization", async () => {
+test("CM-MCP-5 reconciles merged and ready prerequisites without treating them as authorization", async () => {
   const contract = JSON.parse(await read(contractPath));
 
-  assert.equal(contract.baseline.mainSha, "5a248f724815aadf863c0290ca09006e0b43cd51");
+  assert.equal(contract.baseline.mainSha, "14c8b58ccf05abb45659b3634158c5d0bff133f9");
   assert.deepEqual(
     contract.baseline.prerequisitePullRequests.map(({ number, headSha, state }) => ({
       number,
@@ -38,7 +38,7 @@ test("CM-MCP-5 pins ready unmerged prerequisites without treating them as author
       {
         number: 58,
         headSha: "ab102761df3b96c5c16f20fd7eddb209fde2017b",
-        state: "ready_unmerged",
+        state: "merged",
       },
       {
         number: 59,
@@ -46,6 +46,10 @@ test("CM-MCP-5 pins ready unmerged prerequisites without treating them as author
         state: "ready_unmerged",
       },
     ],
+  );
+  assert.equal(
+    contract.baseline.prerequisitePullRequests[0].mergeCommit,
+    "14c8b58ccf05abb45659b3634158c5d0bff133f9",
   );
 });
 
