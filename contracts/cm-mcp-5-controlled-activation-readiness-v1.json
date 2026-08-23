@@ -1,0 +1,126 @@
+{
+  "contractVersion": "cm-mcp-5-controlled-activation-readiness-v1",
+  "task": "CM-MCP-5",
+  "status": "planning_only",
+  "preparedAt": "2026-08-23T01:36:53Z",
+  "baseline": {
+    "mainSha": "5a248f724815aadf863c0290ca09006e0b43cd51",
+    "secRls1": {
+      "issue": 55,
+      "state": "closed",
+      "reconciliationPr": 60,
+      "mergeCommit": "5a248f724815aadf863c0290ca09006e0b43cd51"
+    },
+    "prerequisitePullRequests": [
+      {
+        "number": 58,
+        "headSha": "ab102761df3b96c5c16f20fd7eddb209fde2017b",
+        "state": "ready_unmerged",
+        "purpose": "canonical_read_database_boundary"
+      },
+      {
+        "number": 59,
+        "headSha": "4de02a90e8603b68ba4428142ffdd82d62728fe8",
+        "state": "ready_unmerged",
+        "purpose": "oauth_consent_and_activation_readiness"
+      }
+    ]
+  },
+  "changeBoundary": {
+    "repositoryPlanningOnly": true,
+    "productionDatabaseWrite": false,
+    "db2MigrationApplied": false,
+    "oauthServerEnabled": false,
+    "oauthClientRegistered": false,
+    "liveGrantProvisioned": false,
+    "edgeFunctionDeployed": false,
+    "railwayMutation": false,
+    "productionDeployment": false
+  },
+  "firstRehearsalPosture": {
+    "dynamicClientRegistration": "disabled",
+    "initialPermissions": ["catalog:read", "inventory:read", "ops:read"],
+    "deferredPermissions": [
+      "orders:read",
+      "b2b:read",
+      "orders:note",
+      "orders:transition",
+      "b2b:write"
+    ],
+    "serviceRoleCredentialAllowed": false,
+    "browserOriginsInitiallyAllowed": []
+  },
+  "productionGates": [
+    {
+      "id": "db2_apply",
+      "action": "apply_cm_mcp_db2_to_canonical_production",
+      "executionStatus": "not_authorized",
+      "requiresFounderAuthorization": true,
+      "requiresExactArtifactIdentity": true,
+      "requiresFreshReadOnlyPreflight": true,
+      "rollbackPreparedBeforeExecution": true
+    },
+    {
+      "id": "db2_postflight",
+      "action": "verify_db2_runtime_ledger_privileges_rls_and_rpc_contract",
+      "executionStatus": "not_authorized",
+      "requiresFounderAuthorization": true,
+      "requiresExactArtifactIdentity": true,
+      "requiresFreshReadOnlyPreflight": false,
+      "rollbackPreparedBeforeExecution": false
+    },
+    {
+      "id": "oauth_enable",
+      "action": "enable_supabase_oauth_server_with_static_registration_only",
+      "executionStatus": "not_authorized",
+      "requiresFounderAuthorization": true,
+      "requiresExactArtifactIdentity": true,
+      "requiresFreshReadOnlyPreflight": true,
+      "rollbackPreparedBeforeExecution": true
+    },
+    {
+      "id": "oauth_client_register",
+      "action": "register_one_static_production_oauth_client",
+      "executionStatus": "not_authorized",
+      "requiresFounderAuthorization": true,
+      "requiresExactArtifactIdentity": true,
+      "requiresFreshReadOnlyPreflight": true,
+      "rollbackPreparedBeforeExecution": true
+    },
+    {
+      "id": "grant_provision",
+      "action": "provision_exact_user_client_minimum_read_grants",
+      "executionStatus": "not_authorized",
+      "requiresFounderAuthorization": true,
+      "requiresExactArtifactIdentity": true,
+      "requiresFreshReadOnlyPreflight": true,
+      "rollbackPreparedBeforeExecution": true
+    },
+    {
+      "id": "edge_deploy",
+      "action": "deploy_cornermex_mcp_with_reviewed_environment_boundary",
+      "executionStatus": "not_authorized",
+      "requiresFounderAuthorization": true,
+      "requiresExactArtifactIdentity": true,
+      "requiresFreshReadOnlyPreflight": true,
+      "rollbackPreparedBeforeExecution": true
+    },
+    {
+      "id": "remote_rehearsal",
+      "action": "run_first_read_only_remote_activation_rehearsal",
+      "executionStatus": "not_authorized",
+      "requiresFounderAuthorization": true,
+      "requiresExactArtifactIdentity": true,
+      "requiresFreshReadOnlyPreflight": true,
+      "rollbackPreparedBeforeExecution": true
+    }
+  ],
+  "governance": {
+    "aggregateAuthorizationAllowed": false,
+    "authorizationCarriesAcrossHeadChanges": false,
+    "authorizationCarriesAcrossGates": false,
+    "failedGateStopsSequence": true,
+    "railwayIsOutsideActivationPath": true,
+    "executionCommandsIncluded": false
+  }
+}
