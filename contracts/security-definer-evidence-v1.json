@@ -36,6 +36,15 @@
       "executionGrants": "authenticated only",
       "mutationScope": "updates one locked order lifecycle field and appends one lifecycle event after state-machine validation",
       "rlsImplications": "SECURITY DEFINER performs its own authenticated admin authorization before bounded mutation"
+    },
+    {
+      "identity": "public.b2b_portal_v1(text,uuid,jsonb)",
+      "owner": "postgres",
+      "searchPath": "pg_catalog, public, commerce_private",
+      "callerIdentitySource": "auth.uid() checked against an active private account membership and active account on every account-scoped action",
+      "executionGrants": "authenticated only; PUBLIC, anon and service_role revoked",
+      "mutationScope": "bounded saved-list create, rename, item quantity, item removal and ordering only; no order, payment, inventory or supplier mutation",
+      "rlsImplications": "SECURITY DEFINER keeps private tables unexposed and fails closed before returning or mutating account-scoped data"
     }
   ]
 }

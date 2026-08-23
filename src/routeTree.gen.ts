@@ -82,6 +82,7 @@ import { Route as AuthenticatedAccountWishlistRouteImport } from './routes/_auth
 import { Route as AuthenticatedAccountReturnsRouteImport } from './routes/_authenticated/account.returns'
 import { Route as AuthenticatedAccountNotificationsRouteImport } from './routes/_authenticated/account.notifications'
 import { Route as AuthenticatedAccountLoyaltyRouteImport } from './routes/_authenticated/account.loyalty'
+import { Route as AuthenticatedAccountB2bPortalRouteImport } from './routes/_authenticated/account.b2b-portal'
 import { Route as AuthenticatedSellerProductsIndexRouteImport } from './routes/_authenticated/seller.products.index'
 import { Route as AuthenticatedSellerOrdersIndexRouteImport } from './routes/_authenticated/seller.orders.index'
 import { Route as AuthenticatedSellerCustomersIndexRouteImport } from './routes/_authenticated/seller.customers.index'
@@ -505,6 +506,12 @@ const AuthenticatedAccountLoyaltyRoute =
     path: '/loyalty',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
+const AuthenticatedAccountB2bPortalRoute =
+  AuthenticatedAccountB2bPortalRouteImport.update({
+    id: '/b2b-portal',
+    path: '/b2b-portal',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 const AuthenticatedSellerProductsIndexRoute =
   AuthenticatedSellerProductsIndexRouteImport.update({
     id: '/',
@@ -684,6 +691,7 @@ export interface FileRoutesByFullPath {
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/legal/': typeof LegalIndexRoute
+  '/account/b2b-portal': typeof AuthenticatedAccountB2bPortalRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -778,6 +786,7 @@ export interface FileRoutesByTo {
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/legal': typeof LegalIndexRoute
+  '/account/b2b-portal': typeof AuthenticatedAccountB2bPortalRoute
   '/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -872,6 +881,7 @@ export interface FileRoutesById {
   '/product/$slug': typeof ProductSlugRoute
   '/sellers/$slug': typeof SellersSlugRoute
   '/legal/': typeof LegalIndexRoute
+  '/_authenticated/account/b2b-portal': typeof AuthenticatedAccountB2bPortalRoute
   '/_authenticated/account/loyalty': typeof AuthenticatedAccountLoyaltyRoute
   '/_authenticated/account/notifications': typeof AuthenticatedAccountNotificationsRoute
   '/_authenticated/account/returns': typeof AuthenticatedAccountReturnsRoute
@@ -972,6 +982,7 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/sellers/$slug'
     | '/legal/'
+    | '/account/b2b-portal'
     | '/account/loyalty'
     | '/account/notifications'
     | '/account/returns'
@@ -1066,6 +1077,7 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/sellers/$slug'
     | '/legal'
+    | '/account/b2b-portal'
     | '/account/loyalty'
     | '/account/notifications'
     | '/account/returns'
@@ -1159,6 +1171,7 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/sellers/$slug'
     | '/legal/'
+    | '/_authenticated/account/b2b-portal'
     | '/_authenticated/account/loyalty'
     | '/_authenticated/account/notifications'
     | '/_authenticated/account/returns'
@@ -1772,6 +1785,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountLoyaltyRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
+    '/_authenticated/account/b2b-portal': {
+      id: '/_authenticated/account/b2b-portal'
+      path: '/b2b-portal'
+      fullPath: '/account/b2b-portal'
+      preLoaderRoute: typeof AuthenticatedAccountB2bPortalRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
     '/_authenticated/seller/products/': {
       id: '/_authenticated/seller/products/'
       path: '/'
@@ -1944,6 +1964,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountB2bPortalRoute: typeof AuthenticatedAccountB2bPortalRoute
   AuthenticatedAccountLoyaltyRoute: typeof AuthenticatedAccountLoyaltyRoute
   AuthenticatedAccountNotificationsRoute: typeof AuthenticatedAccountNotificationsRoute
   AuthenticatedAccountReturnsRoute: typeof AuthenticatedAccountReturnsRoute
@@ -1954,6 +1975,7 @@ interface AuthenticatedAccountRouteChildren {
 }
 
 const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountB2bPortalRoute: AuthenticatedAccountB2bPortalRoute,
   AuthenticatedAccountLoyaltyRoute: AuthenticatedAccountLoyaltyRoute,
   AuthenticatedAccountNotificationsRoute:
     AuthenticatedAccountNotificationsRoute,
