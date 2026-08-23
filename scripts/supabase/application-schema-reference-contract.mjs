@@ -12,7 +12,7 @@ const BASE_COUNTS = Object.freeze({
 const COMBINED_COUNTS = Object.freeze({
   canonical_supported: 21,
   lovable_live_only: 19,
-  requires_future_migration: 13,
+  requires_future_migration: 14,
 });
 
 export function expandApplicationSchemaReferenceContract(base, extensions) {
@@ -142,7 +142,7 @@ export function validateApplicationSchemaReferenceContract(contract) {
   }
 
   const isCombined = identities.has("function:admin_import_product_row_v1");
-  const expectedCount = isCombined ? 53 : 44;
+  const expectedCount = isCombined ? 54 : 44;
   const expectedCounts = isCombined ? COMBINED_COUNTS : BASE_COUNTS;
   if (contract.references.length !== expectedCount) errors.push("reference count mismatch");
   for (const [classification, expected] of Object.entries(expectedCounts)) {

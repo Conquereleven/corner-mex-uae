@@ -13,6 +13,9 @@ export function AccountNavigation({ includeHome = true }: { includeHome?: boolea
         <Link to="/account/orders">My Orders</Link>
       </Button>
       <Button asChild variant="outline" className="rounded-full">
+        <Link to="/account/b2b-portal">B2B portal</Link>
+      </Button>
+      <Button asChild variant="outline" className="rounded-full">
         <Link to="/account/notifications">Notifications</Link>
       </Button>
       <Button asChild variant="outline" className="rounded-full">
