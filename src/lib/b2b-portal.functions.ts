@@ -10,26 +10,37 @@ const AccountSchema = z.object({
   id: Uuid,
   name: z.string(),
   role: z.enum(["buyer", "account_admin"]),
+  currencyCode: z.literal("AED"),
 });
-const VariantSchema = z.object({
-  variantId: Uuid,
-  productId: Uuid,
-  name: z.string(),
-  slug: z.string(),
-  sku: z.string().nullable(),
-  variantLabel: z.string().nullable(),
-  availableStock: z.number().int().nonnegative(),
+const PriceStatusSchema = z.enum(["default", "special_account", "expired_override"]);
+const CurrentCommercialSchema = z.object({
+  catalogPriceAed: z.number().nonnegative(),
+  effectivePriceAed: z.number().nonnegative(),
+  priceStatus: PriceStatusSchema,
 });
-const SavedListItemSchema = z.object({
-  variantId: Uuid,
-  desiredQuantity: Quantity,
-  sortPosition: z.number().int().nonnegative(),
-  name: z.string(),
-  sku: z.string().nullable(),
-  variantLabel: z.string().nullable(),
-  availableStock: z.number().int().nonnegative(),
-  sellable: z.boolean(),
-});
+const VariantSchema = z
+  .object({
+    variantId: Uuid,
+    productId: Uuid,
+    name: z.string(),
+    slug: z.string(),
+    sku: z.string().nullable(),
+    variantLabel: z.string().nullable(),
+    availableStock: z.number().int().nonnegative(),
+  })
+  .merge(CurrentCommercialSchema);
+const SavedListItemSchema = z
+  .object({
+    variantId: Uuid,
+    desiredQuantity: Quantity,
+    sortPosition: z.number().int().nonnegative(),
+    name: z.string(),
+    sku: z.string().nullable(),
+    variantLabel: z.string().nullable(),
+    availableStock: z.number().int().nonnegative(),
+    sellable: z.boolean(),
+  })
+  .merge(CurrentCommercialSchema);
 const SavedListSchema = z.object({
   id: Uuid,
   name: z.string(),
@@ -52,6 +63,9 @@ const ReorderLineSchema = z.object({
   availableStock: z.number().int().nonnegative(),
   eligible: z.boolean(),
   reason: z.enum(["inactive", "unavailable"]).nullable(),
+  catalogPriceAed: z.number().nonnegative().nullable(),
+  effectivePriceAed: z.number().nonnegative().nullable(),
+  priceStatus: PriceStatusSchema.nullable(),
 });
 
 export type B2bAccount = z.infer<typeof AccountSchema>;
