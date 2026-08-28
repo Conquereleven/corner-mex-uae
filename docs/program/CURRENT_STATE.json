@@ -1,62 +1,70 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-08-19T15:00:00Z",
+  "generatedAt": "2026-08-28T18:27:55Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "e02960f0887d98e624b22a9333fde59175299847",
-    "observedMainSha": "e02960f0887d98e624b22a9333fde59175299847",
+    "expectedMainSha": "c249512e13388305bc0648546f7d3ab860921dc8",
+    "observedMainSha": "c249512e13388305bc0648546f7d3ab860921dc8",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
-    "class": "verified_repository",
-    "source": "CM-COM-4A is a repository-only implementation sprint from the production-accepted CM-COM-3A.1 merge. It performed NO Railway, Supabase, Lovable, DNS, registrar, OAuth or email-provider write. The lifecycle migration is prepared in Git only and remains unapplied.",
-    "observedAt": "2026-08-08T00:45:00Z",
-    "freshUntil": "2026-08-26T15:00:00Z",
-    "classMeaning": "This snapshot's own evidence is repository-verified. CM-COM-3A performed NO runtime observation, so it does not carry a verified_live class.",
+    "class": "verified_live",
+    "source": "Read-only reconciliation of GitHub main, Railway production and staging deployment/source configuration, and the canonical Supabase migration ledger. No Railway, Supabase, Lovable, DNS, OAuth, Edge Function or production write was performed.",
+    "observedAt": "2026-08-28T18:27:55Z",
+    "freshUntil": "2026-09-04T18:27:55Z",
+    "classMeaning": "Current repository identity and the named Railway deployment/source records and Supabase migration ledger were observed read-only. The seven-day freshness window follows the existing program evidence policy.",
     "repositoryEvidence": {
       "class": "verified_repository",
-      "identity": "github:e02960f0887d98e624b22a9333fde59175299847",
-      "verifiedBy": "CM-COM-4A",
-      "verifiedAt": "2026-08-12T18:00:00Z",
-      "statement": "main is the merge commit of PR #26 (CM-COM-3A.1); re-verified from git during this sprint."
+      "identity": "github:c249512e13388305bc0648546f7d3ab860921dc8",
+      "verifiedBy": "CM-GOV-HOTFIX",
+      "verifiedAt": "2026-08-28T18:27:55Z",
+      "statement": "origin/main is c249512e13388305bc0648546f7d3ab860921dc8, the merge commit of PR #66 and the exact hotfix baseline."
     },
     "runtimeEvidence": {
-      "class": "historical",
-      "identity": "railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:fefc9d83-4f06-4b67-8829-a9f033e3ab1f;production-deployment:18dc25e0-1244-44ff-9e66-3a5cc1f02208;db2:wlrfknmrhowldygmvtvn",
-      "observedBy": "CM-GOV-3",
-      "observedAt": "2026-08-08T00:45:00Z",
-      "reobservedByCurrentSprint": false,
-      "currentRuntimeState": "unknown_not_reobserved",
-      "statement": "Last observed during CM-GOV-3: production served the PR #21 exact head and staging served 77e5d24e8a3c. Staging auto-deploy is ENABLED, so staging may have advanced since. What either environment serves NOW was not observed and is unknown."
+      "class": "verified_live",
+      "identity": "railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:fe9f593e-a7ea-47a6-a40b-e1663929fd3f;production-deployment:df6d9c31-d35d-4d85-a435-ab0e845fbabe;db2:wlrfknmrhowldygmvtvn;db2-latest-migration:20260823004146",
+      "observedBy": "CM-GOV-HOTFIX",
+      "observedAt": "2026-08-28T18:27:55Z",
+      "reobservedByCurrentSprint": true,
+      "currentRuntimeState": "deployments_success_governance_drift_open",
+      "statement": "Production deployment df6d9c31-d35d-4d85-a435-ab0e845fbabe and staging deployment fe9f593e-a7ea-47a6-a40b-e1663929fd3f are SUCCESS from main commit c249512e13388305bc0648546f7d3ab860921dc8. Production source configuration reports checkSuites=true and observed merge history shows automatic production deployments, contradicting the declared manual-production policy. Canonical Supabase latest migration is 20260823004146 sec_rls_1_b2b_private_rls; later B2B migrations are not applied."
     },
-    "observedAtMeaning": "Timestamp of the carried-forward RUNTIME observation (CM-GOV-3), not of this repository reconciliation. See generatedAt for the latter."
+    "observedAtMeaning": "Timestamp of this hotfix's fresh read-only repository, Railway and Supabase reconciliation."
   },
   "platforms": {
     "railway": {
       "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
       "status": "staging_and_production_deployment_success_commercial_flags_off",
-      "stagingActiveSourceCommit": "77e5d24e8a3c9589dac7535480ed7d9dbc60a512",
-      "stagingActiveDeploymentId": "fefc9d83-4f06-4b67-8829-a9f033e3ab1f",
+      "stagingActiveSourceCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
+      "stagingActiveDeploymentId": "fe9f593e-a7ea-47a6-a40b-e1663929fd3f",
       "stagingActiveDeploymentStatus": "SUCCESS",
       "stagingPreviousDeploymentId": "51c8aebb-c835-4fc9-a7ea-3cd87950e756",
       "stagingPreviousDeploymentState": "REMOVED",
-      "productionSourceCommit": "c9f82892b4bbe029f2b709eb6a3f00f24026c7c8",
-      "productionDeploymentId": "18dc25e0-1244-44ff-9e66-3a5cc1f02208",
+      "productionSourceCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
+      "productionDeploymentId": "df6d9c31-d35d-4d85-a435-ab0e845fbabe",
       "productionPreviousDeploymentId": "dcf40411-651e-4d14-b341-5c2042cbcb04",
       "productionPublicUrl": "https://corner-mex-uae-production.up.railway.app",
       "productionRegion": "asia-southeast1-eqsg3a",
       "governanceModel": "automatic_staging_manual_production",
       "stagingAutoDeploy": true,
-      "productionAutoDeploy": false,
+      "productionAutoDeploy": true,
       "deploymentCreatedByThisSprint": false,
-      "note": "CM-COM-3A performed no Railway read or write. Every deployment identity, commit and status in this block is a LAST-OBSERVED value from the CM-GOV-3 refresh. VERIFIED GOVERNANCE FACT: this sprint performed no production deployment and no production deployment was authorized by it. LAST-OBSERVED RUNTIME FACT: production served the PR #21 exact head c9f82892b4bb and staging served 77e5d24e8a3c. UNKNOWN: the commit each environment serves now. Staging auto-deploy is enabled, so staging may have advanced without observation. Production auto-deploy remains disabled and production deployment remains separately gated.",
-      "lastObservedDuringSprint": "CM-GOV-3",
-      "reobservedByCurrentSprint": false,
+      "note": "DECLARED POLICY remains automatic staging / manual production. OBSERVED PLATFORM STATE differs: production is source-linked to main with checkSuites=true and Railway automatically created production deployments for recent green merges, including PR #66 at c249512. This hotfix records the drift and performs no Railway write. Founder must decide separately whether to disable/restore manual production deployment.",
+      "lastObservedDuringSprint": "CM-GOV-HOTFIX",
+      "reobservedByCurrentSprint": true,
       "productionDeploymentPerformedByThisSprint": false,
       "productionDeploymentAuthorizedByThisSprint": false,
-      "productionServingCommit": "unknown_not_reobserved",
-      "stagingServingCommit": "unknown_not_reobserved"
+      "productionServingCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
+      "stagingServingCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
+      "governanceDrift": {
+        "status": "open_founder_decision_required",
+        "declaredPolicy": "automatic_staging_manual_production",
+        "observedPlatformState": "automatic_staging_automatic_production_after_green_check_suites",
+        "productionSourceConfigCheckSuites": true,
+        "productionObservedAutomaticDeployment": true,
+        "decisionRequired": "Founder must decide whether production auto-deploy should be disabled/restored to manual after this hotfix."
+      }
     },
     "databases": [
       {
@@ -76,9 +84,11 @@
       }
     ],
     "supabase": {
-      "status": "NOT_REVERIFIED_NO_WRITE",
+      "status": "PRODUCTION_LEDGER_VERIFIED_READ_ONLY_NO_WRITE",
       "projectRef": "wlrfknmrhowldygmvtvn",
-      "activeMigrationCount": 4,
+      "latestMigrationVersion": "20260823004146",
+      "latestMigrationName": "sec_rls_1_b2b_private_rls",
+      "pendingB2BMigrationsApplied": false,
       "writePerformed": false
     },
     "lovable": {
@@ -115,17 +125,17 @@
       "reviewer": "Sonnet"
     },
     "runtime": {
-      "stagingHealth": "verified_live",
-      "stagingHealthObservedCommit": "77e5d24e8a3c",
-      "stagingReadiness": "verified_live_ready",
-      "stagingReadinessDetail": "LAST OBSERVED during CM-GOV-3: direct GET /api/health and /api/ready on cornermex-web-staging returned 200 (ok/ready) reporting commit 77e5d24e8a3c. NOT re-observed by CM-COM-2B0; staging auto-deploy is enabled so the serving commit now is unknown.",
+      "stagingHealth": "deployment_success_status_observed",
+      "stagingHealthObservedCommit": "c249512e1338",
+      "stagingReadiness": "not_reverified_by_endpoint",
+      "stagingReadinessDetail": "Railway deployment fe9f593e-a7ea-47a6-a40b-e1663929fd3f was observed SUCCESS for main commit c249512e13388305bc0648546f7d3ab860921dc8. This refresh did not claim a new /api/health or /api/ready observation and performed no platform mutation.",
       "productionInstance": "RUNNING",
-      "productionHealth": "verified_live",
-      "productionHealthObservedCommit": "c9f82892b4bb",
-      "productionReadiness": "verified_live_ready",
-      "productionReadinessDetail": "LAST OBSERVED during CM-GOV-3: direct GET /api/health and /api/ready on production returned 200 (ok/ready) reporting commit c9f82892b4bb, with checkout, payment and external messaging disabled per /api/ready. NOT re-observed by CM-COM-2B0; the serving commit now is unknown.",
-      "provenance": "last_observed_cm_gov_3_not_reobserved_by_cm_com_2b0",
-      "currentStatus": "unknown_not_reobserved"
+      "productionHealth": "deployment_success_status_observed",
+      "productionHealthObservedCommit": "c249512e1338",
+      "productionReadiness": "not_reverified_by_endpoint",
+      "productionReadinessDetail": "Railway deployment df6d9c31-d35d-4d85-a435-ab0e845fbabe was observed SUCCESS for main commit c249512e13388305bc0648546f7d3ab860921dc8. This refresh did not claim a new /api/health or /api/ready observation. Its automatic creation conflicts with the declared manual-production governance model and remains an open Founder decision.",
+      "provenance": "cm_gov_hotfix_read_only_railway_deployment_and_source_reconciliation",
+      "currentStatus": "deployment_success_governance_drift_open"
     },
     "scope": "These readiness fields describe A3.2b EXECUTION readiness (reviewedRemediationHeadSha is the pinned A3.2b remediation head) and historical sprint reviews. They do NOT describe CM-COM-4A and must not be read as an independent review or release approval of the active sprint.",
     "currentSprintReadiness": {
@@ -170,7 +180,7 @@
       "CM-COM-4A is repository-only. Its lifecycle migration/RPC is PREPARED and UNAPPLIED; no Supabase, Railway, order, payment or deployment write was performed or authorized.",
       "CM-COM-4A requires independent review and a separate Founder-authorized migration/deployment sequence before activation.",
       "CM-COM-2B1 domain cutover remains ON HOLD: no custom domain is purchased or approved. cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).",
-      "Runtime facts are carried forward from the CM-GOV-3 observation; CM-COM-3A re-observed nothing, so the commit each environment currently serves is UNKNOWN.",
+      "Railway production behavior is in governance drift: declared policy requires manual production, while observed production is source-linked to main and has automatically deployed recent green merges. Founder decision required after this hotfix.",
       "External Supabase Preview GitHub check fails on main: remote migration versions are not present in the local supabase/migrations directory (integration drift; not a repository CI gate).",
       "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists.",
       "Pre-activation email debt (telemetry skipped-vs-failed, sendOrderEmail auth review, opaque provider errors) must be closed before external email activation."
@@ -257,5 +267,5 @@
     "externalSendsBlocked": true,
     "customerImpactBlocked": true
   },
-  "generatedAtMeaning": "Time this repository state snapshot was generated/reconciled by CM-COM-4A. This is NOT a runtime observation timestamp; see evidence.runtimeEvidence.observedAt."
+  "generatedAtMeaning": "Time this repository state snapshot and its fresh read-only runtime evidence were reconciled by CM-GOV-HOTFIX."
 }
