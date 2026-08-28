@@ -6,7 +6,7 @@ This is an auditable readiness package for a future authorized production window
 
 Canonical target: `wlrfknmrhowldygmvtvn`.
 
-PR #67 was reconciled without history rewriting against current `origin/main` `c249512e13388305bc0648546f7d3ab860921dc8`, which contains Portal 1B. The readiness package therefore binds three independent gates: Foundation, Portal 1A and Portal 1B.
+PR #67 was reconciled without history rewriting against current `origin/main` `1a267a9f5df6e9faf2a4b5f3960b0bd35f0cdce3`, which contains Portal 1B and the governance evidence refresh from PR #74. The readiness package therefore binds three independent gates: Foundation, Portal 1A and Portal 1B.
 
 Read-only production evidence captured at `2026-08-23T04:19:29Z` confirmed:
 
