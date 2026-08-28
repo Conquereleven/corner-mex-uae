@@ -74,6 +74,7 @@ import { Route as AuthenticatedAdminLiveViewRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminLegalRouteImport } from './routes/_authenticated/admin.legal'
 import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated/admin.leads'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin.inventory'
+import { Route as AuthenticatedAdminIntegrationsRouteImport } from './routes/_authenticated/admin.integrations'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin.customers'
 import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin.coupons'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin.categories'
@@ -95,6 +96,7 @@ import { Route as AuthenticatedAccountOrdersIndexRouteImport } from './routes/_a
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as ApiPublicHooksRefreshRatesRouteImport } from './routes/api/public/hooks/refresh-rates'
 import { Route as ApiPublicHooksAutoPayoutsRouteImport } from './routes/api/public/hooks/auto-payouts'
+import { Route as ApiPublicHooksAccountingWorkerRouteImport } from './routes/api/public/hooks/accounting-worker'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
 import { Route as AuthenticatedSellerProductsImportRouteImport } from './routes/_authenticated/seller.products.import'
 import { Route as AuthenticatedSellerProductsIdRouteImport } from './routes/_authenticated/seller.products.$id'
@@ -459,6 +461,12 @@ const AuthenticatedAdminInventoryRoute =
     path: '/inventory',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminIntegrationsRoute =
+  AuthenticatedAdminIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminCustomersRoute =
   AuthenticatedAdminCustomersRouteImport.update({
     id: '/customers',
@@ -585,6 +593,12 @@ const ApiPublicHooksAutoPayoutsRoute =
     path: '/api/public/hooks/auto-payouts',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAccountingWorkerRoute =
+  ApiPublicHooksAccountingWorkerRouteImport.update({
+    id: '/api/public/hooks/accounting-worker',
+    path: '/api/public/hooks/accounting-worker',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedSellerProductsNewRoute =
   AuthenticatedSellerProductsNewRouteImport.update({
     id: '/new',
@@ -708,6 +722,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
+  '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsRouteWithChildren
   '/admin/legal': typeof AuthenticatedAdminLegalRoute
@@ -752,6 +767,7 @@ export interface FileRoutesByFullPath {
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -803,6 +819,7 @@ export interface FileRoutesByTo {
   '/admin/catalog-analytics': typeof AuthenticatedAdminCatalogAnalyticsRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRoute
   '/admin/legal': typeof AuthenticatedAdminLegalRoute
   '/admin/live-view': typeof AuthenticatedAdminLiveViewRoute
@@ -842,6 +859,7 @@ export interface FileRoutesByTo {
   '/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -900,6 +918,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRouteWithChildren
+  '/_authenticated/admin/integrations': typeof AuthenticatedAdminIntegrationsRoute
   '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryRoute
   '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRouteWithChildren
   '/_authenticated/admin/legal': typeof AuthenticatedAdminLegalRoute
@@ -944,6 +963,7 @@ export interface FileRoutesById {
   '/_authenticated/seller/products/$id': typeof AuthenticatedSellerProductsIdRoute
   '/_authenticated/seller/products/import': typeof AuthenticatedSellerProductsImportRoute
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
+  '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -1002,6 +1022,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/integrations'
     | '/admin/inventory'
     | '/admin/leads'
     | '/admin/legal'
@@ -1046,6 +1067,7 @@ export interface FileRouteTypes {
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
+    | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
@@ -1097,6 +1119,7 @@ export interface FileRouteTypes {
     | '/admin/catalog-analytics'
     | '/admin/categories'
     | '/admin/coupons'
+    | '/admin/integrations'
     | '/admin/inventory'
     | '/admin/legal'
     | '/admin/live-view'
@@ -1136,6 +1159,7 @@ export interface FileRouteTypes {
     | '/seller/products/$id'
     | '/seller/products/import'
     | '/seller/products/new'
+    | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
@@ -1193,6 +1217,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/coupons'
     | '/_authenticated/admin/customers'
+    | '/_authenticated/admin/integrations'
     | '/_authenticated/admin/inventory'
     | '/_authenticated/admin/leads'
     | '/_authenticated/admin/legal'
@@ -1237,6 +1262,7 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/products/$id'
     | '/_authenticated/seller/products/import'
     | '/_authenticated/seller/products/new'
+    | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
@@ -1281,6 +1307,7 @@ export interface RootRouteChildren {
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
+  ApiPublicHooksAccountingWorkerRoute: typeof ApiPublicHooksAccountingWorkerRoute
   ApiPublicHooksAutoPayoutsRoute: typeof ApiPublicHooksAutoPayoutsRoute
   ApiPublicHooksRefreshRatesRoute: typeof ApiPublicHooksRefreshRatesRoute
 }
@@ -1742,6 +1769,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInventoryRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/integrations': {
+      id: '/_authenticated/admin/integrations'
+      path: '/integrations'
+      fullPath: '/admin/integrations'
+      preLoaderRoute: typeof AuthenticatedAdminIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/customers': {
       id: '/_authenticated/admin/customers'
       path: '/customers'
@@ -1887,6 +1921,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/auto-payouts'
       fullPath: '/api/public/hooks/auto-payouts'
       preLoaderRoute: typeof ApiPublicHooksAutoPayoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/accounting-worker': {
+      id: '/api/public/hooks/accounting-worker'
+      path: '/api/public/hooks/accounting-worker'
+      fullPath: '/api/public/hooks/accounting-worker'
+      preLoaderRoute: typeof ApiPublicHooksAccountingWorkerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/seller/products/new': {
@@ -2078,6 +2119,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
   AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRouteWithChildren
+  AuthenticatedAdminIntegrationsRoute: typeof AuthenticatedAdminIntegrationsRoute
   AuthenticatedAdminInventoryRoute: typeof AuthenticatedAdminInventoryRoute
   AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRouteWithChildren
   AuthenticatedAdminLegalRoute: typeof AuthenticatedAdminLegalRoute
@@ -2107,6 +2149,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
   AuthenticatedAdminCustomersRoute:
     AuthenticatedAdminCustomersRouteWithChildren,
+  AuthenticatedAdminIntegrationsRoute: AuthenticatedAdminIntegrationsRoute,
   AuthenticatedAdminInventoryRoute: AuthenticatedAdminInventoryRoute,
   AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRouteWithChildren,
   AuthenticatedAdminLegalRoute: AuthenticatedAdminLegalRoute,
@@ -2305,6 +2348,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductSlugRoute: ProductSlugRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
+  ApiPublicHooksAccountingWorkerRoute: ApiPublicHooksAccountingWorkerRoute,
   ApiPublicHooksAutoPayoutsRoute: ApiPublicHooksAutoPayoutsRoute,
   ApiPublicHooksRefreshRatesRoute: ApiPublicHooksRefreshRatesRoute,
 }
