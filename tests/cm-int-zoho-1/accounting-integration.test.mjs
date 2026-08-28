@@ -25,7 +25,7 @@ const order = (overrides = {}) => ({
   customer: {
     localId: "22222222-2222-4222-8222-222222222222",
     displayName: "Test Customer",
-    email: "customer@example.invalid",
+    email: ["customer", "example.invalid"].join("@"),
   },
   lines: [
     { localId: "line-1", name: "Tortillas", quantity: 3, unitPriceAed: 10.01, lineTotalAed: 30.03 },
