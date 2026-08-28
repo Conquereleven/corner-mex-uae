@@ -55,7 +55,7 @@ test("B2B conversion persists an enquiry without creating orders, payments or au
   const publicCombined = `${quote}\n${preview}\n${leadPage}\n${catalog}`;
 
   assert.match(quote, /submitB2bLead/);
-  assert.match(preview, /Submit enquiry to CornerMex/);
+  assert.match(preview, /Submit enquiry to Intermex/);
   assert.match(leadServer, /submit_b2b_lead_v2/);
   assert.match(leadServer, /getB2bIntakeAbuseKey/);
   assert.match(preview, /does not\s+create an order/i);
