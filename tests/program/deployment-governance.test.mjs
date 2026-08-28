@@ -27,6 +27,27 @@ test("accepts automatic staging with manual production", () => {
   assert.equal(result.status, "deployment_governance_valid");
   assert.equal(result.stagingAutoDeploy, true);
   assert.equal(result.productionAutoDeploy, false);
+  assert.equal(result.observedProductionAutoDeploy, true);
+  assert.equal(result.governanceDrift, true);
+});
+
+test("rejects erasing observed production auto-deploy drift", () => {
+  withRegistry(
+    (registry) => {
+      registry.governance.observedPlatformState.productionAutomaticDeploymentObserved = false;
+      registry.governance.observedPlatformState.driftFromDeclaredPolicy = false;
+    },
+    (validate) => assert.throws(validate, /GOVERNANCE_DRIFT_REQUIRED/),
+  );
+});
+
+test("rejects any hotfix claim that a platform write was performed", () => {
+  withRegistry(
+    (registry) => {
+      registry.governance.observedPlatformState.writePerformedByHotfix = true;
+    },
+    (validate) => assert.throws(validate, /GOVERNANCE_HOTFIX_WRITE_FORBIDDEN/),
+  );
 });
 
 test("rejects production auto-deploy", () => {

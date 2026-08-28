@@ -83,6 +83,13 @@
       "purpose": "cm_b2b_portal_1b_pricing_availability",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260828170741_cm_int_zoho_1_zero_touch_order_invoice.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_int_zoho_1_zero_touch_order_invoice",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }
