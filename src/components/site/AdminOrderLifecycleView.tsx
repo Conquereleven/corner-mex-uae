@@ -14,6 +14,7 @@ import {
   allowedCompatiblePaymentTransitions,
   type LifecycleTransitionType,
 } from "@/lib/order-lifecycle";
+import { reconcilePaymentState, type CanonicalPaymentStatus } from "@/lib/payment-state";
 
 const aed = (value: number | string) => `${Number(value ?? 0).toFixed(2)} AED`;
 
@@ -54,6 +55,16 @@ export type AdminOrderLifecycleData = {
     actor_id: string;
     created_at: string;
   }>;
+  payments?: Array<{
+    id: string;
+    provider: string;
+    provider_reference: string | null;
+    status: string;
+    amount_aed: number | string;
+    metadata?: { refunded_amount_aed?: number; attempt_state?: string } | null;
+    created_at: string;
+    updated_at: string;
+  }>;
   lifecycleCapability?: boolean;
 };
 
@@ -70,6 +81,7 @@ export function AdminOrderLifecycleView({
   const order = data.order;
   const items = data.items ?? [];
   const events = data.events ?? [];
+  const payments = data.payments ?? [];
   const capabilityAvailable = data.lifecycleCapability === true;
   const transition = useServerFn(adminTransitionOrderLifecycle);
   const queryClient = useQueryClient();
@@ -98,6 +110,18 @@ export function AdminOrderLifecycleView({
     order.payment_method,
   );
   const address = order.shipping_address ?? {};
+  const reconciliationIssues = reconcilePaymentState({
+    orderPaymentStatus: order.payment_status as CanonicalPaymentStatus,
+    orderTotalAed: Number(order.total_aed),
+    paymentMethod: order.payment_method,
+    attempts: payments.map((payment) => ({
+      provider: payment.provider,
+      providerReference: payment.provider_reference,
+      status: payment.status as CanonicalPaymentStatus,
+      amountAed: Number(payment.amount_aed),
+      refundedAmountAed: Number(payment.metadata?.refunded_amount_aed ?? 0),
+    })),
+  });
 
   const applyTransition = (
     transitionType: LifecycleTransitionType,
@@ -158,6 +182,48 @@ export function AdminOrderLifecycleView({
           </Card>
 
           <AdminLifecycleAudit events={events} />
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment reconciliation</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {payments.length === 0 ? (
+                <p className="text-muted-foreground">No payment attempts recorded.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {payments.map((payment) => (
+                    <li key={payment.id} className="rounded-md border p-3">
+                      <div className="flex flex-wrap justify-between gap-2">
+                        <span className="font-medium capitalize">{payment.provider}</span>
+                        <Badge variant="outline">{payment.status}</Badge>
+                      </div>
+                      <p className="mt-1 break-all text-xs text-muted-foreground">
+                        Provider ID: {payment.provider_reference ?? "pending assignment"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {aed(payment.amount_aed)}
+                        {Number(payment.metadata?.refunded_amount_aed ?? 0) > 0
+                          ? ` · Refunded ${aed(payment.metadata?.refunded_amount_aed ?? 0)}`
+                          : ""}
+                        {payment.metadata?.attempt_state === "provider_unavailable"
+                          ? " · Provider temporarily unavailable; retry safely resumes this attempt."
+                          : ""}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {reconciliationIssues.length > 0 && (
+                <p
+                  className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs"
+                  role="status"
+                >
+                  Reconciliation attention: {reconciliationIssues.join(", ")}
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="space-y-6">

@@ -331,6 +331,13 @@ export const adminGetOrderDetail = createServerFn({ method: "GET" })
         .eq("order_id", order.id)
         .order("created_at", { ascending: false })
         .limit(100),
+      paymentsQuery: supabaseAdmin
+        .from("payments")
+        .select(
+          "id, provider, provider_reference, status, amount_aed, metadata, created_at, updated_at",
+        )
+        .eq("order_id", order.id)
+        .order("created_at", { ascending: false }),
       capabilityQuery: (context.supabase as any).rpc("cm_com_4a_order_lifecycle_capability"),
     });
   });
@@ -339,24 +346,29 @@ export async function loadAdminOrderDetailRelated({
   order,
   itemsQuery,
   eventsQuery,
+  paymentsQuery,
   capabilityQuery,
 }: {
   order: AdminOrderLifecycleData["order"];
   itemsQuery: PromiseLike<{ data: AdminOrderLifecycleData["items"] | null; error: unknown }>;
   eventsQuery: PromiseLike<{ data: AdminOrderLifecycleData["events"] | null; error: unknown }>;
+  paymentsQuery?: PromiseLike<{ data: AdminOrderLifecycleData["payments"] | null; error: unknown }>;
   capabilityQuery: PromiseLike<{ data: unknown; error: unknown }>;
 }) {
-  const [itemsRes, eventsRes, capabilityRes] = await Promise.all([
+  const [itemsRes, eventsRes, paymentsRes, capabilityRes] = await Promise.all([
     itemsQuery,
     eventsQuery,
+    paymentsQuery ?? Promise.resolve({ data: [], error: null }),
     capabilityQuery,
   ]);
   if (itemsRes.error) throw new Error("CM_COM_4A_ORDER_ITEMS_QUERY_FAILED");
+  if (paymentsRes.error) throw new Error("CM_PAY_PAYMENT_ATTEMPTS_QUERY_FAILED");
   const events = resolveLifecycleAudit(eventsRes);
   return {
     order,
     items: itemsRes.data ?? [],
     events,
+    payments: paymentsRes.data ?? [],
     lifecycleCapability: !capabilityRes.error && capabilityRes.data === true,
   };
 }
