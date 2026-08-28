@@ -13,10 +13,11 @@ test("public presentation surfaces use current operating language", async () => 
     read("src/routes/about.tsx"),
   ]);
 
-  assert.match(header, />\s*UAE commerce\s*</);
-  assert.match(home, /> CornerMex · UAE\s*</);
-  assert.match(home, /Mexican commerce for the UAE/);
-  assert.match(shop, />\s*CornerMex UAE\s*</);
+  assert.match(header, /aria-label="Intermex UAE home"/);
+  assert.match(header, />\s*Catalog\s*</);
+  assert.match(home, /Intermex UAE · Mexican food supplier/);
+  assert.match(home, /Tradition you can taste\./);
+  assert.match(shop, />\s*Intermex UAE\s*</);
   assert.match(b2b, />\s*For business · UAE\s*</);
   assert.match(about, /CornerMex combines a curated Mexican pantry catalogue/);
 });
@@ -45,7 +46,7 @@ test("presentation journey keeps commerce and B2B entry points visible", async (
 
   assert.match(home, /<Link to="\/shop">/);
   assert.match(home, /<Link to="\/b2b">/);
-  assert.match(shop, /Products are sold directly by CornerMex UAE/);
+  assert.match(shop, /Products are sold directly by Intermex UAE/);
   assert.match(checkout, /createFileRoute\("\/checkout"\)/);
   assert.match(b2b, /createFileRoute\("\/b2b"\)/);
 });
