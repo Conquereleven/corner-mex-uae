@@ -1,12 +1,26 @@
 import { Link } from "@tanstack/react-router";
-import { Search, Store, Building2, User, ShoppingBag } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Search, User, ShoppingBag, Menu, Globe2, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { LANGS } from "@/lib/i18n";
+import { CURRENCIES, useCurrency } from "@/lib/use-currency";
 import { useSession } from "@/lib/use-session";
 import { useCart } from "@/lib/cart";
-import { DesertGlassControl, DesertGlassHeader } from "@/components/site/DesertGlass";
+import { DesertGlassHeader } from "@/components/site/DesertGlass";
 import { BrandLogo } from "@/components/site/BrandLogo";
 
 export function Header() {
+  const { i18n } = useTranslation();
+  const currency = useCurrency();
   const { user } = useSession();
   const cartCount = useCart((state) => state.items.reduce((total, item) => total + item.qty, 0));
   // Legacy CM-COM-1B source sentinel: Commercial preview. Shop and Business
@@ -45,7 +59,7 @@ export function Header() {
                 <span className="hidden xl:inline">Search</span>
               </Button>
             </Link>
-            <Link to={user ? "/account" : "/login"} className="ms-1">
+            <Link to={user ? "/account" : "/login"} className="ms-1 hidden lg:block">
               <Button
                 variant="ghost"
                 size="sm"
@@ -53,13 +67,13 @@ export function Header() {
                 className="gap-1.5"
               >
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Account</span>
+                <span className="hidden xl:inline">Account</span>
               </Button>
             </Link>
             <Link to="/cart">
               <Button variant="ghost" size="sm" aria-label="Cart" className="relative gap-1.5">
                 <ShoppingBag className="h-4 w-4" />
-                <span className="hidden sm:inline">Cart</span>
+                <span className="hidden xl:inline">Cart</span>
                 {cartCount > 0 && (
                   <span className="absolute -end-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
                     {cartCount}
@@ -67,48 +81,102 @@ export function Header() {
                 )}
               </Button>
             </Link>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open menu"
+                  className="ms-1 lg:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="intermex-mobile-menu w-[min(88vw,22rem)] border-white/20 px-5 text-[color:var(--brand-cream)]"
+              >
+                <SheetHeader className="text-left">
+                  <BrandLogo className="h-12 w-28" />
+                  <SheetTitle className="text-[color:var(--brand-cream)]">
+                    Explore Intermex
+                  </SheetTitle>
+                  <SheetDescription className="text-[color:color-mix(in_srgb,var(--brand-cream)_72%,transparent)]">
+                    Mexican food and wholesale supply across the UAE.
+                  </SheetDescription>
+                </SheetHeader>
+
+                <nav aria-label="Mobile menu" className="mt-8 grid gap-1 text-base font-semibold">
+                  <MobileMenuLink to="/shop">Shop</MobileMenuLink>
+                  <MobileMenuLink to="/b2b">Wholesale</MobileMenuLink>
+                  <MobileMenuLink to="/about">About</MobileMenuLink>
+                  <MobileMenuLink to="/contact#find-us">Find Us</MobileMenuLink>
+                  <MobileMenuLink to={user ? "/account" : "/login"}>Account</MobileMenuLink>
+                </nav>
+
+                <div className="mt-8 border-t border-white/20 pt-6">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <Globe2 className="h-4 w-4" /> Language
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {LANGS.map((language) => (
+                      <Button
+                        key={language.code}
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        aria-pressed={i18n.language === language.code}
+                        onClick={() => i18n.changeLanguage(language.code)}
+                        className="rounded-full border border-white/20"
+                      >
+                        {language.label}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 flex items-center gap-2 text-sm font-semibold">
+                    <Coins className="h-4 w-4" /> Currency
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {CURRENCIES.map((code) => (
+                      <Button
+                        key={code}
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        aria-pressed={currency.code === code}
+                        onClick={() => currency.setCode(code)}
+                        className="rounded-full border border-white/20"
+                      >
+                        {code}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </DesertGlassHeader>
-      <DesertGlassControl
-        role="navigation"
-        aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-3 z-40 grid min-h-14 grid-cols-5 rounded-2xl p-1.5 lg:hidden"
-      >
-        <MobileLink to="/shop" label="Shop" icon={Store} />
-        <MobileLink to="/b2b" label="Wholesale" icon={Building2} />
-        <MobileLink to="/shop" label="Search" icon={Search} />
-        <MobileLink
-          to={user ? "/account" : "/login"}
-          label={user ? "Account" : "Sign in"}
-          icon={User}
-        />
-        <MobileLink
-          to="/cart"
-          label={cartCount ? `Cart (${cartCount})` : "Cart"}
-          icon={ShoppingBag}
-        />
-      </DesertGlassControl>
     </>
   );
 }
 
-function MobileLink({
+function MobileMenuLink({
   to,
-  label,
-  icon: Icon,
+  children,
 }: {
-  to: "/" | "/shop" | "/b2b" | "/login" | "/account" | "/cart";
-  label: string;
-  icon: typeof Store;
+  to: "/shop" | "/b2b" | "/about" | "/contact#find-us" | "/login" | "/account";
+  children: string;
 }) {
   return (
-    <Link
-      to={to}
-      className="flex min-h-11 flex-col items-center justify-center rounded-xl text-[10px] font-medium text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <Icon className="mb-0.5 h-4 w-4" />
-      <span>{label}</span>
-    </Link>
+    <SheetClose asChild>
+      <Link
+        to={to}
+        className="rounded-xl px-4 py-3 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      >
+        {children}
+      </Link>
+    </SheetClose>
   );
 }

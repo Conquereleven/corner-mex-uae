@@ -128,8 +128,10 @@ test("pending lifecycle migration removes all service-role table writes", async 
   assert.match(corrective, /insert,update,delete,truncate,references,trigger/);
 });
 
-test("tablet header retains compact navigation until the desktop breakpoint", async () => {
+test("mobile and tablet use one compact top-header menu until the desktop breakpoint", async () => {
   const header = await read("src/components/site/Header.tsx");
   assert.match(header, /font-semibold lg:flex/);
-  assert.match(header, /grid-cols-5 rounded-2xl p-1\.5 lg:hidden/);
+  assert.match(header, /aria-label="Open menu"/);
+  assert.match(header, /className="ms-1 lg:hidden"/);
+  assert.doesNotMatch(header, /fixed inset-x-3 bottom-3/);
 });

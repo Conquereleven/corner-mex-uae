@@ -44,11 +44,11 @@ export const INTERMEX_BRAND: BrandConfig = {
     secondary: "Tradition you can taste",
   },
   colors: {
-    // Brand Book 2025 authority captured in GitHub issue #70. Red and cream
-    // are structural storefront surfaces; the named green and brown values
-    // remain the exact approved accent values.
+    // Implementation-derived from the current intermexuae.com visual system;
+    // these red and cream values are not verified exact Brand Book colors.
     structuralRed: "#b42127",
     cream: "#fff8e7",
+    // Exact verified Brand Book values captured in GitHub issue #70.
     moleBrown: "#6e441d",
     verdeJalapeno: "#2d9849",
   },

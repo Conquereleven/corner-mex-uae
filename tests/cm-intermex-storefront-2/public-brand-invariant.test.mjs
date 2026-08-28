@@ -48,19 +48,30 @@ test("public header keeps the simplified Intermex navigation contract", async ()
   for (const label of ["Shop", "Wholesale", "About", "Find Us", "Search", "Account", "Cart"]) {
     assert.ok(header.includes(label), `missing first-level header destination: ${label}`);
   }
-  for (const removed of ["NotificationsBell", "Manual quote", "Currency", "Language", ">Home<"])
+  for (const removed of ["NotificationsBell", "Manual quote", ">Home<"])
     assert.ok(!header.includes(removed), `removed first-level control returned: ${removed}`);
+  const firstLevelHeader = header.slice(header.indexOf("return ("), header.indexOf("<Sheet>"));
+  for (const nested of ["Currency", "Language"])
+    assert.ok(!firstLevelHeader.includes(nested), `${nested} returned to first-level navigation`);
+  assert.doesNotMatch(header, /fixed inset-x-3 bottom-3/, "mobile bottom navigation returned");
+  assert.match(header, /aria-label="Open menu"/);
+  assert.match(header, /aria-label="Mobile menu"/);
 });
 
-test("Intermex shell uses the approved logo and structural palette", async () => {
+test("Intermex shell distinguishes exact brand colors from implementation-derived surfaces", async () => {
   const [brand, styles, root] = await Promise.all([
     readFile("src/config/brand.ts", "utf8"),
     readFile("src/styles.css", "utf8"),
     readFile("src/routes/__root.tsx", "utf8"),
   ]);
   assert.match(brand, /intermex-logo-yellow\.png/);
+  assert.match(brand, /Implementation-derived from the current intermexuae\.com visual system/);
+  assert.match(brand, /not verified exact Brand Book colors/);
+  assert.match(brand, /structuralRed: "#b42127"/);
+  assert.match(brand, /cream: "#fff8e7"/);
   assert.match(brand, /verdeJalapeno: "#2d9849"/);
   assert.match(brand, /moleBrown: "#6e441d"/);
   assert.match(styles, /var\(--brand-structural-red\)/);
+  assert.doesNotMatch(styles, /linear-gradient\([\s\S]*?brand-structural-red/);
   assert.match(root, /Intermex(?: UAE)?/);
 });
