@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { businessIdentityLine } from "@/lib/business-identity";
 import { openCookiePreferences } from "@/lib/cookie-consent";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
+import { BrandLogo } from "@/components/site/BrandLogo";
 
 type FooterLink =
   | {
@@ -43,7 +44,10 @@ const FOOTER_GROUPS: Array<{ heading: string; links: FooterLink[] }> = [
   },
   {
     heading: "Company",
-    links: [{ to: "/about", label: "About CornerMex" }],
+    links: [
+      { to: "/about", label: "About Intermex" },
+      { to: "/contact", label: "Find Us" },
+    ],
   },
   {
     heading: "Legal",
@@ -62,16 +66,16 @@ export function Footer() {
       <div className="mx-auto max-w-7xl border-b border-border/60 px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              Commercial preview
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--brand-verde-jalapeno)]">
+              Intermex UAE
             </p>
             <h3 className="mt-2 font-display text-2xl tracking-tight">
               Exploring Mexican pantry supply for the UAE
             </h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              B2C cart and account access are available. Checkout and order processing run only when
-              authorized configuration is enabled; prices, availability, shipping and payment are
-              confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
+              Retail cart and account access are available. Checkout and order processing run only
+              when authorized configuration is enabled; prices, availability, shipping and payment
+              are confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
               commercial pipeline for human review, but an enquiry is not an order, payment or
               confirmed quote and creates no commercial commitment.
             </p>
@@ -86,10 +90,10 @@ export function Footer() {
 
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] lg:px-8">
         <div>
-          <div className="font-display text-2xl font-semibold tracking-tight">
-            Corner<span className="text-primary">Mex</span>
-          </div>
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">{t("footer.tagline")}</p>
+          <BrandLogo className="h-14 w-28 rounded-md bg-[color:var(--brand-mole-brown)] p-1" />
+          <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+            Del barrio pa’l mundo · Tradition you can taste
+          </p>
           <p className="mt-3 max-w-xs text-xs leading-5 text-muted-foreground">
             AED is the primary display currency. Prices and availability shown in preview are not
             offers and must be confirmed manually.

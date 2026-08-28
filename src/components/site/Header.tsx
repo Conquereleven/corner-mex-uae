@@ -12,15 +12,12 @@ import { LANGS } from "@/lib/i18n";
 import { useCurrency, CURRENCIES } from "@/lib/use-currency";
 import { useSession } from "@/lib/use-session";
 import { useCart } from "@/lib/cart";
-import {
-  DesertGlassBadge,
-  DesertGlassControl,
-  DesertGlassHeader,
-} from "@/components/site/DesertGlass";
+import { DesertGlassControl, DesertGlassHeader } from "@/components/site/DesertGlass";
 import { NotificationsBell } from "@/components/site/NotificationsBell";
+import { BrandLogo } from "@/components/site/BrandLogo";
 
 export function Header() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const change = (code: string) => i18n.changeLanguage(code);
   const cur = useCurrency();
   const { user } = useSession();
@@ -30,32 +27,33 @@ export function Header() {
   return (
     <>
       <DesertGlassHeader className="sticky inset-x-0 top-2 z-40 mx-2 rounded-2xl sm:top-3 sm:mx-4">
-        <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-5 lg:px-7">
-          <Link to="/" className="flex items-baseline gap-2">
-            <span className="font-display text-2xl font-semibold tracking-tight text-foreground">
-              Corner<span className="text-primary">Mex</span>
-            </span>
-            <span className="hidden text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:inline">
-              UAE
-            </span>
-          </Link>
-
-          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground lg:flex">
-            <Link to="/shop" className="transition-colors hover:text-foreground">
-              {t("nav.shop")}
+        <div className="intermex-header mx-auto grid min-h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 sm:px-5 lg:px-7">
+          <nav
+            aria-label="Primary navigation"
+            className="hidden items-center gap-5 text-sm font-medium text-muted-foreground lg:flex"
+          >
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Home
             </Link>
-            <Link to="/b2b" className="transition-colors hover:text-foreground">
-              Business
+            <Link to="/shop" className="transition-colors hover:text-foreground">
+              Catalog
+            </Link>
+            <Link to="/contact" className="transition-colors hover:text-foreground">
+              Contact
             </Link>
             <Link to="/about" className="transition-colors hover:text-foreground">
-              {t("nav.about")}
+              About Us
+            </Link>
+            <Link to="/contact#find-us" className="transition-colors hover:text-foreground">
+              Find Us
             </Link>
           </nav>
 
-          <div className="flex items-center gap-0.5">
-            <DesertGlassBadge className="me-1 hidden border-primary/40 bg-primary/10 text-primary sm:inline-flex">
-              UAE commerce
-            </DesertGlassBadge>
+          <Link to="/" aria-label="Intermex UAE home" className="justify-self-center">
+            <BrandLogo className="h-12 w-24 sm:h-14 sm:w-28" />
+          </Link>
+
+          <div className="flex items-center justify-end gap-0.5">
             <Link to="/shop" search={{ sort: "newest" }} className="hidden sm:block">
               <Button variant="ghost" size="icon" aria-label="Search products">
                 <Search className="h-4 w-4" />
@@ -132,7 +130,7 @@ export function Header() {
         className="fixed inset-x-3 bottom-3 z-40 grid min-h-14 grid-cols-5 rounded-2xl p-1.5 lg:hidden"
       >
         <MobileLink to="/" label="Home" icon={Home} />
-        <MobileLink to="/shop" label="Shop" icon={Search} />
+        <MobileLink to="/shop" label="Catalog" icon={Search} />
         <MobileLink to="/b2b" label="Business" icon={Building2} />
         <MobileLink
           to={user ? "/account" : "/login"}

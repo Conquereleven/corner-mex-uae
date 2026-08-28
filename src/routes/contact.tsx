@@ -85,7 +85,10 @@ function Contact() {
           ))}
         </div>
 
-        <div className="mt-12 rounded-2xl border border-border bg-secondary/40 p-6 text-sm leading-6 text-muted-foreground">
+        <div
+          id="find-us"
+          className="mt-12 scroll-mt-24 rounded-2xl border border-border bg-secondary/40 p-6 text-sm leading-6 text-muted-foreground"
+        >
           <p>{businessIdentityLine()}</p>
           <p className="mt-2">
             Email is currently the confirmed way to contact CornerMex. One shared mailbox handles
