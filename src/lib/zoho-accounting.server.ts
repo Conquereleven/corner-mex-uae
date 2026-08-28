@@ -194,8 +194,23 @@ export class ZohoAccountingProvider implements AccountingProvider {
     return toInvoice(body.invoice as Record<string, unknown>);
   }
 
+  async findPaymentByReference(providerReference: string) {
+    const body = await this.request(
+      `customerpayments?reference_number=${encodeURIComponent(providerReference)}`,
+    );
+    return (
+      (body.customerpayments as Array<Record<string, unknown>> | undefined) ??
+      (body.payments as Array<Record<string, unknown>> | undefined) ??
+      []
+    ).map((payment) => ({
+      id: String(payment.payment_id ?? payment.customerpayment_id ?? ""),
+      status: payment.status ? String(payment.status) : null,
+    }));
+  }
+
   async recordPayment(input: {
     invoiceId: string;
+    customerId: string;
     amountAed: number;
     provider: string;
     providerReference: string;
@@ -204,7 +219,15 @@ export class ZohoAccountingProvider implements AccountingProvider {
     const body = await this.request("customerpayments", {
       method: "POST",
       body: JSON.stringify({
-        payment_mode: input.provider,
+        customer_id: input.customerId,
+        payment_mode:
+          input.provider.toLowerCase() === "stripe" || input.provider.toLowerCase() === "card"
+            ? "creditcard"
+            : input.provider.toLowerCase() === "bank_transfer"
+              ? "banktransfer"
+              : input.provider.toLowerCase() === "cod"
+                ? "cash"
+                : "others",
         amount: input.amountAed,
         date: input.paidAt.slice(0, 10),
         reference_number: input.providerReference,

@@ -11,18 +11,18 @@ Official API research performed 2026-08-28:
 
 - Zoho Books API v3: `https://www.zoho.com/books/api/v3/introduction/`, invoices, contacts, OAuth scopes and customer payments. The organization is selected with `organization_id`; limits include 100 requests/minute/organization and HTTP 429.
 - Zoho Invoice API v3: `https://www.zoho.com/invoice/api/v3/introduction/`, contacts and invoices. It uses a different API path/header, returns invoice ID/number/status/URL, and supports JSON/PDF retrieval.
-- Neither product documents a Stripe-like idempotency key for invoice creation. Every retry first searches by canonical CornerMex order reference and adopts exactly one match; zero or multiple matches are explicit branches.
+- Neither product documents a Stripe-like idempotency key for invoice creation. Every retry first searches by canonical CornerMex order reference and adopts exactly one match; zero or multiple matches are explicit branches. Both products officially support filtering customer payments by `reference_number`, which is used to recover a payment accepted before a lost response.
 
 ## Flow and safety
 
-1. An additive order trigger writes a unique outbox job when an order first enters a confirmed-or-later state. Payment changes create separate deduplicated sync jobs.
-2. A worker claims eligible jobs at least once. Durable unique job and entity keys make duplicates replay-safe.
+1. An additive order trigger writes a unique outbox job when an order first enters a confirmed-or-later state. A paid-state change creates a separate deduplicated sync job only when the order is already confirmed-or-later; a payment observed earlier is consumed by the later order job.
+2. A worker claims eligible jobs at least once. Durable unique job and entity keys make duplicates replay-safe; a job left `processing` by a crashed worker is reclaimed after its twenty-minute lease expires.
 3. Customer mapping is reused or recovered before creation.
 4. Invoice mapping is reused; after a timeout the canonical order number is searched before any create.
 5. AED line totals, shipping, discount and canonical VAT are validated in integer cents before any provider call.
-6. A Zoho payment record may be created only from canonical paid state plus payment-provider reference. Zoho never writes CornerMex/Stripe state.
+6. A Zoho payment record may be created only from canonical paid state plus payment-provider reference. Payment jobs require the durable invoice mapping, so they cannot race the invoice creator. A retry first recovers an existing payment by that exact reference, so a lost response cannot create a second payment. Provider modes are mapped to Zoho's documented values and the canonical payment update timestamp is used as the payment date. Zoho never writes CornerMex/Stripe state.
 7. Retryable failures use bounded exponential backoff (maximum six attempts / thirty minutes). Validation, auth and conflicts require attention. Rate limits and provider outages are degraded/retryable.
-8. Reconciliation compares external invoice total and identity with canonical order data and raises a mismatch job; it never silently overwrites CornerMex.
+8. Every create/update response is immediately reconciled against the canonical total before payment can be recorded. Scheduled/manual reconciliation repeats the external invoice total and identity comparison and raises a mismatch job; it never silently overwrites CornerMex.
 
 Failure taxonomy: `auth`, `validation`, `rate_limit`, `provider_unavailable`, `mapping_error`, `conflict`, `unknown`.
 

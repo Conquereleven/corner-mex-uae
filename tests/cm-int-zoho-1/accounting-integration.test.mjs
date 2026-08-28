@@ -21,6 +21,7 @@ const order = (overrides = {}) => ({
   paymentStatus: "pending",
   paymentProvider: null,
   paymentReference: null,
+  paymentPaidAt: null,
   customer: {
     localId: "22222222-2222-4222-8222-222222222222",
     displayName: "Test Customer",
@@ -93,9 +94,16 @@ class FakeProvider {
     this.updateInvoiceCalls += 1;
     return { ...this.invoices.find((x) => x.id === id), id, totalAed: input.totalAed };
   }
-  async recordPayment() {
+  async findPaymentByReference(reference) {
+    return this.payments.filter((payment) => payment.reference === reference);
+  }
+  async recordPayment(input) {
     this.recordPaymentCalls += 1;
-    const payment = { id: `payment-${this.recordPaymentCalls}`, status: "paid" };
+    const payment = {
+      id: `payment-${this.recordPaymentCalls}`,
+      status: "paid",
+      reference: input.providerReference,
+    };
     this.payments.push(payment);
     return payment;
   }
@@ -150,6 +158,70 @@ test("timeout then retry recovers provider invoice by canonical reference", asyn
   assert.equal(provider.createInvoiceCalls, 1);
 });
 
+test("payment timeout then retry recovers by provider reference without duplication", async () => {
+  const provider = new FakeProvider();
+  const store = new MemoryStore();
+  const paid = order({
+    paymentStatus: "paid",
+    paymentProvider: "stripe",
+    paymentReference: "pi_timeout",
+  });
+  provider.recordPayment = async function (input) {
+    this.recordPaymentCalls += 1;
+    this.payments.push({
+      id: "payment-accepted-before-timeout",
+      status: "paid",
+      reference: input.providerReference,
+    });
+    throw new Error("network timeout");
+  };
+  await assert.rejects(
+    processOrderToInvoice({ correlationId: "payment-timeout", order: paid, provider, store }),
+    /ACCOUNTING_PROVIDER_UNAVAILABLE/,
+  );
+  const result = await processOrderToInvoice({
+    correlationId: "payment-retry",
+    order: paid,
+    provider,
+    store,
+  });
+  assert.equal(result.payment.id, "payment-accepted-before-timeout");
+  assert.equal(provider.recordPaymentCalls, 1);
+});
+
+test("provider-calculated invoice total mismatch fails before payment", async () => {
+  const provider = new FakeProvider();
+  const store = new MemoryStore();
+  provider.createInvoice = async function (input) {
+    this.createInvoiceCalls += 1;
+    const invoice = {
+      id: "invoice-wrong-total",
+      number: "INV-WRONG",
+      status: "draft",
+      url: null,
+      pdfSupported: true,
+      totalAed: input.totalAed + 1,
+      reference: input.orderNumber,
+    };
+    this.invoices.push(invoice);
+    return invoice;
+  };
+  await assert.rejects(
+    processOrderToInvoice({
+      correlationId: "wrong-total",
+      order: order({
+        paymentStatus: "paid",
+        paymentProvider: "stripe",
+        paymentReference: "pi_wrong_total",
+      }),
+      provider,
+      store,
+    }),
+    (error) => error.category === "conflict" && /TOTAL_MISMATCH/.test(error.safeCode),
+  );
+  assert.equal(provider.recordPaymentCalls, 0);
+});
+
 test("rate limit remains retryable and honors bounded backoff", () => {
   const error = new AccountingIntegrationError("rate_limit", true, "ZOHO_RATE_LIMITED", {
     retryAfterMs: 125_000,
@@ -179,6 +251,39 @@ test("official Zoho HTTP 429 is classified as retryable rate limit", async () =>
     provider.findInvoiceByReference("CM-1001"),
     (error) => error.category === "rate_limit" && error.retryable && error.retryAfterMs === 120_000,
   );
+});
+
+test("Zoho payment payload maps provider mode, customer and paid timestamp", async () => {
+  let requestBody;
+  const provider = new ZohoAccountingProvider(
+    {
+      product: "invoice",
+      organizationId: "org-test",
+      apiBaseUrl: "https://example.invalid",
+      accessToken: "secret-test-token",
+      vatTaxId: "tax-test",
+    },
+    async (_url, init) => {
+      requestBody = JSON.parse(String(init.body));
+      return new Response(
+        JSON.stringify({ code: 0, payment: { payment_id: "payment-1", status: "success" } }),
+        { status: 201 },
+      );
+    },
+  );
+  await provider.recordPayment({
+    invoiceId: "invoice-1",
+    customerId: "customer-1",
+    amountAed: 57.75,
+    provider: "stripe",
+    providerReference: "pi_payload",
+    paidAt: "2026-08-28T13:14:15.000Z",
+  });
+  assert.equal(requestBody.customer_id, "customer-1");
+  assert.equal(requestBody.payment_mode, "creditcard");
+  assert.equal(requestBody.reference_number, "pi_payload");
+  assert.equal(requestBody.date, "2026-08-28");
+  assert.deepEqual(requestBody.invoices, [{ invoice_id: "invoice-1", amount_applied: 57.75 }]);
 });
 
 test("credentials and flags cannot override repository activation gate", () => {
@@ -280,14 +385,16 @@ test("reconciliation reports total drift", () => {
   );
 });
 
-test("server-only secrets and structured logs cannot leak credentials or PII", async () => {
-  const [provider, migration, route] = await Promise.all([
+test("server-only secrets and durable worker controls are fail-closed", async () => {
+  const [provider, migration, route, controlCenter, worker] = await Promise.all([
     readFile("src/lib/zoho-accounting.server.ts", "utf8"),
     readFile(
       "supabase/migrations/20260828170741_cm_int_zoho_1_zero_touch_order_invoice.sql",
       "utf8",
     ),
     readFile("src/routes/_authenticated/admin.integrations.tsx", "utf8"),
+    readFile("src/lib/accounting-control-center.functions.ts", "utf8"),
+    readFile("src/lib/accounting-worker.server.ts", "utf8"),
   ]);
   assert.doesNotMatch(provider, /VITE_.*ZOHO|console\.(log|warn|error).*accessToken/i);
   assert.doesNotMatch(route, /ACCESS_TOKEN|ORGANIZATION_ID|VAT_TAX_ID/);
@@ -295,4 +402,11 @@ test("server-only secrets and structured logs cannot leak credentials or PII", a
   assert.match(migration, /force row level security/);
   assert.match(migration, /unique \(provider, entity_type, local_entity_id\)/);
   assert.match(migration, /correlation_id/);
+  assert.match(migration, /status = 'processing' and locked_at < now\(\) - interval '20 minutes'/);
+  assert.match(migration, /new.payment_status = 'paid'/);
+  assert.match(migration, /new.status in \('confirmed','processing','shipped','delivered'\)/);
+  assert.match(controlCenter, /attempt_count: 0/);
+  assert.match(worker, /ACCOUNTING_INVOICE_NOT_READY/);
+  assert.match(worker, /ACCOUNTING_JOB_FINISH_PERSIST_FAILED/);
+  assert.match(worker, /ACCOUNTING_JOB_FAILURE_PERSIST_FAILED/);
 });

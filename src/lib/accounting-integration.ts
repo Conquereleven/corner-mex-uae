@@ -42,6 +42,7 @@ export type CanonicalOrderInvoice = {
   paymentStatus: string;
   paymentProvider: string | null;
   paymentReference: string | null;
+  paymentPaidAt: string | null;
   customer: CanonicalCustomer;
   lines: CanonicalInvoiceLine[];
   subtotalAed: number;
@@ -82,8 +83,10 @@ export type AccountingProvider = {
     input: CanonicalOrderInvoice,
     externalCustomerId: string,
   ): Promise<ExternalInvoice>;
+  findPaymentByReference(providerReference: string): Promise<ExternalPayment[]>;
   recordPayment(input: {
     invoiceId: string;
+    customerId: string;
     amountAed: number;
     provider: string;
     providerReference: string;
@@ -235,6 +238,14 @@ export async function processOrderToInvoice(input: {
     const preexistingInvoice = await store.getMapping("invoice", order.orderId);
     const customerId = await resolveCustomer(order, provider, store);
     const invoice = await resolveInvoice(order, provider, store, customerId, syncInvoice);
+    const reconciliation = reconcileInvoice(order, invoice);
+    if (!reconciliation.matches) {
+      throw new AccountingIntegrationError(
+        "conflict",
+        false,
+        `ACCOUNTING_PROVIDER_TOTAL_${reconciliation.reasons.join("_").toUpperCase()}`,
+      );
+    }
     let payment: ExternalPayment | undefined;
 
     // Stripe/payment-provider state is only consumed. Zoho never changes the
@@ -243,13 +254,22 @@ export async function processOrderToInvoice(input: {
       const paymentMappingKey = `${order.paymentProvider}:${order.paymentReference}`;
       const paymentMapping = await store.getMapping("payment", paymentMappingKey);
       if (!paymentMapping) {
-        payment = await provider.recordPayment({
-          invoiceId: invoice.id,
-          amountAed: order.totalAed,
-          provider: order.paymentProvider,
-          providerReference: order.paymentReference,
-          paidAt: order.createdAt,
-        });
+        // Reference lookup makes a retry safe when Zoho accepted the payment
+        // but the response was lost before the durable mapping was stored.
+        const matches = await provider.findPaymentByReference(order.paymentReference);
+        if (matches.length > 1) {
+          throw new AccountingIntegrationError("conflict", false, "ACCOUNTING_PAYMENT_CONFLICT");
+        }
+        payment =
+          matches[0] ??
+          (await provider.recordPayment({
+            invoiceId: invoice.id,
+            customerId,
+            amountAed: order.totalAed,
+            provider: order.paymentProvider,
+            providerReference: order.paymentReference,
+            paidAt: order.paymentPaidAt ?? order.createdAt,
+          }));
         await store.saveMapping({
           entityType: "payment",
           localEntityId: paymentMappingKey,

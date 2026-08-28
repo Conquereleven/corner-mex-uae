@@ -106,9 +106,13 @@ export const adminRetryAccountingJob = createServerFn({ method: "POST" })
       .from("accounting_integration_jobs")
       .update({
         status: "retry_scheduled",
+        attempt_count: 0,
         next_attempt_at: new Date().toISOString(),
         locked_at: null,
         locked_by: null,
+        completed_at: null,
+        last_failure_category: null,
+        last_failure_code: null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", data.jobId)

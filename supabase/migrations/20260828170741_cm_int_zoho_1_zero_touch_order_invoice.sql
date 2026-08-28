@@ -112,7 +112,10 @@ begin
     ) on conflict (dedupe_key) do nothing;
   end if;
 
-  if tg_op = 'UPDATE' and old.payment_status is distinct from new.payment_status then
+  if tg_op = 'UPDATE'
+     and old.payment_status is distinct from new.payment_status
+     and new.payment_status = 'paid'
+     and new.status in ('confirmed','processing','shipped','delivered') then
     insert into commerce_private.accounting_integration_jobs (
       provider, job_type, order_id, dedupe_key, payload_fingerprint
     ) values (
@@ -151,8 +154,10 @@ begin
     with claimable as (
       select id
       from commerce_private.accounting_integration_jobs
-      where status in ('pending','retry_scheduled')
-        and next_attempt_at <= now()
+      where (
+          (status in ('pending','retry_scheduled') and next_attempt_at <= now())
+          or (status = 'processing' and locked_at < now() - interval '20 minutes')
+        )
         and attempt_count < max_attempts
       order by next_attempt_at, created_at
       for update skip locked
@@ -187,4 +192,4 @@ comment on table commerce_private.accounting_integration_jobs is
 comment on table commerce_private.accounting_integration_audit_events is
   'CM-INT-ZOHO-1 append-only operational evidence with PII-free safe codes and correlation IDs.';
 comment on function commerce_private.claim_accounting_integration_jobs(text, integer) is
-  'CM-INT-ZOHO-1 atomic bounded claim using FOR UPDATE SKIP LOCKED for at-least-once workers.';
+  'CM-INT-ZOHO-1 atomic bounded claim using FOR UPDATE SKIP LOCKED; stale processing leases are reclaimed after 20 minutes.';

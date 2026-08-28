@@ -51,7 +51,7 @@ async function loadCanonicalOrder(orderId: string): Promise<CanonicalOrderInvoic
   const { data: order, error } = await (supabaseAdmin as any)
     .from("orders")
     .select(
-      "id, order_number, buyer_id, status, payment_status, subtotal_aed, shipping_aed, tax_aed, total_aed, shipping_address, created_at, order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed), payments(provider, provider_reference, status, created_at)",
+      "id, order_number, buyer_id, status, payment_status, subtotal_aed, shipping_aed, tax_aed, total_aed, shipping_address, created_at, order_items(id, product_name, variant_label, qty, unit_price_aed, line_total_aed), payments(provider, provider_reference, status, created_at, updated_at)",
     )
     .eq("id", orderId)
     .single();
@@ -91,6 +91,7 @@ async function loadCanonicalOrder(orderId: string): Promise<CanonicalOrderInvoic
     paymentStatus: order.payment_status,
     paymentProvider: paid ? safeText(paid.provider, "unknown") : null,
     paymentReference: paid ? safeText(paid.provider_reference, "") || null : null,
+    paymentPaidAt: paid ? safeText(paid.updated_at, safeText(paid.created_at, "")) || null : null,
     customer: {
       localId: order.buyer_id,
       displayName: safeText(
@@ -203,7 +204,7 @@ function createStore(job: ClaimedJob): AccountingStateStore {
 }
 
 async function finishJob(job: ClaimedJob) {
-  await (supabaseAdmin as any)
+  const { error } = await (supabaseAdmin as any)
     .schema("commerce_private")
     .from("accounting_integration_jobs")
     .update({
@@ -216,6 +217,7 @@ async function finishJob(job: ClaimedJob) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", job.id);
+  if (error) throw new Error("ACCOUNTING_JOB_FINISH_PERSIST_FAILED");
 }
 
 async function failJob(job: ClaimedJob, rawError: unknown) {
@@ -225,7 +227,7 @@ async function failJob(job: ClaimedJob, rawError: unknown) {
   const next = new Date(
     Date.now() + retryDelayMs(job.attempt_count, error.retryAfterMs),
   ).toISOString();
-  await (supabaseAdmin as any)
+  const { error: persistenceError } = await (supabaseAdmin as any)
     .schema("commerce_private")
     .from("accounting_integration_jobs")
     .update({
@@ -238,6 +240,7 @@ async function failJob(job: ClaimedJob, rawError: unknown) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", job.id);
+  if (persistenceError) throw new Error("ACCOUNTING_JOB_FAILURE_PERSIST_FAILED");
   return { status, category: error.category, code: error.safeCode };
 }
 
@@ -266,13 +269,34 @@ async function processJob(job: ClaimedJob) {
       outcome: "succeeded",
       externalId: mapping.externalId,
     });
+  } else if (job.job_type === "payment_sync") {
+    if (!["confirmed", "processing", "shipped", "delivered"].includes(order.orderStatus)) {
+      await store.audit({
+        correlationId: job.correlation_id,
+        action: "payment_sync",
+        outcome: "skipped",
+      });
+      await finishJob(job);
+      return;
+    }
+    const mapping = await store.getMapping("invoice", order.orderId);
+    if (!mapping) {
+      throw new AccountingIntegrationError("mapping_error", true, "ACCOUNTING_INVOICE_NOT_READY");
+    }
+    await processOrderToInvoice({
+      correlationId: job.correlation_id,
+      order,
+      provider,
+      store,
+      syncInvoice: false,
+    });
   } else {
     await processOrderToInvoice({
       correlationId: job.correlation_id,
       order,
       provider,
       store,
-      syncInvoice: job.job_type === "order_invoice",
+      syncInvoice: true,
     });
   }
   await finishJob(job);
