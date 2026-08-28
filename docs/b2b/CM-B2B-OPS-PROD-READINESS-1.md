@@ -2,16 +2,16 @@
 
 ## Status and boundary
 
-This is an auditable readiness package for a future authorized production window. It does not authorize or perform either migration, SQL mutation, live grant change, deployment, OAuth/MCP activation, Railway change, or synthetic production-data creation.
+This is an auditable readiness package for a future authorized production window. It does not authorize or perform any migration, SQL mutation, live grant change, deployment, OAuth/MCP activation, Railway change, or synthetic production-data creation.
 
 Canonical target: `wlrfknmrhowldygmvtvn`.
 
-Repository baseline expected and observed before this branch was created: `d7117596581e01fd2c752873363d58576f14ab54`. The expected baseline was exactly `origin/main`, so there was no baseline discrepancy.
+PR #67 was reconciled without history rewriting against current `origin/main` `c249512e13388305bc0648546f7d3ab860921dc8`, which contains Portal 1B. The readiness package therefore binds three independent gates: Foundation, Portal 1A and Portal 1B.
 
 Read-only production evidence captured at `2026-08-23T04:19:29Z` confirmed:
 
 - latest ledger row `20260823004146 sec_rls_1_b2b_private_rls`;
-- both target migration names absent from the ledger;
+- all three target migration names absent from the point-in-time ledger;
 - all inspected prerequisite schemas, relations and `public.set_updated_at()` present;
 - all six foundation relation names and `public.b2b_portal_v1(text,uuid,jsonb)` absent;
 - `commerce_private` owned by `postgres` and required application roles present;
@@ -21,12 +21,13 @@ That snapshot is evidence of readiness work, not a substitute for a fresh prefli
 
 ## Exact artifacts and mandatory order
 
-| Gate | Source artifact                                                    | Migration name              | SHA-256                                                            |
-| ---- | ------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------ |
-| A    | `supabase/migrations/20260823023904_cm_b2b_ops_foundation_1.sql`   | `cm_b2b_ops_foundation_1`   | `68a715a13ac27c59e8d397ccb4f0179556608e84ea8a081929d5132e5fc7cbb0` |
-| B    | `supabase/migrations/20260823040000_cm_b2b_portal_1a_boundary.sql` | `cm_b2b_portal_1a_boundary` | `130430bf58e80e1af6ba0accf9679f38977c5e65273e33a2670f1102c0d07852` |
+| Gate | Source artifact                                                                | Migration name                          | SHA-256                                                            |
+| ---- | ------------------------------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------ |
+| A    | `supabase/migrations/20260823023904_cm_b2b_ops_foundation_1.sql`               | `cm_b2b_ops_foundation_1`               | `68a715a13ac27c59e8d397ccb4f0179556608e84ea8a081929d5132e5fc7cbb0` |
+| B    | `supabase/migrations/20260823040000_cm_b2b_portal_1a_boundary.sql`             | `cm_b2b_portal_1a_boundary`             | `130430bf58e80e1af6ba0accf9679f38977c5e65273e33a2670f1102c0d07852` |
+| C    | `supabase/migrations/20260823041625_cm_b2b_portal_1b_pricing_availability.sql` | `cm_b2b_portal_1b_pricing_availability` | `b1134a994e2f2109c2dd2c990d994f51bca001c6e88afb359b765a5bd0bca1ec` |
 
-The order is mandatory: Gate A, successful commit, complete Gate A postflight green, then a new Founder authorization, then Gate B. Gate B references all six Gate A tables and cannot be created or exercised safely before them. No aggregate authorization and no authorization carryover are valid.
+The order is mandatory: Gate A, complete Gate A postflight green, new authorization, Gate B, complete Gate B postflight and runtime smoke green, new authorization, then Gate C. Gate C replaces the same Portal 1A RPC identity with account pricing and current availability behavior. No aggregate authorization and no authorization carryover are valid.
 
 Before either gate, recompute the SHA-256 from the reviewed checkout and compare it byte-for-byte with this table and `contracts/cm-b2b-ops-prod-readiness-1.json`. A mismatch is a STOP.
 
@@ -74,7 +75,23 @@ The definition must retain `auth.uid()`, reject a null actor, and require both a
 
 The RPC's only writes are bounded saved-list operations inside `commerce_private`. Its `orders` and `reorder_draft` actions are reads. It must not insert, update or delete orders, order items, payments, inventory, inventory movements or suppliers.
 
-## Non-destructive runtime smoke after Gate B
+## Gate C — Portal 1B pricing and availability apply
+
+Gate C may begin only after Gate B postflight and the Portal 1A runtime smoke are explicitly recorded green. The Founder must then issue a new Gate C-specific authorization.
+
+1. Record the Gate B evidence identifiers and green dispositions.
+2. Record the new Gate C Founder command, operator, UTC time, reviewed HEAD, exact artifact identity and recomputed SHA-256.
+3. Run `docs/b2b/sql/gate-c-portal-pricing-availability-preflight.sql` read-only. It must prove both prior ledger rows, Gate C absence, the exact Portal 1A predecessor custody/grants, and preserved private-table posture.
+4. Run and retain fresh security advisors immediately before Gate C.
+5. In a separately authorized execution task, apply only the exact Gate C bytes through the canonical migration mechanism.
+6. On error, timeout or uncertain transaction outcome, stop and resolve ledger/catalog state read-only.
+7. Run `docs/b2b/sql/gate-c-portal-pricing-availability-postflight.sql`; every check must be green.
+8. Run fresh security advisors and require a zero added/zero removed delta for the existing authenticated SECURITY DEFINER identity.
+9. Repeat the non-destructive runtime smoke, additionally proving special-account price precedence, expired/future override fallback to the catalogue price, and current inventory availability using existing eligible data only.
+
+Gate C must preserve the exact function identity, owner, security mode, fixed search path, membership checks and authenticated-only execute matrix. It must add `catalogPriceAed`, `effectivePriceAed` and `priceStatus`, resolve only active/applicable exact account-and-variant overrides, never fabricate a zero or historical fallback, and derive availability from current `public.inventory`. It must not add any direct private-table grant or mutate orders, payments or inventory.
+
+## Non-destructive runtime smoke after Gates B and C
 
 Use an existing production user who already has an active B2B account membership. Do not create a user, account, membership, saved list, saved-list item, order or product for the smoke. Record response status and a redacted structural result only; do not copy customer data into the repository.
 
@@ -85,6 +102,8 @@ Use an existing production user who already has an active B2B account membership
 5. Saved Lists: for the user's existing active account, call action `saved_lists`. An empty list is a valid green response. If lists exist, confirm only lists for that account are returned. Do not call `create_list`, `rename_list`, `add_item`, `set_quantity`, `remove_item` or `reorder_items` during this production smoke.
 6. Reorder boundary: call action `orders`, choose one existing order returned for the same authenticated buyer, and call `reorder_draft`. Confirm it returns an intent/eligibility view and the notice that no order is recreated. If the user has no existing order, record `blocked_no_existing_order`; do not create one. The runtime smoke is not fully green until an existing qualifying order can be checked in a separately authorized observation.
 7. Compare relevant order, payment and inventory audit/telemetry before and after the read calls. There must be no mutation attributable to the smoke and no service-role credential in the browser path.
+
+After Gate C, use existing authorized account data to compare one catalogue-price result, one active applicable account override when available, and one expired/inactive/future override when available. Missing eligible existing rows must be recorded as blocked; do not create overrides or inventory fixtures. Confirm the Portal 1B response uses current availability and never reuses historical order price or stock.
 
 The production UI may be used to verify route rendering, loading/error behavior and the three read surfaces, but no control that writes a saved list or cart draft should be submitted during this smoke.
 
@@ -121,6 +140,10 @@ revoke all on function public.b2b_portal_v1(text, uuid, jsonb)
 
 After disablement, confirm the role matrix is false for all four roles, retain the function definition and data, diagnose the mismatch, and ship a reviewed forward-fix migration. Re-enable only `authenticated` after a new postflight and new authorization.
 
+### Gate C post-commit semantic mismatch
+
+Gate C replaces the same RPC identity, so use the same exact emergency `EXECUTE` revoke as Gate B. Do not attempt to restore Portal 1A by replaying or editing migration history, and do not drop the function or tables. Preserve data and ship a separately reviewed forward-fix migration. The emergency revoke remains a production mutation requiring its own explicit authorization.
+
 ## Security advisors
 
 Run fresh security advisors immediately before and after each gate, retaining the complete machine response and comparing findings by stable identity rather than only counts.
@@ -134,6 +157,8 @@ The captured baseline has:
 Expected Gate A delta: six new `INFO rls_enabled_no_policy` findings, exactly one for each new forced-RLS/no-policy foundation table. They are acceptable only when the Gate A postflight also proves zero policies, zero application-role table grants and forced RLS.
 
 Expected Gate B delta: one new `WARN authenticated_security_definer_function_executable` for exactly `public.b2b_portal_v1(text,uuid,jsonb)`. It is acceptable only when the postflight proves the exact owner/search path, authenticated-only execute posture, internal `auth.uid()` and active-membership checks, and absence of forbidden commerce writes.
+
+Expected Gate C delta: zero findings added and zero removed. The existing `WARN authenticated_security_definer_function_executable` must retain the same function identity while the reviewed definition fingerprint changes to Portal 1B. Any duplicate identity, severity change, new function finding, removed finding, or widened role access is a STOP.
 
 Unexpected and therefore STOP findings include any new table without RLS, any additional new SECURITY DEFINER function, any `PUBLIC`/`anon`/`service_role` execute exposure, mutable or missing search path, direct private-table exposure, unexpected policy, or any severity increase/change outside the two exact deltas. A changed pre-existing finding also requires review; do not dismiss it because a similarly named finding was already accepted.
 
@@ -150,6 +175,8 @@ Stop immediately when any of the following occurs:
 - any Gate A postflight row, FK target, constraint, grant, owner, RLS/policy posture or RPC custody comparison is not green;
 - Gate B is requested before Gate A postflight green or without a new separate Founder authorization;
 - any Gate B function identity, owner, security mode, search path, grant, membership check or no-mutation assertion differs;
+- Gate C is requested before Gate B postflight and runtime smoke green or without a new separate Founder authorization;
+- any Gate C predecessor custody, pricing precedence, current-availability, exact grant, security mode or no-mutation assertion differs;
 - any fresh advisor delta is not exactly classified;
 - runtime smoke exposes another account, returns unauthenticated data, uses a browser service role, mutates an order/payment/inventory record, requires synthetic data, or cannot be completed with existing eligible data;
 - evidence cannot establish whether production changed.
@@ -170,6 +197,12 @@ Gate B only, and valid only after Gate A postflight green:
 AUTORIZO GATE B PORTAL BOUNDARY APPLY EN wlrfknmrhowldygmvtvn DEL ARTEFACTO 20260823040000_cm_b2b_portal_1a_boundary.sql SHA256 130430bf58e80e1af6ba0accf9679f38977c5e65273e33a2670f1102c0d07852; ESTA AUTORIZACION NUEVA SOLO ES VALIDA DESPUES DE GATE A POSTFLIGHT GREEN; EJECUTA SOLO GATE B Y DETENTE SI PREFLIGHT, POSTFLIGHT O RUNTIME SMOKE NO SON GREEN.
 ```
 
+Gate C only, and valid only after Gate B postflight and runtime smoke green:
+
+```text
+AUTORIZO GATE C PORTAL 1B PRICING Y AVAILABILITY APPLY EN wlrfknmrhowldygmvtvn DEL ARTEFACTO 20260823041625_cm_b2b_portal_1b_pricing_availability.sql SHA256 b1134a994e2f2109c2dd2c990d994f51bca001c6e88afb359b765a5bd0bca1ec; ESTA AUTORIZACION NUEVA SOLO ES VALIDA DESPUES DE GATE B POSTFLIGHT Y RUNTIME SMOKE GREEN; EJECUTA SOLO GATE C Y DETENTE SI PREFLIGHT, POSTFLIGHT O RUNTIME SMOKE NO SON GREEN.
+```
+
 ## Evidence record required from a future window
 
-For each gate retain: authorization text and timestamp, operator, project ref, reviewed HEAD, recomputed checksum, full preflight output, immediate pre/post advisor exports, migration mechanism result, ledger runtime version/name, full postflight output, STOP disposition, and whether emergency disable was required. Gate B additionally retains redacted runtime-smoke structure and confirms no synthetic production data and no order/payment/inventory mutation.
+For each gate retain: authorization text and timestamp, operator, project ref, reviewed HEAD, recomputed checksum, full preflight output, immediate pre/post advisor exports, migration mechanism result, ledger runtime version/name, full postflight output, STOP disposition, and whether emergency disable was required. Gates B and C additionally retain redacted runtime-smoke structure and confirm no synthetic production data and no order/payment/inventory mutation. Gate C also retains the predecessor and replacement definition fingerprints and exact advisor identity comparison.

@@ -1,10 +1,10 @@
 {
-  "contractVersion": "cm-b2b-ops-prod-readiness-1-v1",
+  "contractVersion": "cm-b2b-ops-prod-readiness-1-v2",
   "task": "CM-B2B-OPS-PROD-READINESS-1",
   "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
   "baseline": {
-    "expected": "d7117596581e01fd2c752873363d58576f14ab54",
-    "observedOriginMain": "d7117596581e01fd2c752873363d58576f14ab54",
+    "expected": "c249512e13388305bc0648546f7d3ab860921dc8",
+    "observedOriginMain": "c249512e13388305bc0648546f7d3ab860921dc8",
     "expectedIsAncestor": true
   },
   "readinessOnly": true,
@@ -42,12 +42,32 @@
       "preflightSql": "docs/b2b/sql/gate-b-portal-boundary-preflight.sql",
       "postflightSql": "docs/b2b/sql/gate-b-portal-boundary-postflight.sql",
       "founderAuthorizationCommand": "AUTORIZO GATE B PORTAL BOUNDARY APPLY EN wlrfknmrhowldygmvtvn DEL ARTEFACTO 20260823040000_cm_b2b_portal_1a_boundary.sql SHA256 130430bf58e80e1af6ba0accf9679f38977c5e65273e33a2670f1102c0d07852; ESTA AUTORIZACION NUEVA SOLO ES VALIDA DESPUES DE GATE A POSTFLIGHT GREEN; EJECUTA SOLO GATE B Y DETENTE SI PREFLIGHT, POSTFLIGHT O RUNTIME SMOKE NO SON GREEN.",
+      "runtimeSmokeRequired": true,
+      "postflightMustBeGreenBeforeNextGate": true
+    },
+    {
+      "id": "C",
+      "label": "Portal 1B pricing and availability apply",
+      "artifact": {
+        "filename": "20260823041625_cm_b2b_portal_1b_pricing_availability.sql",
+        "migrationName": "cm_b2b_portal_1b_pricing_availability",
+        "sourceVersion": "20260823041625",
+        "sha256": "b1134a994e2f2109c2dd2c990d994f51bca001c6e88afb359b765a5bd0bca1ec"
+      },
+      "requires": [
+        "Gate B postflight and runtime smoke green",
+        "new and separate Founder authorization issued after Gate B postflight and runtime smoke"
+      ],
+      "preflightSql": "docs/b2b/sql/gate-c-portal-pricing-availability-preflight.sql",
+      "postflightSql": "docs/b2b/sql/gate-c-portal-pricing-availability-postflight.sql",
+      "founderAuthorizationCommand": "AUTORIZO GATE C PORTAL 1B PRICING Y AVAILABILITY APPLY EN wlrfknmrhowldygmvtvn DEL ARTEFACTO 20260823041625_cm_b2b_portal_1b_pricing_availability.sql SHA256 b1134a994e2f2109c2dd2c990d994f51bca001c6e88afb359b765a5bd0bca1ec; ESTA AUTORIZACION NUEVA SOLO ES VALIDA DESPUES DE GATE B POSTFLIGHT Y RUNTIME SMOKE GREEN; EJECUTA SOLO GATE C Y DETENTE SI PREFLIGHT, POSTFLIGHT O RUNTIME SMOKE NO SON GREEN.",
       "runtimeSmokeRequired": true
     }
   ],
   "mandatoryOrder": [
     "20260823023904_cm_b2b_ops_foundation_1.sql",
-    "20260823040000_cm_b2b_portal_1a_boundary.sql"
+    "20260823040000_cm_b2b_portal_1a_boundary.sql",
+    "20260823041625_cm_b2b_portal_1b_pricing_availability.sql"
   ],
   "securityAdvisorBaseline": {
     "capturedAt": "2026-08-23T04:19:29Z",
@@ -62,6 +82,11 @@
     },
     "expectedGateBDelta": {
       "WARN:authenticated_security_definer_function_executable": 1
+    },
+    "expectedGateCDelta": {
+      "added": 0,
+      "removed": 0,
+      "unchangedIdentity": "public.b2b_portal_v1(text,uuid,jsonb)"
     }
   },
   "stopConditions": [
@@ -74,6 +99,9 @@
     "Gate B is requested without a new Founder authorization after Gate A postflight green",
     "Gate B apply returns an error or its transaction outcome is uncertain",
     "any Gate B postflight check or runtime smoke is not green",
+    "Gate C is requested without a new Founder authorization after Gate B postflight and runtime smoke green",
+    "Gate C apply returns an error or its transaction outcome is uncertain",
+    "any Gate C postflight check or runtime smoke is not green",
     "a new or changed advisor finding is outside the classified expected delta",
     "any direct commerce_private grant, service-role browser path, order/payment/inventory mutation, or synthetic production data is observed"
   ],

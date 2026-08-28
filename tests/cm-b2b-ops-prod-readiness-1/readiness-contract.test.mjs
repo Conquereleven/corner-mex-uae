@@ -10,15 +10,16 @@ const evidencePath = "docs/evidence/cm-b2b-ops-prod-readiness-1-readonly-snapsho
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
-test("the two exact migration artifacts are checksum-bound in mandatory order", async () => {
+test("the three exact migration artifacts are checksum-bound in mandatory order", async () => {
   const contract = JSON.parse(await read(contractPath));
   assert.deepEqual(contract.mandatoryOrder, [
     "20260823023904_cm_b2b_ops_foundation_1.sql",
     "20260823040000_cm_b2b_portal_1a_boundary.sql",
+    "20260823041625_cm_b2b_portal_1b_pricing_availability.sql",
   ]);
   assert.deepEqual(
     contract.gates.map(({ id }) => id),
-    ["A", "B"],
+    ["A", "B", "C"],
   );
 
   for (const gate of contract.gates) {
@@ -59,6 +60,19 @@ test("Gate B has a hard dependency on every Gate A private table", async () => {
   ]);
   assert.equal(contract.gates[0].postflightMustBeGreenBeforeNextGate, true);
   assert.equal(contract.aggregateAuthorizationAllowed, false);
+});
+
+test("Gate C is a separate exact-head replacement gate after Portal 1A", async () => {
+  const contract = JSON.parse(await read(contractPath));
+  const gateC = contract.gates[2];
+  assert.deepEqual(gateC.requires, [
+    "Gate B postflight and runtime smoke green",
+    "new and separate Founder authorization issued after Gate B postflight and runtime smoke",
+  ]);
+  assert.match(gateC.artifact.filename, /cm_b2b_portal_1b_pricing_availability/);
+  assert.match(gateC.founderAuthorizationCommand, /SOLO ES VALIDA DESPUES DE GATE B/);
+  assert.match(gateC.founderAuthorizationCommand, /AUTORIZACION NUEVA/);
+  assert.equal(contract.gates[1].postflightMustBeGreenBeforeNextGate, true);
 });
 
 test("all gate verification SQL is read-only and fail-closed", async () => {
@@ -108,10 +122,29 @@ test("Gate B postflight binds the exact authenticated-only SECURITY DEFINER boun
   assert.match(sql, /private_tables_remain_unexposed/);
 });
 
+test("Gate C preflight and postflight bind the Portal 1A replacement boundary", async () => {
+  const [preflight, postflight] = await Promise.all([
+    read("docs/b2b/sql/gate-c-portal-pricing-availability-preflight.sql"),
+    read("docs/b2b/sql/gate-c-portal-pricing-availability-postflight.sql"),
+  ]);
+  assert.match(preflight, /C01_gate_a_ledger_present_once/);
+  assert.match(preflight, /C02_gate_b_ledger_present_once/);
+  assert.match(preflight, /C03_gate_c_ledger_absent/);
+  assert.match(preflight, /catalogPriceAed/);
+  assert.doesNotMatch(preflight, /effectivePriceAed/);
+  assert.match(postflight, /C101_gate_c_ledger_present_once/);
+  assert.match(postflight, /effectivePriceAed/);
+  assert.match(postflight, /special_account/);
+  assert.match(postflight, /statement_timestamp/);
+  assert.match(postflight, /no_forbidden_commerce_mutation/);
+  assert.match(postflight, /private_tables_remain_unexposed/);
+});
+
 test("separate Founder commands cannot carry authorization between gates", async () => {
   const contract = JSON.parse(await read(contractPath));
-  const [gateA, gateB] = contract.gates;
+  const [gateA, gateB, gateC] = contract.gates;
   assert.notEqual(gateA.founderAuthorizationCommand, gateB.founderAuthorizationCommand);
+  assert.notEqual(gateB.founderAuthorizationCommand, gateC.founderAuthorizationCommand);
   assert.match(gateA.founderAuthorizationCommand, /SOLO GATE A/);
   assert.doesNotMatch(gateA.founderAuthorizationCommand, /GATE B/);
   assert.match(
@@ -119,6 +152,7 @@ test("separate Founder commands cannot carry authorization between gates", async
     /SOLO ES VALIDA DESPUES DE GATE A POSTFLIGHT GREEN/,
   );
   assert.match(gateB.founderAuthorizationCommand, /AUTORIZACION NUEVA/);
+  assert.match(gateC.founderAuthorizationCommand, /GATE C/);
 });
 
 test("rollback preserves customer data and disables the RPC by exact grant revoke", async () => {
@@ -154,9 +188,15 @@ test("advisor deltas are exact and the snapshot records non-activation", async (
   assert.deepEqual(contract.securityAdvisorBaseline.expectedGateBDelta, {
     "WARN:authenticated_security_definer_function_executable": 1,
   });
+  assert.deepEqual(contract.securityAdvisorBaseline.expectedGateCDelta, {
+    added: 0,
+    removed: 0,
+    unchangedIdentity: "public.b2b_portal_v1(text,uuid,jsonb)",
+  });
   assert.equal(evidence.migrationLedger.latest.version, "20260823004146");
   assert.equal(evidence.migrationLedger.cm_b2b_ops_foundation_1, "absent");
   assert.equal(evidence.migrationLedger.cm_b2b_portal_1a_boundary, "absent");
+  assert.equal(evidence.migrationLedger.cm_b2b_portal_1b_pricing_availability, "absent");
   assert.ok(Object.values(evidence.targetCollisions).every((present) => present === false));
   assert.equal(evidence.boundary.executeSqlStatementsWereSelectOnly, true);
   assert.equal(evidence.boundary.productionMutationPerformed, false);

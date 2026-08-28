@@ -9,7 +9,8 @@
       "name": "sec_rls_1_b2b_private_rls"
     },
     "cm_b2b_ops_foundation_1": "absent",
-    "cm_b2b_portal_1a_boundary": "absent"
+    "cm_b2b_portal_1a_boundary": "absent",
+    "cm_b2b_portal_1b_pricing_availability": "absent"
   },
   "schemas": {
     "auth": true,

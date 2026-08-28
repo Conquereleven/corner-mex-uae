@@ -76,6 +76,13 @@
       "purpose": "cm_b2b_portal_1a_boundary",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260823041625_cm_b2b_portal_1b_pricing_availability.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_b2b_portal_1b_pricing_availability",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }

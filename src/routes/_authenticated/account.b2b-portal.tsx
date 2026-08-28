@@ -37,7 +37,14 @@ import {
   type B2bSavedList,
   type B2bVariant,
 } from "@/lib/b2b-portal.functions";
+import {
+  getB2bAvailabilityStatus,
+  hasSpecialAccountPrice,
+  type B2bAvailabilityStatus,
+  type B2bPriceStatus,
+} from "@/lib/b2b-portal";
 import { useB2bReorderIntent } from "@/lib/b2b-reorder-intent";
+import { formatMoney } from "@/lib/currency";
 
 export const Route = createFileRoute("/_authenticated/account/b2b-portal")({
   head: () => ({ meta: [{ title: "B2B portal — CornerMex" }] }),
@@ -197,23 +204,38 @@ function B2bPortalPage() {
         {!!accounts.data?.accounts.length && (
           <>
             <Card className="mt-8">
-              <CardContent className="flex flex-wrap items-center gap-3 pt-6">
-                <Label htmlFor="b2b-account">Active B2B account</Label>
-                <select
-                  id="b2b-account"
-                  value={accountId}
-                  onChange={(event) => setAccountId(event.target.value)}
-                  className="h-9 rounded-md border bg-background px-3 text-sm"
-                >
-                  {accounts.data.accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name}
-                    </option>
-                  ))}
-                </select>
-                {selectedAccount && (
-                  <Badge variant="outline">{selectedAccount.role.replace("_", " ")}</Badge>
-                )}
+              <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-6">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Business account
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Label htmlFor="b2b-account" className="sr-only">
+                      Active B2B account
+                    </Label>
+                    <select
+                      id="b2b-account"
+                      value={accountId}
+                      onChange={(event) => setAccountId(event.target.value)}
+                      className="h-9 rounded-md border bg-background px-3 text-sm font-medium"
+                    >
+                      {accounts.data.accounts.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.name}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedAccount && (
+                      <Badge variant="outline">{selectedAccount.role.replace("_", " ")}</Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right text-sm">
+                  <p className="font-medium">Account pricing · AED</p>
+                  <p className="text-muted-foreground">
+                    Current prices and availability are scoped to this membership.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
@@ -364,6 +386,14 @@ function QuickOrder({
                 <p className="text-sm text-muted-foreground">
                   SKU {item.sku ?? "—"} · {item.availableStock} available now
                 </p>
+                <PriceAvailability
+                  catalogPriceAed={item.catalogPriceAed}
+                  effectivePriceAed={item.effectivePriceAed}
+                  priceStatus={item.priceStatus}
+                  availability={getB2bAvailabilityStatus({
+                    availableStock: item.availableStock,
+                  })}
+                />
               </div>
               {lists.length ? (
                 <div className="flex flex-wrap gap-2">
@@ -477,6 +507,16 @@ function SavedLists({
                     {item.sku ?? "No SKU"} ·{" "}
                     {item.sellable ? `${item.availableStock} available now` : "Unavailable item"}
                   </p>
+                  <PriceAvailability
+                    catalogPriceAed={item.catalogPriceAed}
+                    effectivePriceAed={item.effectivePriceAed}
+                    priceStatus={item.priceStatus}
+                    availability={getB2bAvailabilityStatus({
+                      availableStock: item.availableStock,
+                      requestedQuantity: item.desiredQuantity,
+                      sellable: item.sellable,
+                    })}
+                  />
                 </div>
                 <Input
                   aria-label={`Desired quantity for ${item.name}`}
@@ -612,8 +652,8 @@ function ReorderPanel({
         <CardHeader>
           <CardTitle>Current reorder draft</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Current stock and sellability replace historical availability. Prices are not carried
-            forward or guaranteed.
+            Current account price, stock and sellability replace historical order data. Historical
+            prices are never reused as current prices.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -638,6 +678,24 @@ function ReorderPanel({
                 <p className="text-xs text-muted-foreground">
                   {line.sku ?? "No SKU"} · {line.availableStock} available now
                 </p>
+                {line.catalogPriceAed !== null &&
+                line.effectivePriceAed !== null &&
+                line.priceStatus !== null ? (
+                  <PriceAvailability
+                    catalogPriceAed={line.catalogPriceAed}
+                    effectivePriceAed={line.effectivePriceAed}
+                    priceStatus={line.priceStatus}
+                    availability={getB2bAvailabilityStatus({
+                      availableStock: line.availableStock,
+                      requestedQuantity: quantities[line.variantId ?? ""] ?? line.quantity,
+                      sellable: line.reason !== "inactive",
+                    })}
+                  />
+                ) : (
+                  <p className="mt-1 text-xs font-medium text-destructive">
+                    Current price unavailable for this inactive variant
+                  </p>
+                )}
               </div>
               {line.eligible && line.variantId ? (
                 <Input
@@ -673,6 +731,45 @@ function ReorderPanel({
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function PriceAvailability({
+  catalogPriceAed,
+  effectivePriceAed,
+  priceStatus,
+  availability,
+}: {
+  catalogPriceAed: number;
+  effectivePriceAed: number;
+  priceStatus: B2bPriceStatus;
+  availability: B2bAvailabilityStatus;
+}) {
+  const special = hasSpecialAccountPrice(priceStatus);
+  const availabilityLabel = {
+    available: "Available",
+    partial: "Partial availability",
+    out_of_stock: "Out of stock",
+    unavailable: "Unavailable variant",
+  }[availability];
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+      <span className="font-semibold">{formatMoney(effectivePriceAed, "AED")}</span>
+      {special && (
+        <span className="text-xs text-muted-foreground line-through">
+          {formatMoney(catalogPriceAed, "AED")}
+        </span>
+      )}
+      {special && <Badge>Special account price</Badge>}
+      {priceStatus === "expired_override" && (
+        <Badge variant="outline">Account price expired · catalogue price shown</Badge>
+      )}
+      {priceStatus === "default" && <Badge variant="outline">Catalogue price</Badge>}
+      <Badge variant={availability === "available" ? "secondary" : "destructive"}>
+        {availabilityLabel}
+      </Badge>
     </div>
   );
 }
