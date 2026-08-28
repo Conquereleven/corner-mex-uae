@@ -31,12 +31,13 @@ const shopSearchSchema = z.object({
     "newest",
   ),
 });
+type ShopSearch = z.infer<typeof shopSearchSchema>;
 
 export const Route = createFileRoute("/shop")({
   validateSearch: zodValidator(shopSearchSchema),
   head: () => ({
     meta: [
-      { title: "Shop — Corner Mex" },
+      { title: "Catalog — Intermex UAE" },
       {
         name: "description",
         content:
@@ -58,10 +59,10 @@ function Shop() {
   useEffect(() => setQInput(search.q ?? ""), [search.q]);
 
   function update(patch: Partial<ShopFilterState>) {
-    navigate({ search: (prev: any) => ({ ...prev, ...patch }), replace: true });
+    navigate({ search: (prev: ShopSearch) => ({ ...prev, ...patch }), replace: true });
   }
   function resetAll() {
-    navigate({ search: { sort: "newest" } as any, replace: true });
+    navigate({ search: { sort: "newest" }, replace: true });
     setMobileOpen(false);
   }
 
@@ -147,11 +148,11 @@ function Shop() {
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              CornerMex UAE
+              Intermex UAE
             </p>
             <h1 className="mt-1 font-display text-4xl tracking-tight sm:text-5xl">Catalogue</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Browse Mexican products with AED pricing and current catalogue availability.
+              Browse authentic Mexican products with AED pricing and current catalogue availability.
             </p>
           </div>
           <DesertGlassControl className="relative w-full rounded-full md:w-80">
@@ -319,7 +320,7 @@ function Shop() {
               >
                 <p className="font-display text-2xl">The catalogue is temporarily unavailable.</p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  CornerMex could not load product results. No empty-catalogue conclusion has been
+                  Intermex could not load product results. No empty-catalogue conclusion has been
                   made.
                 </p>
                 <Button
@@ -336,7 +337,7 @@ function Shop() {
                 <p className="font-display text-2xl">The pantry is being curated</p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                   No products match this view yet. Adjust the filters or return soon for the next
-                  CornerMex selection.
+                  Intermex selection.
                 </p>
                 <Button variant="outline" className="mt-4 rounded-full" onClick={resetAll}>
                   Clear filters
@@ -381,7 +382,7 @@ function Shop() {
         </div>
 
         <div className="mt-16 border-t border-border pt-8 text-sm text-muted-foreground">
-          Products are sold directly by CornerMex UAE.
+          Products are sold directly by Intermex UAE.
         </div>
       </section>
     </SiteLayout>

@@ -85,6 +85,13 @@
       "requiresFounderProductionGate": true
     },
     {
+      "filename": "20260828170741_cm_int_zoho_1_zero_touch_order_invoice.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm_int_zoho_1_zero_touch_order_invoice",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
       "filename": "20260828180000_cm_pay_stripe_1_payment_foundation.sql",
       "owner": "canonical_cornermex",
       "purpose": "cm_pay_stripe_1_payment_foundation",

@@ -7,6 +7,13 @@ const legacyDir = path.join(root, "supabase/legacy-lovable");
 const activeDir = path.join(root, "supabase/migrations");
 const pendingDir = path.join(root, "supabase/pending-canonical");
 const output = path.join(root, "contracts/lovable-cloud-migration-ownership-v1.json");
+const extensions = JSON.parse(
+  await readFile(
+    path.join(root, "contracts/canonical-active-migration-extensions-v1.json"),
+    "utf8",
+  ),
+);
+const extensionFiles = new Set((extensions.migrations ?? []).map((item) => item.filename));
 const julyHardening = new Set([
   "20260716211510_55693588-9ba2-4bc5-99f3-26955db02981.sql",
   "20260716211529_171c3105-811f-4a6b-be3a-f3ff6a1a8890.sql",
@@ -91,7 +98,9 @@ const contract = {
   canonicalProjectRef: "wlrfknmrhowldygmvtvn",
   lovableCloudProjectId: "d9495376-339d-44dd-9c8a-db0f7b451f96",
   quarantineDirectory: "supabase/legacy-lovable",
-  activeCanonicalMigrations: await sqlFiles(activeDir),
+  activeCanonicalMigrations: (await sqlFiles(activeDir)).filter(
+    (filename) => !extensionFiles.has(filename),
+  ),
   pendingCanonicalMigrations: await sqlFiles(pendingDir),
   canonicalProductionMigrations,
   migrations,

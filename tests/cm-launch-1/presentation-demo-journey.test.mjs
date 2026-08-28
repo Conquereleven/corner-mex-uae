@@ -17,7 +17,7 @@ test("Shop presents canonical sellable catalogue only", async () => {
   assert.match(shop, /listCategories/);
   assert.match(shop, /Number\.isFinite\(p\.price_aed\) && p\.price_aed > 0/);
   assert.match(shop, /c\.slug !== "uncategorized"/);
-  assert.match(shop, /Products are sold directly by CornerMex UAE/);
+  assert.match(shop, /Products are sold directly by Intermex UAE/);
 });
 
 test("Product detail fails closed on non-positive variants and adds CornerMex cart items", async () => {

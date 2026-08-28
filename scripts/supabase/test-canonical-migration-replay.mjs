@@ -188,6 +188,75 @@ if (JSON.stringify(first) !== JSON.stringify(expected))
   throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);
 if (JSON.stringify(first) !== JSON.stringify(second))
   throw new Error("canonical replay validation is not deterministic");
+
+// CM-INT-ZOHO-1: prove a worker crash cannot strand a claimed job forever.
+// All records exist only in this disposable replay database.
+const reclaimedLease = Number(
+  psql(
+    "-At",
+    "-c",
+    `
+      insert into auth.users (id)
+      values ('91000000-0000-4000-8000-000000000001');
+      insert into public.orders (
+        id, order_number, buyer_id, status, payment_status,
+        subtotal_aed, shipping_aed, tax_aed, total_aed, shipping_address
+      ) values (
+        '91000000-0000-4000-8000-000000000002', 'CM-LEASE-REPLAY',
+        '91000000-0000-4000-8000-000000000001', 'pending', 'pending',
+        10, 0, 0.50, 10.50, '{}'::jsonb
+      );
+      insert into commerce_private.accounting_integration_jobs (
+        id, provider, job_type, order_id, dedupe_key, status,
+        attempt_count, max_attempts, locked_at, locked_by
+      ) values (
+        '91000000-0000-4000-8000-000000000003', 'zoho', 'order_invoice',
+        '91000000-0000-4000-8000-000000000002', 'zoho:lease-replay', 'processing',
+        1, 6, now() - interval '21 minutes', 'crashed-worker'
+      );
+      select count(*)
+      from commerce_private.claim_accounting_integration_jobs('replay-worker', 1)
+      where id = '91000000-0000-4000-8000-000000000003'
+        and status = 'processing'
+        and attempt_count = 2
+        and locked_by = 'replay-worker';
+    `,
+  )
+    .split("\n")
+    .at(-1),
+);
+if (reclaimedLease !== 1) throw new Error("accounting stale lease was not reclaimed exactly once");
+
+const exhaustedLeaseClosed = Number(
+  psql(
+    "-At",
+    "-c",
+    `
+      insert into commerce_private.accounting_integration_jobs (
+        id, provider, job_type, order_id, dedupe_key, status,
+        attempt_count, max_attempts, locked_at, locked_by
+      ) values (
+        '91000000-0000-4000-8000-000000000004', 'zoho', 'reconciliation',
+        '91000000-0000-4000-8000-000000000002', 'zoho:lease-exhausted', 'processing',
+        6, 6, now() - interval '21 minutes', 'crashed-final-worker'
+      );
+      select count(*)
+      from commerce_private.claim_accounting_integration_jobs('replay-worker', 1);
+      select count(*)
+      from commerce_private.accounting_integration_jobs
+      where id = '91000000-0000-4000-8000-000000000004'
+        and status = 'requires_attention'
+        and attempt_count = 6
+        and locked_at is null
+        and locked_by is null
+        and last_failure_code = 'ACCOUNTING_WORKER_LEASE_EXHAUSTED';
+    `,
+  )
+    .split("\n")
+    .at(-1),
+);
+if (exhaustedLeaseClosed !== 1)
+  throw new Error("accounting exhausted stale lease did not require attention");
 console.log(
   `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=${first.publicFunctions}, rls=${first.rlsTables}, privateB2bRls=${first.privateB2bRlsTables}, mcpReadFunctions=${first.mcpReadFunctions}, policies=${first.policies}`,
 );
