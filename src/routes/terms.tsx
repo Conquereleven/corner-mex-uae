@@ -7,9 +7,9 @@ import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/terms")({
   head: () => {
-    const title = "Terms — CornerMex UAE";
+    const title = "Terms — Intermex UAE";
     const description =
-      "The current terms of using the CornerMex website: catalogue discovery, optional accounts and carts, and manually approved business quotes.";
+      "The current terms of using the Intermex website: catalogue discovery, optional accounts and carts, and manually approved business quotes.";
     return {
       meta: [
         { title },

@@ -19,7 +19,7 @@ export const Route = createFileRoute("/oauth/consent")({
   validateSearch: (search) => consentSearchSchema.parse(search),
   head: () => ({
     meta: [
-      { title: "Authorize application — CornerMex" },
+      { title: "Authorize application — Intermex" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -101,7 +101,7 @@ function OAuthConsent() {
 
     if (result.error || !result.data?.redirect_url) {
       setDecision(null);
-      setError("CornerMex could not complete this authorization decision. Please try again.");
+      setError("Intermex could not complete this authorization decision. Please try again.");
       return;
     }
 
@@ -112,11 +112,11 @@ function OAuthConsent() {
     <SiteLayout>
       <section className="mx-auto max-w-xl px-4 py-20 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-          CornerMex secure connection
+          Intermex secure connection
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight">Authorize application</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Review the application and identity scopes before allowing it to connect to your CornerMex
+          Review the application and identity scopes before allowing it to connect to your Intermex
           account.
         </p>
 
@@ -167,7 +167,7 @@ function OAuthConsent() {
             </div>
 
             <p className="rounded-xl bg-muted/50 p-4 text-xs leading-5 text-muted-foreground">
-              OAuth consent does not by itself grant operational data access. CornerMex MCP data
+              OAuth consent does not by itself grant operational data access. Intermex MCP data
               access also requires a separate server-side grant for this exact user and OAuth
               client.
             </p>

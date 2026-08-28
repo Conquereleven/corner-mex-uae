@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Explore the CornerMex Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
+          "Explore the Intermex Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
       },
       { property: "og:title", content: "Intermex UAE — Mexican food for the Middle East" },
       {

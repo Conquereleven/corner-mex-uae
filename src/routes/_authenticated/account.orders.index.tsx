@@ -9,7 +9,7 @@ import { getMyOrders } from "@/lib/account.functions";
 import { getCustomerOrderHistoryView } from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account/orders/")({
-  head: () => ({ meta: [{ title: "My Orders — Corner Mex" }] }),
+  head: () => ({ meta: [{ title: "My Orders — Intermex" }] }),
   component: MyOrdersPage,
 });
 
@@ -33,7 +33,7 @@ function MyOrdersPage() {
             <p className="text-sm text-muted-foreground">Account</p>
             <h1 className="font-display text-4xl tracking-tight">My Orders</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Review your CornerMex order history, payment status, totals, and order details.
+              Review your Intermex order history, payment status, totals, and order details.
             </p>
           </div>
           <AccountNavigation />

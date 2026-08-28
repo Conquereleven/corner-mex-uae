@@ -20,7 +20,7 @@ test("Shop presents canonical sellable catalogue only", async () => {
   assert.match(shop, /Products are sold directly by Intermex UAE/);
 });
 
-test("Product detail fails closed on non-positive variants and adds CornerMex cart items", async () => {
+test("Product detail fails closed on non-positive variants and adds Intermex cart items", async () => {
   const product = await read("src/routes/product.$slug.tsx");
   assert.match(product, /hasPublicSellableVariant/);
   assert.match(product, /variant\.price_aed > 0/);
@@ -28,7 +28,7 @@ test("Product detail fails closed on non-positive variants and adds CornerMex ca
     product,
     /if \(!product \|\| !hasPublicSellableVariant\(product\)\) throw notFound\(\)/,
   );
-  assert.match(product, /Sold by CornerMex/);
+  assert.match(product, /Sold by Intermex/);
   assert.match(product, /addToCart/);
   assert.match(product, /Add to cart/);
 });
@@ -42,7 +42,7 @@ test("Cart preserves single-merchant identity and routes cleanly to checkout", a
   assert.match(cart, /to="\/checkout"/);
   assert.match(cart, /Current price, availability and shipping are verified at\s+checkout/);
   assert.doesNotMatch(cart, />B2C cart</);
-  assert.match(catalog, /slug: "cornermex", name: "CornerMex"/);
+  assert.match(catalog, /slug: "cornermex", name: "Intermex"/);
 });
 
 test("Checkout remains COD-only, signed-in and server-priced", async () => {
@@ -67,7 +67,7 @@ test("B2B catalogue flows into the guarded human-reviewed lead pipeline without 
   ]);
   const publicB2bCopy = `${catalogRoute}\n${hero}`;
   assert.doesNotMatch(publicB2bCopy, /Wave 1|Founder-approved/i);
-  assert.match(hero, /CornerMex · Business catalogue/);
+  assert.match(hero, /Intermex · Business catalogue/);
   assert.match(hero, /href="#business-products"/);
   assert.match(grid, /id="business-products"/);
   assert.match(quote, /submitB2bLead/);

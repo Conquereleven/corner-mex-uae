@@ -6,9 +6,9 @@ import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/returns")({
   head: () => {
-    const title = "Returns & refunds — CornerMex UAE";
+    const title = "Returns & refunds — Intermex UAE";
     const description =
-      "How returns and refunds work at CornerMex today, and how the applicable terms are confirmed before any order is accepted.";
+      "How returns and refunds work at Intermex today, and how the applicable terms are confirmed before any order is accepted.";
     return {
       meta: [
         { title },
@@ -49,7 +49,7 @@ function Returns() {
             and is finalised with UAE legal review before commercial activation.
           </p>
           <p>
-            For a concern about a direct communication from CornerMex, contact{" "}
+            For a concern about a direct communication from Intermex, contact{" "}
             <a className="underline underline-offset-4" href={mailto(PUBLIC_CONTACT.complaints)}>
               {PUBLIC_CONTACT.complaints}
             </a>

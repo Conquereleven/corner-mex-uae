@@ -24,7 +24,7 @@ function mapLoginError(error: { message?: string; code?: string } | null) {
 export const Route = createFileRoute("/login")({
   validateSearch: (search) => z.object({ redirect: z.string().optional() }).parse(search),
   head: () => ({
-    meta: [{ title: "Sign in — Corner Mex" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Sign in — Intermex" }, { name: "robots", content: "noindex" }],
   }),
   component: Login,
 });
@@ -71,11 +71,11 @@ function Login() {
     <SiteLayout>
       <section className="mx-auto max-w-md px-4 py-20 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-          CornerMex account
+          Intermex account
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight">Sign in</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Use your confirmed CornerMex email and password. Account access does not enable checkout.
+          Use your confirmed Intermex email and password. Account access does not enable checkout.
         </p>
         <Button
           type="button"

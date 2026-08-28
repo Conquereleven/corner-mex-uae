@@ -75,7 +75,7 @@ export function Footer() {
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               B2C cart and account access are available. Checkout and order processing run only when
               authorized configuration is enabled; prices, availability, shipping and payment are
-              confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
+              confirmed in the applicable flow. B2B enquiries can be submitted to the Intermex
               commercial pipeline for human review, but an enquiry is not an order, payment or
               confirmed quote and creates no commercial commitment.
             </p>
@@ -99,11 +99,11 @@ export function Footer() {
             offers and must be confirmed manually.
           </p>
           <a
-            href={mailto(PUBLIC_CONTACT.complaints, "CornerMex customer enquiry")}
+            href={mailto(PUBLIC_CONTACT.complaints, "Intermex customer enquiry")}
             className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             <Mail className="h-3.5 w-3.5" aria-hidden="true" />
-            {PUBLIC_CONTACT.complaints}
+            Email Intermex
           </a>
         </div>
         {FOOTER_GROUPS.map((group) => (

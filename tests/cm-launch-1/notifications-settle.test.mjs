@@ -162,6 +162,6 @@ test("account, bell and seller mutations invalidate the shared notification cach
   }
 });
 
-test("the global header mounts the authenticated notifications bell", () => {
-  assert.match(headerSource, /<NotificationsBell \/>/);
+test("the simplified public header omits the notifications bell", () => {
+  assert.doesNotMatch(headerSource, /NotificationsBell/);
 });

@@ -27,7 +27,7 @@ export function ManualQuoteRequestPreview({
         Your request is ready.
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Submitting stores this enquiry in the CornerMex B2B pipeline for human review. It does not
+        Submitting stores this enquiry in the Intermex B2B pipeline for human review. It does not
         create an order or confirm pricing, inventory, delivery, or commercial terms.
       </p>
       <pre className="mt-5 max-h-96 overflow-auto whitespace-pre-wrap rounded-xl border border-border bg-background p-4 font-sans text-sm leading-relaxed text-foreground">
@@ -42,7 +42,7 @@ export function ManualQuoteRequestPreview({
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
             <div>
-              <p className="font-medium text-foreground">Enquiry received by CornerMex.</p>
+              <p className="font-medium text-foreground">Enquiry received by Intermex.</p>
               <p className="mt-1 text-muted-foreground">
                 Reference {submittedLeadId.slice(0, 8)}. Our team will review it manually and reply
                 in writing.
@@ -63,7 +63,7 @@ export function ManualQuoteRequestPreview({
           ) : (
             <Send className="me-2 h-4 w-4" />
           )}
-          {submitting ? "Submitting…" : "Submit enquiry to CornerMex"}
+          {submitting ? "Submitting…" : "Submit enquiry to Intermex"}
         </Button>
       )}
 

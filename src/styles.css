@@ -71,7 +71,7 @@
 
 :root {
   --radius: 0.5rem;
-  /* CornerMex Mercado — cream canvas, refined red, deep green, charcoal ink */
+  /* Intermex storefront — warm canvas, red field, jalapeño green, warm brown depth. */
   --background: oklch(0.99 0.015 90);
   --foreground: oklch(0.25 0.005 60);
   --card: oklch(1 0 0);
@@ -124,15 +124,58 @@
  * shared commerce primitives can be reused by another tenant without visual
  * CornerMex coupling. */
 .intermex-storefront {
-  --intermex-cream-surface: color-mix(in srgb, var(--background) 94%, white);
+  --intermex-cream-surface: color-mix(in srgb, var(--brand-cream) 94%, white);
   --intermex-ink: var(--brand-mole-brown);
   --intermex-action: var(--brand-verde-jalapeno);
 }
 
 .intermex-storefront .intermex-header {
-  border-color: color-mix(in srgb, var(--brand-mole-brown) 34%, transparent);
-  background: color-mix(in srgb, var(--brand-mole-brown) 94%, black);
-  color: white;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--brand-cream) 28%, transparent);
+  background: var(--brand-structural-red);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--brand-cream) 38%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, black 12%, transparent),
+    0 14px 34px color-mix(in srgb, var(--brand-mole-brown) 16%, transparent);
+  color: var(--brand-cream);
+}
+
+.intermex-storefront .intermex-header::before {
+  position: absolute;
+  z-index: -1;
+  inset: 1px;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--brand-cream) 8%, transparent);
+  box-shadow: inset 0 0 28px color-mix(in srgb, var(--brand-cream) 7%, transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.intermex-storefront .intermex-header::after {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 8%;
+  left: 8%;
+  height: 1px;
+  background: color-mix(in srgb, var(--brand-cream) 68%, transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.intermex-mobile-menu {
+  background: color-mix(in srgb, var(--brand-structural-red) 94%, transparent);
+  box-shadow:
+    inset 1px 0 0 color-mix(in srgb, var(--brand-cream) 30%, transparent),
+    -20px 0 48px color-mix(in srgb, var(--brand-mole-brown) 18%, transparent);
+  backdrop-filter: blur(24px) saturate(135%);
+}
+
+.intermex-mobile-menu button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--brand-cream) 18%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--brand-cream) 30%, transparent);
 }
 
 .intermex-storefront .intermex-header a,
@@ -142,7 +185,8 @@
 
 .intermex-storefront .intermex-header a:hover,
 .intermex-storefront .intermex-header button:hover {
-  color: color-mix(in srgb, var(--brand-verde-jalapeno) 70%, white);
+  background: color-mix(in srgb, var(--brand-cream) 12%, transparent);
+  color: var(--brand-cream);
 }
 
 .intermex-product-card {

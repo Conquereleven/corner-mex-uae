@@ -118,7 +118,7 @@ test("B2B copy stays local while canonical enquiry submission remains non-transa
   assert.match(b2bActions, /role="status" aria-live="polite"/);
   assert.match(b2bActions, /copied locally — not submitted or sent/i);
   assert.match(previewFormatter, /Request only — not an order or confirmed quote/);
-  assert.match(b2bPreview, /Submitting stores this enquiry in the CornerMex B2B pipeline/);
+  assert.match(b2bPreview, /Submitting stores this enquiry in the Intermex B2B pipeline/);
   assert.match(b2bPreview, /does not\s+create an order/i);
   assert.doesNotMatch(b2bPreview, /order confirmed|quote confirmed|payment confirmed/i);
 });

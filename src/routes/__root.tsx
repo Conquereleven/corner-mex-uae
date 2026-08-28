@@ -78,21 +78,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Corner Mex — UAE commercial preview" },
+      { title: "Intermex — UAE commercial preview" },
       {
         name: "description",
         content:
           "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders and business quotes are reviewed manually.",
       },
-      { property: "og:title", content: "Corner Mex — UAE commercial preview" },
+      { property: "og:title", content: "Intermex — UAE commercial preview" },
       {
         property: "og:description",
         content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
       },
-      { property: "og:site_name", content: "Corner Mex" },
+      { property: "og:site_name", content: "Intermex" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Corner Mex — UAE commercial preview" },
+      { name: "twitter:title", content: "Intermex — UAE commercial preview" },
       {
         name: "twitter:description",
         content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
@@ -121,10 +121,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "Corner Mex",
+          name: "Intermex",
           url: siteOrigin(),
           description:
-            "CornerMex commercial preview for catalogue discovery and manual B2B quote enquiries in the UAE.",
+            "Intermex commercial preview for catalogue discovery and manual B2B quote enquiries in the UAE.",
           currenciesAccepted: "AED",
           knowsLanguage: ["en", "es", "ar"],
         }),

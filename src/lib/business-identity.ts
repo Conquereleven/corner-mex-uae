@@ -35,7 +35,7 @@ export type BusinessIdentity = {
 };
 
 export const BUSINESS_IDENTITY: Readonly<BusinessIdentity> = Object.freeze({
-  brandName: "CornerMex",
+  brandName: "Intermex",
   legalEntity: "RodMor TradeCo LLC",
   location: "Sharjah Media City, Free Zone, UAE",
   licensingAuthority: "Sharjah Media City",

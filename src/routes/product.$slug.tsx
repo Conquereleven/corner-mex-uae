@@ -94,7 +94,7 @@ export const Route = createFileRoute("/product/$slug")({
     const description = productCopyToPlainText(
       product?.seo?.meta_description ||
         product?.description ||
-        "Explore this Mexican pantry item through the CornerMex UAE catalogue.",
+        "Explore this Mexican pantry item through the Intermex UAE catalogue.",
     );
     const image = product?.image;
     return {
@@ -284,7 +284,7 @@ function ProductPage() {
 
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">
-              Sold by CornerMex
+              Sold by Intermex
             </div>
             <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">
               {product.name}
@@ -377,7 +377,7 @@ function ProductPage() {
                 Signed-in customers can place cash-on-delivery orders. Current price, availability
                 and shipping are verified before submission.
               </p>
-              <a href={mailto(PUBLIC_CONTACT.b2b, `CornerMex quote enquiry: ${p.name}`)}>
+              <a href={mailto(PUBLIC_CONTACT.b2b, `Intermex quote enquiry: ${p.name}`)}>
                 <Button size="lg" className="mt-4 rounded-full">
                   <Mail className="me-2 h-4 w-4" /> Request manual quote
                 </Button>

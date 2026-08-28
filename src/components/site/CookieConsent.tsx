@@ -43,7 +43,7 @@ export function CookieConsent() {
               <div className="flex-1 text-sm">
                 <p className="font-medium text-foreground">We value your privacy</p>
                 <p className="mt-1 text-muted-foreground">
-                  We use necessary cookies to run Corner Mex. With your consent we also use analytics, marketing and functional cookies to improve your experience. Read our{" "}
+                  We use necessary cookies to run Intermex. With your consent we also use analytics, marketing and functional cookies to improve your experience. Read our{" "}
                   <Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="underline">Cookie Policy</Link>.
                 </p>
               </div>

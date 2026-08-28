@@ -41,7 +41,7 @@ export const Route = createFileRoute("/shop")({
       {
         name: "description",
         content:
-          "Browse Mexican chiles, salsas, masa, snacks and pantry staples through the CornerMex UAE catalogue.",
+          "Browse Mexican chiles, salsas, masa, snacks and pantry staples through the Intermex UAE catalogue.",
       },
     ],
   }),

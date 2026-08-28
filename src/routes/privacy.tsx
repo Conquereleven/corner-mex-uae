@@ -7,9 +7,9 @@ import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/privacy")({
   head: () => {
-    const title = "Privacy — CornerMex UAE";
+    const title = "Privacy — Intermex UAE";
     const description =
-      "What the CornerMex website currently processes: browsing, optional accounts, local cart storage, cookie preferences and manual email enquiries.";
+      "What the Intermex website currently processes: browsing, optional accounts, local cart storage, cookie preferences and manual email enquiries.";
     return {
       meta: [
         { title },
@@ -31,7 +31,7 @@ function Privacy() {
         </p>
         <h1 className="mt-3 font-display text-5xl tracking-tight">Privacy</h1>
         <p className="mt-4 text-base leading-7 text-muted-foreground">
-          This page describes what the CornerMex website actually does today. The detailed policy
+          This page describes what the Intermex website actually does today. The detailed policy
           template is maintained in the{" "}
           <Link to="/legal" className="underline underline-offset-4">
             legal centre
@@ -74,7 +74,7 @@ function Privacy() {
               Manual enquiries
             </h2>
             <p className="mt-2">
-              If you email CornerMex, the information you choose to provide is used to review and
+              If you email Intermex, the information you choose to provide is used to review and
               respond to that enquiry. It is not treated as an order or account registration, and it
               does not enter any automated marketing process.
             </p>
