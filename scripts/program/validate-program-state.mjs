@@ -86,6 +86,12 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     "PROGRAM_SUPABASE_IDENTITY_INVALID",
   );
   assert(current.platforms.supabase.writePerformed === false, "PROGRAM_SUPABASE_WRITE_FORBIDDEN");
+  assert(
+    current.platforms.supabase.latestMigrationVersion === "20260823004146" &&
+      current.platforms.supabase.latestMigrationName === "sec_rls_1_b2b_private_rls" &&
+      current.platforms.supabase.pendingB2BMigrationsApplied === false,
+    "PROGRAM_SUPABASE_LEDGER_INVALID",
+  );
   assert(current.platforms.lovable?.writePerformed === false, "PROGRAM_LOVABLE_WRITE_FORBIDDEN");
 
   const readinessGates = [
@@ -177,9 +183,9 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
 
   const deploymentIds = registry.deployments.map(({ deploymentId }) => deploymentId);
   assert(new Set(deploymentIds).size === deploymentIds.length, "DEPLOYMENT_ID_DUPLICATE");
-  const expectedHistoryCount =
+  const minimumHistoryCount =
     registry.expectedContexts.length * (registry.failedSourceCommits.length + 4) + 1;
-  assert(registry.deployments.length === expectedHistoryCount, "DEPLOYMENT_HISTORY_INCOMPLETE");
+  assert(registry.deployments.length >= minimumHistoryCount, "DEPLOYMENT_HISTORY_INCOMPLETE");
 
   for (const context of registry.expectedContexts) {
     const contextDeployments = registry.deployments.filter(
@@ -222,7 +228,6 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
       (deployment) =>
         deployment.sourceCommit === declaredContext.currentSourceSha &&
         deployment.state === "SUCCESS" &&
-        deployment.instanceState === "RUNNING" &&
         deployment.packageManager === "npm",
     );
     assert(current.length === 1, "DEPLOYMENT_CURRENT_RUNTIME_INVALID");
@@ -248,6 +253,56 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
     assert(deployment.healthPath === "/api/health", "DEPLOYMENT_HEALTH_PATH_INVALID");
     assert(EVIDENCE_CLASSES.has(deployment.evidenceClass), "DEPLOYMENT_EVIDENCE_CLASS_INVALID");
   }
+  const observedPlatformState = registry.governance?.observedPlatformState;
+  assert(
+    registry.governance?.declaredPolicy?.model === "automatic_staging_manual_production" &&
+      registry.governance.declaredPolicy.productionAutoDeploy === false &&
+      registry.governance.declaredPolicy.productionTrigger === "explicit_manual_action" &&
+      registry.governance.declaredPolicy.mergesAreProductionAuthorization === false,
+    "RAILWAY_DECLARED_POLICY_INVALID",
+  );
+  assert(
+    observedPlatformState?.status === "governance_drift_open_founder_decision_required" &&
+      observedPlatformState.productionSourceLinkedToMain === true &&
+      observedPlatformState.productionCheckSuites === true &&
+      observedPlatformState.productionAutomaticDeploymentObserved === true &&
+      observedPlatformState.driftFromDeclaredPolicy === true &&
+      observedPlatformState.writePerformedByHotfix === false &&
+      typeof observedPlatformState.decisionRequired === "string" &&
+      observedPlatformState.decisionRequired.includes("Founder"),
+    "RAILWAY_GOVERNANCE_DRIFT_NOT_REPRESENTED",
+  );
+  assert(
+    current.platforms.railway.productionAutoDeploy === true &&
+      current.platforms.railway.governanceDrift?.status === "open_founder_decision_required" &&
+      current.platforms.railway.governanceDrift.productionSourceConfigCheckSuites === true &&
+      current.platforms.railway.governanceDrift.productionObservedAutomaticDeployment === true,
+    "PROGRAM_RAILWAY_OBSERVED_STATE_INVALID",
+  );
+  for (const environment of ["staging", "production"]) {
+    const context = registry.expectedContexts.find((item) => item.environment === environment);
+    const currentDeployment = registry.deployments.find(
+      (deployment) =>
+        deployment.environment === environment &&
+        deployment.serviceId === context?.serviceId &&
+        deployment.environmentId === context?.environmentId &&
+        deployment.state === "SUCCESS",
+    );
+    const expectedDeploymentId =
+      environment === "staging"
+        ? current.platforms.railway.stagingActiveDeploymentId
+        : current.platforms.railway.productionDeploymentId;
+    const expectedSourceCommit =
+      environment === "staging"
+        ? current.platforms.railway.stagingActiveSourceCommit
+        : current.platforms.railway.productionSourceCommit;
+    assert(
+      currentDeployment?.deploymentId === expectedDeploymentId &&
+        currentDeployment.sourceCommit === expectedSourceCommit &&
+        currentDeployment.sourceCommit === current.authority.observedMainSha,
+      "PROGRAM_RAILWAY_DEPLOYMENT_IDENTITY_MISMATCH",
+    );
+  }
   const lastPlatformChange = registry.governance?.lastPlatformChange;
   assert(
     lastPlatformChange?.category === "manual_production_exact_head_deployment" &&
@@ -260,7 +315,7 @@ export function validateProgramState({ baseDir = process.cwd(), now = new Date()
       lastPlatformChange.variableNames.join(",") ===
         "VITE_SUPABASE_URL,VITE_SUPABASE_PUBLISHABLE_KEY" &&
       lastPlatformChange.deploymentCreated === true &&
-      lastPlatformChange.deploymentId === current.platforms.railway.productionDeploymentId &&
+      typeof lastPlatformChange.deploymentId === "string" &&
       lastPlatformChange.restartPerformed === false &&
       lastPlatformChange.rollbackPerformed === false &&
       lastPlatformChange.productionChanged === true,

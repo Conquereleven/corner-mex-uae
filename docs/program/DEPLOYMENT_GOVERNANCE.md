@@ -8,14 +8,20 @@ The current code is a fixture-driven `railway_live_governance_comparator_contrac
 
 The no-write scanner is a defense-in-depth static check. It is not a sandbox, proof of absence, complete mutation detector, substitute for least-privileged credentials, or substitute for code review.
 
-## Binding model
+## Declared policy and observed drift
 
-CornerMex uses `automatic_staging_manual_production`.
+The binding repository policy remains `automatic_staging_manual_production`.
 
 - A reviewed merge to `main` may automatically deploy staging.
 - A merge or push must never authorize a production deployment.
 - Production activation is an explicit manual action after the exact source SHA, Founder decision ID, health/readiness evidence and rollback target are recorded.
 - The active contract is machine-readable in `docs/program/DEPLOYMENT_REGISTRY.json` and enforced by `npm run validate:deployment-governance` in CI.
+
+Fresh read-only observation on `2026-08-28T18:27:55Z` found that Railway does not currently match that policy. Production is source-linked to `Conquereleven/corner-mex-uae` / `main`, its source configuration reports `checkSuites=true`, and production deployments were automatically created for green merges #62, #64, #63, #65 and #66. The latest observed production deployment is `df6d9c31-d35d-4d85-a435-ab0e845fbabe`, `SUCCESS`, from `c249512e13388305bc0648546f7d3ab860921dc8`.
+
+This is recorded as an open governance drift, not as an intended policy change. CM-GOV-HOTFIX performs no Railway write. Founder must decide separately whether production auto-deploy should be disabled/restored to manual after the hotfix lands.
+
+The same observation found staging deployment `fe9f593e-a7ea-47a6-a40b-e1663929fd3f`, `SUCCESS`, from the same main commit; staging source configuration reports `checkSuites=false`.
 
 ## Verified Railway topology
 
