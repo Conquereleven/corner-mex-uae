@@ -60,6 +60,8 @@ function safeRetryAfter(response: Response): number | undefined {
 function toInvoice(value: Record<string, unknown>): ExternalInvoice {
   return {
     id: String(value.invoice_id ?? ""),
+    referenceNumber: value.reference_number ? String(value.reference_number) : null,
+    currency: value.currency_code ? String(value.currency_code) : null,
     number: value.invoice_number ? String(value.invoice_number) : null,
     status: value.status ? String(value.status) : null,
     url: value.invoice_url ? String(value.invoice_url) : null,

@@ -80,6 +80,8 @@ class FakeProvider {
     this.createInvoiceCalls += 1;
     const invoice = {
       id: `invoice-${this.createInvoiceCalls}`,
+      referenceNumber: input.orderNumber,
+      currency: input.currency,
       number: `INV-${this.createInvoiceCalls}`,
       status: "draft",
       url: "https://example.invalid/invoice",
@@ -135,6 +137,8 @@ test("timeout then retry recovers provider invoice by canonical reference", asyn
     this.createInvoiceCalls += 1;
     this.invoices.push({
       id: "invoice-accepted-before-timeout",
+      referenceNumber: input.orderNumber,
+      currency: input.currency,
       number: "INV-1",
       status: "draft",
       url: null,
@@ -196,6 +200,8 @@ test("provider-calculated invoice total mismatch fails before payment", async ()
     this.createInvoiceCalls += 1;
     const invoice = {
       id: "invoice-wrong-total",
+      referenceNumber: input.orderNumber,
+      currency: input.currency,
       number: "INV-WRONG",
       status: "draft",
       url: null,
@@ -331,8 +337,20 @@ test("provider conflicts require attention instead of choosing an invoice", asyn
   const provider = new FakeProvider();
   const store = new MemoryStore();
   provider.invoices = [
-    { id: "a", reference: "CM-1001", totalAed: 57.75 },
-    { id: "b", reference: "CM-1001", totalAed: 57.75 },
+    {
+      id: "a",
+      reference: "CM-1001",
+      referenceNumber: "CM-1001",
+      currency: "AED",
+      totalAed: 57.75,
+    },
+    {
+      id: "b",
+      reference: "CM-1001",
+      referenceNumber: "CM-1001",
+      currency: "AED",
+      totalAed: 57.75,
+    },
   ];
   await assert.rejects(
     processOrderToInvoice({ correlationId: "conflict", order: order(), provider, store }),
@@ -375,6 +393,8 @@ test("reconciliation reports total drift", () => {
   assert.deepEqual(
     reconcileInvoice(order(), {
       id: "z",
+      referenceNumber: "CM-1001",
+      currency: "AED",
       number: "INV",
       status: "sent",
       url: null,
@@ -382,6 +402,22 @@ test("reconciliation reports total drift", () => {
       totalAed: 58,
     }),
     { matches: false, reasons: ["total_mismatch"] },
+  );
+});
+
+test("reconciliation rejects a same-total invoice with the wrong identity", () => {
+  assert.deepEqual(
+    reconcileInvoice(order(), {
+      id: "z",
+      referenceNumber: "CM-DIFFERENT",
+      currency: "USD",
+      number: "INV",
+      status: "sent",
+      url: null,
+      pdfSupported: true,
+      totalAed: 57.75,
+    }),
+    { matches: false, reasons: ["reference_mismatch", "currency_mismatch"] },
   );
 });
 
@@ -409,4 +445,5 @@ test("server-only secrets and durable worker controls are fail-closed", async ()
   assert.match(worker, /ACCOUNTING_INVOICE_NOT_READY/);
   assert.match(worker, /ACCOUNTING_JOB_FINISH_PERSIST_FAILED/);
   assert.match(worker, /ACCOUNTING_JOB_FAILURE_PERSIST_FAILED/);
+  assert.match(migration, /ACCOUNTING_WORKER_LEASE_EXHAUSTED/);
 });

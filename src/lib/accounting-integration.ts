@@ -57,6 +57,8 @@ export type CanonicalOrderInvoice = {
 export type ExternalCustomer = { id: string };
 export type ExternalInvoice = {
   id: string;
+  referenceNumber: string | null;
+  currency: string | null;
   number: string | null;
   status: string | null;
   url: string | null;
@@ -302,6 +304,8 @@ export function reconcileInvoice(
   external: ExternalInvoice,
 ): { matches: boolean; reasons: string[] } {
   const reasons: string[] = [];
+  if (external.referenceNumber !== canonical.orderNumber) reasons.push("reference_mismatch");
+  if (external.currency !== canonical.currency) reasons.push("currency_mismatch");
   if (cents(canonical.totalAed) !== cents(external.totalAed)) reasons.push("total_mismatch");
   if (!external.id) reasons.push("external_id_missing");
   return { matches: reasons.length === 0, reasons };

@@ -226,6 +226,37 @@ const reclaimedLease = Number(
     .at(-1),
 );
 if (reclaimedLease !== 1) throw new Error("accounting stale lease was not reclaimed exactly once");
+
+const exhaustedLeaseClosed = Number(
+  psql(
+    "-At",
+    "-c",
+    `
+      insert into commerce_private.accounting_integration_jobs (
+        id, provider, job_type, order_id, dedupe_key, status,
+        attempt_count, max_attempts, locked_at, locked_by
+      ) values (
+        '91000000-0000-4000-8000-000000000004', 'zoho', 'reconciliation',
+        '91000000-0000-4000-8000-000000000002', 'zoho:lease-exhausted', 'processing',
+        6, 6, now() - interval '21 minutes', 'crashed-final-worker'
+      );
+      select count(*)
+      from commerce_private.claim_accounting_integration_jobs('replay-worker', 1);
+      select count(*)
+      from commerce_private.accounting_integration_jobs
+      where id = '91000000-0000-4000-8000-000000000004'
+        and status = 'requires_attention'
+        and attempt_count = 6
+        and locked_at is null
+        and locked_by is null
+        and last_failure_code = 'ACCOUNTING_WORKER_LEASE_EXHAUSTED';
+    `,
+  )
+    .split("\n")
+    .at(-1),
+);
+if (exhaustedLeaseClosed !== 1)
+  throw new Error("accounting exhausted stale lease did not require attention");
 console.log(
   `canonical migration replay valid: migrations=${migrations.length}, tables=${first.tables}, functions=${first.publicFunctions}, rls=${first.rlsTables}, privateB2bRls=${first.privateB2bRlsTables}, mcpReadFunctions=${first.mcpReadFunctions}, policies=${first.policies}`,
 );

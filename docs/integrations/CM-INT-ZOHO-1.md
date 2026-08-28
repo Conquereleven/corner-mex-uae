@@ -16,13 +16,13 @@ Official API research performed 2026-08-28:
 ## Flow and safety
 
 1. An additive order trigger writes a unique outbox job when an order first enters a confirmed-or-later state. A paid-state change creates a separate deduplicated sync job only when the order is already confirmed-or-later; a payment observed earlier is consumed by the later order job.
-2. A worker claims eligible jobs at least once. Durable unique job and entity keys make duplicates replay-safe; a job left `processing` by a crashed worker is reclaimed after its twenty-minute lease expires.
+2. A worker claims eligible jobs at least once. Durable unique job and entity keys make duplicates replay-safe; a job left `processing` by a crashed worker is reclaimed after its twenty-minute lease expires. An expired final-attempt lease moves atomically to `requires_attention`.
 3. Customer mapping is reused or recovered before creation.
 4. Invoice mapping is reused; after a timeout the canonical order number is searched before any create.
 5. AED line totals, shipping, discount and canonical VAT are validated in integer cents before any provider call.
 6. A Zoho payment record may be created only from canonical paid state plus payment-provider reference. Payment jobs require the durable invoice mapping, so they cannot race the invoice creator. A retry first recovers an existing payment by that exact reference, so a lost response cannot create a second payment. Provider modes are mapped to Zoho's documented values and the canonical payment update timestamp is used as the payment date. Zoho never writes CornerMex/Stripe state.
 7. Retryable failures use bounded exponential backoff (maximum six attempts / thirty minutes). Validation, auth and conflicts require attention. Rate limits and provider outages are degraded/retryable.
-8. Every create/update response is immediately reconciled against the canonical total before payment can be recorded. Scheduled/manual reconciliation repeats the external invoice total and identity comparison and raises a mismatch job; it never silently overwrites CornerMex.
+8. Every create/update response is immediately reconciled against canonical order reference, AED currency and total before payment can be recorded. Scheduled/manual reconciliation repeats that comparison and raises a mismatch job; it never silently overwrites CornerMex.
 
 Failure taxonomy: `auth`, `validation`, `rate_limit`, `provider_unavailable`, `mapping_error`, `conflict`, `unknown`.
 

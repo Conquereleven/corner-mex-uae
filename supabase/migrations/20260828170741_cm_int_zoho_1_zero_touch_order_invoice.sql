@@ -150,6 +150,20 @@ begin
   if p_limit < 1 or p_limit > 25 then
     raise exception 'ACCOUNTING_WORKER_LIMIT_INVALID';
   end if;
+
+  -- A crash after the final claim cannot be retried, so close its expired
+  -- lease into the operator queue instead of leaving it processing forever.
+  update commerce_private.accounting_integration_jobs
+  set status = 'requires_attention',
+      locked_at = null,
+      locked_by = null,
+      last_failure_category = 'unknown',
+      last_failure_code = 'ACCOUNTING_WORKER_LEASE_EXHAUSTED',
+      updated_at = now()
+  where status = 'processing'
+    and locked_at < now() - interval '20 minutes'
+    and attempt_count >= max_attempts;
+
   return query
     with claimable as (
       select id
