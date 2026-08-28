@@ -178,11 +178,11 @@ test("program state records current main and does not claim PR #23 is deployed",
   assert.equal(state.authority.expectedMainSha, state.authority.observedMainSha);
   assert.equal(
     state.authority.observedMainSha,
-    "e02960f0887d98e624b22a9333fde59175299847",
-    "program state must record the CM-COM-3A.1 merge commit as main",
+    "c249512e13388305bc0648546f7d3ab860921dc8",
+    "program state must record the PR #66 merge commit used as the hotfix baseline",
   );
   assert.equal(state.program.activeSprint, "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION");
-  assert.equal(state.platforms.railway.reobservedByCurrentSprint, false);
+  assert.equal(state.platforms.railway.reobservedByCurrentSprint, true);
   assert.equal(state.platforms.railway.productionDeploymentPerformedByThisSprint, false);
   assert.equal(state.platforms.railway.productionDeploymentAuthorizedByThisSprint, false);
 
@@ -238,21 +238,21 @@ test("the active sprint records the R2 re-review without presenting R3 as ready"
   assert.match(state.readiness.scope, /do NOT describe CM-COM-4A/i);
 });
 
-test("evidence separates re-verified repository identity from carried-forward runtime identity", async () => {
+test("evidence pins the same fresh repository and runtime reconciliation", async () => {
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
   const ev = state.evidence;
-  assert.equal(ev.class, "verified_repository");
+  assert.equal(ev.class, "verified_live");
   assert.equal(ev.repositoryEvidence.class, "verified_repository");
-  assert.equal(ev.repositoryEvidence.verifiedBy, "CM-COM-4A");
+  assert.equal(ev.repositoryEvidence.verifiedBy, "CM-GOV-HOTFIX");
   assert.equal(
     ev.repositoryEvidence.identity,
-    "github:e02960f0887d98e624b22a9333fde59175299847",
+    "github:c249512e13388305bc0648546f7d3ab860921dc8",
     "repository evidence identity must match current main",
   );
-  assert.equal(ev.runtimeEvidence.class, "historical");
-  assert.equal(ev.runtimeEvidence.observedBy, "CM-GOV-3");
-  assert.equal(ev.runtimeEvidence.reobservedByCurrentSprint, false);
-  assert.equal(ev.runtimeEvidence.currentRuntimeState, "unknown_not_reobserved");
+  assert.equal(ev.runtimeEvidence.class, "verified_live");
+  assert.equal(ev.runtimeEvidence.observedBy, "CM-GOV-HOTFIX");
+  assert.equal(ev.runtimeEvidence.reobservedByCurrentSprint, true);
+  assert.equal(ev.runtimeEvidence.currentRuntimeState, "deployments_success_governance_drift_open");
   assert.equal(ev.sourceIdentity, undefined);
   assert.ok(
     !JSON.stringify(ev.repositoryEvidence).includes("77e5d24"),
@@ -260,24 +260,20 @@ test("evidence separates re-verified repository identity from carried-forward ru
   );
 });
 
-test("current runtime state is recorded as unknown rather than asserted", async () => {
+test("current runtime state records observed commits and preserves governance drift", async () => {
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
-  assert.equal(state.platforms.railway.productionServingCommit, "unknown_not_reobserved");
-  assert.equal(state.platforms.railway.stagingServingCommit, "unknown_not_reobserved");
-  assert.equal(state.readiness.runtime.currentStatus, "unknown_not_reobserved");
-  assert.doesNotMatch(
-    state.platforms.railway.note,
-    /production does NOT run current main/i,
-    "unobserved current runtime must not be asserted",
-  );
-  assert.match(state.platforms.railway.note, /UNKNOWN/);
+  assert.equal(state.platforms.railway.productionServingCommit, state.authority.observedMainSha);
+  assert.equal(state.platforms.railway.stagingServingCommit, state.authority.observedMainSha);
+  assert.equal(state.readiness.runtime.currentStatus, "deployment_success_governance_drift_open");
+  assert.equal(state.platforms.railway.governanceDrift.status, "open_founder_decision_required");
+  assert.equal(state.platforms.railway.governanceDrift.productionObservedAutomaticDeployment, true);
 });
 
-test("generatedAt is a repository-reconciliation time, distinct from runtime observation", async () => {
+test("generatedAt and observedAt identify the same fresh hotfix reconciliation", async () => {
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
   assert.match(state.generatedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
-  assert.match(state.generatedAtMeaning, /NOT a runtime observation timestamp/i);
-  assert.notEqual(state.generatedAt, state.evidence.runtimeEvidence.observedAt);
+  assert.match(state.generatedAtMeaning, /fresh read-only runtime evidence/i);
+  assert.equal(state.generatedAt, state.evidence.runtimeEvidence.observedAt);
 });
 
 test("deployment registry separates repository source from deployed source", async () => {
@@ -285,14 +281,11 @@ test("deployment registry separates repository source from deployed source", asy
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
   assert.equal(registry.currentSourceCommit, state.authority.observedMainSha);
   assert.match(registry.currentSourceCommitMeaning, /REPOSITORY current source/);
-  assert.match(registry.currentSourceCommitMeaning, /NOT deployed source/i);
+  assert.match(registry.currentSourceCommitMeaning, /tracked independently/i);
   const production = registry.governance.contexts.find((c) => c.environment === "production");
   assert.ok(production, "production context must be declared");
-  assert.notEqual(
-    production.currentSourceSha,
-    registry.currentSourceCommit,
-    "deployed production SHA is currently behind main; the two fields must stay distinct",
-  );
+  assert.equal(production.currentSourceSha, registry.currentSourceCommit);
+  assert.equal(registry.governance.observedPlatformState.driftFromDeclaredPolicy, true);
 });
 
 test("safety and commercial gates remain closed in program state", async () => {

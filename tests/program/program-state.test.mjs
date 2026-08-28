@@ -175,10 +175,37 @@ const cases = [
     "truncated deployment history",
     ({ read, write }) => {
       const registry = read("DEPLOYMENT_REGISTRY.json");
-      registry.deployments.pop();
+      registry.deployments = registry.deployments.slice(0, 12);
       write("DEPLOYMENT_REGISTRY.json", registry);
     },
     /DEPLOYMENT_HISTORY_INCOMPLETE/,
+  ],
+  [
+    "governance drift erased",
+    ({ read, write }) => {
+      const registry = read("DEPLOYMENT_REGISTRY.json");
+      registry.governance.observedPlatformState.driftFromDeclaredPolicy = false;
+      write("DEPLOYMENT_REGISTRY.json", registry);
+    },
+    /RAILWAY_GOVERNANCE_DRIFT_NOT_REPRESENTED/,
+  ],
+  [
+    "production deployment ID inconsistent with the live registry entry",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.platforms.railway.productionDeploymentId = "00000000-0000-4000-8000-000000000000";
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_RAILWAY_DEPLOYMENT_IDENTITY_MISMATCH/,
+  ],
+  [
+    "pending B2B migration falsely marked applied",
+    ({ read, write }) => {
+      const current = read("CURRENT_STATE.json");
+      current.platforms.supabase.pendingB2BMigrationsApplied = true;
+      write("CURRENT_STATE.json", current);
+    },
+    /PROGRAM_SUPABASE_LEDGER_INVALID/,
   ],
   [
     "unknown database role",
@@ -226,7 +253,7 @@ const cases = [
       const currentDeployment = registry.deployments.find(
         (d) => d.sourceCommit === stagingSha && d.environment === "staging",
       );
-      currentDeployment.instanceState = "CRASHED";
+      currentDeployment.state = "FAILED";
       write("DEPLOYMENT_REGISTRY.json", registry);
     },
     /DEPLOYMENT_CURRENT_RUNTIME_INVALID/,

@@ -22,6 +22,13 @@ export function validateDeploymentGovernance({ baseDir = process.cwd() } = {}) {
   assert(registry.repository === EXPECTED_REPOSITORY, "DEPLOYMENT_REPOSITORY_INVALID");
   assert(registry.railwayProjectId === EXPECTED_RAILWAY_PROJECT, "RAILWAY_PROJECT_INVALID");
   assert(governance?.model === "automatic_staging_manual_production", "GOVERNANCE_MODEL_INVALID");
+  assert(
+    governance.declaredPolicy?.model === governance.model &&
+      governance.declaredPolicy.productionAutoDeploy === false &&
+      governance.declaredPolicy.productionTrigger === "explicit_manual_action" &&
+      governance.declaredPolicy.mergesAreProductionAuthorization === false,
+    "DECLARED_POLICY_INVALID",
+  );
   assert(Array.isArray(governance.contexts), "GOVERNANCE_CONTEXTS_REQUIRED");
 
   const staging = governance.contexts.find(({ environment }) => environment === "staging");
@@ -53,11 +60,24 @@ export function validateDeploymentGovernance({ baseDir = process.cwd() } = {}) {
   assert(change?.restartPerformed === false, "GOVERNANCE_CHANGE_RESTARTED");
   assert(change?.rollbackPerformed === false, "GOVERNANCE_CHANGE_ROLLED_BACK");
 
+  const observed = governance.observedPlatformState;
+  assert(
+    observed?.status === "governance_drift_open_founder_decision_required" &&
+      observed.productionSourceLinkedToMain === true &&
+      observed.productionCheckSuites === true &&
+      observed.productionAutomaticDeploymentObserved === true &&
+      observed.driftFromDeclaredPolicy === true,
+    "GOVERNANCE_DRIFT_REQUIRED",
+  );
+  assert(observed.writePerformedByHotfix === false, "GOVERNANCE_HOTFIX_WRITE_FORBIDDEN");
+
   return {
     status: "deployment_governance_valid",
     model: governance.model,
     stagingAutoDeploy: staging.autoDeploy,
     productionAutoDeploy: production.autoDeploy,
+    observedProductionAutoDeploy: observed.productionAutomaticDeploymentObserved,
+    governanceDrift: observed.driftFromDeclaredPolicy,
   };
 }
 
