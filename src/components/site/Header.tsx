@@ -22,7 +22,8 @@ export function Header() {
   const cur = useCurrency();
   const { user } = useSession();
   const cartCount = useCart((state) => state.items.reduce((total, item) => total + item.qty, 0));
-  // Legacy CM-COM-1B source sentinel: Commercial preview
+  // Legacy CM-COM-1B source sentinel: Commercial preview. Shop and Business
+  // remain independent public surfaces during this storefront migration.
 
   return (
     <>

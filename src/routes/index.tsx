@@ -37,6 +37,8 @@ function Index() {
   );
 }
 
+// Legacy CM-COM-1B source sentinel: UAE commercial preview.
+
 function Hero() {
   return (
     <section className="intermex-hero relative overflow-hidden">
