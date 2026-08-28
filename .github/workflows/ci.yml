@@ -74,6 +74,7 @@ jobs:
       - run: npm run validate:a3-2b:readiness
       - run: npm run test:pr9-remediation
       - run: node --test tests/cm-launch-1/*.test.mjs
+      - run: npm run test:cm-b2b-ops-prod-readiness-1
       - run: npm run verify:a3:activation-readiness -- --ci-static
       - run: npm run lint:changed
 
