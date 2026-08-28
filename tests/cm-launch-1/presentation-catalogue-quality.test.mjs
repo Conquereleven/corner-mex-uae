@@ -4,12 +4,13 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), "utf8");
 
-test("catalogue cards no longer render prototype pricing labels", async () => {
+test("catalogue cards no longer render prototype pricing labels and use the Intermex public identity", async () => {
   const card = await read("src/components/site/ProductCard.tsx");
 
   assert.doesNotMatch(card, />\s*Preview\s*</i);
   assert.doesNotMatch(card, /indicative/i);
-  assert.match(card, /Sold by CornerMex/);
+  assert.match(card, /Intermex UAE/);
+  assert.doesNotMatch(card, /Sold by CornerMex/);
 });
 
 test("public product detail fails closed without a positive sellable variant", async () => {
