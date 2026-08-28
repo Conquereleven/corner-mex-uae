@@ -64,6 +64,16 @@
       "kind": "table_or_storage_bucket",
       "name": "categories",
       "files": ["src/lib/admin-products.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "orders",
+      "files": ["src/lib/accounting-worker.server.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "profiles",
+      "files": ["src/lib/accounting-worker.server.ts"]
     }
   ],
   "newReferences": [
@@ -148,6 +158,40 @@
       "kind": "function",
       "name": "b2b_portal_v1",
       "files": ["src/lib/b2b-portal.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "claim_accounting_integration_jobs",
+      "files": ["src/lib/accounting-worker.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "accounting_entity_mappings",
+      "files": ["src/lib/accounting-worker.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "accounting_integration_audit_events",
+      "files": [
+        "src/lib/accounting-control-center.functions.ts",
+        "src/lib/accounting-worker.server.ts"
+      ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "accounting_integration_jobs",
+      "files": [
+        "src/lib/accounting-control-center.functions.ts",
+        "src/lib/accounting-worker.server.ts"
+      ],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }
