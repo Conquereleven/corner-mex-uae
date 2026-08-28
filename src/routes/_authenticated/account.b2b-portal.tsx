@@ -47,7 +47,7 @@ import { useB2bReorderIntent } from "@/lib/b2b-reorder-intent";
 import { formatMoney } from "@/lib/currency";
 
 export const Route = createFileRoute("/_authenticated/account/b2b-portal")({
-  head: () => ({ meta: [{ title: "B2B portal — CornerMex" }] }),
+  head: () => ({ meta: [{ title: "B2B portal — Intermex" }] }),
   component: B2bPortalPage,
 });
 
@@ -198,7 +198,7 @@ function B2bPortalPage() {
         {!accounts.isLoading && !accounts.data?.accounts.length && (
           <PortalState
             title="No active B2B membership"
-            body="Ask your CornerMex account administrator to activate your business account membership."
+            body="Ask your Intermex account administrator to activate your business account membership."
           />
         )}
         {!!accounts.data?.accounts.length && (

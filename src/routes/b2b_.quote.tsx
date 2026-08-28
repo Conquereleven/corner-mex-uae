@@ -26,11 +26,11 @@ import { siteUrl } from "@/lib/site-url";
 export const Route = createFileRoute("/b2b_/quote")({
   head: () => ({
     meta: [
-      { title: "Request a B2B quote — CornerMex UAE" },
+      { title: "Request a B2B quote — Intermex UAE" },
       {
         name: "description",
         content:
-          "Build and submit a B2B enquiry for human-reviewed CornerMex pricing, availability and commercial terms.",
+          "Build and submit a B2B enquiry for human-reviewed Intermex pricing, availability and commercial terms.",
       },
     ],
     links: [{ rel: "canonical", href: siteUrl("/b2b/quote") }],
@@ -129,7 +129,7 @@ function B2bQuoteRoute() {
             Request commercial terms.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Build your shortlist, review the enquiry, then submit it directly to CornerMex. A team
+            Build your shortlist, review the enquiry, then submit it directly to Intermex. A team
             member reviews every request before any pricing, availability, delivery or commercial
             commitment is made.
           </p>

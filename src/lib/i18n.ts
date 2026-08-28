@@ -41,13 +41,13 @@ const en = {
     },
     c: {
       title: "Human-reviewed B2B quotes",
-      body: "CornerMex reviews requirements, availability and commercial terms manually.",
+      body: "Intermex reviews requirements, availability and commercial terms manually.",
     },
   },
   b2b: {
     eyebrow: "For restaurants, hotels & caterings",
     title: "Stock your kitchen with the real thing.",
-    body: "Tell CornerMex what your business needs. Availability, AED pricing, delivery and terms are confirmed in a human-approved written quote.",
+    body: "Tell Intermex what your business needs. Availability, AED pricing, delivery and terms are confirmed in a human-approved written quote.",
     cta: "Business preview",
   },
   footer: {
@@ -66,7 +66,7 @@ const en = {
     google: "Continue with Google",
     or: "or",
     haveAccount: "Already have an account?",
-    noAccount: "New to Corner Mex?",
+    noAccount: "New to Intermex?",
   },
   dash: {
     backToSite: "Back to site",
@@ -137,7 +137,7 @@ const en = {
     payouts: {
       title: "Payouts",
       adminSub: "Generate, track and mark seller payouts as paid.",
-      sellerSub: "Your payout history from Corner Mex.",
+      sellerSub: "Your payout history from Intermex.",
       searchSeller: "Search by store or email…",
       allStatuses: "All statuses",
       empty: "No payouts yet. Generate the first one for an active seller.",
@@ -348,15 +348,15 @@ const en = {
   pages: {
     b2b: {
       meta: {
-        title: "For Business — Wholesale Mexican supply in the UAE | Corner Mex",
+        title: "For Business — Wholesale Mexican supply in the UAE | Intermex",
         description:
           "Commercial preview for UAE businesses seeking a manually reviewed Mexican pantry quote.",
       },
       eyebrow: "For business",
       title: "A manual quote path for UAE businesses.",
-      lede: "Browse the preview catalogue, then email your product, volume and destination requirements. CornerMex reviews each enquiry before confirming availability, AED pricing, delivery options or terms.",
+      lede: "Browse the preview catalogue, then email your product, volume and destination requirements. Intermex reviews each enquiry before confirming availability, AED pricing, delivery options or terms.",
       ctaQuote: "Request a manual quote",
-      ctaContact: "Email CornerMex",
+      ctaContact: "Email Intermex",
       perks: {
         catalogues: {
           title: "Tailored catalogues",
@@ -368,18 +368,18 @@ const en = {
         },
         manager: {
           title: "Human review",
-          body: "A CornerMex representative reviews each enquiry; the website does not create an order.",
+          body: "A Intermex representative reviews each enquiry; the website does not create an order.",
         },
       },
     },
     about: {
       meta: {
-        title: "About Corner Mex — UAE commercial preview",
+        title: "About Intermex — UAE commercial preview",
         description:
-          "CornerMex is preparing a curated Mexican pantry discovery and manual B2B quote experience for the UAE.",
+          "Intermex is preparing a curated Mexican pantry discovery and manual B2B quote experience for the UAE.",
       },
       title: "A Mexican corner in the Emirates.",
-      lede: "CornerMex is preparing a curated Mexican pantry experience for the UAE. This commercial preview supports catalogue discovery and manual, human-approved B2B quotes; it does not accept online orders.",
+      lede: "Intermex is preparing a curated Mexican pantry experience for the UAE. This commercial preview supports catalogue discovery and manual, human-approved B2B quotes; it does not accept online orders.",
       ctaShop: "Browse the catalogue",
       ctaB2B: "For business",
     },
@@ -426,7 +426,7 @@ const es = {
     },
     c: {
       title: "Cotizaciones B2B revisadas",
-      body: "CornerMex revisa manualmente requisitos, disponibilidad y condiciones comerciales.",
+      body: "Intermex revisa manualmente requisitos, disponibilidad y condiciones comerciales.",
     },
   },
   b2b: {
@@ -451,7 +451,7 @@ const es = {
     google: "Continuar con Google",
     or: "o",
     haveAccount: "¿Ya tienes cuenta?",
-    noAccount: "¿Nuevo en Corner Mex?",
+    noAccount: "¿Nuevo en Intermex?",
   },
   dash: {
     backToSite: "Volver al sitio",
@@ -522,7 +522,7 @@ const es = {
     payouts: {
       title: "Pagos a vendedores",
       adminSub: "Genera, sigue y marca los pagos a vendedores como pagados.",
-      sellerSub: "Tu historial de pagos de Corner Mex.",
+      sellerSub: "Tu historial de pagos de Intermex.",
       searchSeller: "Buscar por tienda o correo…",
       allStatuses: "Todos los estados",
       empty: "Aún no hay pagos. Genera el primero para un vendedor activo.",
@@ -734,15 +734,15 @@ const es = {
   pages: {
     b2b: {
       meta: {
-        title: "Para negocios — Vista previa comercial | Corner Mex",
+        title: "Para negocios — Vista previa comercial | Intermex",
         description:
           "Vista previa para negocios en EAU que buscan una cotización manual de despensa mexicana.",
       },
       eyebrow: "Para negocios",
       title: "Una ruta de cotización manual para negocios en EAU.",
-      lede: "Explora el catálogo y envía por correo los productos, volumen y destino. CornerMex revisa cada consulta antes de confirmar disponibilidad, precios en AED, entrega o condiciones.",
+      lede: "Explora el catálogo y envía por correo los productos, volumen y destino. Intermex revisa cada consulta antes de confirmar disponibilidad, precios en AED, entrega o condiciones.",
       ctaQuote: "Solicitar cotización manual",
-      ctaContact: "Escribir a CornerMex",
+      ctaContact: "Escribir a Intermex",
       perks: {
         catalogues: {
           title: "Catálogos a medida",
@@ -760,12 +760,12 @@ const es = {
     },
     about: {
       meta: {
-        title: "Nosotros — Vista previa comercial de Corner Mex en EAU",
+        title: "Nosotros — Vista previa comercial de Intermex en EAU",
         description:
-          "CornerMex prepara una experiencia curada de descubrimiento y cotización B2B manual para EAU.",
+          "Intermex prepara una experiencia curada de descubrimiento y cotización B2B manual para EAU.",
       },
       title: "Un rincón mexicano en los Emiratos.",
-      lede: "CornerMex prepara una experiencia curada de despensa mexicana para EAU. Esta vista previa permite explorar el catálogo y solicitar cotizaciones B2B manuales; no acepta pedidos en línea.",
+      lede: "Intermex prepara una experiencia curada de despensa mexicana para EAU. Esta vista previa permite explorar el catálogo y solicitar cotizaciones B2B manuales; no acepta pedidos en línea.",
       ctaShop: "Ver catálogo",
       ctaB2B: "Para negocios",
     },
@@ -812,13 +812,13 @@ const ar = {
     },
     c: {
       title: "عروض أعمال بمراجعة بشرية",
-      body: "تراجع CornerMex المتطلبات والتوفر والشروط التجارية يدوياً.",
+      body: "تراجع Intermex المتطلبات والتوفر والشروط التجارية يدوياً.",
     },
   },
   b2b: {
     eyebrow: "للمطاعم والفنادق وشركات التموين",
     title: "زوّد مطبخك بالأصيل.",
-    body: "أخبر CornerMex باحتياجات عملك. يؤكد التوفر والسعر بالدرهم والتسليم والشروط في عرض مكتوب يوافق عليه شخص.",
+    body: "أخبر Intermex باحتياجات عملك. يؤكد التوفر والسعر بالدرهم والتسليم والشروط في عرض مكتوب يوافق عليه شخص.",
     cta: "معاينة الأعمال",
   },
   footer: {
@@ -1119,14 +1119,14 @@ const ar = {
   pages: {
     b2b: {
       meta: {
-        title: "للأعمال — معاينة CornerMex التجارية",
+        title: "للأعمال — معاينة Intermex التجارية",
         description: "معاينة تجارية للشركات في الإمارات التي تطلب عرضاً يدوياً لمؤن مكسيكية.",
       },
       eyebrow: "للأعمال",
       title: "مسار عرض يدوي للشركات في الإمارات.",
-      lede: "تصفح الكتالوج ثم أرسل المنتجات والحجم والوجهة المطلوبة. تراجع CornerMex كل استفسار قبل تأكيد التوفر أو السعر بالدرهم أو التسليم أو الشروط.",
+      lede: "تصفح الكتالوج ثم أرسل المنتجات والحجم والوجهة المطلوبة. تراجع Intermex كل استفسار قبل تأكيد التوفر أو السعر بالدرهم أو التسليم أو الشروط.",
       ctaQuote: "اطلب عرضاً يدوياً",
-      ctaContact: "راسل CornerMex",
+      ctaContact: "راسل Intermex",
       perks: {
         catalogues: {
           title: "كتالوجات مخصصة",
@@ -1141,12 +1141,12 @@ const ar = {
     },
     about: {
       meta: {
-        title: "من نحن — معاينة CornerMex التجارية في الإمارات",
+        title: "من نحن — معاينة Intermex التجارية في الإمارات",
         description:
-          "تُعد CornerMex تجربة مختارة لاكتشاف المؤن المكسيكية وطلب عروض أعمال يدوية في الإمارات.",
+          "تُعد Intermex تجربة مختارة لاكتشاف المؤن المكسيكية وطلب عروض أعمال يدوية في الإمارات.",
       },
       title: "ركن مكسيكي في الإمارات.",
-      lede: "تُعد CornerMex تجربة مختارة للمؤن المكسيكية في الإمارات. تتيح هذه المعاينة استكشاف الكتالوج وطلب عروض أعمال يدوية، ولا تقبل الطلبات عبر الإنترنت.",
+      lede: "تُعد Intermex تجربة مختارة للمؤن المكسيكية في الإمارات. تتيح هذه المعاينة استكشاف الكتالوج وطلب عروض أعمال يدوية، ولا تقبل الطلبات عبر الإنترنت.",
       ctaShop: "تصفح الكتالوج",
       ctaB2B: "للأعمال",
     },

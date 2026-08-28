@@ -7,7 +7,7 @@ import { TrustBar } from "@/components/site/Trust";
 import { cartTotals, groupBySeller, useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Cart — Corner Mex" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Cart — Intermex" }, { name: "robots", content: "noindex" }] }),
   component: Cart,
 });
 

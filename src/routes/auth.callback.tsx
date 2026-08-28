@@ -16,7 +16,7 @@ const callbackSearchSchema = z.object({
 export const Route = createFileRoute("/auth/callback")({
   validateSearch: (search) => callbackSearchSchema.parse(search),
   head: () => ({
-    meta: [{ title: "Completing sign in — Corner Mex" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Completing sign in — Intermex" }, { name: "robots", content: "noindex" }],
   }),
   component: AuthCallback,
 });

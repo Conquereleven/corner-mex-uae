@@ -8,9 +8,9 @@ import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/about")({
   head: () => {
-    const title = "About Corner Mex — Mexican commerce for the UAE";
+    const title = "About Intermex — Mexican commerce for the UAE";
     const description =
-      "CornerMex operates a curated Mexican pantry catalogue for UAE customers and a human-reviewed B2B enquiry and quote workflow.";
+      "Intermex operates a curated Mexican pantry catalogue for UAE customers and a human-reviewed B2B enquiry and quote workflow.";
     return {
       meta: [
         { title },
@@ -55,13 +55,13 @@ function About() {
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-24 sm:px-6 lg:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-          About CornerMex
+          About Intermex
         </p>
         <h1 className="mt-3 max-w-3xl font-display text-5xl tracking-tight sm:text-6xl">
           A Mexican corner in the Emirates.
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-          CornerMex combines a curated Mexican pantry catalogue for UAE customers with a
+          Intermex combines a curated Mexican pantry catalogue for UAE customers with a
           human-reviewed B2B enquiry and quotation workflow. Signed-in customers can use the
           authorised cash-on-delivery checkout path; business availability, pricing, delivery and
           terms are confirmed in writing before commitment.
@@ -94,7 +94,7 @@ function About() {
             How we work
           </h2>
           <p className="mt-4 text-base leading-7 text-muted-foreground">
-            CornerMex favours clarity over hype. Catalogue prices are shown in AED for discovery;
+            Intermex favours clarity over hype. Catalogue prices are shown in AED for discovery;
             final pricing, availability and delivery are always confirmed in the relevant flow
             before you commit. Business quotes are approved by a person, in writing. Where a policy
             or capability is still being finalised, we say so instead of overpromising.

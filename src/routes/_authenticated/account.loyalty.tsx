@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { getMyLoyalty } from "@/lib/loyalty.functions";
 
 export const Route = createFileRoute("/_authenticated/account/loyalty")({
-  head: () => ({ meta: [{ title: "Loyalty — Corner Mex" }] }),
+  head: () => ({ meta: [{ title: "Loyalty — Intermex" }] }),
   component: LoyaltyPage,
 });
 

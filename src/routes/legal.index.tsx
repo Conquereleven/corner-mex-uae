@@ -30,10 +30,10 @@ const POLICIES = [
 export const Route = createFileRoute("/legal/")({
   head: () => ({
     meta: [
-      { title: "Policies — Corner Mex commercial preview" },
+      { title: "Policies — Intermex commercial preview" },
       {
         name: "description",
-        content: "Shipping, returns, privacy and preview terms for CornerMex in the UAE.",
+        content: "Shipping, returns, privacy and preview terms for Intermex in the UAE.",
       },
       { property: "og:url", content: siteUrl("/legal") },
     ],
@@ -53,7 +53,7 @@ function LegalIndex() {
           Clear boundaries before commerce
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-          CornerMex currently supports catalogue discovery, optional accounts, B2C cart preparation
+          Intermex currently supports catalogue discovery, optional accounts, B2C cart preparation
           and manual B2B enquiries. Order execution, payments, marketplace participation and
           automated messaging run only when authorized configuration is enabled.
         </p>

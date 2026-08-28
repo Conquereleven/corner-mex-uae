@@ -1,4 +1,4 @@
-// Static legal document registry for CornerMex.
+// Static legal document registry for Intermex.
 // These are working templates and MUST be reviewed by qualified UAE legal counsel
 // before publication. Designed to be migrated to a CMS later without changing the
 // rendering layer.
@@ -54,16 +54,16 @@ export interface LegalDoc {
 }
 
 /**
- * Business model metadata for the current CornerMex operating model.
+ * Business model metadata for the current Intermex operating model.
  * Referenced by the Legal Center, admin/legal and the checkout / signup
  * legal acceptance payload. Update here if the operating model changes.
  */
 export const BUSINESS_MODEL = {
   current: "first_party_ecommerce" as const,
   futurePhase: "third_party_marketplace" as const,
-  sellerOfRecord: "CornerMex",
+  sellerOfRecord: "Intermex",
   supplierModel:
-    "CornerMex purchases products from suppliers (e.g. Intermex) and resells them directly to customers under the CornerMex brand.",
+    "Intermex purchases products from selected suppliers and production partners and resells them directly to customers under the Intermex brand.",
   marketplaceStatus: "Planned / Phase 2 / Not active for MVP",
   legalReviewStatus: "Legal Review Required" as ReviewStatus,
   legalEntity: {
@@ -81,7 +81,7 @@ const CONTACT_BLOCK: LegalSection = {
   id: "contact",
   heading: "Contact",
   body: [
-    `For any question about this document, please reach out using the channels below. CornerMex is a trading brand operated by ${LEGAL_ENTITY_NAME}, licensed by ${LEGAL_LICENSING_AUTHORITY}, UAE.`,
+    `For any question about this document, please reach out using the channels below. Intermex is a trading brand operated by ${LEGAL_ENTITY_NAME}, licensed by ${LEGAL_LICENSING_AUTHORITY}, UAE.`,
     "Complaints: we provide accessible channels to submit and follow up on complaints. Target initial response timeframe: [INSERT RESPONSE TIMEFRAME]. Escalation path after internal review: [INSERT UAE ESCALATION PROCESS AFTER LEGAL REVIEW].",
   ],
   list: [
@@ -128,19 +128,19 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Terms & Conditions",
     shortTitle: "Terms",
     summary:
-      "The rules that govern your purchases from CornerMex as a first-party e-commerce retailer in the UAE, including orders, payments in AED, returns and UAE jurisdiction.",
+      "The rules that govern your purchases from Intermex as a first-party e-commerce retailer in the UAE, including orders, payments in AED, returns and UAE jurisdiction.",
     version: "1.1.0",
     lastUpdated: "2026-06-20",
-    owner: "CornerMex Legal",
+    owner: "Intermex Legal",
     reviewStatus: "Legal Review Required",
     sections: [
       {
         id: "identity",
         heading: "1. Who we are and our role",
         body: [
-          `CornerMex is an online store operated in the United Arab Emirates by ${LEGAL_ENTITY_DESCRIPTOR}. For the current MVP, CornerMex acts as the seller of record for products sold directly through the CornerMex website.`,
-          "CornerMex sources inventory from selected suppliers (including Intermex) and resells those products directly to customers under the CornerMex brand. Customers purchase directly from CornerMex, not from independent third-party sellers.",
-          "If CornerMex later enables third-party sellers on the site, additional marketplace and seller terms will apply and will be published separately before activation.",
+          `Intermex is an online store operated in the United Arab Emirates by ${LEGAL_ENTITY_DESCRIPTOR}. For the current MVP, Intermex acts as the seller of record for products sold directly through the Intermex website.`,
+          "Intermex sources inventory from selected suppliers and production partners and resells those products directly to customers under the Intermex brand. Customers purchase directly from Intermex, not from independent third-party sellers.",
+          "If Intermex later enables third-party sellers on the site, additional marketplace and seller terms will apply and will be published separately before activation.",
         ],
       },
       {
@@ -153,7 +153,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
           "Complaints: acknowledged within 1 business day; simple resolutions targeted within 5-10 business days.",
           "Refunds: internal review 1-3 business days; card refunds typically 5-10 business days to settle after initiation, subject to bank/provider timing.",
           "Delivery: express 1-2 business days, standard UAE 2-5 business days, remote areas +1-3 business days, subject to courier capacity and force majeure.",
-          "Sourcing: CornerMex sources products from selected suppliers, including Intermex where applicable. CornerMex remains the seller of record.",
+          "Sourcing: Intermex sources products from selected suppliers and production partners. Intermex remains the seller of record.",
         ],
         footnotes: [
           "For full SLA tables, courier handling, refund methods and Intermex disclosure, see the Product Sourcing & Compliance policy.",
@@ -163,8 +163,8 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "model",
         heading: "2. Operating model",
         body: [
-          "Product availability depends on stock held or sourced by CornerMex and on supplier availability, import status, logistics and compliance checks.",
-          "CornerMex may use third-party suppliers, logistics providers, payment processors, hosting providers, AI systems and support tools to operate the site and fulfil orders.",
+          "Product availability depends on stock held or sourced by Intermex and on supplier availability, import status, logistics and compliance checks.",
+          "Intermex may use third-party suppliers, logistics providers, payment processors, hosting providers, AI systems and support tools to operate the site and fulfil orders.",
         ],
       },
       {
@@ -179,8 +179,8 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "sourcing",
         heading: "4. Product sourcing and availability",
         body: [
-          "CornerMex is responsible for ensuring products listed on the website are represented accurately to customers, subject to information provided by suppliers.",
-          "Availability is subject to inventory and supplier availability. CornerMex may remove products where there are quality, safety, regulatory, import, labelling, shelf-life or recall concerns.",
+          "Intermex is responsible for ensuring products listed on the website are represented accurately to customers, subject to information provided by suppliers.",
+          "Availability is subject to inventory and supplier availability. Intermex may remove products where there are quality, safety, regulatory, import, labelling, shelf-life or recall concerns.",
           "See also the Supplier & Product Sourcing Policy.",
         ],
       },
@@ -196,7 +196,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "listings",
         heading: "6. Product listings and pricing display",
         body: [
-          "Listings include title, description, images, price in AED, available variants, applicable logistics fees and any digital payment fees, and shipping information. CornerMex does not warrant that listings are free of errors and may correct them at any time.",
+          "Listings include title, description, images, price in AED, available variants, applicable logistics fees and any digital payment fees, and shipping information. Intermex does not warrant that listings are free of errors and may correct them at any time.",
         ],
       },
       {
@@ -210,9 +210,9 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "orders",
         heading: "8. Orders and payments",
         body: [
-          "An order is a customer offer to purchase. The contract of sale is formed only when CornerMex confirms acceptance of the order, typically upon successful payment capture.",
-          "CornerMex may reject or cancel an order for reasons including stock issues, pricing errors, compliance issues, payment failure, suspected fraud, or logistics constraints.",
-          "Payments are processed by regulated payment service providers. CornerMex does not store full card numbers.",
+          "An order is a customer offer to purchase. The contract of sale is formed only when Intermex confirms acceptance of the order, typically upon successful payment capture.",
+          "Intermex may reject or cancel an order for reasons including stock issues, pricing errors, compliance issues, payment failure, suspected fraud, or logistics constraints.",
+          "Payments are processed by regulated payment service providers. Intermex does not store full card numbers.",
         ],
       },
       {
@@ -226,14 +226,14 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "returns",
         heading: "10. Returns, refunds and customer support",
         body: [
-          "CornerMex is responsible for customer support, complaints, refund handling and the returns process for first-party orders placed on the CornerMex website. Details are set out in the separate Returns & Refunds Policy, which forms part of these Terms.",
+          "Intermex is responsible for customer support, complaints, refund handling and the returns process for first-party orders placed on the Intermex website. Details are set out in the separate Returns & Refunds Policy, which forms part of these Terms.",
         ],
       },
       {
         id: "availability",
         heading: "11. Product availability",
         body: [
-          "If an item becomes unavailable after an order is placed, CornerMex will contact you to offer a replacement, partial fulfilment or refund.",
+          "If an item becomes unavailable after an order is placed, Intermex will contact you to offer a replacement, partial fulfilment or refund.",
         ],
       },
       {
@@ -255,14 +255,14 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "ip",
         heading: "14. Intellectual property",
         body: [
-          "The CornerMex name, logos, design system and content are protected. User submissions remain owned by their authors, who grant CornerMex a limited license to operate the site as set out in the IP Policy.",
+          "The Intermex name, logos, design system and content are protected. User submissions remain owned by their authors, who grant Intermex a limited license to operate the site as set out in the IP Policy.",
         ],
       },
       {
         id: "liability",
         heading: "15. Limitation of liability",
         body: [
-          "To the maximum extent permitted by UAE law, CornerMex's aggregate liability arising out of or related to your use of the platform is limited to the amount you paid for the order giving rise to the claim. CornerMex is not liable for indirect or consequential losses.",
+          "To the maximum extent permitted by UAE law, Intermex's aggregate liability arising out of or related to your use of the platform is limited to the amount you paid for the order giving rise to the claim. Intermex is not liable for indirect or consequential losses.",
           "Nothing in these Terms limits any liability that cannot be limited under UAE consumer protection law.",
         ],
       },
@@ -270,7 +270,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "disputes",
         heading: "16. Disputes and governing law",
         body: [
-          "These Terms are governed by the laws of the United Arab Emirates and, where applicable, of the emirate of registration of CornerMex. Disputes are subject to the competent UAE courts.",
+          "These Terms are governed by the laws of the United Arab Emirates and, where applicable, of the emirate of registration of Intermex. Disputes are subject to the competent UAE courts.",
           "Nothing here requires you to waive rights under UAE consumer protection law or to submit low-value consumer claims to mandatory arbitration.",
           "Nothing in this section requires arbitration for a consumer digital contract below AED 50,000 where such a clause is not permitted under applicable UAE law.",
         ],
@@ -287,7 +287,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "future-marketplace",
         heading: "18. Future marketplace features",
         body: [
-          "CornerMex does not currently operate an open third-party seller marketplace. Any third-party marketplace features are not active and, if launched later, will be governed by separate seller terms, onboarding, KYC/KYB, compliance checks and UAE legal review.",
+          "Intermex does not currently operate an open third-party seller marketplace. Any third-party marketplace features are not active and, if launched later, will be governed by separate seller terms, onboarding, KYC/KYB, compliance checks and UAE legal review.",
         ],
       },
       {
@@ -305,17 +305,17 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Privacy Policy",
     shortTitle: "Privacy",
     summary:
-      "How CornerMex collects, uses, shares and protects your personal data, including AI-assisted processing and your rights as a data subject in the UAE.",
+      "How Intermex collects, uses, shares and protects your personal data, including AI-assisted processing and your rights as a data subject in the UAE.",
     version: "1.0.0",
     lastUpdated: "2026-06-19",
-    owner: "CornerMex Privacy Office",
+    owner: "Intermex Privacy Office",
     reviewStatus: "Legal Review Required",
     sections: [
       {
         id: "controller",
         heading: "1. Data controller",
         body: [
-          `The controller of personal data processed through CornerMex is ${LEGAL_ENTITY_DESCRIPTOR}, operating the CornerMex brand. For the current MVP, CornerMex acts as the seller of record and processes customer data for its own first-party e-commerce orders. If a third-party marketplace is launched later, third-party sellers acting as independent controllers will be described in an updated Privacy Notice.`,
+          `The controller of personal data processed through Intermex is ${LEGAL_ENTITY_DESCRIPTOR}, operating the Intermex brand. For the current MVP, Intermex acts as the seller of record and processes customer data for its own first-party e-commerce orders. If a third-party marketplace is launched later, third-party sellers acting as independent controllers will be described in an updated Privacy Notice.`,
         ],
       },
       {
@@ -343,7 +343,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "purposes",
         heading: "4. Purposes of processing",
         list: [
-          "Provide and operate the CornerMex online store and your account.",
+          "Provide and operate the Intermex online store and your account.",
           "Process orders, payments, deliveries, returns and refunds.",
           "Communicate about your orders and provide customer support.",
           "Prevent fraud, abuse and protect users, staff and suppliers.",
@@ -363,7 +363,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "sharing",
         heading: "6. Sharing",
         list: [
-          "Suppliers (such as Intermex): limited to what is needed for sourcing, fulfilment, quality claims, recalls or legal compliance.",
+          "Suppliers and production partners: limited to what is needed for sourcing, fulfilment, quality claims, recalls or legal compliance.",
           "Logistics partners: delivery contact and address.",
           "Payment service providers: data needed to authorise and reconcile payments.",
           "Hosting and infrastructure providers operating under contractual safeguards.",
@@ -420,7 +420,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "minors",
         heading: "12. Children and minors",
         body: [
-          `CornerMex is intended for adults. We do not knowingly process personal data of children under the age of legal capacity in your emirate. If you believe a minor has provided personal data, contact ${PUBLIC_CONTACT.privacy}.`,
+          `Intermex is intended for adults. We do not knowingly process personal data of children under the age of legal capacity in your emirate. If you believe a minor has provided personal data, contact ${PUBLIC_CONTACT.privacy}.`,
         ],
       },
     ],
@@ -431,10 +431,10 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Cookie Policy",
     shortTitle: "Cookies",
     summary:
-      "How CornerMex uses cookies and similar technologies, the categories we use, and how you can manage your preferences.",
+      "How Intermex uses cookies and similar technologies, the categories we use, and how you can manage your preferences.",
     version: "1.0.0",
     lastUpdated: "2026-06-19",
-    owner: "CornerMex Privacy Office",
+    owner: "Intermex Privacy Office",
     reviewStatus: "Legal Review Required",
     sections: [
       {
@@ -494,17 +494,17 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Returns & Refunds Policy",
     shortTitle: "Returns",
     summary:
-      "When you can return an order bought from CornerMex, how refunds are processed, and how to escalate a first-party e-commerce order issue.",
+      "When you can return an order bought from Intermex, how refunds are processed, and how to escalate a first-party e-commerce order issue.",
     version: "1.1.0",
     lastUpdated: "2026-06-20",
-    owner: "CornerMex Operations",
+    owner: "Intermex Operations",
     reviewStatus: "Legal Review Required",
     sections: [
       {
         id: "who",
         heading: "1. Who manages returns",
         body: [
-          "CornerMex will manage the customer-facing return and refund process for first-party e-commerce orders placed through this website. You do not need to contact any third-party seller for MVP orders.",
+          "Intermex will manage the customer-facing return and refund process for first-party e-commerce orders placed through this website. You do not need to contact any third-party seller for MVP orders.",
         ],
       },
       {
@@ -536,21 +536,21 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "process",
         heading: "4. How to request a return",
         body: [
-          "Open the order in your account, choose 'Request return' and describe the issue. CornerMex will inspect the request, may ask for photos or additional information, and will respond within a reasonable timeframe.",
+          "Open the order in your account, choose 'Request return' and describe the issue. Intermex will inspect the request, may ask for photos or additional information, and will respond within a reasonable timeframe.",
         ],
       },
       {
         id: "food",
         heading: "5. Food and consumables",
         body: [
-          "CornerMex will review food-related claims case by case based on safety, storage, shelf life, product condition and applicable UAE law. Final food returns language will be reviewed by UAE counsel.",
+          "Intermex will review food-related claims case by case based on safety, storage, shelf life, product condition and applicable UAE law. Final food returns language will be reviewed by UAE counsel.",
         ],
       },
       {
         id: "refunds",
         heading: "6. Refund method and timing",
         body: [
-          "Approved refunds are normally issued to the original payment method where technically possible, or (where appropriate) as a replacement or store credit. CornerMex separates internal approval time from bank/payment-provider settlement time. Refunds are not instant. Final payment-provider timings remain subject to review.",
+          "Approved refunds are normally issued to the original payment method where technically possible, or (where appropriate) as a replacement or store credit. Intermex separates internal approval time from bank/payment-provider settlement time. Refunds are not instant. Final payment-provider timings remain subject to review.",
         ],
         table: {
           caption: "Payment refund timing (target SLA)",
@@ -598,10 +598,10 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "AI Transparency Notice — CornerOps AI",
     shortTitle: "AI Transparency",
     summary:
-      "How CornerOps AI assists CornerMex operations, its limitations, how your data is used by AI features and your rights to request human review.",
+      "How CornerOps AI assists Intermex operations, its limitations, how your data is used by AI features and your rights to request human review.",
     version: "1.1.0",
     lastUpdated: "2026-06-20",
-    owner: "CornerMex AI Governance",
+    owner: "Intermex AI Governance",
     reviewStatus: "Legal Review Required",
     sections: [
       {
@@ -620,7 +620,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
           "Admin dashboards and compliance reminders.",
         ],
         body: [
-          "CornerOps AI may support internal operations, but CornerMex remains responsible for customer-facing decisions in the current first-party e-commerce model.",
+          "CornerOps AI may support internal operations, but Intermex remains responsible for customer-facing decisions in the current first-party e-commerce model.",
         ],
       },
       {
@@ -659,7 +659,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "governance",
         heading: "6. Governance",
         body: [
-          "CornerMex follows an internal AI governance process covering use-case review, data minimisation, prompt and output logging where appropriate, and incident handling.",
+          "Intermex follows an internal AI governance process covering use-case review, data minimisation, prompt and output logging where appropriate, and incident handling.",
         ],
       },
     ],
@@ -670,10 +670,10 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Future Marketplace Seller Agreement (Phase 2 Draft)",
     shortTitle: "Future Sellers",
     summary:
-      "Phase 2 draft. Not active for the current first-party e-commerce MVP. Describes future obligations of third-party sellers if CornerMex activates marketplace features.",
+      "Phase 2 draft. Not active for the current first-party e-commerce MVP. Describes future obligations of third-party sellers if Intermex activates marketplace features.",
     version: "1.0.0-draft",
     lastUpdated: "2026-06-20",
-    owner: "CornerMex Marketplace",
+    owner: "Intermex Marketplace",
     reviewStatus: "Legal Review Required",
     lifecycle: "phase-2-draft",
     sections: [
@@ -681,15 +681,15 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "status",
         heading: "0. Status of this document",
         body: [
-          "CornerMex does not currently operate an open third-party seller marketplace. This Seller Agreement is a Phase 2 draft for future marketplace expansion and does not apply to current first-party e-commerce purchases unless CornerMex activates seller onboarding.",
-          "For the current MVP, CornerMex is the seller of record for products sold directly through the CornerMex website.",
+          "Intermex does not currently operate an open third-party seller marketplace. This Seller Agreement is a Phase 2 draft for future marketplace expansion and does not apply to current first-party e-commerce purchases unless Intermex activates seller onboarding.",
+          "For the current MVP, Intermex is the seller of record for products sold directly through the Intermex website.",
         ],
       },
       {
         id: "onboarding",
         heading: "1. Onboarding and identity",
         body: [
-          "Sellers must complete onboarding, including identity verification and provision of a valid UAE trade license or equivalent authorisation for the products they intend to sell. CornerMex may request additional documentation at any time.",
+          "Sellers must complete onboarding, including identity verification and provision of a valid UAE trade license or equivalent authorisation for the products they intend to sell. Intermex may request additional documentation at any time.",
         ],
       },
       {
@@ -717,14 +717,14 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "fulfilment",
         heading: "5. Delivery and logistics",
         body: [
-          "Sellers must dispatch within the SLAs published in the seller dashboard and use the logistics options enabled by CornerMex unless otherwise agreed in writing.",
+          "Sellers must dispatch within the SLAs published in the seller dashboard and use the logistics options enabled by Intermex unless otherwise agreed in writing.",
         ],
       },
       {
         id: "returns",
         heading: "6. Returns, warranties and recalls",
         body: [
-          "Sellers honour the Returns & Refunds Policy and statutory warranties under UAE law. Sellers must comply with applicable product safety, labeling, storage, handling, recall and food/import rules, notify CornerMex immediately of any product safety issue or recall, and cooperate with corrective actions.",
+          "Sellers honour the Returns & Refunds Policy and statutory warranties under UAE law. Sellers must comply with applicable product safety, labeling, storage, handling, recall and food/import rules, notify Intermex immediately of any product safety issue or recall, and cooperate with corrective actions.",
         ],
       },
       {
@@ -738,7 +738,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "data",
         heading: "8. Data protection",
         body: [
-          "Sellers process buyer personal data received through CornerMex only to fulfil orders and provide after-sales support, in line with the Privacy Policy and applicable UAE law.",
+          "Sellers process buyer personal data received through Intermex only to fulfil orders and provide after-sales support, in line with the Privacy Policy and applicable UAE law.",
         ],
       },
       {
@@ -759,14 +759,14 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "suspension",
         heading: "11. Suspension and removal",
         body: [
-          "CornerMex may suspend or remove listings, payouts or seller accounts that breach this Agreement, our policies or applicable law, with notice where reasonably possible.",
+          "Intermex may suspend or remove listings, payouts or seller accounts that breach this Agreement, our policies or applicable law, with notice where reasonably possible.",
         ],
       },
       {
         id: "indemnity",
         heading: "12. Indemnity",
         body: [
-          "Sellers indemnify CornerMex against third-party claims arising from their products, listings, content or breach of this Agreement, subject to UAE law.",
+          "Sellers indemnify Intermex against third-party claims arising from their products, listings, content or breach of this Agreement, subject to UAE law.",
         ],
       },
       {
@@ -784,24 +784,24 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Intellectual Property Policy",
     shortTitle: "IP Policy",
     summary:
-      "How we protect CornerMex IP and seller content, and how rights holders can report infringement.",
+      "How we protect Intermex IP and seller content, and how rights holders can report infringement.",
     version: "1.0.0",
     lastUpdated: "2026-06-19",
-    owner: "CornerMex Legal",
+    owner: "Intermex Legal",
     reviewStatus: "Legal Review Required",
     sections: [
       {
         id: "platform",
-        heading: "1. CornerMex IP",
+        heading: "1. Intermex IP",
         body: [
-          "The CornerMex name, logos, trademarks, design system, software and original content are owned by CornerMex or its licensors. No license is granted except as needed to use the platform.",
+          "The Intermex name, logos, trademarks, design system, software and original content are owned by Intermex or its licensors. No license is granted except as needed to use the platform.",
         ],
       },
       {
         id: "seller",
         heading: "2. Seller and user content",
         body: [
-          "Sellers and users retain ownership of content they upload and grant CornerMex a worldwide, non-exclusive, royalty-free license to host, display, reformat and distribute it as needed to operate and promote the marketplace.",
+          "Sellers and users retain ownership of content they upload and grant Intermex a worldwide, non-exclusive, royalty-free license to host, display, reformat and distribute it as needed to operate and promote the marketplace.",
         ],
       },
       {
@@ -847,10 +847,10 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Acceptable Use Policy",
     shortTitle: "Acceptable Use",
     summary:
-      "What you may and may not do on CornerMex, covering illegal content, fraud, abuse, manipulation of reviews or rankings, and misuse of AI tools.",
+      "What you may and may not do on Intermex, covering illegal content, fraud, abuse, manipulation of reviews or rankings, and misuse of AI tools.",
     version: "1.0.0",
     lastUpdated: "2026-06-19",
-    owner: "CornerMex Trust & Safety",
+    owner: "Intermex Trust & Safety",
     reviewStatus: "Legal Review Required",
     sections: [
       {
@@ -896,16 +896,16 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Security & Data Protection Overview",
     shortTitle: "Security",
     summary:
-      "How CornerMex protects user and seller data, including transport security, access control, monitoring, incident response and AI governance.",
+      "How Intermex protects user and seller data, including transport security, access control, monitoring, incident response and AI governance.",
     version: "1.0.0",
     lastUpdated: "2026-06-19",
-    owner: "CornerMex Security",
+    owner: "Intermex Security",
     reviewStatus: "Legal Review Required",
     sections: [
       {
         id: "transport",
         heading: "1. Transport security",
-        body: ["All traffic to CornerMex is encrypted in transit using TLS 1.2+."],
+        body: ["All traffic to Intermex is encrypted in transit using TLS 1.2+."],
       },
       {
         id: "access",
@@ -978,60 +978,60 @@ export const LEGAL_DOCS: LegalDoc[] = [
     title: "Product Sourcing & Compliance — Service Levels & Sourcing Transparency",
     shortTitle: "Sourcing & SLAs",
     summary:
-      "How CornerMex sources products, our operational service levels (complaints, refund timing, courier delivery), and our Intermex / supplier disclosure for first-party e-commerce.",
+      "How Intermex sources products, our operational service levels (complaints, refund timing and courier delivery), and our supplier disclosure for first-party e-commerce.",
     version: "1.1.0",
     lastUpdated: "2026-07-02",
-    owner: "CornerMex Operations",
+    owner: "Intermex Operations",
     reviewStatus: "Legal Review Required",
     sections: [
       {
         id: "overview",
         heading: "1. Sourcing overview",
         body: [
-          "CornerMex sources products from selected suppliers and resells them directly to customers under the CornerMex brand.",
-          "CornerMex may purchase inventory from suppliers such as Intermex. Supplier names may be disclosed where commercially appropriate or legally required.",
+          "Intermex sources products from selected suppliers and resells them directly to customers under the Intermex brand.",
+          "Intermex may purchase inventory from selected suppliers and production partners. Supplier names may be disclosed where commercially appropriate or legally required.",
         ],
       },
       {
         id: "accuracy",
         heading: "2. Accurate representation",
         body: [
-          "CornerMex is responsible for ensuring products listed on the website are represented accurately to customers, based on the information provided by suppliers and on CornerMex's own review.",
+          "Intermex is responsible for ensuring products listed on the website are represented accurately to customers, based on the information provided by suppliers and on Intermex's own review.",
         ],
       },
       {
         id: "availability",
         heading: "3. Availability",
         body: [
-          "Product availability depends on supplier stock, CornerMex inventory, import/registration status, logistics and compliance checks. Availability is not guaranteed until an order is confirmed.",
+          "Product availability depends on supplier stock, Intermex inventory, import/registration status, logistics and compliance checks. Availability is not guaranteed until an order is confirmed.",
         ],
       },
       {
         id: "removal",
         heading: "4. Removal and recalls",
         body: [
-          "CornerMex may remove products from sale where there are quality, safety, regulatory, import, labelling, shelf-life or recall concerns, and will act on supplier or authority notices in line with applicable UAE law.",
+          "Intermex may remove products from sale where there are quality, safety, regulatory, import, labelling, shelf-life or recall concerns, and will act on supplier or authority notices in line with applicable UAE law.",
         ],
       },
       {
         id: "food",
         heading: "5. Food, beverages and consumables",
         body: [
-          "Food products may require category-specific handling, storage, labelling, registration or import checks. Final food and import compliance processes will be reviewed by UAE counsel and the relevant competent authorities. CornerMex does not claim that all products are fully registered unless actual registration exists.",
+          "Food products may require category-specific handling, storage, labelling, registration or import checks. Final food and import compliance processes will be reviewed by UAE counsel and the relevant competent authorities. Intermex does not claim that all products are fully registered unless actual registration exists.",
         ],
       },
       {
         id: "service-levels",
         heading: "6. Service Levels & Product Sourcing Transparency",
         body: [
-          "This section sets out the operational service levels CornerMex targets for customer complaints, payment refund timing and courier delivery, together with our supplier and Intermex disclosure. These are internal targets, not guarantees, and are subject to UAE legal review, courier contracts and payment provider confirmation.",
+          "This section sets out the operational service levels Intermex targets for customer complaints, payment refund timing and courier delivery, together with our supplier disclosure. These are internal targets, not guarantees, and are subject to UAE legal review, courier contracts and payment provider confirmation.",
         ],
       },
       {
         id: "complaint-sla",
         heading: "6.1 Customer Complaints SLA",
         body: [
-          "Complaint SLA means the target timeline CornerMex follows to acknowledge, review, resolve and (where necessary) escalate customer complaints. Timelines are targets, not guarantees, and depend on the complexity of the case.",
+          "Complaint SLA means the target timeline Intermex follows to acknowledge, review, resolve and (where necessary) escalate customer complaints. Timelines are targets, not guarantees, and depend on the complexity of the case.",
         ],
         table: {
           caption: "Customer complaints — target SLA",
@@ -1047,9 +1047,9 @@ export const LEGAL_DOCS: LegalDoc[] = [
         list: [
           "Customers can submit complaints through support or complaint channels.",
           "Please include the order number, product name, description of the issue, photos or videos where relevant, delivery date and your preferred resolution.",
-          "CornerMex may request additional information to investigate.",
-          "CornerMex maintains internal complaint records.",
-          "If a complaint cannot be resolved internally, CornerMex may provide information about escalation to the competent UAE consumer protection authority after legal review.",
+          "Intermex may request additional information to investigate.",
+          "Intermex maintains internal complaint records.",
+          "If a complaint cannot be resolved internally, Intermex may provide information about escalation to the competent UAE consumer protection authority after legal review.",
         ],
         footnotes: [
           `Support: ${PUBLIC_CONTACT.support} · Complaints: ${PUBLIC_CONTACT.complaints} · Legal: ${PUBLIC_CONTACT.legal} · Privacy: ${PUBLIC_CONTACT.privacy} · UAE phone: [INSERT UAE PHONE NUMBER] · Contact form: [INSERT CONTACT FORM URL].`,
@@ -1059,7 +1059,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "refund-timing",
         heading: "6.2 Payment Refund Timing",
         body: [
-          "Payment refund timing means the timeline for reviewing a refund request, approving or rejecting it, initiating the refund, and the expected payment-provider/bank settlement time. CornerMex separates internal approval time from bank/payment-provider settlement time.",
+          "Payment refund timing means the timeline for reviewing a refund request, approving or rejecting it, initiating the refund, and the expected payment-provider/bank settlement time. Intermex separates internal approval time from bank/payment-provider settlement time.",
         ],
         table: {
           caption: "Payment refund timing — target SLA",
@@ -1076,7 +1076,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         list: [
           "Refunds are normally made to the original payment method where technically possible.",
           "Refunds may take longer if the product requires inspection, the payment provider needs additional review, customer details are incomplete, or the case involves food safety, damage, misuse, missing items or a disputed transaction.",
-          "CornerMex does not promise instant refunds.",
+          "Intermex does not promise instant refunds.",
         ],
         footnotes: [
           "Final payment-provider settlement timing is pending final provider confirmation and remains subject to UAE legal review.",
@@ -1105,7 +1105,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         list: [
           "Timelines depend on emirate, address, product availability, courier capacity, public holidays, weather, road conditions, regulatory requirements and force majeure events.",
           "Customers are responsible for providing accurate address details and responding to courier calls or messages.",
-          "For failed delivery, incorrect address, damaged items in transit, delayed or lost shipments, return-to-origin or warehouse return handling, CornerMex will investigate with the courier and provide an appropriate update or remedy.",
+          "For failed delivery, incorrect address, damaged items in transit, delayed or lost shipments, return-to-origin or warehouse return handling, Intermex will investigate with the courier and provide an appropriate update or remedy.",
         ],
         footnotes: [
           "Final courier SLAs are subject to signed courier contracts and remain pending final provider confirmation.",
@@ -1115,23 +1115,23 @@ export const LEGAL_DOCS: LegalDoc[] = [
         id: "sourcing-intermex",
         heading: "6.4 Product Sourcing & Intermex Disclosure",
         body: [
-          "CornerMex sources products from selected suppliers, including Intermex where applicable. CornerMex remains the seller of record for customer purchases.",
-          "Customers buy directly from CornerMex. Intermex is a supplier/source where applicable, not the customer-facing seller for MVP purchases. CornerMex handles customer support, complaints, refunds, returns and order issues.",
-          "Supplier names may be disclosed where commercially appropriate, legally required, or necessary for product safety, recall, compliance, warranty or regulatory reasons. CornerMex will not disclose confidential supplier commercial terms, margins, purchase prices or private contract details unless legally required.",
+          "Intermex sources products from selected suppliers and production partners. Intermex remains the seller of record for customer purchases.",
+          "Customers buy directly from Intermex. Intermex handles customer support, complaints, refunds, returns and order issues.",
+          "Supplier names may be disclosed where commercially appropriate, legally required, or necessary for product safety, recall, compliance, warranty or regulatory reasons. Intermex will not disclose confidential supplier commercial terms, margins, purchase prices or private contract details unless legally required.",
         ],
         list: [
           "Public product information may include: product name; country of origin; ingredients; allergen information; net weight or volume; storage instructions; expiry or best-before date where applicable; batch or lot information where applicable; importer or distributor details where legally required; product warnings or safety information; halal or other certification information only where verified.",
           "Internal supplier records may include: supplier name; purchase invoices; product registration status; batch and lot details; food safety documents; certificates where applicable; recall contact process; shelf-life and storage requirements.",
         ],
         footnotes: [
-          "CornerMex will not claim that a product is certified, approved, halal, registered, organic, compliant or authorised unless CornerMex has supporting documentation.",
+          "Intermex will not claim that a product is certified, approved, halal, registered, organic, compliant or authorised unless Intermex has supporting documentation.",
         ],
       },
       {
         id: "future",
         heading: "7. Future third-party sellers",
         body: [
-          "If CornerMex enables third-party sellers in the future, seller sourcing and product responsibility will be governed by the Future Marketplace Seller Agreement and additional onboarding, KYC/KYB and compliance controls.",
+          "If Intermex enables third-party sellers in the future, seller sourcing and product responsibility will be governed by the Future Marketplace Seller Agreement and additional onboarding, KYC/KYB and compliance controls.",
         ],
       },
     ],

@@ -14,12 +14,13 @@ test("public presentation surfaces use current operating language", async () => 
   ]);
 
   assert.match(header, /aria-label="Intermex UAE home"/);
-  assert.match(header, />\s*Catalog\s*</);
+  assert.match(header, />\s*Shop\s*</);
+  assert.match(header, />\s*Wholesale\s*</);
   assert.match(home, /Intermex UAE · Mexican food supplier/);
   assert.match(home, /Tradition you can taste\./);
   assert.match(shop, />\s*Intermex UAE\s*</);
   assert.match(b2b, />\s*For business · UAE\s*</);
-  assert.match(about, /CornerMex combines a curated Mexican pantry catalogue/);
+  assert.match(about, /Intermex combines a curated Mexican pantry catalogue/);
 });
 
 test("shop hides placeholder taxonomy from customer-facing filters", async () => {

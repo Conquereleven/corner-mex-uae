@@ -17,7 +17,7 @@ export function ManualContactActions({ preview }: { preview: string }) {
     <div className="mt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <a
-          href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request", preview)}
+          href={mailto(PUBLIC_CONTACT.b2b, "Intermex manual quote request", preview)}
           className="inline-flex"
         >
           <Button className="min-h-11 w-full rounded-full sm:w-auto">

@@ -47,7 +47,7 @@ export function ManualQuoteRequestForm({
           Tell us about your business
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Review these details before submitting. CornerMex stores the enquiry only after you press
+          Review these details before submitting. Intermex stores the enquiry only after you press
           Submit enquiry on the next step.
         </p>
       </div>

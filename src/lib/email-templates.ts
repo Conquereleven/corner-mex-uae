@@ -1,5 +1,5 @@
 const PRIMARY = "#c2410c"; // brand orange-ish
-const SITE = "Corner Mex";
+const SITE = "Intermex";
 
 function layout(title: string, body: string, cta?: { label: string; url: string }) {
   return `<!doctype html><html><body style="margin:0;padding:0;background:#f7f5f1;font-family:Arial,Helvetica,sans-serif;color:#1c1917">

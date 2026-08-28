@@ -24,7 +24,7 @@ type ReviewableItem = {
 };
 
 export const Route = createFileRoute("/_authenticated/account/")({
-  head: () => ({ meta: [{ title: "Account — Corner Mex" }] }),
+  head: () => ({ meta: [{ title: "Account — Intermex" }] }),
   component: Account,
 });
 

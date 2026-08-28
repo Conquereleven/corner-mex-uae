@@ -185,7 +185,7 @@ export const listProducts = createServerFn({ method: "GET" })
         compare_at_price_aed: defaultVariant?.compare_at_price_aed
           ? Number(defaultVariant.compare_at_price_aed)
           : null,
-        seller: { id: "00000000-0000-0000-0000-000000000001", slug: "cornermex", name: "CornerMex" },
+        seller: { id: "00000000-0000-0000-0000-000000000001", slug: "cornermex", name: "Intermex" },
         category_slug: row.category?.slug ?? null,
         origin_region: row.origin_region,
         spice_level: row.spice_level,
@@ -467,7 +467,7 @@ export const getProduct = createServerFn({ method: "GET" })
       price_aed: variants[0]?.price_aed ?? 0,
       compare_at_price_aed: variants[0]?.compare_at_price_aed ?? null,
       variants,
-      seller: { id: "00000000-0000-0000-0000-000000000001", slug: "cornermex", name: "CornerMex" },
+      seller: { id: "00000000-0000-0000-0000-000000000001", slug: "cornermex", name: "Intermex" },
       category_slug: cat?.slug ?? null,
       category: cat ? { slug: cat.slug, name: categoryName ?? cat.name_en } : null,
       origin_region: row.origin_region,

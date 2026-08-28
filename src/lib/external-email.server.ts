@@ -42,7 +42,7 @@ const PROVIDER_SENDER_MAILBOX = "onboarding";
 const PROVIDER_SENDER_DOMAIN = ["resend", "dev"].join(".");
 const PROVIDER_SENDER_ADDRESS = [PROVIDER_SENDER_MAILBOX, PROVIDER_SENDER_DOMAIN].join("@");
 
-export const EXTERNAL_EMAIL_FROM = `Corner Mex <${PROVIDER_SENDER_ADDRESS}>`;
+export const EXTERNAL_EMAIL_FROM = `Intermex <${PROVIDER_SENDER_ADDRESS}>`;
 export const EXTERNAL_EMAIL_GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 
 export type ExternalEmailSkipReason = "capability_disabled" | "provider_not_configured";

@@ -8,9 +8,9 @@ import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/b2b")({
   head: () => {
-    const title = "For Business — Mexican supply for UAE businesses | Corner Mex";
+    const title = "For Business — Mexican supply for UAE businesses | Intermex";
     const description =
-      "Browse the CornerMex UAE catalogue and submit product, volume and destination requirements for a human-reviewed written B2B quote.";
+      "Browse the Intermex UAE catalogue and submit product, volume and destination requirements for a human-reviewed written B2B quote.";
     return {
       meta: [
         { title },
@@ -39,7 +39,7 @@ function B2B() {
           Mexican supply for UAE businesses.
         </h1>
         <p className="mt-6 text-lg text-muted-foreground">
-          Browse the CornerMex catalogue, then submit your product, volume and destination
+          Browse the Intermex catalogue, then submit your product, volume and destination
           requirements. Availability, AED pricing, delivery options and commercial terms are
           confirmed through a human-reviewed written quote before commitment.
         </p>
@@ -49,7 +49,7 @@ function B2B() {
               Explore business catalogue <ArrowRight className="ms-2 h-4 w-4" />
             </Button>
           </Link>
-          <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
+          <a href={mailto(PUBLIC_CONTACT.b2b, "Intermex manual quote request")}>
             <Button size="lg" variant="outline" className="min-h-11 rounded-full">
               <Mail className="me-2 h-4 w-4" /> {t("pages.b2b.ctaQuote")}
             </Button>

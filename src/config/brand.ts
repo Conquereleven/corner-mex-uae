@@ -21,6 +21,8 @@ export type BrandConfig = {
     secondary: string;
   };
   colors: {
+    structuralRed: string;
+    cream: string;
     moleBrown: string;
     verdeJalapeno: string;
   };
@@ -42,7 +44,11 @@ export const INTERMEX_BRAND: BrandConfig = {
     secondary: "Tradition you can taste",
   },
   colors: {
-    // Brand Book 2025 authority captured in GitHub issue #70.
+    // Brand Book 2025 authority captured in GitHub issue #70. Red and cream
+    // are structural storefront surfaces; the named green and brown values
+    // remain the exact approved accent values.
+    structuralRed: "#b42127",
+    cream: "#fff8e7",
     moleBrown: "#6e441d",
     verdeJalapeno: "#2d9849",
   },
@@ -108,6 +114,8 @@ export const INTERMEX_BRAND: BrandConfig = {
 
 export function brandCssVariables(brand: BrandConfig): CSSProperties {
   return {
+    "--brand-structural-red": brand.colors.structuralRed,
+    "--brand-cream": brand.colors.cream,
     "--brand-mole-brown": brand.colors.moleBrown,
     "--brand-verde-jalapeno": brand.colors.verdeJalapeno,
     "--brand-display-name": `"${brand.displayName}"`,
