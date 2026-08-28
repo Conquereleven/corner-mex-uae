@@ -2,28 +2,6 @@
   "contractVersion": "application-schema-reference-extensions-v1",
   "canonicalProjectRef": "wlrfknmrhowldygmvtvn",
   "baseContractVersion": "application-schema-reference-baseline-v1",
-  "fileRemovals": [
-    {
-      "kind": "table_or_storage_bucket",
-      "name": "b2b_leads",
-      "files": ["src/lib/b2b-leads.functions.ts"]
-    },
-    {
-      "kind": "table_or_storage_bucket",
-      "name": "user_roles",
-      "files": ["src/lib/b2b-leads.functions.ts"]
-    },
-    {
-      "kind": "table_or_storage_bucket",
-      "name": "lead_status_history",
-      "files": ["src/lib/b2b-leads.functions.ts"]
-    },
-    {
-      "kind": "table_or_storage_bucket",
-      "name": "lead_notes",
-      "files": ["src/lib/b2b-leads.functions.ts"]
-    }
-  ],
   "fileAdditions": [
     {
       "kind": "table_or_storage_bucket",
@@ -74,6 +52,43 @@
       "kind": "table_or_storage_bucket",
       "name": "profiles",
       "files": ["src/lib/accounting-worker.server.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "user_roles",
+      "files": ["src/lib/payments.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "payments",
+      "files": ["src/lib/admin.functions.ts"]
+    }
+  ],
+  "fileRemovals": [
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "b2b_leads",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "user_roles",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_status_history",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "lead_notes",
+      "files": ["src/lib/b2b-leads.functions.ts"]
+    },
+    {
+      "kind": "table_or_storage_bucket",
+      "name": "orders",
+      "files": ["src/routes/api/public/stripe-webhook.ts"]
     }
   ],
   "newReferences": [
@@ -192,6 +207,34 @@
         "src/lib/accounting-control-center.functions.ts",
         "src/lib/accounting-worker.server.ts"
       ],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_pay_create_stripe_attempt_v1",
+      "files": ["src/lib/payments.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_pay_bind_stripe_checkout_session_v1",
+      "files": ["src/lib/payments.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_pay_note_stripe_attempt_degraded_v1",
+      "files": ["src/lib/payments.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_pay_process_stripe_webhook_v1",
+      "files": ["src/routes/api/public/stripe-webhook.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }
