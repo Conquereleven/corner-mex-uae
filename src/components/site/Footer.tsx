@@ -73,9 +73,9 @@ export function Footer() {
               Exploring Mexican pantry supply for the UAE
             </h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Retail cart and account access are available. Checkout and order processing run only
-              when authorized configuration is enabled; prices, availability, shipping and payment
-              are confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
+              B2C cart and account access are available. Checkout and order processing run only when
+              authorized configuration is enabled; prices, availability, shipping and payment are
+              confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
               commercial pipeline for human review, but an enquiry is not an order, payment or
               confirmed quote and creates no commercial commitment.
             </p>
