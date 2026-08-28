@@ -90,7 +90,7 @@ export const Route = createFileRoute("/product/$slug")({
     const canonical = productUrl(params.slug);
     const title =
       product?.seo?.title ||
-      (product ? `${product.name} in UAE | Corner Mex` : "Product | Corner Mex");
+      (product ? `${product.name} in UAE | Intermex UAE` : "Product | Intermex UAE");
     const description = productCopyToPlainText(
       product?.seo?.meta_description ||
         product?.description ||
@@ -110,7 +110,7 @@ export const Route = createFileRoute("/product/$slug")({
           content: product ? "index,follow,max-image-preview:large" : "noindex,follow",
         },
         { property: "og:type", content: "product" },
-        { property: "og:site_name", content: "Corner Mex" },
+        { property: "og:site_name", content: "Intermex UAE" },
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:url", content: canonical },

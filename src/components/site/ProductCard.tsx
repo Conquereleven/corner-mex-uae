@@ -15,15 +15,17 @@ export function ProductCard({
 }) {
   const cur = useCurrency();
   const img = imageSrcSet(p.image);
+  const onSale =
+    p.compare_at_price_aed != null && p.compare_at_price_aed > p.price_aed && p.price_aed > 0;
   void source;
   return (
     <Link
       to="/product/$slug"
       params={{ slug: p.slug }}
       preload="intent"
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-xl"
+      className="intermex-product-card group flex flex-col overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-0.5 hover:shadow-xl"
     >
-      <div className="relative aspect-square overflow-hidden bg-muted">
+      <div className="relative aspect-square overflow-hidden bg-[color:var(--intermex-cream-surface)]">
         {p.image && (
           <img
             src={img.src}
@@ -39,19 +41,31 @@ export function ProductCard({
           />
         )}
         {p.is_bulk && (
-          <span className="absolute start-3 bottom-3 rounded-full bg-accent/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">
+          <span className="absolute start-3 bottom-3 rounded-full bg-[color:var(--brand-verde-jalapeno)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
             HORECA
+          </span>
+        )}
+        {onSale && (
+          <span className="absolute end-3 top-3 rounded-full bg-[color:var(--brand-mole-brown)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+            Sale
           </span>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
-          Sold by CornerMex
+        <span className="text-[11px] uppercase tracking-widest text-[color:var(--brand-verde-jalapeno)]">
+          Intermex UAE
         </span>
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         <div className="mt-auto flex items-end justify-between pt-3">
           <span className="font-display text-lg font-semibold text-foreground">
-            {cur.format(p.price_aed)}
+            <span className={onSale ? "text-[color:var(--brand-mole-brown)]" : ""}>
+              {cur.format(p.price_aed)}
+            </span>
+            {onSale && p.compare_at_price_aed != null && (
+              <span className="ms-2 text-sm font-normal text-muted-foreground line-through">
+                {cur.format(p.compare_at_price_aed)}
+              </span>
+            )}
           </span>
           {p.spice_level && p.spice_level > 0 && (
             <span className="flex items-center gap-0.5 text-primary">

@@ -1,0 +1,112 @@
+{
+  "manifestVersion": "cm-intermex-brand-1-assets-v1",
+  "brand": "intermex-uae",
+  "authority": "Brand Book 2025 as captured in GitHub issue #70",
+  "assets": [
+    {
+      "path": "source-assets/intermex-logo-yellow.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/files/YELLOW_PNG.png?v=1749546480&width=220",
+      "sha256": "7521e17cb14903bdd9f4105db696e6f80a035ec0caf210dd665eac6287ab8b71",
+      "usage": ["header", "footer"]
+    },
+    {
+      "path": "source-assets/intermex-hero-cactus.jpg",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/files/tryagain.jpg?v=1751631403&width=3000",
+      "sha256": "6617fa55b82799cf63317ad195e4db08c4dd3d2f91ebcab8c4053144cd368de3",
+      "usage": ["home.hero"]
+    },
+    {
+      "path": "source-assets/mexican-candy.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/Candy.png?v=1749649037&width=750",
+      "sha256": "48ea6f88b9725bdd2aaede14b2c35933b21eef0be480e7d5df7d053f5c4e64e1",
+      "usage": ["home.collections.mexican-candy"]
+    },
+    {
+      "path": "source-assets/mexican-sauces.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/sauces3.png?v=1749647189&width=750",
+      "sha256": "4b025f4a3b948fcf77d9c03f621c5a14e79c5aa0042f3117a8a5923e8c416a16",
+      "usage": ["home.collections.mexican-sauces"]
+    },
+    {
+      "path": "source-assets/intermex-production.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/production2.png?v=1749651517&width=750",
+      "sha256": "c8b2927df92260469afb7442c8448f3d1a37d92d7b28af150b6be4f31206cc26",
+      "usage": ["home.collections.from-our-production"]
+    },
+    {
+      "path": "source-assets/chilis.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/chillis.png?v=1749728090&width=750",
+      "sha256": "aac6d625ae5f70edab12dffb9fccb427c8dc37a2b0818bbdb241d31e93e93b5c",
+      "usage": ["home.collections.chilis"]
+    },
+    {
+      "path": "source-assets/mexican-pantry.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/OtherFood.png?v=1751363061&width=750",
+      "sha256": "1a74b7174d1bd3512a3dd75e3bcb86066117fb22d90153f9c0ce35976b95935c",
+      "usage": ["home.collections.mexican-pantry"]
+    },
+    {
+      "path": "source-assets/drinks.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/drinks.png?v=1751363139&width=750",
+      "sha256": "6d0bb28eb9802569ba4261511ea6085c0c733a73642a4de560e5b1b212374992",
+      "usage": ["home.collections.drinks"]
+    },
+    {
+      "path": "source-assets/mexican-accessories.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/Accessories.png?v=1751363265&width=750",
+      "sha256": "a8277c14a774fb6b447a588a0302db1990cbe6bdcf868dd98d1291dd4efe1ab9",
+      "usage": ["home.collections.mexican-accessories"]
+    },
+    {
+      "path": "source-assets/intermex.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/intermex.png?v=1749565214&width=750",
+      "sha256": "4a363d85a9a053e4eeb6fbec4a8096750e6bd7bde7e03a83ae9d54082a03361e",
+      "usage": ["reserved.brand-card"]
+    },
+    {
+      "path": "source-assets/la-costena.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/la-costena.png?v=1749562805&width=750",
+      "sha256": "2bd08b4ed800af43cae57ec1141a4ec18272e56f491eb1154f5f937be48202f2",
+      "usage": ["reserved.brand-card"]
+    },
+    {
+      "path": "source-assets/la-meridana.png",
+      "sourceType": "official-live-site",
+      "sourceUrl": "https://intermexuae.com/cdn/shop/collections/La_Meridana.png?v=1749563012&width=750",
+      "sha256": "978372244551a0baa966443e4bd4600ffea1876d9258ab8d74c6363475392d26",
+      "usage": ["reserved.brand-card"]
+    }
+  ],
+  "awaitingOfficialAsset": [
+    {
+      "id": "juan-mascot",
+      "usage": "packaging and campaign placements",
+      "status": "awaiting_official_asset",
+      "owner": "Sabrina/Linda"
+    },
+    {
+      "id": "structural-red-yellow-cream-values",
+      "usage": "global token expansion",
+      "status": "awaiting_official_asset",
+      "owner": "Sabrina/Linda"
+    }
+  ],
+  "prohibited": [
+    "generated imagery",
+    "AI imagery",
+    "stock replacements",
+    "reconstructed logos",
+    "invented category art"
+  ]
+}
