@@ -335,7 +335,7 @@
       "evidenceClass": "verified_live",
       "instanceState": "NOT_REOBSERVED",
       "sourceConfigCheckSuites": false,
-      "note": "Deployment status and source observed read-only; build/start/health configuration follows repository railway.toml. No endpoint or provider certification."
+      "note": "Deployment status and source observed read-only; build/start/health configuration follows repository railway.json. No endpoint or provider certification."
     },
     {
       "context": "CornerMex UAE - corner-mex-uae",
@@ -358,7 +358,7 @@
       "evidenceClass": "verified_live",
       "instanceState": "NOT_REOBSERVED",
       "sourceConfigCheckSuites": true,
-      "note": "Deployment status and source observed read-only; build/start/health configuration follows repository railway.toml. No endpoint or provider certification."
+      "note": "Deployment status and source observed read-only; build/start/health configuration follows repository railway.json. No endpoint or provider certification."
     }
   ],
   "governance": {
