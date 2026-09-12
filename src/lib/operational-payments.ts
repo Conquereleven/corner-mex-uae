@@ -30,6 +30,7 @@ export function cardCapability(input: {
     g?.enabled === true &&
     g.mode === input.mode &&
     Boolean(g.generation) &&
+    Date.parse(g.eligibleAfter) <= input.now &&
     Number.isFinite(Date.parse(g.validUntil)) &&
     Date.parse(g.validUntil) > input.now
   );

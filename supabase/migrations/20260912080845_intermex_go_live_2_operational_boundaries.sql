@@ -54,7 +54,7 @@ create function public.cm_runtime_capabilities_v2() returns jsonb
 language sql stable security definer set search_path = '' as $$
  select jsonb_build_object('schemaVersion',2,'gates',coalesce((select jsonb_object_agg(provider,
    jsonb_build_object('mode',mode,'generation',generation,'eligibleAfter',eligible_after,
-     'enabled',enabled and validated_at<=now() and valid_until>now(), 'validUntil',valid_until))
+     'enabled',enabled and eligible_after<=now() and validated_at<=now() and valid_until>now(), 'validUntil',valid_until))
  from commerce_private.provider_runtime_gates),'{}'::jsonb));
 $$;
 
@@ -87,7 +87,7 @@ begin
  if p_buyer_id is null or p_operation_id is null then raise exception 'CHECKOUT_IDENTITY_REQUIRED'; end if;
  if p_mode is null or p_mode not in ('test','live') then raise exception 'PAYMENT_MODE_REQUIRED'; end if;
  if not exists(select 1 from commerce_private.provider_runtime_gates where provider='stripe' and mode=p_mode
-   and enabled and validated_at<=now() and valid_until>now()) then raise exception 'CARD_CAPABILITY_UNAVAILABLE'; end if;
+   and enabled and eligible_after<=now() and validated_at<=now() and valid_until>now()) then raise exception 'CARD_CAPABILITY_UNAVAILABLE'; end if;
  if p_legal_acceptance is null or not (p_legal_acceptance @> '{"terms":true,"privacy":true,"returns":true}')
  then raise exception 'LEGAL_ACCEPTANCE_REQUIRED'; end if;
  if p_account_id is not null and not exists(select 1 from commerce_private.b2b_account_users u

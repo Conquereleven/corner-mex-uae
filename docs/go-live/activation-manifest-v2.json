@@ -38,7 +38,7 @@
     },
     {
       "filename": "20260912080845_intermex_go_live_2_operational_boundaries.sql",
-      "sha256": "a25e96222e180d5282a6ea30f1f4ca2012c97aa9ca5e38caec02bd368a3db2e8",
+      "sha256": "b45219e8443700a2ee53b604a9b4ba65689fb3ee372c891f22f62109760ec8ce",
       "productionApplied": false,
       "requiresFounderProductionGate": true
     }

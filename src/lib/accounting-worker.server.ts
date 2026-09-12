@@ -253,7 +253,7 @@ export async function runAccountingWorker(limit = 10) {
       results.push({ jobId: job.id, status: "succeeded" });
     } catch (jobError) {
       const failure = await failJob(job, jobError).catch(() => ({
-        status: "requires_attention",
+        status: "lease_lost",
         category: "conflict",
         code: "ACCOUNTING_LEASE_LOST",
       }));

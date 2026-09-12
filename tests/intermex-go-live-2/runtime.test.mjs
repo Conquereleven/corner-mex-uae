@@ -44,6 +44,7 @@ test("capability requires schema, fresh gate, explicit same mode and server read
   assert.equal(cardCapability(value), true);
   for (const patch of [
     { schemaVersion: 1 },
+    { gate: { ...value.gate, eligibleAfter: "2030-01-01" } },
     { gate: undefined },
     { mode: "live" },
     { secretMatches: false },
