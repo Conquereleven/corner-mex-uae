@@ -1,6 +1,6 @@
 {
   "projectRef": "wlrfknmrhowldygmvtvn",
-  "baselineMain": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+  "baselineMain": "d460fcee247382039700beac357d3454e32afc5b",
   "auditedAt": "2026-09-12",
   "readinessOnly": true,
   "productionMutationAuthorized": false,
@@ -43,6 +43,5 @@
       "requiresFounderProductionGate": true
     }
   ],
-  "baselineMainSha": "d460fcee247382039700beac357d3454e32afc5b",
   "sprint": "INTERMEX-GO-LIVE-2"
 }

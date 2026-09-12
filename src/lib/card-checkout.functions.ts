@@ -14,7 +14,6 @@ export const getCardCheckoutCapability = createServerFn({ method: "GET" }).handl
 const Input = PlaceCodOrderInput.extend({
   payment_method: z.literal("card"),
   operationId: z.string().uuid(),
-  accountId: z.string().uuid().optional(),
 });
 export const initiateCardCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -39,7 +38,7 @@ export const initiateCardCheckout = createServerFn({ method: "POST" })
       p_tax_rate: config.config.vatRate,
       p_legal_acceptance: data.legal_acceptance,
       p_mode: capability.mode,
-      p_account_id: data.accountId ?? null,
+      p_account_id: null,
     });
     if (error || !order) throw new Error("CARD_CHECKOUT_UNAVAILABLE");
     const session = await createStripeSession({ data: { orderId: order.order_id } });

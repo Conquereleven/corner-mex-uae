@@ -20,7 +20,8 @@ export function zohoRuntimeConfig(
     !env.CORNERMEX_ZOHO_CLIENT_ID ||
     !env.CORNERMEX_ZOHO_CLIENT_SECRET ||
     !env.CORNERMEX_ZOHO_REFRESH_TOKEN ||
-    env.CORNERMEX_ZOHO_ACCOUNTS_URL !== `https://accounts.zoho.${region}`
+    env.CORNERMEX_ZOHO_ACCOUNTS_URL !==
+      (region === "ca" ? "https://accounts.zohocloud.ca" : `https://accounts.zoho.${region}`)
   )
     return null;
   return {

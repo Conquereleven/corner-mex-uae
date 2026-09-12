@@ -24,6 +24,8 @@ This is code, tests and readiness work. Production migrations and provider activ
 
 The PostgreSQL harness proves concurrent initiation, stock rollback, attempt reuse, duplicate/out-of-order webhook delivery, failed→successful attempt, cumulative partial/full refunds, refund-before-success, single accounting job, mode mismatch, multi-capture anomaly, customer lease/create intent, stale-owner rejection, historical quarantine, and owner/B2B/admin/anonymous invoice authorization. Injected provider tests exercise actual checkout response-loss recovery, bounded OAuth refresh and unavailable/rate-limited providers. No provider network call is part of certification.
 
+This checkout remains the B2C storefront flow. B2B account pricing and ordering retain their existing portal/quote boundary; the new invoice projection independently supports authorized account documents.
+
 ## Authority and external decisions
 
 Intermex is the customer brand. CornerMex owns canonical orders, inventory and lifecycle. Stripe owns payment truth. Zoho owns accounting documents. No accounting result changes canonical payment truth.
@@ -63,3 +65,5 @@ Invoice URLs fail closed unless the configured host is approved for exposing cus
 ## Evidence
 
 Local unit/domain tests and canonical governance checks are recorded in the PR. PostgreSQL execution requires disposable loopback PostgreSQL and GO_LIVE_2_POSTGRES=1 after canonical replay; CI runs this explicitly. Local PostgreSQL startup is blocked by the sandbox shared-memory restriction. Final readiness is contingent on exact-head CI and fresh independent review from cornermexuae-netizen. No merge is authorized by this sprint.
+
+Regional endpoint validation follows the [Zoho Books API domains](https://www.zoho.com/books/api/v3/introduction/) and [Zoho Accounts data-center table](https://help.zoho.com/portal/en/kb/accounts/manage-your-zoho-account/articles/data-center-for-zoho-account). Canada uses accounts.zohocloud.ca; unknown host pairs fail closed. Stripe recovery timing follows the [Stripe idempotency retention contract](https://docs.stripe.com/api/idempotent_requests).
