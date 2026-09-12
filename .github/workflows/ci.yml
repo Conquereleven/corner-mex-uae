@@ -149,6 +149,10 @@ jobs:
       - run: npm run validate:application-schema-references
       - run: npm run validate:schema-authority
       - run: npm run test:canonical-migration-replay
+      - run: npm run test:intermex-go-live-1
+      - run: npm run test:cm-pay-stripe-1
+        env:
+          CM_PAY_POSTGRES_TEST: "1"
       - run: npm run test:cm-com-3a:sql
       - run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
 

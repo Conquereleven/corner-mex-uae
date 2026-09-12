@@ -1,48 +1,48 @@
 {
   "schemaVersion": "joint-program-state-v1",
   "system": "cornermex",
-  "generatedAt": "2026-08-28T18:27:55Z",
+  "generatedAt": "2026-09-12T07:27:34Z",
   "authority": {
     "repository": "Conquereleven/corner-mex-uae",
-    "expectedMainSha": "c249512e13388305bc0648546f7d3ab860921dc8",
-    "observedMainSha": "c249512e13388305bc0648546f7d3ab860921dc8",
+    "expectedMainSha": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+    "observedMainSha": "976676271ccca3c9f04c071a581ce6ab158c1b66",
     "mainIdentityStatus": "verified"
   },
   "evidence": {
     "class": "verified_live",
-    "source": "Read-only reconciliation of GitHub main, Railway production and staging deployment/source configuration, and the canonical Supabase migration ledger. No Railway, Supabase, Lovable, DNS, OAuth, Edge Function or production write was performed.",
-    "observedAt": "2026-08-28T18:27:55Z",
-    "freshUntil": "2026-09-04T18:27:55Z",
-    "classMeaning": "Current repository identity and the named Railway deployment/source records and Supabase migration ledger were observed read-only. The seven-day freshness window follows the existing program evidence policy.",
+    "source": "INTERMEX-GO-LIVE-1 read-only GitHub main, Railway deployment/source configuration and Supabase migration ledger reconciliation. See docs/go-live/read-only-runtime-evidence.json. No platform writes.",
+    "observedAt": "2026-09-12T07:27:34Z",
+    "freshUntil": "2026-09-19T07:27:34Z",
+    "classMeaning": "Fresh deployment/source and canonical ledger observation. Seven-day expiry applies only to this scope; historical authorization, rollback and endpoint records are not re-certified.",
     "repositoryEvidence": {
       "class": "verified_repository",
-      "identity": "github:c249512e13388305bc0648546f7d3ab860921dc8",
-      "verifiedBy": "CM-GOV-HOTFIX",
-      "verifiedAt": "2026-08-28T18:27:55Z",
-      "statement": "origin/main is c249512e13388305bc0648546f7d3ab860921dc8, the merge commit of PR #66 and the exact hotfix baseline."
+      "identity": "github:976676271ccca3c9f04c071a581ce6ab158c1b66",
+      "verifiedBy": "INTERMEX-GO-LIVE-1",
+      "verifiedAt": "2026-09-12T07:27:34Z",
+      "statement": "Fetched origin/main at 976676271ccca3c9f04c071a581ce6ab158c1b66 (PR #75)."
     },
     "runtimeEvidence": {
       "class": "verified_live",
-      "identity": "railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:fe9f593e-a7ea-47a6-a40b-e1663929fd3f;production-deployment:df6d9c31-d35d-4d85-a435-ab0e845fbabe;db2:wlrfknmrhowldygmvtvn;db2-latest-migration:20260823004146",
-      "observedBy": "CM-GOV-HOTFIX",
-      "observedAt": "2026-08-28T18:27:55Z",
+      "identity": "railway-project:06d2ecdd-3c03-4480-8299-48c539595a94;staging-deployment:b81feb08-a966-48e7-8872-e201c1dd8108;production-deployment:8da17bff-05b8-4fee-92a4-aa517ff9701a;db2:wlrfknmrhowldygmvtvn;db2-latest-migration:20260823004146",
+      "observedBy": "INTERMEX-GO-LIVE-1",
+      "observedAt": "2026-09-12T07:27:34Z",
       "reobservedByCurrentSprint": true,
       "currentRuntimeState": "deployments_success_governance_drift_open",
-      "statement": "Production deployment df6d9c31-d35d-4d85-a435-ab0e845fbabe and staging deployment fe9f593e-a7ea-47a6-a40b-e1663929fd3f are SUCCESS from main commit c249512e13388305bc0648546f7d3ab860921dc8. Production source configuration reports checkSuites=true and observed merge history shows automatic production deployments, contradicting the declared manual-production policy. Canonical Supabase latest migration is 20260823004146 sec_rls_1_b2b_private_rls; later B2B migrations are not applied."
+      "statement": "Both named deployments report SUCCESS at current main. Production remains source-linked to main with checkSuites=true; declared manual-production policy remains in drift. Canonical ledger ends at 20260823004146; pending activation migrations remain unapplied. Provider readiness and health endpoints are not certified."
     },
-    "observedAtMeaning": "Timestamp of this hotfix's fresh read-only repository, Railway and Supabase reconciliation."
+    "observedAtMeaning": "Timestamp of read-only deployment/source and ledger reconciliation."
   },
   "platforms": {
     "railway": {
       "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
-      "status": "staging_and_production_deployment_success_commercial_flags_off",
-      "stagingActiveSourceCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
-      "stagingActiveDeploymentId": "fe9f593e-a7ea-47a6-a40b-e1663929fd3f",
+      "status": "deployment_success_provider_readiness_not_certified",
+      "stagingActiveSourceCommit": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+      "stagingActiveDeploymentId": "b81feb08-a966-48e7-8872-e201c1dd8108",
       "stagingActiveDeploymentStatus": "SUCCESS",
       "stagingPreviousDeploymentId": "51c8aebb-c835-4fc9-a7ea-3cd87950e756",
       "stagingPreviousDeploymentState": "REMOVED",
-      "productionSourceCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
-      "productionDeploymentId": "df6d9c31-d35d-4d85-a435-ab0e845fbabe",
+      "productionSourceCommit": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+      "productionDeploymentId": "8da17bff-05b8-4fee-92a4-aa517ff9701a",
       "productionPreviousDeploymentId": "dcf40411-651e-4d14-b341-5c2042cbcb04",
       "productionPublicUrl": "https://corner-mex-uae-production.up.railway.app",
       "productionRegion": "asia-southeast1-eqsg3a",
@@ -50,13 +50,13 @@
       "stagingAutoDeploy": true,
       "productionAutoDeploy": true,
       "deploymentCreatedByThisSprint": false,
-      "note": "DECLARED POLICY remains automatic staging / manual production. OBSERVED PLATFORM STATE differs: production is source-linked to main with checkSuites=true and Railway automatically created production deployments for recent green merges, including PR #66 at c249512. This hotfix records the drift and performs no Railway write. Founder must decide separately whether to disable/restore manual production deployment.",
-      "lastObservedDuringSprint": "CM-GOV-HOTFIX",
+      "note": "Fresh read-only deployments/source observation is recorded in docs/go-live/read-only-runtime-evidence.json. Manual-production policy remains in drift; no platform change performed. Serving commit fields reflect deployment source metadata, not a fresh health endpoint response.",
+      "lastObservedDuringSprint": "INTERMEX-GO-LIVE-1",
       "reobservedByCurrentSprint": true,
       "productionDeploymentPerformedByThisSprint": false,
       "productionDeploymentAuthorizedByThisSprint": false,
-      "productionServingCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
-      "stagingServingCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
+      "productionServingCommit": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+      "stagingServingCommit": "976676271ccca3c9f04c071a581ce6ab158c1b66",
       "governanceDrift": {
         "status": "open_founder_decision_required",
         "declaredPolicy": "automatic_staging_manual_production",
@@ -126,64 +126,79 @@
     },
     "runtime": {
       "stagingHealth": "deployment_success_status_observed",
-      "stagingHealthObservedCommit": "c249512e1338",
+      "stagingHealthObservedCommit": "976676271ccc",
       "stagingReadiness": "not_reverified_by_endpoint",
-      "stagingReadinessDetail": "Railway deployment fe9f593e-a7ea-47a6-a40b-e1663929fd3f was observed SUCCESS for main commit c249512e13388305bc0648546f7d3ab860921dc8. This refresh did not claim a new /api/health or /api/ready observation and performed no platform mutation.",
-      "productionInstance": "RUNNING",
+      "stagingReadinessDetail": "Railway deployment b81feb08-a966-48e7-8872-e201c1dd8108 reports SUCCESS at 976676271ccca3c9f04c071a581ce6ab158c1b66. Health/readiness endpoints and provider execution are not certified. No platform mutation.",
+      "productionInstance": "NOT_REOBSERVED",
       "productionHealth": "deployment_success_status_observed",
-      "productionHealthObservedCommit": "c249512e1338",
+      "productionHealthObservedCommit": "976676271ccc",
       "productionReadiness": "not_reverified_by_endpoint",
-      "productionReadinessDetail": "Railway deployment df6d9c31-d35d-4d85-a435-ab0e845fbabe was observed SUCCESS for main commit c249512e13388305bc0648546f7d3ab860921dc8. This refresh did not claim a new /api/health or /api/ready observation. Its automatic creation conflicts with the declared manual-production governance model and remains an open Founder decision.",
-      "provenance": "cm_gov_hotfix_read_only_railway_deployment_and_source_reconciliation",
+      "productionReadinessDetail": "Railway deployment 8da17bff-05b8-4fee-92a4-aa517ff9701a reports SUCCESS at 976676271ccca3c9f04c071a581ce6ab158c1b66. Health/readiness endpoints and provider execution are not certified. No platform mutation.",
+      "provenance": "intermex_go_live_1_read_only_deployment_source_and_ledger_reconciliation",
       "currentStatus": "deployment_success_governance_drift_open"
     },
     "scope": "These readiness fields describe A3.2b EXECUTION readiness (reviewedRemediationHeadSha is the pinned A3.2b remediation head) and historical sprint reviews. They do NOT describe CM-COM-4A and must not be read as an independent review or release approval of the active sprint.",
     "currentSprintReadiness": {
-      "sprint": "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION",
-      "pullRequest": 27,
-      "state": "draft_remediation",
+      "sprint": "INTERMEX_GO_LIVE_1_READINESS",
+      "pullRequest": 76,
+      "state": "readiness_only",
       "independentReviewComplete": false,
-      "independentReviewer": "Independent reviewer",
-      "reviewedHeadSha": "76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0",
+      "independentReviewer": "cornermexuae-netizen",
+      "reviewedHeadSha": null,
       "declaredReady": false,
-      "status": "request_changes_cm_com_4a_r3_remediation_in_progress",
-      "independentReviewR1": {
-        "verdict": "REQUEST_CHANGES_CM_COM_4A_R1",
-        "findings": [
-          "P1 combined lifecycle invariants CLOSED",
-          "P1 audit ACL/read integration CLOSED",
-          "P1 seller regression CLOSED",
-          "P2 truthful order-detail backend error OPEN to R2 remediation",
-          "P2 executable behavior coverage OPEN to R2 remediation"
-        ],
-        "remediationStatus": "r2_reviewed"
-      },
-      "independentReviewR2": {
-        "verdict": "REQUEST_CHANGES_CM_COM_4A_R2",
+      "status": "not_ready_for_operations",
+      "priorHeadReview": {
+        "head": "4a3df3175f80eda8ec166b60079ebc6252c38eca",
+        "state": "APPROVED",
+        "currentHeadApproval": false
+      }
+    },
+    "historicalSprintReadiness": {
+      "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION": {
+        "sprint": "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION",
+        "pullRequest": 27,
+        "state": "draft_remediation",
+        "independentReviewComplete": false,
+        "independentReviewer": "Independent reviewer",
         "reviewedHeadSha": "76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0",
-        "findings": [
-          "P1-1 combined lifecycle CLOSED",
-          "P1-2 audit ACL/read path CLOSED",
-          "P1-3 seller regression CLOSED",
-          "P2-1 customer truthful error UX CLOSED",
-          "P2-2 behavioral coverage OPEN to R3 remediation"
-        ],
-        "remediationStatus": "r3_in_progress_not_independently_reviewed"
+        "declaredReady": false,
+        "status": "request_changes_cm_com_4a_r3_remediation_in_progress",
+        "independentReviewR1": {
+          "verdict": "REQUEST_CHANGES_CM_COM_4A_R1",
+          "findings": [
+            "P1 combined lifecycle invariants CLOSED",
+            "P1 audit ACL/read integration CLOSED",
+            "P1 seller regression CLOSED",
+            "P2 truthful order-detail backend error OPEN to R2 remediation",
+            "P2 executable behavior coverage OPEN to R2 remediation"
+          ],
+          "remediationStatus": "r2_reviewed"
+        },
+        "independentReviewR2": {
+          "verdict": "REQUEST_CHANGES_CM_COM_4A_R2",
+          "reviewedHeadSha": "76dd0a51c19224e8492a1784cfbe8fb60fbc2fd0",
+          "findings": [
+            "P1-1 combined lifecycle CLOSED",
+            "P1-2 audit ACL/read path CLOSED",
+            "P1-3 seller regression CLOSED",
+            "P2-1 customer truthful error UX CLOSED",
+            "P2-2 behavioral coverage OPEN to R3 remediation"
+          ],
+          "remediationStatus": "r3_in_progress_not_independently_reviewed"
+        }
       }
     }
   },
   "program": {
-    "activeSprint": "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION",
+    "activeSprint": "INTERMEX_GO_LIVE_1_READINESS",
     "owner": "Codex",
     "reviewer": "independent reviewer",
     "blockers": [
-      "CM-COM-4A is repository-only. Its lifecycle migration/RPC is PREPARED and UNAPPLIED; no Supabase, Railway, order, payment or deployment write was performed or authorized.",
-      "CM-COM-4A requires independent review and a separate Founder-authorized migration/deployment sequence before activation.",
-      "CM-COM-2B1 domain cutover remains ON HOLD: no custom domain is purchased or approved. cornermex.ae is not owned or operational (FD-CM-PUBLIC-CONTACT-001).",
-      "Railway production behavior is in governance drift: declared policy requires manual production, while observed production is source-linked to main and has automatically deployed recent green merges. Founder decision required after this hotfix.",
-      "External Supabase Preview GitHub check fails on main: remote migration versions are not present in the local supabase/migrations directory (integration drift; not a repository CI gate).",
-      "Live Railway governance monitoring remains deferred because no OAuth project:viewer credential exists.",
-      "Pre-activation email debt (telemetry skipped-vs-failed, sendOrderEmail auth review, opaque provider errors) must be closed before external email activation."
+      "INTERMEX-GO-LIVE-1 remains NOT_READY: canonical card checkout, paid-order handoff, Stripe intent/refund hardening, customer invoice visibility and provider/tax/worker inputs remain blocked; see docs/go-live/INTERMEX_GO_LIVE_1.md.",
+      "B2B A/B/C, Zoho and Stripe production migrations are unapplied and each requires independent Founder authorization. Gate A read-only preflight is 9/9 green; no apply performed.",
+      "Production auto-deploy governance drift remains open; no Railway or DNS mutation authorized.",
+      "Fresh exact-head independent review and CI required after this evidence refresh. Merge is not activation authorization.",
+      "Historical rollout, email, domain and rollback records retain their original scope and are not re-certified by this observation."
     ],
     "completedSprints": [
       {
@@ -267,5 +282,5 @@
     "externalSendsBlocked": true,
     "customerImpactBlocked": true
   },
-  "generatedAtMeaning": "Time this repository state snapshot and its fresh read-only runtime evidence were reconciled by CM-GOV-HOTFIX."
+  "generatedAtMeaning": "Fresh read-only runtime evidence for deployment/source and ledger only; historical authorization and rollback evidence retain their original dates."
 }

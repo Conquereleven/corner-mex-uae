@@ -178,10 +178,10 @@ test("program state records current main and does not claim PR #23 is deployed",
   assert.equal(state.authority.expectedMainSha, state.authority.observedMainSha);
   assert.equal(
     state.authority.observedMainSha,
-    "c249512e13388305bc0648546f7d3ab860921dc8",
-    "program state must record the PR #66 merge commit used as the hotfix baseline",
+    JSON.parse(await read("docs/go-live/activation-manifest.json")).baselineMain,
+    "program state must record the audited main baseline",
   );
-  assert.equal(state.program.activeSprint, "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION");
+  assert.equal(state.program.activeSprint, state.readiness.currentSprintReadiness.sprint);
   assert.equal(state.platforms.railway.reobservedByCurrentSprint, true);
   assert.equal(state.platforms.railway.productionDeploymentPerformedByThisSprint, false);
   assert.equal(state.platforms.railway.productionDeploymentAuthorizedByThisSprint, false);
@@ -220,9 +220,10 @@ test("the CM-COM-2A remediation sequence is exactly R1 rejected, R2 rejected, R3
   );
 });
 
-test("the active sprint records the R2 re-review without presenting R3 as ready", async () => {
+test("the historical lifecycle sprint preserves the R2 re-review without presenting R3 as ready", async () => {
   const state = JSON.parse(await read("docs/program/CURRENT_STATE.json"));
-  const currentSprint = state.readiness.currentSprintReadiness;
+  const currentSprint =
+    state.readiness.historicalSprintReadiness["CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION"];
   assert.ok(currentSprint, "current-sprint readiness must be recorded");
   assert.equal(currentSprint.sprint, "CM-COM-4A_POST_ORDER_LIFECYCLE_FOUNDATION");
   assert.equal(currentSprint.independentReviewComplete, false);
@@ -243,14 +244,14 @@ test("evidence pins the same fresh repository and runtime reconciliation", async
   const ev = state.evidence;
   assert.equal(ev.class, "verified_live");
   assert.equal(ev.repositoryEvidence.class, "verified_repository");
-  assert.equal(ev.repositoryEvidence.verifiedBy, "CM-GOV-HOTFIX");
+  assert.equal(ev.repositoryEvidence.verifiedBy, "INTERMEX-GO-LIVE-1");
   assert.equal(
     ev.repositoryEvidence.identity,
-    "github:c249512e13388305bc0648546f7d3ab860921dc8",
+    `github:${state.authority.observedMainSha}`,
     "repository evidence identity must match current main",
   );
   assert.equal(ev.runtimeEvidence.class, "verified_live");
-  assert.equal(ev.runtimeEvidence.observedBy, "CM-GOV-HOTFIX");
+  assert.equal(ev.runtimeEvidence.observedBy, "INTERMEX-GO-LIVE-1");
   assert.equal(ev.runtimeEvidence.reobservedByCurrentSprint, true);
   assert.equal(ev.runtimeEvidence.currentRuntimeState, "deployments_success_governance_drift_open");
   assert.equal(ev.sourceIdentity, undefined);

@@ -17,7 +17,7 @@ function invalid() {
   return new Response("Invalid webhook payload", { status: 400 });
 }
 
-async function process(call: WebhookCall) {
+async function persistVerifiedEvent(call: WebhookCall) {
   const { error } = await database.rpc("cm_pay_process_stripe_webhook_v1", call);
   if (error) throw new Error("payment_webhook_processing_failed");
 }
@@ -86,7 +86,7 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
             ) {
               return invalid();
             }
-            await process({
+            await persistVerifiedEvent({
               p_event_id: event.id,
               p_event_type: event.type,
               p_provider_object_id: object.id,
@@ -123,7 +123,7 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
               .maybeSingle();
             if (error) throw new Error("refund_lookup_failed");
             if (!payment) return invalid();
-            await process({
+            await persistVerifiedEvent({
               p_event_id: event.id,
               p_event_type: event.type,
               p_provider_object_id: object.id,

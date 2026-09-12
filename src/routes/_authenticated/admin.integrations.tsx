@@ -1,3 +1,4 @@
+import { GoLiveReadiness } from "@/components/admin/GoLiveReadiness";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -22,8 +23,17 @@ import {
 
 export const Route = createFileRoute("/_authenticated/admin/integrations")({
   head: () => ({ meta: [{ title: "Admin — Integration Control Center" }] }),
-  component: IntegrationControlCenter,
+  component: GoLiveControlCenter,
 });
+
+function GoLiveControlCenter() {
+  return (
+    <div className="space-y-6">
+      <GoLiveReadiness />
+      <IntegrationControlCenter />
+    </div>
+  );
+}
 
 function IntegrationControlCenter() {
   const load = useServerFn(adminAccountingControlCenter);
@@ -47,7 +57,7 @@ function IntegrationControlCenter() {
     return (
       <AdminCapabilityUnavailable
         title="Accounting integration is not activated"
-        description="The reviewed database migration is still unapplied. Zoho live writes remain blocked."
+        description="The accounting schema is unavailable through the runtime API. Verify migration and schema exposure; Zoho live writes remain blocked."
       />
     );
 
