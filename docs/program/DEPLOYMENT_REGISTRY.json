@@ -1,11 +1,11 @@
 {
   "schemaVersion": "cornermex-deployment-registry-v2",
-  "observedAt": "2026-08-28T18:27:55Z",
+  "observedAt": "2026-09-12T07:27:34Z",
   "repository": "Conquereleven/corner-mex-uae",
   "railwayProjectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
   "incidentClassification": "unexpected_automated_platform_write",
   "outageVerified": false,
-  "currentSourceCommit": "c249512e13388305bc0648546f7d3ab860921dc8",
+  "currentSourceCommit": "976676271ccca3c9f04c071a581ce6ab158c1b66",
   "failedSourceCommits": [
     "13c9aa4a1fc87570dbf8180f87dc66ecc9bae5c2",
     "bb9386f72197fb20912c328ac912c27894f3db02"
@@ -285,11 +285,12 @@
       "sourceBranch": "main",
       "sourceRepository": "Conquereleven/corner-mex-uae",
       "sourceConfigCheckSuites": false,
-      "state": "SUCCESS",
+      "state": "REMOVED",
       "instanceState": "NOT_REOBSERVED",
       "packageManager": "npm",
       "evidenceClass": "verified_live",
-      "note": "Latest staging deployment observed read-only during CM-GOV-HOTFIX; created from PR #66 merge commit on main."
+      "note": "Superseded; REMOVED status freshly observed by INTERMEX-GO-LIVE-1. Original evidence remains historical.",
+      "originalResult": "SUCCESS"
     },
     {
       "buildCommand": "npm run build:railway",
@@ -306,11 +307,58 @@
       "sourceBranch": "main",
       "sourceRepository": "Conquereleven/corner-mex-uae",
       "sourceConfigCheckSuites": true,
-      "state": "SUCCESS",
+      "state": "REMOVED",
       "instanceState": "NOT_REOBSERVED",
       "packageManager": "npm",
       "evidenceClass": "verified_live",
-      "note": "Latest production deployment observed read-only during CM-GOV-HOTFIX; automatically created for green PR #66 merge commit despite the declared manual-production policy. Governance drift remains open."
+      "note": "Superseded; REMOVED status freshly observed by INTERMEX-GO-LIVE-1. Original evidence remains historical.",
+      "originalResult": "SUCCESS"
+    },
+    {
+      "context": "CornerMex UAE - cornermex-web",
+      "service": "cornermex-web",
+      "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+      "environment": "staging",
+      "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+      "sourceBranch": "main",
+      "sourceCommit": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+      "deploymentId": "b81feb08-a966-48e7-8872-e201c1dd8108",
+      "createdAt": "2026-08-28T22:48:01.455Z",
+      "state": "SUCCESS",
+      "packageManager": "npm",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "healthState": "not_reverified",
+      "readinessPath": "/api/ready",
+      "readinessState": "not_reverified",
+      "evidenceClass": "verified_live",
+      "instanceState": "NOT_REOBSERVED",
+      "sourceConfigCheckSuites": false,
+      "note": "Deployment status and source observed read-only; build/start/health configuration follows repository railway.toml. No endpoint or provider certification."
+    },
+    {
+      "context": "CornerMex UAE - corner-mex-uae",
+      "service": "corner-mex-uae",
+      "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+      "environment": "production",
+      "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+      "sourceBranch": "main",
+      "sourceCommit": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+      "deploymentId": "8da17bff-05b8-4fee-92a4-aa517ff9701a",
+      "createdAt": "2026-08-28T22:48:01.455Z",
+      "state": "SUCCESS",
+      "packageManager": "npm",
+      "buildCommand": "npm run build:railway",
+      "startCommand": "npm run start:railway",
+      "healthPath": "/api/health",
+      "healthState": "not_reverified",
+      "readinessPath": "/api/ready",
+      "readinessState": "not_reverified",
+      "evidenceClass": "verified_live",
+      "instanceState": "NOT_REOBSERVED",
+      "sourceConfigCheckSuites": true,
+      "note": "Deployment status and source observed read-only; build/start/health configuration follows repository railway.toml. No endpoint or provider certification."
     }
   ],
   "governance": {
@@ -323,7 +371,7 @@
       "mergesAreProductionAuthorization": false
     },
     "observedPlatformState": {
-      "observedAt": "2026-08-28T18:27:55Z",
+      "observedAt": "2026-09-12T07:27:34Z",
       "status": "governance_drift_open_founder_decision_required",
       "stagingSourceLinkedToMain": true,
       "stagingCheckSuites": false,
@@ -331,7 +379,15 @@
       "productionSourceLinkedToMain": true,
       "productionCheckSuites": true,
       "productionAutomaticDeploymentObserved": true,
-      "productionAutomaticDeploymentEvidence": ["PR #62", "PR #64", "PR #63", "PR #65", "PR #66"],
+      "productionAutomaticDeploymentEvidence": [
+        "PR #62",
+        "PR #64",
+        "PR #63",
+        "PR #65",
+        "PR #66",
+        "PR #73",
+        "PR #75"
+      ],
       "driftFromDeclaredPolicy": true,
       "decisionRequired": "Founder must decide whether production auto-deploy should be disabled/restored to manual after this hotfix.",
       "writePerformedByHotfix": false
@@ -345,7 +401,7 @@
         "autoDeploy": true,
         "trigger": "github_push_main",
         "waitForCI": false,
-        "currentSourceSha": "c249512e13388305bc0648546f7d3ab860921dc8"
+        "currentSourceSha": "976676271ccca3c9f04c071a581ce6ab158c1b66"
       },
       {
         "environment": "production",
@@ -355,7 +411,7 @@
         "autoDeploy": false,
         "trigger": "explicit_manual_action",
         "waitForCI": false,
-        "currentSourceSha": "c249512e13388305bc0648546f7d3ab860921dc8",
+        "currentSourceSha": "976676271ccca3c9f04c071a581ce6ab158c1b66",
         "requiredDecisionIdPattern": "^FD-CM-[A-Z0-9.-]+$",
         "requiredPreconditions": [
           "exact_source_sha_visible",
@@ -410,5 +466,5 @@
     "stagingReadinessMechanism": "railway_deployment_rollback_restores_custom_variables",
     "stagingReadinessRollbackPerformed": false
   },
-  "currentSourceCommitMeaning": "REPOSITORY current source (most recently reconciled main SHA). Deployed source remains tracked independently per environment in governance.contexts[].currentSourceSha; the values may differ, but the 2026-08-28 read-only observation found both current Railway deployments on this same main SHA."
+  "currentSourceCommitMeaning": "Freshly fetched main. Both current Railway deployments report this source SHA; health/readiness endpoints and providers are not certified."
 }

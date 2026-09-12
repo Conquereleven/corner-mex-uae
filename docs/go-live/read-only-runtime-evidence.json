@@ -1,0 +1,257 @@
+{
+  "observedAt": "2026-09-12T07:27:34Z",
+  "readOnly": true,
+  "projectId": "06d2ecdd-3c03-4480-8299-48c539595a94",
+  "staging": {
+    "deployments": [
+      {
+        "id": "b81feb08-a966-48e7-8872-e201c1dd8108",
+        "status": "SUCCESS",
+        "createdAt": "2026-08-28T22:48:01.455Z",
+        "updatedAt": "2026-08-28T22:50:10.314Z",
+        "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+        "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+        "url": null,
+        "snapshotId": "efd54b22-9415-432a-8f8d-f2cce8065899",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #75 from Conquereleven/feature/cm-intermex-storefront-2\n\nCM-INTERMEX-STOREFRONT-2: ship full Intermex public shell",
+          "commitHash": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "38db4936-2f39-435b-afbf-1916d67c5401",
+        "status": "REMOVED",
+        "createdAt": "2026-08-28T21:18:11.964Z",
+        "updatedAt": "2026-08-28T22:50:14.093Z",
+        "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+        "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+        "url": null,
+        "snapshotId": "e5ef4b74-f3a3-41d2-9c1d-dfda2daab357",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #73 from Conquereleven/feature/cm-pay-stripe-1-intermex\n\nCM-PAY-STRIPE-1 — Intermex checkout and payment foundation",
+          "commitHash": "0e90fe23c204e6ebf15ed911fbed859ddac54e91",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "aabb4039-35ed-43a4-a3ba-517975982282",
+        "status": "REMOVED",
+        "createdAt": "2026-08-28T20:37:43.598Z",
+        "updatedAt": "2026-08-28T21:20:34.186Z",
+        "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+        "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+        "url": null,
+        "snapshotId": "3a8cfe95-55c0-411f-ad83-10f0bb88db3c",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #72 from Conquereleven/feature/cm-intermex-brand-1-storefront-migration\n\nCM-INTERMEX-BRAND-1 — Intermex brand system and storefront migration",
+          "commitHash": "44d246ae3cb9d39f9e1a4a80cf650e678ec50833",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "fe9f593e-a7ea-47a6-a40b-e1663929fd3f",
+        "status": "REMOVED",
+        "createdAt": "2026-08-25T02:24:49.104Z",
+        "updatedAt": "2026-08-28T19:10:11.597Z",
+        "serviceId": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+        "environmentId": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+        "url": null,
+        "snapshotId": "e15ae7cb-f684-4ce5-a959-ebec0064e1fe",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #66 from Conquereleven/feature/cm-b2b-portal-1b\n\nCM-B2B-PORTAL-1B — Account pricing and availability presentation",
+          "commitHash": "c249512e13388305bc0648546f7d3ab860921dc8",
+          "branch": "main"
+        }
+      }
+    ],
+    "configuration": {
+      "service": {
+        "id": "5a6b85da-3156-4fc1-828d-ec9e4019de7e",
+        "name": "cornermex-web"
+      },
+      "environment": {
+        "id": "385b8cb8-878b-4d83-ad46-2bc831fed829",
+        "name": "staging"
+      },
+      "config": {
+        "source": {
+          "repo": "Conquereleven/corner-mex-uae",
+          "branch": "main",
+          "checkSuites": false
+        },
+        "networking": {
+          "serviceDomains": {
+            "cornermex-web-staging.up.railway.app": {}
+          }
+        },
+        "build": {
+          "builder": "RAILPACK",
+          "buildEnvironment": "V3"
+        },
+        "deploy": {
+          "useLegacyStacker": false,
+          "ipv6EgressEnabled": false,
+          "runtime": "V2",
+          "multiRegionConfig": {
+            "sfo": {
+              "numReplicas": 1
+            }
+          }
+        }
+      },
+      "variableNames": [
+        "CORNERMEX_CHECKOUT_ENABLED",
+        "CORNERMEX_COMMERCE_MODEL",
+        "CORNERMEX_COMMISSIONS_ENABLED",
+        "CORNERMEX_EXTERNAL_EMAIL_ENABLED",
+        "CORNERMEX_EXTERNAL_MESSAGES_ENABLED",
+        "CORNERMEX_MARKETPLACE_ENABLED",
+        "CORNERMEX_REAL_PAYMENT_EXECUTION_ENABLED",
+        "CORNERMEX_SELLER_AUTH_ENABLED",
+        "CORNERMEX_SELLER_PAYOUTS_ENABLED",
+        "SUPABASE_PUBLISHABLE_KEY",
+        "SUPABASE_URL",
+        "VITE_CORNERMEX_CHECKOUT_ENABLED",
+        "VITE_SUPABASE_PUBLISHABLE_KEY",
+        "VITE_SUPABASE_URL"
+      ],
+      "staged": null
+    }
+  },
+  "production": {
+    "deployments": [
+      {
+        "id": "8da17bff-05b8-4fee-92a4-aa517ff9701a",
+        "status": "SUCCESS",
+        "createdAt": "2026-08-28T22:48:01.455Z",
+        "updatedAt": "2026-08-28T22:52:14.259Z",
+        "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+        "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+        "url": null,
+        "snapshotId": "4a9bb546-9243-47e0-801a-85ceb11a748b",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #75 from Conquereleven/feature/cm-intermex-storefront-2\n\nCM-INTERMEX-STOREFRONT-2: ship full Intermex public shell",
+          "commitHash": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "78e3041f-5103-41f8-b8d1-d1d430267684",
+        "status": "REMOVED",
+        "createdAt": "2026-08-28T21:18:11.520Z",
+        "updatedAt": "2026-08-28T22:52:18.903Z",
+        "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+        "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+        "url": null,
+        "snapshotId": "a6c0dd36-0dec-4fba-b83a-607c317f24ce",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #73 from Conquereleven/feature/cm-pay-stripe-1-intermex\n\nCM-PAY-STRIPE-1 — Intermex checkout and payment foundation",
+          "commitHash": "0e90fe23c204e6ebf15ed911fbed859ddac54e91",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "8d6a21eb-4d5e-4348-8805-ad9fa735548d",
+        "status": "REMOVED",
+        "createdAt": "2026-08-28T20:37:43.313Z",
+        "updatedAt": "2026-08-28T21:22:43.308Z",
+        "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+        "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+        "url": null,
+        "snapshotId": "67b9417a-ec66-4d10-94a9-7795ef948e60",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #72 from Conquereleven/feature/cm-intermex-brand-1-storefront-migration\n\nCM-INTERMEX-BRAND-1 — Intermex brand system and storefront migration",
+          "commitHash": "44d246ae3cb9d39f9e1a4a80cf650e678ec50833",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "df6d9c31-d35d-4d85-a435-ab0e845fbabe",
+        "status": "REMOVED",
+        "createdAt": "2026-08-25T02:24:48.804Z",
+        "updatedAt": "2026-08-28T19:12:08.659Z",
+        "serviceId": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+        "environmentId": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+        "url": null,
+        "snapshotId": "1a253ff9-bf39-412f-95dc-3e454f9e5dde",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "Merge pull request #66 from Conquereleven/feature/cm-b2b-portal-1b\n\nCM-B2B-PORTAL-1B — Account pricing and availability presentation",
+          "commitHash": "c249512e13388305bc0648546f7d3ab860921dc8",
+          "branch": "main"
+        }
+      }
+    ],
+    "configuration": {
+      "service": {
+        "id": "6702af28-5689-46fb-8896-b5a8b1fbba94",
+        "name": "corner-mex-uae"
+      },
+      "environment": {
+        "id": "8f35b59c-7446-4514-a307-0b329ec62bd1",
+        "name": "production"
+      },
+      "config": {
+        "source": {
+          "repo": "Conquereleven/corner-mex-uae",
+          "branch": "main",
+          "checkSuites": true
+        },
+        "networking": {
+          "serviceDomains": {
+            "corner-mex-uae-production.up.railway.app": {
+              "port": 8080
+            }
+          }
+        },
+        "build": {
+          "builder": "RAILPACK",
+          "buildEnvironment": "V3"
+        },
+        "deploy": {
+          "useLegacyStacker": false,
+          "ipv6EgressEnabled": false,
+          "runtime": "V2",
+          "multiRegionConfig": {
+            "asia-southeast1-eqsg3a": {
+              "numReplicas": 1
+            }
+          }
+        }
+      },
+      "variableNames": [
+        "CORNERMEX_CHECKOUT_ENABLED",
+        "CORNERMEX_COD_SHIPPING_RATES_JSON",
+        "CORNERMEX_COD_SUPPORTED_EMIRATES",
+        "CORNERMEX_COMMERCE_ACTIVE_MODE",
+        "CORNERMEX_COMMERCE_MODEL",
+        "CORNERMEX_VAT_RATE",
+        "CORNERMEX_VAT_TRN",
+        "SUPABASE_PUBLISHABLE_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_URL",
+        "VITE_CORNERMEX_CHECKOUT_ENABLED",
+        "VITE_SUPABASE_PUBLISHABLE_KEY",
+        "VITE_SUPABASE_URL"
+      ],
+      "staged": null
+    }
+  },
+  "supabase": {
+    "projectRef": "wlrfknmrhowldygmvtvn",
+    "latestMigrationVersion": "20260823004146",
+    "latestMigrationName": "sec_rls_1_b2b_private_rls",
+    "pendingB2BMigrationsApplied": false,
+    "gateAPreflight": "9/9 green",
+    "writePerformed": false
+  },
+  "scope": "Deployment/source status and variable NAMES only. No secret values, no health/readiness endpoint observation, no provider activation. Historical authorization and rollback records are retained as historical, not re-certified."
+}

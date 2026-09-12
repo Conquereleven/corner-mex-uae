@@ -304,12 +304,20 @@ passed after build (459 public files; zero service-role secrets). Seven new offl
 pass, including execution of the actual webhook handler with an injected database.
 
 Limitations: `typecheck` is the repository's scoped tsconfig.a2 check, not full application
-coverage. Canonical PostgreSQL replay could not start locally because sandbox shared-memory
-creation was denied; require CI replay and opt-in Stripe PostgreSQL execution. The standard
-Stripe suite skips its database test unless explicitly enabled.
+coverage. Local PostgreSQL startup was denied by sandbox shared-memory restrictions, but
+CI run 34680503683 passed canonical replay, the seven new tests and the opt-in Stripe
+PostgreSQL suite. These tests do not certify provider sandboxes or production orders.
 
-`validate:program-state` fails with `PROGRAM_STATE_EVIDENCE_STALE`: shared evidence expired
-2026-09-04T18:27:55Z. Do not extend that timestamp without re-observing every claimed runtime
-and deployment-governance fact. This readiness audit only freshly verifies main and the
-canonical migration ledger; it does not renew unrelated platform evidence. This is a merge
-blocker, separate from the operational blockers R1–R7.
+The first CI run found expired shared program evidence. A fresh read-only Railway
+reconciliation confirmed staging deployment `b81feb08-a966-48e7-8872-e201c1dd8108` and
+production deployment `8da17bff-05b8-4fee-92a4-aa517ff9701a`, both SUCCESS at baseline main.
+Production source still has checkSuites=true; governance drift remains open. No secret
+values were read. The service-level variable-name lists contain no Stripe or Zoho keys;
+shared/inherited secret configuration is not certified by that observation.
+
+`docs/program/CURRENT_STATE.json` and `DEPLOYMENT_REGISTRY.json` are refreshed from
+[read-only-runtime-evidence.json](read-only-runtime-evidence.json), with historical records
+retaining their original scope. Program-state, deployment-governance, no-Railway-writes and
+all 128 program tests now pass. No platform mutation or health endpoint/provider certification
+is implied. Gate A live read-only preflight returned 9/9 green; no apply or postflight occurred.
+Fresh exact-head review and CI are required for this evidence-refresh commit.
