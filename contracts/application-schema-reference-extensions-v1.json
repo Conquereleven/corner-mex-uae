@@ -184,20 +184,6 @@
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
-      "kind": "table_or_storage_bucket",
-      "name": "accounting_integration_audit_events",
-      "files": ["src/lib/accounting-control-center.functions.ts"],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_unapplied_canonical_migration"
-    },
-    {
-      "kind": "table_or_storage_bucket",
-      "name": "accounting_integration_jobs",
-      "files": ["src/lib/accounting-control-center.functions.ts"],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_unapplied_canonical_migration"
-    },
-    {
       "kind": "function",
       "name": "cm_pay_create_stripe_attempt_v2",
       "files": ["src/lib/payments.functions.ts"],
@@ -264,6 +250,20 @@
       "kind": "function",
       "name": "cm_completed_checkout_operation_v2",
       "files": ["src/lib/payments.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_accounting_control_center_v2",
+      "files": ["src/lib/accounting-control-center.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_accounting_admin_action_v2",
+      "files": ["src/lib/accounting-control-center.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }

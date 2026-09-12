@@ -309,7 +309,7 @@ begin
    acquired:=found; return jsonb_build_object('acquired',acquired);
  elsif p_action in ('save_mapping','get_mapping') then
    if p_payload->>'entityType' not in ('customer','invoice','payment') or p_payload->>'entityType' is null
-     or p_payload->>'localEntityId' is distinct from case when p_payload->>'entityType'='customer' then o.buyer_id::text when p_payload->>'entityType'='payment' then (select provider||':'||provider_reference from public.payments where id=o.stripe_paid_attempt_id) else o.id::text end
+     or p_payload->>'localEntityId' is distinct from (case when p_payload->>'entityType'='customer' then o.buyer_id::text when p_payload->>'entityType'='payment' then (select provider||':'||provider_reference from public.payments where id=o.stripe_paid_attempt_id) else o.id::text end)
      or (p_action='save_mapping' and nullif(p_payload->>'externalId','') is null) then raise exception 'ACCOUNTING_MAPPING_SCOPE_INVALID'; end if;
    if p_action='get_mapping' then return (select jsonb_build_object('entityType',entity_type,'localEntityId',local_entity_id,'externalId',external_id,'metadata',metadata) from commerce_private.accounting_entity_mappings where provider='zoho' and entity_type=p_payload->>'entityType' and local_entity_id=p_payload->>'localEntityId'); end if;
    m:=jsonb_strip_nulls(jsonb_build_object('number',p_payload#>>'{metadata,number}','status',p_payload#>>'{metadata,status}',
@@ -366,6 +366,48 @@ begin
    'issuedDate',m.metadata->>'issuedDate','url',m.external_url,'pdfSupported',m.pdf_supported);
 end; $$;
 
+create function public.cm_accounting_control_center_v2(p_actor_id uuid) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+begin
+ if not exists(select 1 from public.user_roles where user_id=p_actor_id and role='admin') then raise exception 'FORBIDDEN'; end if;
+ return coalesce((select jsonb_agg(row_data) from (select jsonb_build_object('id',j.id,'order_id',j.order_id,
+   'job_type',j.job_type,'status',j.status,'attempt_count',j.attempt_count,'max_attempts',j.max_attempts,
+   'next_attempt_at',j.next_attempt_at,'last_failure_category',j.last_failure_category,'last_failure_code',j.last_failure_code,
+   'correlation_id',j.correlation_id,'updated_at',j.updated_at,'orders',jsonb_build_object('order_number',o.order_number)) row_data
+   from commerce_private.accounting_integration_jobs j join public.orders o on o.id=j.order_id order by j.created_at desc limit 100) q),'[]'::jsonb);
+end; $$;
+create function public.cm_accounting_admin_action_v2(p_actor_id uuid,p_action text,p_id uuid) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare j commerce_private.accounting_integration_jobs%rowtype; o public.orders%rowtype; g commerce_private.provider_runtime_gates%rowtype;
+begin
+ if not exists(select 1 from public.user_roles where user_id=p_actor_id and role='admin') then raise exception 'FORBIDDEN'; end if;
+ select * into g from commerce_private.provider_runtime_gates where provider='zoho' and enabled and validated_at<=now() and valid_until>now();
+ if not found then raise exception 'ACCOUNTING_ACTIVATION_BLOCKED'; end if;
+ if p_action='retry' then
+   select * into j from commerce_private.accounting_integration_jobs where id=p_id for update;
+   if not found or j.status<>'requires_attention' or j.activation_generation is distinct from g.generation
+     or j.last_failure_code in ('HISTORICAL_QUEUE_QUARANTINED','CUSTOMER_CREATE_OUTCOME_UNCERTAIN','INVOICE_CREATE_OUTCOME_UNCERTAIN','PAYMENT_CREATE_OUTCOME_UNCERTAIN')
+     then raise exception 'ACCOUNTING_JOB_NOT_RETRYABLE'; end if;
+   select * into o from public.orders where id=j.order_id;
+ elsif p_action='reconcile' then select * into o from public.orders where id=p_id;
+ else raise exception 'ACCOUNTING_ACTION_INVALID'; end if;
+ if o.id is null or o.created_at<g.eligible_after or o.payment_status<>'paid' or o.payment_attention is not null
+   or o.status not in ('confirmed','processing','shipped','delivered')
+   or not exists(select 1 from public.payments where id=o.stripe_paid_attempt_id and provider_mode=g.mode and captured_aed>0)
+   or exists(select 1 from public.payments where order_id=o.id and refunded_aed>0) then raise exception 'ACCOUNTING_ORDER_INELIGIBLE'; end if;
+ if p_action='retry' then
+   update commerce_private.accounting_integration_jobs set status='retry_scheduled',attempt_count=0,next_attempt_at=now(),
+     completed_at=null,locked_by=null,locked_at=null,last_failure_category=null,last_failure_code=null,updated_at=now() where id=j.id;
+ else
+   insert into commerce_private.accounting_integration_jobs(provider,job_type,order_id,dedupe_key,activation_generation)
+   values('zoho','reconciliation',o.id,'zoho:reconciliation:'||o.id::text||':'||to_char(now(),'YYYYMMDDHH24'),g.generation)
+   on conflict(dedupe_key) do update set dedupe_key=excluded.dedupe_key returning * into j;
+ end if;
+ insert into commerce_private.accounting_integration_audit_events(provider,job_id,order_id,correlation_id,action,outcome)
+ values('zoho',j.id,o.id,j.correlation_id,'admin_'||p_action,'succeeded');
+ return jsonb_build_object('ok',true,'jobId',j.id);
+end; $$;
+
 create function public.cm_operational_status_v2(p_actor_id uuid) returns jsonb
 language plpgsql stable security definer set search_path = '' as $$
 begin
@@ -394,7 +436,7 @@ do $$ declare n text; f regprocedure; begin
  execute format('grant select,insert,update,delete on commerce_private.%I to service_role',n);
  end loop;
  for f in select p.oid::regprocedure from pg_proc p join pg_namespace n on n.oid=p.pronamespace
- where n.nspname='public' and p.proname in ('cm_claim_accounting_jobs_v2','cm_operational_status_v2','cm_completed_checkout_operation_v2','cm_accounting_job_action_v2','cm_runtime_capabilities_v2','cm_create_card_order_v2',
+ where n.nspname='public' and p.proname in ('cm_accounting_control_center_v2','cm_accounting_admin_action_v2','cm_claim_accounting_jobs_v2','cm_operational_status_v2','cm_completed_checkout_operation_v2','cm_accounting_job_action_v2','cm_runtime_capabilities_v2','cm_create_card_order_v2',
  'cm_pay_create_stripe_attempt_v2','cm_pay_bind_stripe_session_v2','cm_pay_process_stripe_webhook_v2','cm_invoice_projection_v2') loop
  execute format('revoke all on function %s from public,anon,authenticated',f);
  execute format('grant execute on function %s to service_role',f);
