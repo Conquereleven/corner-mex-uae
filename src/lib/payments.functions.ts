@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { OperationalDatabase } from "./operational-schema";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -6,6 +8,8 @@ import {
   createStripeClient,
   PaymentProviderUnavailableError,
 } from "@/lib/stripe-checkout-provider.server";
+import { readCardCapability } from "@/lib/card-capability.server";
+import { providerMode, attemptAnomalies } from "@/lib/operational-payments";
 import { reconcilePaymentState } from "@/lib/payment-state";
 import { assertCheckoutExecutionEnabled } from "@/lib/checkout-execution.server";
 
@@ -15,12 +19,15 @@ type StripeAttempt = {
   order_number: string;
   amount_aed: number | string;
   provider_reference: string;
+  provider_mode: "test" | "live";
+  created_at: string;
 };
 
 type PaymentRpcClient = {
   rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
 };
 
+const operationalDatabase = supabaseAdmin as unknown as SupabaseClient<OperationalDatabase>;
 const database = supabaseAdmin as unknown as PaymentRpcClient;
 
 function paymentMetadata(value: unknown): { refunded_amount_aed?: number; attempt_state?: string } {
@@ -40,6 +47,7 @@ export const createStripeSession = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     assertCheckoutExecutionEnabled();
+    if (!(await readCardCapability()).available) throw unavailable();
     // Verify ownership before invoking a service-role-only payment RPC.
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
@@ -48,6 +56,12 @@ export const createStripeSession = createServerFn({ method: "POST" })
       .eq("buyer_id", context.userId)
       .single();
     if (orderError || !order) throw new Error("ORDER_NOT_FOUND");
+    if (
+      order.payment_method === "card" &&
+      order.payment_status === "paid" &&
+      order.status !== "pending"
+    )
+      return { url: `/order-confirmed?order=${order.id}` };
     if (order.payment_method !== "card" || order.status !== "pending") {
       throw new Error("ORDER_NOT_PAYABLE");
     }
@@ -61,8 +75,9 @@ export const createStripeSession = createServerFn({ method: "POST" })
 
     let attempt: StripeAttempt;
     try {
-      const { data: result, error } = await database.rpc("cm_pay_create_stripe_attempt_v1", {
+      const { data: result, error } = await database.rpc("cm_pay_create_stripe_attempt_v2", {
         p_order_id: order.id,
+        p_mode: provider.mode,
       });
       if (error || !result) throw new Error("attempt_failed");
       attempt = result as StripeAttempt;
@@ -77,6 +92,13 @@ export const createStripeSession = createServerFn({ method: "POST" })
         // never creates a second chargeable attempt for the same local UUID.
         session = await provider.stripe.checkout.sessions.retrieve(attempt.provider_reference);
       } else {
+        // Stripe idempotency keys may be pruned after 24 hours. Ambiguous
+        // unbound attempts older than 23 hours require operator recovery, never another create.
+        if (
+          !Number.isFinite(Date.parse(attempt.created_at)) ||
+          Date.now() - Date.parse(attempt.created_at) > 23 * 3600_000
+        )
+          throw unavailable();
         const amount = Number(attempt.amount_aed);
         if (!Number.isFinite(amount) || amount < 0) throw unavailable();
         session = await provider.stripe.checkout.sessions.create(
@@ -111,16 +133,34 @@ export const createStripeSession = createServerFn({ method: "POST" })
           },
           { idempotencyKey: `cm-pay-stripe-attempt-${attempt.payment_id}` },
         );
-        if (!session.id || !session.url) throw unavailable();
-        const { error: bindError } = await database.rpc("cm_pay_bind_stripe_checkout_session_v1", {
+        if (
+          !session.id ||
+          session.livemode !== (provider.mode === "live") ||
+          session.currency !== "aed" ||
+          session.amount_total !== Math.round(Number(attempt.amount_aed) * 100) ||
+          session.metadata?.order_id !== attempt.order_id ||
+          session.metadata?.payment_attempt_id !== attempt.payment_id
+        )
+          throw unavailable();
+      }
+      if (
+        session.livemode !== (provider.mode === "live") ||
+        session.metadata?.order_id !== attempt.order_id ||
+        session.metadata?.payment_attempt_id !== attempt.payment_id
+      )
+        throw unavailable();
+      {
+        const { error: bindError } = await database.rpc("cm_pay_bind_stripe_session_v2", {
           p_payment_id: attempt.payment_id,
+          p_mode: provider.mode,
           p_session_id: session.id,
           p_payment_intent_id:
             typeof session.payment_intent === "string" ? session.payment_intent : null,
         });
         if (bindError) throw new Error("binding_failed");
       }
-      if (!session.url) throw unavailable();
+      if (session.status === "complete") return { url: `/order-confirmed?order=${order.id}` };
+      if (session.status !== "open" || !session.url) throw unavailable();
       return { url: session.url };
     } catch (error) {
       // A network/provider error is ambiguous. Keep this attempt resumable so
@@ -170,7 +210,14 @@ export const getOrderForConfirmation = createServerFn({ method: "GET" })
       .eq("buyer_id", context.userId)
       .single();
     if (error || !order) throw new Error("ORDER_NOT_FOUND");
-    return order;
+    const operation = await database.rpc("cm_completed_checkout_operation_v2", {
+      p_actor_id: context.userId,
+      p_order_id: order.id,
+    });
+    return {
+      ...order,
+      completedOperationId: operation.error ? null : (operation.data as string | null),
+    };
   });
 
 // BNPL is deliberately not executable in this Stripe foundation. Keeping the
@@ -192,7 +239,7 @@ export const getAdminPaymentReconciliation = createServerFn({ method: "GET" })
     z.object({ orderId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { data: role } = await supabaseAdmin
+    const { data: role } = await operationalDatabase
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId)
@@ -202,15 +249,15 @@ export const getAdminPaymentReconciliation = createServerFn({ method: "GET" })
 
     const [{ data: order, error: orderError }, { data: payments, error: paymentError }] =
       await Promise.all([
-        supabaseAdmin
+        operationalDatabase
           .from("orders")
-          .select("id, payment_status, payment_method, total_aed")
+          .select("id, payment_status, payment_method, total_aed, payment_attention")
           .eq("id", data.orderId)
           .single(),
-        supabaseAdmin
+        operationalDatabase
           .from("payments")
           .select(
-            "id, provider, provider_reference, status, amount_aed, metadata, created_at, updated_at",
+            "id, provider, provider_reference, status, amount_aed, metadata, provider_mode, captured_aed, refunded_aed, created_at, updated_at",
           )
           .eq("order_id", data.orderId)
           .order("created_at", { ascending: false }),
@@ -226,17 +273,32 @@ export const getAdminPaymentReconciliation = createServerFn({ method: "GET" })
         status: payment.status,
         amountAed: Number(payment.amount_aed),
         refundedAmountAed: Number(metadata.refunded_amount_aed ?? 0),
+        mode: payment.provider_mode,
+        capturedAmountAed: Number(payment.captured_aed),
         createdAt: payment.created_at,
         updatedAt: payment.updated_at,
       };
     });
     return {
       attempts,
-      issues: reconcilePaymentState({
-        orderPaymentStatus: order.payment_status,
-        orderTotalAed: Number(order.total_aed),
-        paymentMethod: order.payment_method,
-        attempts,
-      }),
+      issues: [
+        ...(order.payment_attention ? [order.payment_attention] : []),
+        ...attemptAnomalies(
+          attempts
+            .filter((p) => p.provider === "stripe")
+            .map((p) => ({
+              mode: p.mode,
+              captured: p.capturedAmountAed,
+              refunded: p.refundedAmountAed,
+            })),
+          providerMode(process.env.CORNERMEX_STRIPE_MODE) ?? "test",
+        ),
+        ...reconcilePaymentState({
+          orderPaymentStatus: order.payment_status,
+          orderTotalAed: Number(order.total_aed),
+          paymentMethod: order.payment_method,
+          attempts,
+        }),
+      ],
     };
   });

@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { createFileRoute } from "@tanstack/react-router";
-import { evaluateZohoActivation } from "@/lib/zoho-accounting.server";
+import { readAccountingRuntime } from "@/lib/accounting-runtime.server";
 
 function authorized(request: Request): boolean {
   const expected = process.env.CORNERMEX_INTEGRATION_WORKER_SECRET;
@@ -16,10 +16,10 @@ export const Route = createFileRoute("/api/public/hooks/accounting-worker")({
     handlers: {
       POST: async ({ request }) => {
         if (!authorized(request)) return Response.json({ ok: false }, { status: 401 });
-        const activation = evaluateZohoActivation();
+        const activation = await readAccountingRuntime();
         if (!activation.ready)
           return Response.json(
-            { ok: false, blocked: true, reasons: activation.reasons },
+            { ok: false, blocked: true, reasons: ["ACCOUNTING_ACTIVATION_BLOCKED"] },
             { status: 503 },
           );
         const { runAccountingWorker } = await import("@/lib/accounting-worker.server");

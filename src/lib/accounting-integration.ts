@@ -63,6 +63,7 @@ export type ExternalInvoice = {
   status: string | null;
   url: string | null;
   pdfSupported: boolean;
+  issuedDate?: string | null;
   totalAed: number;
 };
 export type ExternalPayment = { id: string; status: string | null };
@@ -98,6 +99,7 @@ export type AccountingProvider = {
 };
 
 export type AccountingStateStore = {
+  beginProviderCreate?(entityKey: string): Promise<boolean>;
   getMapping(
     entityType: EntityMapping["entityType"],
     localEntityId: string,
@@ -183,6 +185,12 @@ async function resolveCustomer(
   if (matches.length > 1) {
     throw new AccountingIntegrationError("conflict", false, "ACCOUNTING_CUSTOMER_CONFLICT");
   }
+  if (
+    matches.length === 0 &&
+    store.beginProviderCreate &&
+    !(await store.beginProviderCreate(`customer:${input.customer.localId}`))
+  )
+    throw new AccountingIntegrationError("conflict", false, "CUSTOMER_CREATE_OUTCOME_UNCERTAIN");
   const customer = matches[0] ?? (await provider.createCustomer(input.customer));
   await store.saveMapping({
     entityType: "customer",
@@ -211,6 +219,12 @@ async function resolveInvoice(
   if (matches.length > 1) {
     throw new AccountingIntegrationError("conflict", false, "ACCOUNTING_INVOICE_CONFLICT");
   }
+  if (
+    matches.length === 0 &&
+    store.beginProviderCreate &&
+    !(await store.beginProviderCreate(`invoice:${input.orderId}`))
+  )
+    throw new AccountingIntegrationError("conflict", false, "INVOICE_CREATE_OUTCOME_UNCERTAIN");
   const invoice = matches[0] ?? (await provider.createInvoice(input, externalCustomerId));
   await store.saveMapping({
     entityType: "invoice",
@@ -221,6 +235,7 @@ async function resolveInvoice(
       status: invoice.status,
       url: invoice.url,
       pdfSupported: invoice.pdfSupported,
+      issuedDate: invoice.issuedDate ?? null,
     },
   });
   return invoice;
@@ -262,6 +277,16 @@ export async function processOrderToInvoice(input: {
         if (matches.length > 1) {
           throw new AccountingIntegrationError("conflict", false, "ACCOUNTING_PAYMENT_CONFLICT");
         }
+        if (
+          matches.length === 0 &&
+          store.beginProviderCreate &&
+          !(await store.beginProviderCreate(`payment:${paymentMappingKey}`))
+        )
+          throw new AccountingIntegrationError(
+            "conflict",
+            false,
+            "PAYMENT_CREATE_OUTCOME_UNCERTAIN",
+          );
         payment =
           matches[0] ??
           (await provider.recordPayment({

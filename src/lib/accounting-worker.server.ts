@@ -11,7 +11,7 @@ import {
   type CanonicalOrderInvoice,
   type EntityMapping,
 } from "@/lib/accounting-integration";
-import { createActivatedZohoProvider, evaluateZohoActivation } from "@/lib/zoho-accounting.server";
+import { gatedAccountingProvider, readAccountingRuntime } from "@/lib/accounting-runtime.server";
 
 type ClaimedJob = {
   id: string;
@@ -20,6 +20,7 @@ type ClaimedJob = {
   correlation_id: string;
   attempt_count: number;
   max_attempts: number;
+  locked_by: string;
 };
 
 function logAccountingEvent(
@@ -125,127 +126,55 @@ async function loadCanonicalOrder(orderId: string): Promise<CanonicalOrderInvoic
   };
 }
 
+async function jobAction(job: ClaimedJob, action: string, payload: unknown = {}) {
+  const { data, error } = await (supabaseAdmin as any).rpc("cm_accounting_job_action_v2", {
+    p_job_id: job.id,
+    p_worker_id: job.locked_by,
+    p_action: action,
+    p_payload: payload,
+  });
+  if (error)
+    throw new AccountingIntegrationError("conflict", false, "ACCOUNTING_FENCED_ACTION_REJECTED");
+  return data;
+}
 function createStore(job: ClaimedJob): AccountingStateStore {
   return {
     async getMapping(entityType, localEntityId) {
-      const { data, error } = await (supabaseAdmin as any)
-        .schema("commerce_private")
-        .from("accounting_entity_mappings")
-        .select("entity_type, local_entity_id, external_id, metadata")
-        .eq("provider", "zoho")
-        .eq("entity_type", entityType)
-        .eq("local_entity_id", localEntityId)
-        .maybeSingle();
-      if (error)
-        throw new AccountingIntegrationError(
-          "mapping_error",
-          true,
-          "ACCOUNTING_MAPPING_READ_FAILED",
-        );
-      return data
-        ? {
-            entityType: data.entity_type,
-            localEntityId: data.local_entity_id,
-            externalId: data.external_id,
-            metadata: data.metadata,
-          }
-        : null;
+      return jobAction(job, "get_mapping", { entityType, localEntityId });
+    },
+    async beginProviderCreate(key) {
+      return (await jobAction(job, "begin_create", { key })).acquired === true;
     },
     async saveMapping(mapping: EntityMapping) {
-      const metadata = mapping.metadata ?? {};
-      const { error } = await (supabaseAdmin as any)
-        .schema("commerce_private")
-        .from("accounting_entity_mappings")
-        .upsert(
-          {
-            provider: "zoho",
-            entity_type: mapping.entityType,
-            local_entity_id: mapping.localEntityId,
-            external_id: mapping.externalId,
-            external_number: metadata.number ?? null,
-            external_status: metadata.status ?? null,
-            external_url: metadata.url ?? null,
-            pdf_supported: metadata.pdfSupported ?? false,
-            metadata,
-            last_synced_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "provider,entity_type,local_entity_id" },
-        );
-      if (error)
-        throw new AccountingIntegrationError(
-          "mapping_error",
-          true,
-          "ACCOUNTING_MAPPING_WRITE_FAILED",
-        );
+      await jobAction(job, "save_mapping", mapping);
     },
     async audit(event) {
-      const { error } = await (supabaseAdmin as any)
-        .schema("commerce_private")
-        .from("accounting_integration_audit_events")
-        .insert({
-          provider: "zoho",
-          job_id: job.id,
-          order_id: job.order_id,
-          correlation_id: job.correlation_id,
-          action: event.action,
-          outcome: event.outcome,
-          failure_category: event.category ?? null,
-          external_id: event.externalId ?? null,
-        });
-      if (error)
-        throw new AccountingIntegrationError(
-          "mapping_error",
-          true,
-          "ACCOUNTING_AUDIT_WRITE_FAILED",
-        );
+      await jobAction(job, "audit", event);
     },
   };
 }
-
 async function finishJob(job: ClaimedJob) {
-  const { error } = await (supabaseAdmin as any)
-    .schema("commerce_private")
-    .from("accounting_integration_jobs")
-    .update({
-      status: "succeeded",
-      completed_at: new Date().toISOString(),
-      locked_at: null,
-      locked_by: null,
-      last_failure_category: null,
-      last_failure_code: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", job.id);
-  if (error) throw new Error("ACCOUNTING_JOB_FINISH_PERSIST_FAILED");
+  await jobAction(job, "finish");
 }
-
 async function failJob(job: ClaimedJob, rawError: unknown) {
   const error = classifyAccountingError(rawError);
-  const exhausted = job.attempt_count >= job.max_attempts;
-  const status = !error.retryable || exhausted ? "requires_attention" : "retry_scheduled";
-  const next = new Date(
-    Date.now() + retryDelayMs(job.attempt_count, error.retryAfterMs),
-  ).toISOString();
-  const { error: persistenceError } = await (supabaseAdmin as any)
-    .schema("commerce_private")
-    .from("accounting_integration_jobs")
-    .update({
-      status,
-      next_attempt_at: next,
-      locked_at: null,
-      locked_by: null,
-      last_failure_category: error.category,
-      last_failure_code: error.safeCode,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", job.id);
-  if (persistenceError) throw new Error("ACCOUNTING_JOB_FAILURE_PERSIST_FAILED");
+  const status =
+    !error.retryable || job.attempt_count >= job.max_attempts
+      ? "requires_attention"
+      : "retry_scheduled";
+  await jobAction(job, "fail", {
+    retryable: error.retryable,
+    category: error.category,
+    code: error.safeCode,
+    retrySeconds: Math.ceil(retryDelayMs(job.attempt_count, error.retryAfterMs) / 1000),
+  });
   return { status, category: error.category, code: error.safeCode };
 }
 
 async function processJob(job: ClaimedJob) {
-  const provider = createActivatedZohoProvider();
+  const provider = await gatedAccountingProvider(async () => {
+    await jobAction(job, "assert");
+  });
   const store = createStore(job);
   const order = await loadCanonicalOrder(job.order_id);
   if (job.job_type === "reconciliation") {
@@ -303,16 +232,18 @@ async function processJob(job: ClaimedJob) {
 }
 
 export async function runAccountingWorker(limit = 10) {
-  const activation = evaluateZohoActivation();
+  const activation = await readAccountingRuntime();
   if (!activation.ready)
-    return { ok: false as const, blocked: true as const, reasons: activation.reasons };
+    return {
+      ok: false as const,
+      blocked: true as const,
+      reasons: ["ACCOUNTING_ACTIVATION_BLOCKED"],
+    };
   const workerId = `accounting-${randomUUID()}`;
-  const { data, error } = await (supabaseAdmin as any)
-    .schema("commerce_private")
-    .rpc("claim_accounting_integration_jobs", {
-      p_worker_id: workerId,
-      p_limit: Math.min(Math.max(limit, 1), 25),
-    });
+  const { data, error } = await (supabaseAdmin as any).rpc("cm_claim_accounting_jobs_v2", {
+    p_worker_id: workerId,
+    p_limit: Math.min(Math.max(limit, 1), 25),
+  });
   if (error) throw new Error("ACCOUNTING_JOB_CLAIM_FAILED");
   const results = [];
   for (const job of (data ?? []) as ClaimedJob[]) {
@@ -321,7 +252,11 @@ export async function runAccountingWorker(limit = 10) {
       logAccountingEvent("job_succeeded", job);
       results.push({ jobId: job.id, status: "succeeded" });
     } catch (jobError) {
-      const failure = await failJob(job, jobError);
+      const failure = await failJob(job, jobError).catch(() => ({
+        status: "lease_lost",
+        category: "conflict",
+        code: "ACCOUNTING_LEASE_LOST",
+      }));
       logAccountingEvent("job_failed", job, failure);
       results.push({ jobId: job.id, ...failure });
     }

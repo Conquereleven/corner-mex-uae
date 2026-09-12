@@ -97,6 +97,13 @@
       "purpose": "cm_pay_stripe_1_payment_foundation",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260912080845_intermex_go_live_2_operational_boundaries.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "intermex_go_live_2_operational_boundaries",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }

@@ -149,6 +149,9 @@ jobs:
       - run: npm run validate:application-schema-references
       - run: npm run validate:schema-authority
       - run: npm run test:canonical-migration-replay
+      - run: npm run test:intermex-go-live-2
+        env:
+          GO_LIVE_2_POSTGRES: "1"
       - run: npm run test:intermex-go-live-1
       - run: npm run test:cm-pay-stripe-1
         env:

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { providerMode, stripeKeyMatchesMode } from "@/lib/operational-payments";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { verifyStripeWebhookEvent } from "@/lib/stripe-webhook-verification";
 
@@ -18,7 +19,7 @@ function invalid() {
 }
 
 async function persistVerifiedEvent(call: WebhookCall) {
-  const { error } = await database.rpc("cm_pay_process_stripe_webhook_v1", call);
+  const { error } = await database.rpc("cm_pay_process_stripe_webhook_v2", call);
   if (error) throw new Error("payment_webhook_processing_failed");
 }
 
@@ -52,6 +53,10 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
         }
         if (!verification?.ok) return new Response("Invalid signature", { status: 400 });
         const event: any = verification.event;
+        const mode = providerMode(process.env.CORNERMEX_STRIPE_MODE);
+        if (!mode || typeof event.livemode !== "boolean" || event.livemode !== (mode === "live")) {
+          return new Response("Payment mode mismatch", { status: 400 });
+        }
 
         try {
           const object = event?.data?.object;
@@ -87,6 +92,7 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
               return invalid();
             }
             await persistVerifiedEvent({
+              p_mode: mode,
               p_event_id: event.id,
               p_event_type: event.type,
               p_provider_object_id: object.id,
@@ -115,15 +121,49 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
             const total = amountAed(object.amount);
             const refunded = amountAed(object.amount_refunded);
             if (total === null || refunded === null) return invalid();
-            const { data: payment, error } = await supabaseAdmin
+            const { data: matchedPayment, error } = await database
               .from("payments")
-              .select("id, order_id")
+              .select("id, order_id, provider_reference")
               .eq("provider", "stripe")
+              .eq("provider_mode", mode)
               .contains("metadata", { stripe_payment_intent_id: object.payment_intent })
               .maybeSingle();
+            let payment = matchedPayment;
             if (error) throw new Error("refund_lookup_failed");
-            if (!payment) return invalid();
+            if (!payment) {
+              // Refund can arrive before the success delivery. Retrieve provider
+              // objects read-only and prove the bound Session owns this intent.
+              if (!stripeKeyMatchesMode(process.env.STRIPE_SECRET_KEY, mode))
+                throw new Error("refund_recovery_unavailable");
+              const { default: Stripe } = await import("stripe");
+              const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+              const intent = await stripe.paymentIntents.retrieve(object.payment_intent);
+              if (intent.livemode !== (mode === "live")) return invalid();
+              const localId = uuid.safeParse(intent.metadata?.payment_attempt_id);
+              const orderId = uuid.safeParse(intent.metadata?.order_id);
+              if (!localId.success || !orderId.success) return invalid();
+              const lookup = await database
+                .from("payments")
+                .select("id, order_id, provider_reference")
+                .eq("id", localId.data)
+                .eq("order_id", orderId.data)
+                .eq("provider", "stripe")
+                .eq("provider_mode", mode)
+                .maybeSingle();
+              if (lookup.error || !lookup.data?.provider_reference?.startsWith("cs_"))
+                throw new Error("refund_link_not_ready");
+              const session = await stripe.checkout.sessions.retrieve(
+                lookup.data.provider_reference,
+              );
+              if (
+                session.livemode !== (mode === "live") ||
+                session.payment_intent !== object.payment_intent
+              )
+                return invalid();
+              payment = lookup.data;
+            }
             await persistVerifiedEvent({
+              p_mode: mode,
               p_event_id: event.id,
               p_event_type: event.type,
               p_provider_object_id: object.id,

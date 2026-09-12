@@ -1,3 +1,4 @@
+import { ZohoTokenSource, type ZohoRefreshConfig } from "./zoho-token.server.ts";
 import {
   AccountingIntegrationError,
   type AccountingProvider,
@@ -18,6 +19,7 @@ export type ZohoRuntimeConfig = {
   apiBaseUrl: string;
   accessToken: string;
   vatTaxId: string;
+  refresh?: ZohoRefreshConfig;
 };
 
 export type ZohoActivationState =
@@ -65,6 +67,7 @@ function toInvoice(value: Record<string, unknown>): ExternalInvoice {
     number: value.invoice_number ? String(value.invoice_number) : null,
     status: value.status ? String(value.status) : null,
     url: value.invoice_url ? String(value.invoice_url) : null,
+    issuedDate: value.date ? String(value.date) : null,
     pdfSupported: true,
     totalAed: Number(value.total ?? 0),
   };
@@ -74,21 +77,28 @@ export class ZohoAccountingProvider implements AccountingProvider {
   readonly product: ZohoProduct;
   private readonly config: ZohoRuntimeConfig;
   private readonly transport: FetchLike;
+  private readonly tokens: ZohoTokenSource;
 
   constructor(config: ZohoRuntimeConfig, transport: FetchLike = fetch) {
     this.config = config;
     this.transport = transport;
     this.product = config.product;
+    this.tokens = new ZohoTokenSource(config.accessToken, config.refresh, transport);
   }
 
-  private async request(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
+  private async request(
+    path: string,
+    init: RequestInit = {},
+    refreshed = false,
+  ): Promise<Record<string, unknown>> {
     const base = this.config.apiBaseUrl.replace(/\/$/, "");
     const productPath = this.product === "books" ? "books" : "invoice";
     const url = new URL(`${base}/${productPath}/v3/${path.replace(/^\//, "")}`);
     if (this.product === "books")
       url.searchParams.set("organization_id", this.config.organizationId);
     const headers = new Headers(init.headers);
-    headers.set("Authorization", `Zoho-oauthtoken ${this.config.accessToken}`);
+    const token = this.tokens.current();
+    headers.set("Authorization", `Zoho-oauthtoken ${token}`);
     headers.set("Content-Type", "application/json");
     if (this.product === "invoice")
       headers.set("X-com-zoho-invoice-organizationid", this.config.organizationId);
@@ -97,6 +107,7 @@ export class ZohoAccountingProvider implements AccountingProvider {
     try {
       response = await this.transport(url, {
         ...init,
+        redirect: "error",
         headers,
         signal: AbortSignal.timeout(15_000),
       });
@@ -107,6 +118,10 @@ export class ZohoAccountingProvider implements AccountingProvider {
         "ZOHO_TRANSPORT_UNAVAILABLE",
         { cause: error },
       );
+    }
+    if (response.status === 401 && !refreshed) {
+      await this.tokens.refresh(token);
+      return this.request(path, init, true);
     }
     if (response.status === 401 || response.status === 403)
       throw new AccountingIntegrationError("auth", false, "ZOHO_AUTH_FAILED");
@@ -132,7 +147,8 @@ export class ZohoAccountingProvider implements AccountingProvider {
     return ((body.contacts as Array<Record<string, unknown>> | undefined) ?? [])
       .filter(
         (contact) =>
-          !contact.email || String(contact.email).toLowerCase() === customer.email.toLowerCase(),
+          typeof contact.email === "string" &&
+          String(contact.email).toLowerCase() === customer.email.toLowerCase(),
       )
       .map((contact) => ({ id: String(contact.contact_id) }));
   }

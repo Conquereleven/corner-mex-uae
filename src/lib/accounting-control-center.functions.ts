@@ -4,10 +4,14 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin } from "@/lib/admin-authorization.server";
-import { evaluateZohoActivation } from "@/lib/zoho-accounting.server";
+import { readAccountingRuntime } from "@/lib/accounting-runtime.server";
 
 const isMissingIntegrationSchema = (error: { code?: string } | null) =>
-  error?.code === "42P01" || error?.code === "PGRST205" || error?.code === "PGRST204";
+  error?.code === "PGRST202" ||
+  error?.code === "42883" ||
+  error?.code === "42P01" ||
+  error?.code === "PGRST205" ||
+  error?.code === "PGRST204";
 
 export type AccountingControlCenter = {
   available: boolean;
@@ -34,22 +38,17 @@ export const adminAccountingControlCenter = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AccountingControlCenter> => {
     await assertAdmin(context.userId);
-    const activation = evaluateZohoActivation();
+    const activation = await readAccountingRuntime();
     const activationSummary = {
       ready: activation.ready,
-      reasons: activation.ready ? [] : activation.reasons,
+      reasons: activation.ready ? [] : ["ACCOUNTING_ACTIVATION_BLOCKED"],
       product: activation.ready
-        ? activation.config.product
+        ? activation.config!.product
         : (process.env.CORNERMEX_ZOHO_PRODUCT ?? null),
     };
-    const { data, error } = await (supabaseAdmin as any)
-      .schema("commerce_private")
-      .from("accounting_integration_jobs")
-      .select(
-        "id, order_id, job_type, status, attempt_count, max_attempts, next_attempt_at, last_failure_category, last_failure_code, correlation_id, updated_at, orders(order_number)",
-      )
-      .order("created_at", { ascending: false })
-      .limit(100);
+    const { data, error } = await (supabaseAdmin as any).rpc("cm_accounting_control_center_v2", {
+      p_actor_id: context.userId,
+    });
     if (isMissingIntegrationSchema(error)) {
       return {
         available: false,
@@ -101,37 +100,12 @@ export const adminRetryAccountingJob = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof RetryInput>) => RetryInput.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.userId);
-    const { data: job, error } = await (supabaseAdmin as any)
-      .schema("commerce_private")
-      .from("accounting_integration_jobs")
-      .update({
-        status: "retry_scheduled",
-        attempt_count: 0,
-        next_attempt_at: new Date().toISOString(),
-        locked_at: null,
-        locked_by: null,
-        completed_at: null,
-        last_failure_category: null,
-        last_failure_code: null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", data.jobId)
-      .eq("status", "requires_attention")
-      .select("id, correlation_id, order_id")
-      .maybeSingle();
-    if (error || !job) throw new Error("ACCOUNTING_JOB_NOT_RETRYABLE");
-    await (supabaseAdmin as any)
-      .schema("commerce_private")
-      .from("accounting_integration_audit_events")
-      .insert({
-        provider: "zoho",
-        job_id: job.id,
-        order_id: job.order_id,
-        correlation_id: job.correlation_id,
-        action: "admin_retry",
-        outcome: "succeeded",
-      });
-    return { ok: true as const, jobId: job.id };
+    const { data: result, error } = await (supabaseAdmin as any).rpc(
+      "cm_accounting_admin_action_v2",
+      { p_actor_id: context.userId, p_action: "retry", p_id: data.jobId },
+    );
+    if (error || !result) throw new Error("ACCOUNTING_JOB_NOT_RETRYABLE");
+    return result as { ok: true; jobId: string };
   });
 
 const ReconcileInput = z.object({ orderId: z.string().uuid() });
@@ -141,21 +115,10 @@ export const adminEnqueueAccountingReconciliation = createServerFn({ method: "PO
   .inputValidator((input: z.input<typeof ReconcileInput>) => ReconcileInput.parse(input))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.userId);
-    const bucket = new Date().toISOString().slice(0, 13);
-    const { data: job, error } = await (supabaseAdmin as any)
-      .schema("commerce_private")
-      .from("accounting_integration_jobs")
-      .upsert(
-        {
-          provider: "zoho",
-          job_type: "reconciliation",
-          order_id: data.orderId,
-          dedupe_key: `zoho:reconciliation:${data.orderId}:${bucket}`,
-        },
-        { onConflict: "dedupe_key", ignoreDuplicates: true },
-      )
-      .select("id")
-      .maybeSingle();
-    if (error) throw new Error("ACCOUNTING_RECONCILIATION_ENQUEUE_FAILED");
-    return { ok: true as const, jobId: job?.id ?? null };
+    const { data: result, error } = await (supabaseAdmin as any).rpc(
+      "cm_accounting_admin_action_v2",
+      { p_actor_id: context.userId, p_action: "reconcile", p_id: data.orderId },
+    );
+    if (error || !result) throw new Error("ACCOUNTING_RECONCILIATION_ENQUEUE_FAILED");
+    return result as { ok: true; jobId: string };
   });

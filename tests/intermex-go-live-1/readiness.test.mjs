@@ -87,7 +87,10 @@ test("webhook environment lookup is not shadowed and reconciliation selects paym
   assert.doesNotMatch(route, /function process\s*\(/);
   assert.match(route, /process.env.STRIPE_WEBHOOK_SECRET/);
   const payments = readFileSync("src/lib/payments.functions.ts", "utf8");
-  assert.match(payments, /select\("id, payment_status, payment_method, total_aed"\)/);
+  assert.match(
+    payments,
+    /select\("id, payment_status, payment_method, total_aed, payment_attention"\)/,
+  );
 });
 
 test("activation manifest hashes and nonactivation flags match every source artifact", () => {
