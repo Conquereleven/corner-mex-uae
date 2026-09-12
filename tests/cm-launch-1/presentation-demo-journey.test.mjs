@@ -53,7 +53,7 @@ test("Checkout remains COD-only, signed-in and server-priced", async () => {
   assert.match(checkout, /hasCurrentPreview/);
   assert.match(checkout, /payment_method: "cod"/);
   assert.match(checkout, /codOnly: true/);
-  assert.match(checkout, /No card details are collected/);
+  assert.match(checkout, /getCardCheckoutCapability/);
   assert.doesNotMatch(checkout, /createPaymentSession|stripe\.checkout|paymentIntent/);
 });
 

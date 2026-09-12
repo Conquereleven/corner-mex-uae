@@ -443,7 +443,7 @@ test("server-only secrets and durable worker controls are fail-closed", async ()
   assert.match(migration, /new.status in \('confirmed','processing','shipped','delivered'\)/);
   assert.match(controlCenter, /attempt_count: 0/);
   assert.match(worker, /ACCOUNTING_INVOICE_NOT_READY/);
-  assert.match(worker, /ACCOUNTING_JOB_FINISH_PERSIST_FAILED/);
-  assert.match(worker, /ACCOUNTING_JOB_FAILURE_PERSIST_FAILED/);
+  assert.match(worker, /cm_accounting_job_action_v2/);
+  assert.match(worker, /ACCOUNTING_FENCED_ACTION_REJECTED/);
   assert.match(migration, /ACCOUNTING_WORKER_LEASE_EXHAUSTED/);
 });

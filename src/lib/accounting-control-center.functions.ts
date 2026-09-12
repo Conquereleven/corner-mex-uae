@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin } from "@/lib/admin-authorization.server";
-import { evaluateZohoActivation } from "@/lib/zoho-accounting.server";
+import { readAccountingRuntime } from "@/lib/accounting-runtime.server";
 
 const isMissingIntegrationSchema = (error: { code?: string } | null) =>
   error?.code === "42P01" || error?.code === "PGRST205" || error?.code === "PGRST204";
@@ -34,12 +34,12 @@ export const adminAccountingControlCenter = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AccountingControlCenter> => {
     await assertAdmin(context.userId);
-    const activation = evaluateZohoActivation();
+    const activation = await readAccountingRuntime();
     const activationSummary = {
       ready: activation.ready,
-      reasons: activation.ready ? [] : activation.reasons,
+      reasons: activation.ready ? [] : ["ACCOUNTING_ACTIVATION_BLOCKED"],
       product: activation.ready
-        ? activation.config.product
+        ? activation.config!.product
         : (process.env.CORNERMEX_ZOHO_PRODUCT ?? null),
     };
     const { data, error } = await (supabaseAdmin as any)

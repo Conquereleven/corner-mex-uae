@@ -1,3 +1,4 @@
+import { CustomerInvoice } from "@/components/admin/CustomerInvoice";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -59,6 +60,7 @@ function CustomerOrderDetail() {
 
   return (
     <SiteLayout>
+      <CustomerInvoice orderId={id} />
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <Button asChild variant="ghost" className="mb-5">
           <Link to="/account/orders">

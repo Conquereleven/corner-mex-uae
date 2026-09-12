@@ -178,14 +178,7 @@
     },
     {
       "kind": "function",
-      "name": "claim_accounting_integration_jobs",
-      "files": ["src/lib/accounting-worker.server.ts"],
-      "classification": "requires_future_migration",
-      "rationale": "owned_by_unapplied_canonical_migration"
-    },
-    {
-      "kind": "table_or_storage_bucket",
-      "name": "accounting_entity_mappings",
+      "name": "cm_claim_accounting_jobs_v2",
       "files": ["src/lib/accounting-worker.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
@@ -193,33 +186,27 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "accounting_integration_audit_events",
-      "files": [
-        "src/lib/accounting-control-center.functions.ts",
-        "src/lib/accounting-worker.server.ts"
-      ],
+      "files": ["src/lib/accounting-control-center.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "accounting_integration_jobs",
-      "files": [
-        "src/lib/accounting-control-center.functions.ts",
-        "src/lib/accounting-worker.server.ts"
-      ],
+      "files": ["src/lib/accounting-control-center.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
-      "name": "cm_pay_create_stripe_attempt_v1",
+      "name": "cm_pay_create_stripe_attempt_v2",
       "files": ["src/lib/payments.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
-      "name": "cm_pay_bind_stripe_checkout_session_v1",
+      "name": "cm_pay_bind_stripe_session_v2",
       "files": ["src/lib/payments.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
@@ -233,8 +220,50 @@
     },
     {
       "kind": "function",
-      "name": "cm_pay_process_stripe_webhook_v1",
+      "name": "cm_pay_process_stripe_webhook_v2",
       "files": ["src/routes/api/public/stripe-webhook.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_runtime_capabilities_v2",
+      "files": ["src/lib/accounting-runtime.server.ts", "src/lib/card-capability.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_create_card_order_v2",
+      "files": ["src/lib/card-checkout.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_invoice_projection_v2",
+      "files": ["src/lib/invoice-projection.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_accounting_job_action_v2",
+      "files": ["src/lib/accounting-worker.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_operational_status_v2",
+      "files": ["src/lib/operational-status.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_completed_checkout_operation_v2",
+      "files": ["src/lib/payments.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }

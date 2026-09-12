@@ -398,7 +398,10 @@ test("checkout executes only the CM-COM-3A COD path", async () => {
 
 test("checkout sends no money and no unchecked legal acceptance", async () => {
   const source = stripJsComments(await read("src/routes/checkout.tsx"));
-  const payload = source.slice(source.indexOf("await placeCod("), source.indexOf("clear();"));
+  const payload = source.slice(
+    source.indexOf("const input = {"),
+    source.indexOf('if (method === "card")'),
+  );
   for (const forbidden of ["price", "subtotal", "shipping_aed", "tax", "total"]) {
     assert.ok(!payload.includes(forbidden), `checkout must not send ${forbidden}`);
   }

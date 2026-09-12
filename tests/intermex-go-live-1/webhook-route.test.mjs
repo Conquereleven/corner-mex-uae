@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import ts from "typescript";
 import Stripe from "stripe";
 import { verifyStripeWebhookEvent } from "../../src/lib/stripe-webhook-verification.ts";
+import * as operationalPayments from "../../src/lib/operational-payments.ts";
 const require = createRequire(import.meta.url);
 
 test("actual webhook handler reads environment and verifies raw signature before database persistence", async () => {
@@ -25,6 +26,7 @@ test("actual webhook handler reads environment and verifies raw signature before
     },
   };
   const dependencies = {
+    "@/lib/operational-payments": operationalPayments,
     "@tanstack/react-router": { createFileRoute: () => (config) => config },
     "@/integrations/supabase/client.server": { supabaseAdmin: database },
     "@/lib/stripe-webhook-verification": { verifyStripeWebhookEvent },
@@ -34,12 +36,15 @@ test("actual webhook handler reads environment and verifies raw signature before
     (name) => dependencies[name] ?? require(name),
   );
   const handler = exports.Route.server.handlers.POST;
+  const modePrior = process.env.CORNERMEX_STRIPE_MODE;
+  process.env.CORNERMEX_STRIPE_MODE = "test";
   const prior = process.env.STRIPE_WEBHOOK_SECRET;
   process.env.STRIPE_WEBHOOK_SECRET = "offline-route-signing-key";
   try {
     const stripe = new Stripe("sk_webhook_verification_only");
     const body = JSON.stringify({
       id: "evt_route",
+      livemode: false,
       type: "checkout.session.completed",
       created: 1789171200,
       data: {
@@ -71,11 +76,13 @@ test("actual webhook handler reads environment and verifies raw signature before
     assert.equal(calls.length, 0);
     assert.equal((await handler({ request: request(body, signature) })).status, 200);
     assert.equal(calls.length, 1);
-    assert.equal(calls[0].name, "cm_pay_process_stripe_webhook_v1");
+    assert.equal(calls[0].name, "cm_pay_process_stripe_webhook_v2");
     assert.equal(calls[0].args.p_amount_aed, 42);
     database.rpc = async () => ({ error: { message: "offline failure" } });
     assert.equal((await handler({ request: request(body, signature) })).status, 500);
   } finally {
+    if (modePrior === undefined) delete process.env.CORNERMEX_STRIPE_MODE;
+    else process.env.CORNERMEX_STRIPE_MODE = modePrior;
     if (prior === undefined) delete process.env.STRIPE_WEBHOOK_SECRET;
     else process.env.STRIPE_WEBHOOK_SECRET = prior;
   }

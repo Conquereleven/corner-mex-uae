@@ -32,6 +32,8 @@ import {
 import { getAvailablePaymentMethods, type EmirateCode } from "@/lib/payment-methods";
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
+import { getCardCheckoutCapability, initiateCardCheckout } from "@/lib/card-checkout.functions";
+import { checkoutOperation } from "@/lib/checkout-operation";
 
 const CHECKOUT_ENABLED = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
 // Fallback list used only until the server configuration resolves; the
@@ -55,9 +57,27 @@ export const Route = createFileRoute("/checkout")({
 
 function Checkout() {
   const navigate = useNavigate();
-  // CM-COM-3A: the only executable order path. The legacy marketplace
-  // placeOrder and every payment-provider session are deliberately unused.
+  // Both methods use the canonical atomic inventory/order boundary.
   const placeCod = useServerFn(placeCodOrder);
+  const placeCard = useServerFn(initiateCardCheckout);
+  const loadCard = useServerFn(getCardCheckoutCapability);
+  const [card, setCard] = useState({ cardAvailable: false, testMode: false });
+  const [method, setMethod] = useState<"cod" | "card">("cod");
+  const submission = useRef(false);
+  useEffect(() => {
+    let active = true;
+    loadCard({}).then(
+      (value) => {
+        if (active) setCard(value);
+      },
+      () => {
+        if (active) setCard({ cardAvailable: false, testMode: false });
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [loadCard]);
   const loadConfig = useServerFn(getCommercialCheckoutConfig);
   const loadPreview = useServerFn(previewCodOrderTotals);
   const items = useCart((state) => state.items);
@@ -110,7 +130,7 @@ function Checkout() {
       ? previewState.value
       : null;
 
-  // COD is the only method offered in the Commercial Active MVP.
+  // Keep the existing COD eligibility rules; card is offered separately by server capability.
   const paymentMethods = useMemo(
     () =>
       getAvailablePaymentMethods({
@@ -195,6 +215,7 @@ function Checkout() {
       form.emirate,
     );
     if (
+      submission.current ||
       submitting ||
       !canExecute ||
       submitKey !== currentPreviewKey ||
@@ -203,44 +224,56 @@ function Checkout() {
       return;
     setError(null);
     setSubmitting(true);
+    submission.current = true;
     try {
-      const order = await placeCod({
-        data: {
-          // Only identity and quantity are sent. No price, shipping, tax or
-          // total: money is derived entirely on the server.
-          items: items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
-          payment_method: "cod",
-          address: {
-            recipient_name: form.recipient_name.trim(),
-            phone: form.phone.trim(),
-            emirate: form.emirate,
-            area: form.area.trim(),
-            street: form.street || null,
-            building: form.building || null,
-            floor_apartment: form.floor_apt || null,
-            landmark: form.landmark || null,
-            notes: form.notes || null,
-          },
-          legal_acceptance: { terms: accepted, privacy: accepted, returns: accepted },
+      const input = {
+        // Only identity and quantity are sent. No price, shipping, tax or
+        // total: money is derived entirely on the server.
+        items: items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
+        payment_method: "cod" as const,
+        address: {
+          recipient_name: form.recipient_name.trim(),
+          phone: form.phone.trim(),
+          emirate: form.emirate,
+          area: form.area.trim(),
+          street: form.street || null,
+          building: form.building || null,
+          floor_apartment: form.floor_apt || null,
+          landmark: form.landmark || null,
+          notes: form.notes || null,
         },
-      });
+        legal_acceptance: { terms: accepted, privacy: accepted, returns: accepted },
+      };
+      if (method === "card") {
+        if (!card.cardAvailable || !user) throw new Error("CARD_CHECKOUT_UNAVAILABLE");
+        const payload = { ...input, payment_method: "card" as const };
+        const operationId = await checkoutOperation(user.id, payload);
+        const result = await placeCard({ data: { ...payload, operationId } });
+        window.location.assign(result.url);
+        return;
+      }
+      const order = await placeCod({ data: input });
       // Only clear the cart after the order genuinely exists.
       clear();
       await navigate({ to: "/order-confirmed", search: { order: order.order_id } });
     } catch (caught) {
       // Failure keeps the cart and the customer's entered details intact.
       const message = caught instanceof Error ? caught.message : "Checkout failed.";
-      const safe = message.includes("COD_ORDER_INSUFFICIENT_STOCK")
-        ? "One of your items is no longer available in the requested quantity."
-        : message.includes("COD_ORDER_EMIRATE_UNSUPPORTED")
-          ? "We cannot deliver to the selected emirate yet."
-          : message.includes("COD_ORDER_EXECUTION_DISABLED")
-            ? "Ordering is not currently enabled."
-            : "We could not place your order. Nothing has been charged and your cart is unchanged.";
+      const safe =
+        method === "card"
+          ? "Your checkout may already be in progress. Retry with the same details, or check your orders before starting another checkout."
+          : message.includes("COD_ORDER_INSUFFICIENT_STOCK")
+            ? "One of your items is no longer available in the requested quantity."
+            : message.includes("COD_ORDER_EMIRATE_UNSUPPORTED")
+              ? "We cannot deliver to the selected emirate yet."
+              : message.includes("COD_ORDER_EXECUTION_DISABLED")
+                ? "Ordering is not currently enabled."
+                : "We could not place your order. Nothing has been charged and your cart is unchanged.";
       setError(safe);
       toast.error(safe);
     } finally {
       setSubmitting(false);
+      submission.current = false;
     }
   }
 
@@ -371,10 +404,33 @@ function Checkout() {
             <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-xl">Payment method</h2>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                Cash on delivery is the only payment method available. You pay the courier in AED
-                when your order arrives. No card details are collected.
+                {card.cardAvailable
+                  ? "Choose cash on delivery or continue to secure card payment."
+                  : "Card payment is currently unavailable. Pay the courier in AED when your order arrives."}
               </p>
               <div className="mt-5 grid gap-3">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    checked={method === "cod"}
+                    onChange={() => setMethod("cod")}
+                    disabled={submitting}
+                  />{" "}
+                  Cash on delivery
+                </label>
+                {card.cardAvailable && (
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      checked={method === "card"}
+                      onChange={() => setMethod("card")}
+                      disabled={submitting}
+                    />{" "}
+                    {card.testMode ? "Card — test checkout" : "Card"}
+                  </label>
+                )}
                 {paymentMethods.map((method) => (
                   <div
                     key={method.id}
@@ -497,7 +553,9 @@ function Checkout() {
               {submitting
                 ? "Placing order…"
                 : CHECKOUT_ENABLED
-                  ? "Place order — cash on delivery"
+                  ? method === "card"
+                    ? "Continue to card payment"
+                    : "Place order — cash on delivery"
                   : "Order execution disabled"}
             </Button>
             <p className="mt-3 text-[11px] leading-5 text-muted-foreground">

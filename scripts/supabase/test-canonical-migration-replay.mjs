@@ -196,6 +196,7 @@ const reclaimedLease = Number(
     "-At",
     "-c",
     `
+      insert into commerce_private.provider_runtime_gates(provider,mode,generation,enabled,eligible_after,validated_at,valid_until,evidence_ref) values('zoho','test','91000000-0000-4000-8000-000000000005',true,now()-interval '1 minute',now()-interval '2 minutes',now()+interval '1 hour','disposable-replay');
       insert into auth.users (id)
       values ('91000000-0000-4000-8000-000000000001');
       insert into public.orders (
@@ -203,16 +204,19 @@ const reclaimedLease = Number(
         subtotal_aed, shipping_aed, tax_aed, total_aed, shipping_address
       ) values (
         '91000000-0000-4000-8000-000000000002', 'CM-LEASE-REPLAY',
-        '91000000-0000-4000-8000-000000000001', 'pending', 'pending',
+        '91000000-0000-4000-8000-000000000001', 'confirmed', 'paid',
         10, 0, 0.50, 10.50, '{}'::jsonb
       );
+      insert into public.payments(id,order_id,provider,provider_reference,status,amount_aed,provider_mode,captured_aed) values('91000000-0000-4000-8000-000000000006','91000000-0000-4000-8000-000000000002','stripe','cs_replay_v2','paid',10.50,'test',10.50);
+      update public.orders set stripe_paid_attempt_id='91000000-0000-4000-8000-000000000006' where id='91000000-0000-4000-8000-000000000002';
+      delete from commerce_private.accounting_integration_jobs where dedupe_key='zoho:order_invoice:91000000-0000-4000-8000-000000000002';
       insert into commerce_private.accounting_integration_jobs (
         id, provider, job_type, order_id, dedupe_key, status,
-        attempt_count, max_attempts, locked_at, locked_by
+        attempt_count, max_attempts, locked_at, locked_by, activation_generation
       ) values (
         '91000000-0000-4000-8000-000000000003', 'zoho', 'order_invoice',
         '91000000-0000-4000-8000-000000000002', 'zoho:lease-replay', 'processing',
-        1, 6, now() - interval '21 minutes', 'crashed-worker'
+        1, 6, now() - interval '21 minutes', 'crashed-worker', '91000000-0000-4000-8000-000000000005'
       );
       select count(*)
       from commerce_private.claim_accounting_integration_jobs('replay-worker', 1)
@@ -234,11 +238,11 @@ const exhaustedLeaseClosed = Number(
     `
       insert into commerce_private.accounting_integration_jobs (
         id, provider, job_type, order_id, dedupe_key, status,
-        attempt_count, max_attempts, locked_at, locked_by
+        attempt_count, max_attempts, locked_at, locked_by, activation_generation
       ) values (
         '91000000-0000-4000-8000-000000000004', 'zoho', 'reconciliation',
         '91000000-0000-4000-8000-000000000002', 'zoho:lease-exhausted', 'processing',
-        6, 6, now() - interval '21 minutes', 'crashed-final-worker'
+        6, 6, now() - interval '21 minutes', 'crashed-final-worker', '91000000-0000-4000-8000-000000000005'
       );
       select count(*)
       from commerce_private.claim_accounting_integration_jobs('replay-worker', 1);

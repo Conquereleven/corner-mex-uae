@@ -49,7 +49,8 @@ test("a browser success redirect has no payment mutation authority", async () =>
   );
   assert.match(block, /Read-only by design/);
   assert.doesNotMatch(block, /\.update\(|\.insert\(|\.rpc\(/);
-  assert.match(route, /redirect\(\{ to: "\/cart" \}\)/);
+  assert.match(route, /getOrderForConfirmation/);
+  assert.doesNotMatch(route, /confirmBnplPayment|createStripeSession|\.update\(/);
 });
 
 test("webhook verification uses the raw body and rejects invalid signatures before mutations", async () => {
