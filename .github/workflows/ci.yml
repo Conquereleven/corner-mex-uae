@@ -44,6 +44,7 @@ jobs:
       - run: npm run validate:production-activation-request -- docs/program/PRODUCTION_ACTIVATION_REQUEST.example.json
       - run: npm run validate:staging-readiness-change-request -- docs/program/STAGING_READINESS_CHANGE_REQUEST.example.json
       - run: node --test tests/program/*.test.mjs
+      - run: npm run test:intermex-go-live-1
       - run: npm run test:alignment
       - run: npm run validate:a2-migration
       - run: npm run test:a2

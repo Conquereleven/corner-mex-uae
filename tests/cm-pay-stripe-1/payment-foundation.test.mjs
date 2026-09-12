@@ -60,7 +60,7 @@ test("webhook verification uses the raw body and rejects invalid signatures befo
     /verifyStripeWebhookEvent\(\{[\s\S]*?rawBody,[\s\S]*?signature,[\s\S]*?webhookSecret/,
   );
   assert.match(source, /Invalid signature/);
-  assert.match(source, /verifyStripeWebhookEvent[\s\S]*?await process\(/);
+  assert.match(source, /verifyStripeWebhookEvent[\s\S]*?await persistVerifiedEvent\(/);
   let calls = 0;
   const rejected = verifyStripeWebhookEvent({
     rawBody: '{"id":"evt_bad"}',

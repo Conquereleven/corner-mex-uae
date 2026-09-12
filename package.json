@@ -99,7 +99,8 @@
     "test:pr9-remediation": "node --test tests/remediation/*.test.mjs",
     "validate:cm-gtm-1": "node scripts/gtm/validate-cm-gtm-1.mjs",
     "test:cm-gtm-1": "node --test tests/gtm/cm-gtm-1.test.mjs",
-    "validate:merged-tree": "bash scripts/ci/validate-merged-tree.sh"
+    "validate:merged-tree": "bash scripts/ci/validate-merged-tree.sh",
+    "test:intermex-go-live-1": "node --experimental-strip-types --test tests/intermex-go-live-1/*.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.45.1",

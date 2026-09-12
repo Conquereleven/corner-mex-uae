@@ -1,0 +1,40 @@
+{
+  "projectRef": "wlrfknmrhowldygmvtvn",
+  "baselineMain": "976676271ccca3c9f04c071a581ce6ab158c1b66",
+  "auditedAt": "2026-09-12",
+  "readinessOnly": true,
+  "productionMutationAuthorized": false,
+  "aggregateAuthorizationAllowed": false,
+  "migrations": [
+    {
+      "filename": "20260823023904_cm_b2b_ops_foundation_1.sql",
+      "sha256": "68a715a13ac27c59e8d397ccb4f0179556608e84ea8a081929d5132e5fc7cbb0",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260823040000_cm_b2b_portal_1a_boundary.sql",
+      "sha256": "130430bf58e80e1af6ba0accf9679f38977c5e65273e33a2670f1102c0d07852",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260823041625_cm_b2b_portal_1b_pricing_availability.sql",
+      "sha256": "b1134a994e2f2109c2dd2c990d994f51bca001c6e88afb359b765a5bd0bca1ec",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260828170741_cm_int_zoho_1_zero_touch_order_invoice.sql",
+      "sha256": "366bf480d9f57297e56a9289075ee5f2235945cc1250ac579032b829a7e2015b",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260828180000_cm_pay_stripe_1_payment_foundation.sql",
+      "sha256": "ed9c2d6cf6db887507619b57ab91f55f39e3ac2bb27f4bebb2f0cad722bf31cd",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    }
+  ]
+}

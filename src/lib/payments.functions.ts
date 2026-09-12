@@ -204,7 +204,7 @@ export const getAdminPaymentReconciliation = createServerFn({ method: "GET" })
       await Promise.all([
         supabaseAdmin
           .from("orders")
-          .select("id, payment_status, total_aed")
+          .select("id, payment_status, payment_method, total_aed")
           .eq("id", data.orderId)
           .single(),
         supabaseAdmin
