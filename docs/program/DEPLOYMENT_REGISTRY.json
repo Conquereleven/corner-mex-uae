@@ -466,5 +466,5 @@
     "stagingReadinessMechanism": "railway_deployment_rollback_restores_custom_variables",
     "stagingReadinessRollbackPerformed": false
   },
-  "currentSourceCommitMeaning": "Freshly fetched main. Both current Railway deployments report this source SHA; health/readiness endpoints and providers are not certified."
+  "currentSourceCommitMeaning": "REPOSITORY current source freshly fetched from main. Deployed sources are tracked independently per environment; both currently report this SHA. Health/readiness endpoints and providers are not certified."
 }

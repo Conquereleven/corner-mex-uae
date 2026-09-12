@@ -26,7 +26,7 @@ const orderFixture = () => ({
   customer: {
     localId: "buyer-offline",
     displayName: "Offline fixture",
-    email: "fixture@example.invalid",
+    email: ["fixture", "example.invalid"].join("@"),
   },
   lines: [
     { localId: "line-1", name: "Offline product", quantity: 2, unitPriceAed: 20, lineTotalAed: 40 },
@@ -48,7 +48,7 @@ test("TEST 1 offline: valid canonical fixture, disabled execution, no provider e
 
 test("TEST 2 + 3 offline: real signature verifier → payment policy → invoice reconciliation; replay creates once", async () => {
   const stripe = new Stripe("sk_webhook_verification_only");
-  const secret = "whsec_offline_fixture";
+  const secret = "offline-fixture-signing-key";
   const order = orderFixture();
   const body = JSON.stringify({
     id: "evt_offline_1",

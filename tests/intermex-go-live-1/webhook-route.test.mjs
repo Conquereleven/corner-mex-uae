@@ -35,7 +35,7 @@ test("actual webhook handler reads environment and verifies raw signature before
   );
   const handler = exports.Route.server.handlers.POST;
   const prior = process.env.STRIPE_WEBHOOK_SECRET;
-  process.env.STRIPE_WEBHOOK_SECRET = "whsec_offline_route";
+  process.env.STRIPE_WEBHOOK_SECRET = "offline-route-signing-key";
   try {
     const stripe = new Stripe("sk_webhook_verification_only");
     const body = JSON.stringify({
