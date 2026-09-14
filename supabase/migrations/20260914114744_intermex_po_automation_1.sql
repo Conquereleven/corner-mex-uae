@@ -163,7 +163,12 @@ begin
  if p_action='assert' then return jsonb_build_object('ok',true);
  elsif p_action='begin_create' then
    insert into commerce_private.accounting_create_intents(entity_key,job_id) values('po:'||r.mode||':'||r.organization_id||':'||r.business_key,r.id) on conflict do nothing;
-   acquired:=found; return jsonb_build_object('acquired',acquired);
+   acquired:=found;
+   if acquired then
+     insert into commerce_private.accounting_integration_audit_events(provider,po_intake_id,correlation_id,action,outcome)
+       values('zoho',r.id,r.correlation_id,'po_create_intent','started');
+   end if;
+   return jsonb_build_object('acquired',acquired);
  elsif p_action='complete' then
    if nullif(p_payload->>'invoiceId','') is null then raise exception 'PO_INVOICE_ID_REQUIRED'; end if;
    update commerce_private.po_intakes set status='succeeded',external_invoice_id=p_payload->>'invoiceId',invoice_projection=p_payload->'projection',safe_code=null,updated_at=now() where id=r.id;

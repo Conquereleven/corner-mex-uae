@@ -109,7 +109,7 @@ export async function runPoWorker() {
                   .map((s) => s.trim())
                   .filter(Boolean),
               ),
-              pdfSupported: true,
+              pdfSupported: false, // No PO-specific authenticated PDF download route is exposed yet.
             },
           });
         },
