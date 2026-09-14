@@ -20,6 +20,9 @@ export async function extractPo(bytes: Uint8Array, mime: string, mappings?: unkn
   }
   if (mime !== "application/pdf" || new TextDecoder().decode(bytes.slice(0, 5)) !== "%PDF-")
     throw new PoError("DOCUMENT_TYPE_UNSUPPORTED");
+  // Explicit import makes Nitro include the worker module; PDF.js' relative runtime
+  // import otherwise points to a missing file in the deployed server bundle.
+  await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
   const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const task = getDocument({
     data: new Uint8Array(bytes),

@@ -101,6 +101,7 @@ jobs:
       - run: npm run build
       - run: npm run validate:ssr-async-context
       - run: npm run build:railway
+      - run: npm run test:intermex-po:built-pdf
       - run: npm run validate:browser-secrets
       - name: Node server health smoke
         run: |
