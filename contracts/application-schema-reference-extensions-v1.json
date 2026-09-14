@@ -266,6 +266,20 @@
       "files": ["src/lib/accounting-control-center.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_po_action_v1",
+      "files": ["src/lib/po/service.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_po_claim_v1",
+      "files": ["src/lib/po/service.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
     }
   ]
 }

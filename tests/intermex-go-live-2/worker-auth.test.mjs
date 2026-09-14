@@ -15,6 +15,7 @@ function load(path, deps) {
 test("worker endpoint rejects missing/wrong authorization before any claim or provider work", async () => {
   let reads = 0,
     claims = 0,
+    poCalls = 0,
     ready = false;
   const exports = load("src/routes/api/public/hooks/accounting-worker.ts", {
     "@tanstack/react-router": { createFileRoute: () => (value) => value },
@@ -22,6 +23,12 @@ test("worker endpoint rejects missing/wrong authorization before any claim or pr
       readAccountingRuntime: async () => {
         reads++;
         return { ready };
+      },
+    },
+    "@/lib/po/service.server": {
+      runPoWorker: async () => {
+        poCalls++;
+        return { blocked: true };
       },
     },
     "@/lib/accounting-worker.server": {
@@ -45,11 +52,14 @@ test("worker endpoint rejects missing/wrong authorization before any claim or pr
     assert.equal((await call("wrong")).status, 401);
     assert.equal(reads, 0);
     assert.equal(claims, 0);
+    assert.equal(poCalls, 0);
     assert.equal((await call(process.env.CORNERMEX_INTEGRATION_WORKER_SECRET)).status, 503);
     assert.equal(claims, 0);
+    assert.equal(poCalls, 0);
     ready = true;
     assert.equal((await call(process.env.CORNERMEX_INTEGRATION_WORKER_SECRET)).status, 200);
     assert.equal(claims, 1);
+    assert.equal(poCalls, 1);
   } finally {
     if (prior === undefined) delete process.env.CORNERMEX_INTEGRATION_WORKER_SECRET;
     else process.env.CORNERMEX_INTEGRATION_WORKER_SECRET = prior;

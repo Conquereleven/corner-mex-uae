@@ -104,6 +104,13 @@
       "purpose": "intermex_go_live_2_operational_boundaries",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260914114744_intermex_po_automation_1.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "intermex_po_automation_1",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }

@@ -1,3 +1,5 @@
+import { PoError, normalize, type ComposedPo } from "./po/domain.ts";
+import type { ZohoPoInvoice } from "./po/reconciliation.ts";
 import { ZohoTokenSource, type ZohoRefreshConfig } from "./zoho-token.server.ts";
 import {
   AccountingIntegrationError,
@@ -140,6 +142,59 @@ export class ZohoAccountingProvider implements AccountingProvider {
       throw new AccountingIntegrationError("validation", false, "ZOHO_REQUEST_REJECTED");
     }
     return body;
+  }
+
+  private assertPoScope(po: ComposedPo) {
+    if (this.product !== "books" || po.organizationId !== this.config.organizationId)
+      throw new PoError("ZOHO_PO_SCOPE_MISMATCH");
+  }
+
+  async findByPo(po: ComposedPo): Promise<ZohoPoInvoice[]> {
+    this.assertPoScope(po);
+    const matches: ZohoPoInvoice[] = [];
+    // search_text catches historical PO + store suffixes, including operator typos.
+    // Never interpret a truncated search as proof that no invoice exists.
+    for (let page = 1; page <= 20; page++) {
+      const query = new URLSearchParams({
+        customer_id: po.payload.customer_id,
+        search_text: po.poNumber,
+        page: String(page),
+        per_page: "200",
+      });
+      const body = await this.request(`invoices?${query}`);
+      if (!Array.isArray(body.invoices)) throw new PoError("INVOICE_SEARCH_INCOMPLETE");
+      for (const row of body.invoices as Record<string, unknown>[]) {
+        const ref = normalize(String(row.reference_number ?? ""));
+        if (ref === po.poNumber || ref.startsWith(po.poNumber + " ")) {
+          if (String(row.customer_id) !== po.payload.customer_id || !row.invoice_id)
+            throw new PoError("INVOICE_SEARCH_INCOMPLETE");
+          matches.push(await this.getPoInvoice(String(row.invoice_id)));
+        }
+      }
+      const context = body.page_context as { has_more_page?: boolean } | undefined;
+      if (context?.has_more_page === false) return matches;
+      if (context?.has_more_page !== true) throw new PoError("INVOICE_SEARCH_INCOMPLETE");
+    }
+    throw new PoError("INVOICE_SEARCH_LIMIT");
+  }
+
+  async createPoInvoice(po: ComposedPo): Promise<ZohoPoInvoice> {
+    this.assertPoScope(po);
+    const result = await this.request("invoices?send=false", {
+      method: "POST",
+      body: JSON.stringify(po.payload),
+    });
+    if (!result.invoice || typeof result.invoice !== "object")
+      throw new PoError("CREATE_OUTCOME_UNKNOWN");
+    return result.invoice as ZohoPoInvoice;
+  }
+
+  async getPoInvoice(id: string): Promise<ZohoPoInvoice> {
+    if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new PoError("INVOICE_ID_INVALID");
+    const result = await this.request(`invoices/${encodeURIComponent(id)}`);
+    if (!result.invoice || typeof result.invoice !== "object")
+      throw new PoError("INVOICE_RESPONSE_INCOMPLETE");
+    return result.invoice as ZohoPoInvoice;
   }
 
   async findCustomer(customer: CanonicalCustomer) {
