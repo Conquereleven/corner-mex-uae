@@ -66,7 +66,7 @@ begin
  elsif p_action='detail' then
    return (select (to_jsonb(t)-'document_base64') || jsonb_build_object(
      'conflicts',coalesce((select jsonb_agg(to_jsonb(x)-'document_base64') from commerce_private.po_intake_conflicts x where x.intake_id=t.id),'[]'::jsonb),
-     'audit',coalesce((select jsonb_agg(a order by a.created_at) from commerce_private.accounting_integration_audit_events a where a.po_intake_id=t.id),'[]'::jsonb),
+     'audit',coalesce((select jsonb_agg(a order by a.occurred_at,a.id) from commerce_private.accounting_integration_audit_events a where a.po_intake_id=t.id),'[]'::jsonb),
      'revisions',coalesce((select jsonb_agg(v order by v.created_at) from commerce_private.po_intake_revisions v where v.intake_id=t.id),'[]'::jsonb))
      from commerce_private.po_intakes t where id=(p_payload->>'id')::uuid);
  elsif p_action='intake' then
