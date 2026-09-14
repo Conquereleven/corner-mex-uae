@@ -101,6 +101,10 @@ test(
           composed,
         })
       ).id;
+      // Canonical replay runs GO-LIVE-2 first; do not inherit its synthetic enabled gate.
+      await q(
+        "update commerce_private.provider_runtime_gates set enabled=false where provider='zoho'",
+      );
       await assert.rejects(act("release", { id }, admin), /PO_ACTIVATION_BLOCKED/);
       // Synthetic loopback-only gate; this test never reaches Zoho.
       await q(

@@ -12,7 +12,7 @@ The reference PO B202609-37789 already has invoice 41237, dated 13 September 202
 
 The saved order number contains `AJMAN CITY CENTRE CINEME STORE`; the PO says `CINEMA STORE`. Lookup therefore searches by customer/PO before comparing the complete reference. The video edits a pre-existing invoice; this PO must never be used to test a new live invoice.
 
-The source video shows PO date 13.09.2026, delivery date 14.09.2026, unit `Kilogram`, and a price-after-discount column. Original PDF bytes/text layer were not supplied in the accessible reference; tests reconstruct this layout with synthetic identities. The actual item ID, billing address ID, complete catalog/custom-field inventory and API response shape remain unverified. Browser control subsequently failed to load its request-header policy while reopening the item catalog. No ID is guessed or seeded as an approved mapping.
+The source video shows PO date 13.09.2026, delivery date 14.09.2026, unit `Kilogram`, and a price-after-discount column. Original PDF bytes/text layer were not supplied in the accessible reference; tests reconstruct this layout with synthetic identities. After browser access recovered, the active item catalog confirmed item ID `3142388000022781335`, label `PR 0077 Sweet Nachos 1kg`, unit `kg`, selling price AED 47.00, tax preference Taxable and Sales account. The billing address ID, complete catalog/custom-field inventory and API response shape remain unverified. No observed ID is seeded as an approved live mapping.
 
 Developer Space → Connections → My Connections showed no connections. This does **not** establish that no external OAuth client exists. No app registration, grant, token extraction or credential change occurred.
 
