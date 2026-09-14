@@ -1,3 +1,4 @@
+import { PoIntakePanel } from "@/components/admin/PoIntakePanel";
 import { GoLiveReadiness } from "@/components/admin/GoLiveReadiness";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ function GoLiveControlCenter() {
     <div className="space-y-6">
       <GoLiveReadiness />
       <IntegrationControlCenter />
+      <PoIntakePanel />
     </div>
   );
 }

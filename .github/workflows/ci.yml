@@ -101,6 +101,7 @@ jobs:
       - run: npm run build
       - run: npm run validate:ssr-async-context
       - run: npm run build:railway
+      - run: npm run test:intermex-po:built-pdf
       - run: npm run validate:browser-secrets
       - name: Node server health smoke
         run: |
@@ -152,6 +153,9 @@ jobs:
       - run: npm run test:intermex-go-live-2
         env:
           GO_LIVE_2_POSTGRES: "1"
+      - run: npm run test:intermex-po-automation-1
+        env:
+          PO_POSTGRES_TEST: "1"
       - run: npm run test:intermex-go-live-1
       - run: npm run test:cm-pay-stripe-1
         env:

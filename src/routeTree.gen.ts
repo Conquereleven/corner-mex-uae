@@ -95,6 +95,7 @@ import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_
 import { Route as AuthenticatedAccountOrdersIndexRouteImport } from './routes/_authenticated/account.orders.index'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as ApiPublicHooksRefreshRatesRouteImport } from './routes/api/public/hooks/refresh-rates'
+import { Route as ApiPublicHooksPoIntakeRouteImport } from './routes/api/public/hooks/po-intake'
 import { Route as ApiPublicHooksAutoPayoutsRouteImport } from './routes/api/public/hooks/auto-payouts'
 import { Route as ApiPublicHooksAccountingWorkerRouteImport } from './routes/api/public/hooks/accounting-worker'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
@@ -587,6 +588,11 @@ const ApiPublicHooksRefreshRatesRoute =
     path: '/api/public/hooks/refresh-rates',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksPoIntakeRoute = ApiPublicHooksPoIntakeRouteImport.update({
+  id: '/api/public/hooks/po-intake',
+  path: '/api/public/hooks/po-intake',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksAutoPayoutsRoute =
   ApiPublicHooksAutoPayoutsRouteImport.update({
     id: '/api/public/hooks/auto-payouts',
@@ -769,6 +775,7 @@ export interface FileRoutesByFullPath {
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/account/orders/': typeof AuthenticatedAccountOrdersIndexRoute
@@ -861,6 +868,7 @@ export interface FileRoutesByTo {
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/account/orders': typeof AuthenticatedAccountOrdersIndexRoute
@@ -965,6 +973,7 @@ export interface FileRoutesById {
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/_authenticated/account/orders/': typeof AuthenticatedAccountOrdersIndexRoute
@@ -1069,6 +1078,7 @@ export interface FileRouteTypes {
     | '/seller/products/new'
     | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
     | '/account/orders/'
@@ -1161,6 +1171,7 @@ export interface FileRouteTypes {
     | '/seller/products/new'
     | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
     | '/account/orders'
@@ -1264,6 +1275,7 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/products/new'
     | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
     | '/_authenticated/account/orders/'
@@ -1309,6 +1321,7 @@ export interface RootRouteChildren {
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicHooksAccountingWorkerRoute: typeof ApiPublicHooksAccountingWorkerRoute
   ApiPublicHooksAutoPayoutsRoute: typeof ApiPublicHooksAutoPayoutsRoute
+  ApiPublicHooksPoIntakeRoute: typeof ApiPublicHooksPoIntakeRoute
   ApiPublicHooksRefreshRatesRoute: typeof ApiPublicHooksRefreshRatesRoute
 }
 
@@ -1916,6 +1929,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksRefreshRatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/po-intake': {
+      id: '/api/public/hooks/po-intake'
+      path: '/api/public/hooks/po-intake'
+      fullPath: '/api/public/hooks/po-intake'
+      preLoaderRoute: typeof ApiPublicHooksPoIntakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/auto-payouts': {
       id: '/api/public/hooks/auto-payouts'
       path: '/api/public/hooks/auto-payouts'
@@ -2350,6 +2370,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicHooksAccountingWorkerRoute: ApiPublicHooksAccountingWorkerRoute,
   ApiPublicHooksAutoPayoutsRoute: ApiPublicHooksAutoPayoutsRoute,
+  ApiPublicHooksPoIntakeRoute: ApiPublicHooksPoIntakeRoute,
   ApiPublicHooksRefreshRatesRoute: ApiPublicHooksRefreshRatesRoute,
 }
 export const routeTree = rootRouteImport

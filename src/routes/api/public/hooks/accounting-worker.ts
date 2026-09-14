@@ -23,7 +23,8 @@ export const Route = createFileRoute("/api/public/hooks/accounting-worker")({
             { status: 503 },
           );
         const { runAccountingWorker } = await import("@/lib/accounting-worker.server");
-        return Response.json(await runAccountingWorker());
+        const { runPoWorker } = await import("@/lib/po/service.server");
+        return Response.json({ ...(await runAccountingWorker()), po: await runPoWorker() });
       },
     },
   },
