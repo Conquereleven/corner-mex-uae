@@ -157,6 +157,7 @@ jobs:
         env:
           PO_POSTGRES_TEST: "1"
       - run: npm run test:intermex-go-live-1
+      - run: npm run test:intermex-zoho-test-activation
       - run: npm run test:cm-pay-stripe-1
         env:
           CM_PAY_POSTGRES_TEST: "1"

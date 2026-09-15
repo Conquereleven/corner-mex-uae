@@ -11,7 +11,8 @@ export type ZohoPoInvoice = {
   place_of_supply: string;
   billing_address_id?: string;
   billing_address?: Record<string, string>;
-  vat_reg_no: string;
+  vat_reg_no?: string;
+  tax_reg_no?: string;
   is_inclusive_tax: boolean;
   sub_total: number;
   tax_total: number;
@@ -26,6 +27,15 @@ export type ZohoPoInvoice = {
     item_total: number;
   }>;
 };
+export function invoiceTrn(actual: Pick<ZohoPoInvoice, "vat_reg_no" | "tax_reg_no">) {
+  if (
+    actual.tax_reg_no !== undefined &&
+    actual.vat_reg_no !== undefined &&
+    actual.tax_reg_no !== actual.vat_reg_no
+  )
+    return undefined;
+  return actual.tax_reg_no ?? actual.vat_reg_no;
+}
 const cents = (n: unknown) => {
   if (typeof n !== "number" || !Number.isFinite(n) || n < 0) throw new Error("INVALID_AMOUNT");
   return minor(String(n));
@@ -44,7 +54,7 @@ export function reconcilePo(expected: ComposedPo, actual: ZohoPoInvoice) {
       reasons.push("DATE_TERMS_MISMATCH");
     if (
       actual.tax_treatment !== p.tax_treatment ||
-      actual.vat_reg_no !== p.vat_reg_no ||
+      invoiceTrn(actual) !== p.vat_reg_no ||
       actual.place_of_supply !== p.place_of_supply ||
       actual.is_inclusive_tax !== false
     )
