@@ -103,7 +103,8 @@
     "test:intermex-go-live-1": "node --experimental-strip-types --test tests/intermex-go-live-1/*.test.mjs",
     "test:intermex-go-live-2": "node --experimental-strip-types --test tests/intermex-go-live-2/*.test.mjs",
     "test:intermex-po-automation-1": "node --experimental-strip-types --test tests/intermex-po-automation-1/*.test.mjs",
-    "test:intermex-po:built-pdf": "node scripts/intermex-po-automation-1/test-built-pdf.mjs"
+    "test:intermex-po:built-pdf": "node scripts/intermex-po-automation-1/test-built-pdf.mjs",
+    "test:intermex-zoho-test-activation": "node --experimental-strip-types --test tests/intermex-zoho-test-activation/*.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.45.1",

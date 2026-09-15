@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "mode": "test",
+  "accountingWrites": 0,
+  "checks": {
+    "invoice": true,
+    "number": true,
+    "customer": true,
+    "reference": true,
+    "currency": true,
+    "date": true,
+    "terms": true,
+    "trn": true,
+    "placeOfSupply": true,
+    "billing": true,
+    "subtotal": true,
+    "vat": true,
+    "total": true,
+    "line": true
+  },
+  "fullMappingReconciliation": false,
+  "remaining": [
+    "approval of place of supply policy for future orders",
+    "original PO PDF certification"
+  ]
+}
