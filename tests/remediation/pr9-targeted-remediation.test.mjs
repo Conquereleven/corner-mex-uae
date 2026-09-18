@@ -161,16 +161,26 @@ test("historical package drift is rejected by npm ci", async () => {
     `${JSON.stringify(packageJson, null, 2)}\n`,
   );
   await writeFile(path.join(directory, "package-lock.json"), await readFile("package-lock.json"));
+  // npm_execpath is only set when this suite runs through an npm script. Under a bare
+  // `node --test` invocation it is undefined, which previously produced an argv of
+  // [undefined, "ci", ...] and made node fail with MODULE_NOT_FOUND before npm ever ran.
+  const npmExecPath = process.env.npm_execpath;
+  const viaNodeScript = Boolean(npmExecPath) && /\.[cm]?js$/u.test(npmExecPath);
+  const npmArgs = ["ci", "--dry-run", "--ignore-scripts"];
   const result = spawnSync(
-    process.execPath,
-    [process.env.npm_execpath, "ci", "--dry-run", "--ignore-scripts"],
+    viaNodeScript ? process.execPath : "npm",
+    viaNodeScript ? [npmExecPath, ...npmArgs] : npmArgs,
     {
       cwd: directory,
       encoding: "utf8",
     },
   );
+  assert.ifError(result.error);
+  const output = `${result.stdout}\n${result.stderr}`;
+  // Guard the regression directly: npm must have run and rejected the drift, not failed to load.
+  assert.doesNotMatch(output, /MODULE_NOT_FOUND/u);
   assert.notEqual(result.status, 0);
-  assert.match(`${result.stdout}\n${result.stderr}`, /package-lock|in sync|Missing/i);
+  assert.match(output, /package-lock|in sync|Missing/i);
 });
 
 test("merged-tree verifier accepts only the expected synthetic merge", async () => {
