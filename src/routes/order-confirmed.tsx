@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { getOrderForConfirmation } from "@/lib/payments.functions";
+import { deliveryEstimateText } from "@/lib/delivery-sla";
 
 export const Route = createFileRoute("/order-confirmed")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -43,7 +44,7 @@ function Confirmation() {
         <p className="mt-4">
           {value
             ? value.payment_method === "cod"
-              ? `Order #${value.order_number} received. Payment is due on delivery.`
+              ? `Order #${value.order_number} received. Payment is due on delivery. ${deliveryEstimateText()}`
               : value.payment_status === "paid"
                 ? `Payment received for order #${value.order_number}.`
                 : `Order #${value.order_number}: payment ${value.payment_status.replaceAll("_", " ")}.`

@@ -34,6 +34,7 @@ import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 import { getCardCheckoutCapability, initiateCardCheckout } from "@/lib/card-checkout.functions";
 import { checkoutOperation } from "@/lib/checkout-operation";
+import { deliveryEstimateText } from "@/lib/delivery-sla";
 
 const CHECKOUT_ENABLED = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
 // Fallback list used only until the server configuration resolves; the
@@ -520,6 +521,9 @@ function Checkout() {
                 </dt>
                 <dd>{preview ? `AED ${preview.shippingAed.toFixed(2)}` : "—"}</dd>
               </div>
+              <p className="text-[11px] leading-5 text-muted-foreground">
+                {deliveryEstimateText()}
+              </p>
               <div className="flex justify-between border-t border-border pt-3 font-medium">
                 <dt>Total</dt>
                 {/* Amounts are always the server's, never computed in the browser. */}
