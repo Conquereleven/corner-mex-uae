@@ -17,6 +17,7 @@ import {
   DesertGlassControl,
   DesertGlassSurface,
 } from "@/components/site/DesertGlass";
+import { sellerOfRecordLine } from "@/lib/business-identity";
 
 const shopSearchSchema = z.object({
   category: fallback(z.string().optional(), undefined),
@@ -37,11 +38,11 @@ export const Route = createFileRoute("/shop")({
   validateSearch: zodValidator(shopSearchSchema),
   head: () => ({
     meta: [
-      { title: "Catalog — Intermex UAE" },
+      { title: "Catalog — CornerMex" },
       {
         name: "description",
         content:
-          "Browse Mexican chiles, salsas, masa, snacks and pantry staples through the Intermex UAE catalogue.",
+          "Browse Mexican chiles, salsas, masa, snacks and pantry staples through the CornerMex catalogue.",
       },
     ],
   }),
@@ -148,7 +149,7 @@ function Shop() {
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              Intermex UAE
+              CornerMex
             </p>
             <h1 className="mt-1 font-display text-4xl tracking-tight sm:text-5xl">Catalogue</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -320,7 +321,7 @@ function Shop() {
               >
                 <p className="font-display text-2xl">The catalogue is temporarily unavailable.</p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  Intermex could not load product results. No empty-catalogue conclusion has been
+                  CornerMex could not load product results. No empty-catalogue conclusion has been
                   made.
                 </p>
                 <Button
@@ -337,7 +338,7 @@ function Shop() {
                 <p className="font-display text-2xl">The pantry is being curated</p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                   No products match this view yet. Adjust the filters or return soon for the next
-                  Intermex selection.
+                  CornerMex selection.
                 </p>
                 <Button variant="outline" className="mt-4 rounded-full" onClick={resetAll}>
                   Clear filters
@@ -382,7 +383,7 @@ function Shop() {
         </div>
 
         <div className="mt-16 border-t border-border pt-8 text-sm text-muted-foreground">
-          Products are sold directly by Intermex UAE.
+          {sellerOfRecordLine()}.
         </div>
       </section>
     </SiteLayout>

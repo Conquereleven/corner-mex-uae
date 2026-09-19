@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Accounts unavailable — Intermex commercial preview" },
+      { title: "Accounts unavailable — CornerMex commercial preview" },
       { name: "robots", content: "noindex" },
     ],
   }),

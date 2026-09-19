@@ -71,7 +71,7 @@
 
 :root {
   --radius: 0.5rem;
-  /* Intermex storefront — warm canvas, red field, jalapeño green, warm brown depth. */
+  /* CornerMex storefront — cream canvas, clay field, sage accents, obsidian depth. */
   --background: oklch(0.99 0.015 90);
   --foreground: oklch(0.25 0.005 60);
   --card: oklch(1 0 0);
@@ -120,7 +120,7 @@
   --sidebar-ring: oklch(0.51 0.21 27);
 }
 
-/* Intermex storefront semantic layer. Values are injected by BrandConfig so
+/* CornerMex storefront semantic layer. Values are injected by BrandConfig so
  * shared commerce primitives can be reused by another tenant without visual
  * CornerMex coupling. */
 .intermex-storefront {

@@ -47,8 +47,11 @@ async function sourceFiles(dir) {
 // ---------------------------------------------------------------------------
 
 test("business identity matches the exact Founder-attested values", () => {
-  assert.equal(BUSINESS_IDENTITY.brandName, "Intermex");
+  // Founder decision 2026-09-19 reaffirms FD-CM-BUSINESS-IDENTITY-001: CornerMex brand,
+  // RodMor TradeCo LLC seller of record, Intermex supplier only.
+  assert.equal(BUSINESS_IDENTITY.brandName, "CornerMex");
   assert.equal(BUSINESS_IDENTITY.legalEntity, "RodMor TradeCo LLC");
+  assert.equal(BUSINESS_IDENTITY.merchantOfRecord, BUSINESS_IDENTITY.legalEntity);
   assert.equal(BUSINESS_IDENTITY.location, "Sharjah Media City, Free Zone, UAE");
   assert.equal(BUSINESS_IDENTITY.licensingAuthority, "Sharjah Media City");
   assert.equal(BUSINESS_IDENTITY.tradeLicense, "2647014.01");
@@ -391,7 +394,7 @@ test("no application source composes or hardcodes an unowned-domain mailbox", as
 test("/contact uses the registry and explains the shared temporary mailbox", async () => {
   const contact = await read("src/routes/contact.tsx");
   assert.match(contact, /PUBLIC_CONTACT\./, "contact must resolve addresses via the registry");
-  assert.match(contact, /confirmed way to contact Intermex/i);
+  assert.match(contact, /confirmed way to contact CornerMex/i);
   assert.match(contact, /same address with a different\s*\n?\s*subject line/i);
   assert.ok(!contact.includes(UNOWNED_MAIL_DOMAIN), "contact must not name the unowned domain");
 });

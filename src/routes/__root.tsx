@@ -78,21 +78,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Intermex — UAE commercial preview" },
+      { title: "CornerMex — UAE commercial preview" },
       {
         name: "description",
         content:
           "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders and business quotes are reviewed manually.",
       },
-      { property: "og:title", content: "Intermex — UAE commercial preview" },
+      { property: "og:title", content: "CornerMex — UAE commercial preview" },
       {
         property: "og:description",
         content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
       },
-      { property: "og:site_name", content: "Intermex" },
+      { property: "og:site_name", content: "CornerMex" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Intermex — UAE commercial preview" },
+      { name: "twitter:title", content: "CornerMex — UAE commercial preview" },
       {
         name: "twitter:description",
         content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
@@ -121,10 +121,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "Intermex",
+          name: "CornerMex",
           url: siteOrigin(),
           description:
-            "Intermex commercial preview for catalogue discovery and manual B2B quote enquiries in the UAE.",
+            "CornerMex commercial preview for catalogue discovery and manual B2B quote enquiries in the UAE.",
           currenciesAccepted: "AED",
           knowsLanguage: ["en", "es", "ar"],
         }),

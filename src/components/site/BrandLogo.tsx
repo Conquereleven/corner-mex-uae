@@ -1,7 +1,7 @@
-import { INTERMEX_BRAND, type BrandConfig } from "@/config/brand";
+import { ACTIVE_BRAND, type BrandConfig } from "@/config/brand";
 
 export function BrandLogo({
-  brand = INTERMEX_BRAND,
+  brand = ACTIVE_BRAND,
   className = "h-12 w-auto",
 }: {
   brand?: BrandConfig;

@@ -3,18 +3,18 @@ import { ArrowRight, MapPin, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { siteUrl } from "@/lib/site-url";
-import { INTERMEX_BRAND } from "@/config/brand";
+import { ACTIVE_BRAND } from "@/config/brand";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Intermex UAE — Mexican food for the Middle East" },
+      { title: "CornerMex — Mexican food for the Middle East" },
       {
         name: "description",
         content:
-          "Explore the Intermex Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
+          "Explore the CornerMex Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
       },
-      { property: "og:title", content: "Intermex UAE — Mexican food for the Middle East" },
+      { property: "og:title", content: "CornerMex — Mexican food for the Middle East" },
       {
         property: "og:description",
         content: "Mexican catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
@@ -43,8 +43,8 @@ function Hero() {
   return (
     <section className="intermex-hero relative overflow-hidden">
       <img
-        src={INTERMEX_BRAND.assets.hero.src}
-        alt={INTERMEX_BRAND.assets.hero.alt}
+        src={ACTIVE_BRAND.assets.hero.src}
+        alt={ACTIVE_BRAND.assets.hero.alt}
         width={3000}
         height={1003}
         fetchPriority="high"
@@ -55,7 +55,7 @@ function Hero() {
       <div className="relative mx-auto flex min-h-[27rem] max-w-7xl items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="max-w-2xl rounded-[1.5rem] border-2 border-[color:var(--brand-mole-brown)] bg-[color:var(--intermex-cream-surface)] px-6 py-10 text-center shadow-[0_7px_0_var(--brand-verde-jalapeno)] sm:px-14 sm:py-12">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[color:var(--brand-verde-jalapeno)]">
-            Intermex UAE · Mexican food supplier
+            CornerMex · Authentic Mexican pantry in the UAE
           </p>
           <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-[color:var(--brand-mole-brown)] sm:text-7xl">
             Tradition you can taste.
@@ -91,14 +91,16 @@ function Hero() {
 }
 
 function Categories() {
+  // Real canonical category slugs (public.categories), so every tile lands on a
+  // populated category. Images come from ACTIVE_BRAND.assets.collections.
   const items = [
-    ["mexican-candy", "Mexican Candy"],
-    ["mexican-sauces", "Mexican Sauces"],
-    ["from-our-production", "Intermex Production"],
-    ["chilis", "Chilis"],
-    ["mexican-pantry", "Mexican Pantry"],
+    ["salsas-moles", "Salsas & Moles"],
+    ["snacks-sweets", "Snacks & Sweets"],
+    ["pantry-staples", "Pantry Staples"],
+    ["chiles-spices", "Chiles & Spices"],
+    ["tortillas-masa", "Tortillas & Masa"],
     ["drinks", "Drinks"],
-    ["mexican-accessories", "Mexican Accessories"],
+    ["gifts-lifestyle", "Gifts & Lifestyle"],
   ] as const;
   return (
     <section className="border-y border-[color:var(--brand-mole-brown)]/20 bg-[color:var(--intermex-cream-surface)]">
@@ -128,7 +130,7 @@ function Categories() {
               className="group overflow-hidden rounded-2xl border border-[color:var(--brand-mole-brown)] bg-white transition-all hover:-translate-y-0.5 hover:border-[color:var(--brand-verde-jalapeno)] hover:shadow-lg"
             >
               <img
-                src={INTERMEX_BRAND.assets.collections[slug].src}
+                src={ACTIVE_BRAND.assets.collections[slug].src}
                 alt=""
                 width={750}
                 height={750}
@@ -160,7 +162,7 @@ function Features() {
             Special Offers
           </h2>
           <p className="mt-3 text-sm leading-6 text-[color:var(--brand-mole-brown)]/75">
-            Discover limited-price favourites and pantry essentials from the Intermex catalogue.
+            Discover limited-price favourites and pantry essentials from the CornerMex catalogue.
           </p>
           <Link
             to="/shop"
@@ -206,7 +208,7 @@ function B2BBlock() {
               For restaurants, retailers &amp; distributors
             </span>
             <h2 className="mt-4 font-display text-4xl tracking-tight sm:text-5xl">
-              Bring Intermex to your table.
+              Bring CornerMex to your table.
             </h2>
           </div>
           <div>

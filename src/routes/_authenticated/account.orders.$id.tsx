@@ -17,7 +17,7 @@ import {
 } from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account/orders/$id")({
-  head: () => ({ meta: [{ title: "My order — Intermex" }] }),
+  head: () => ({ meta: [{ title: "My order — CornerMex" }] }),
   component: CustomerOrderDetail,
 });
 

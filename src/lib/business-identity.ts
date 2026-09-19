@@ -1,5 +1,11 @@
 // Central registry of customer-visible business identity facts.
 //
+// Founder decision 2026-09-19 (docs/cornermex-2/LEGAL-IDENTITY.md):
+//   CornerMex           = public ecommerce brand
+//   RodMor TradeCo LLC  = seller / merchant of record
+//   Intermex            = supplier only — never merchant, seller, invoice issuer
+//                         or public brand for CornerMex customer orders.
+//
 // Evidence class: FOUNDER-ATTESTED (see
 // docs/engineering-playbook/founder-decisions/FD-CM-BUSINESS-IDENTITY-001.md).
 // These values are attested by the Founder as the authoritative business
@@ -13,6 +19,8 @@
 export type BusinessIdentity = {
   brandName: string;
   legalEntity: string;
+  /** The entity customers buy from. Must equal legalEntity for CornerMex web orders. */
+  merchantOfRecord: string;
   /** Founder-attested registered location wording used on public surfaces. */
   location: string;
   /** Founder-attested licensing authority. */
@@ -35,8 +43,9 @@ export type BusinessIdentity = {
 };
 
 export const BUSINESS_IDENTITY: Readonly<BusinessIdentity> = Object.freeze({
-  brandName: "Intermex",
+  brandName: "CornerMex",
   legalEntity: "RodMor TradeCo LLC",
+  merchantOfRecord: "RodMor TradeCo LLC",
   location: "Sharjah Media City, Free Zone, UAE",
   licensingAuthority: "Sharjah Media City",
   tradeLicense: "2647014.01",
@@ -48,6 +57,28 @@ export const BUSINESS_IDENTITY_EVIDENCE_CLASS = "FOUNDER-ATTESTED" as const;
 
 /** Founder decision record that authorises these values. */
 export const BUSINESS_IDENTITY_DECISION_ID = "FD-CM-BUSINESS-IDENTITY-001" as const;
+
+/**
+ * Legal entities that supply CornerMex. They may appear as suppliers, purchase
+ * order counterparts or in historical records, but must never be presented as
+ * the CornerMex merchant or used as the issuer of CornerMex customer invoices.
+ * Identifiers are those already recorded in the repository
+ * (docs/intermex-zoho-test-activation/observed-facts.json); none are invented.
+ */
+export const SUPPLIER_ENTITIES = Object.freeze([
+  Object.freeze({
+    name: "Intermex Pro General Trading LLC",
+    role: "supplier" as const,
+    zohoOrganizationId: "773588238",
+    vatTrn: "100491647200003",
+  }),
+]);
+
+/** "Sold by …" wording for any surface that names the seller. */
+export function sellerOfRecordLine(): string {
+  const b = BUSINESS_IDENTITY;
+  return `Sold by ${b.merchantOfRecord}, trading as ${b.brandName}`;
+}
 
 export function businessIdentityLine(): string {
   const b = BUSINESS_IDENTITY;

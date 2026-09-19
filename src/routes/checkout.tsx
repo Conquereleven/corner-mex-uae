@@ -50,7 +50,7 @@ const FALLBACK_EMIRATES: Array<{ code: EmirateCode; name: string }> = [
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
-    meta: [{ title: "Checkout — Intermex" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Checkout — CornerMex" }, { name: "robots", content: "noindex" }],
   }),
   component: Checkout,
 });
@@ -523,7 +523,9 @@ function Checkout() {
               <div className="flex justify-between border-t border-border pt-3 font-medium">
                 <dt>Total</dt>
                 {/* Amounts are always the server's, never computed in the browser. */}
-                <dd>{preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by Intermex"}</dd>
+                <dd>
+                  {preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by CornerMex"}
+                </dd>
               </div>
             </dl>
             {config?.vatTrn && (
