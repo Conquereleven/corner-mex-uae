@@ -122,10 +122,66 @@ test("the Founder decision record exists and states its evidence limits", async 
 // Delivery truthfulness
 // ---------------------------------------------------------------------------
 
-test("/delivery discloses that ordering and delivery execution are not enabled", async () => {
+// Ordering statements must follow the same flag the checkout page uses, so the
+// site can never claim ordering is closed while checkout takes orders, or open
+// while it does not (src/lib/commerce-mode.ts).
+test("/delivery states the ordering status from the checkout flag", async () => {
   const delivery = await read("src/routes/delivery.tsx");
+  assert.match(delivery, /import \{ ONLINE_ORDERING_ENABLED \} from "@\/lib\/commerce-mode"/);
+  assert.match(delivery, /\{ONLINE_ORDERING_ENABLED \? \(/);
+  // closed branch keeps the original non-promising disclosure
   assert.match(delivery, /not currently enabled on this website/i);
-  assert.match(delivery, /should be treated as confirmed/i);
+  assert.match(delivery, /should be treated as\s+confirmed/i);
+  // open branch describes what checkout actually does
+  assert.match(delivery, /Cash-on-delivery ordering is open to signed-in customers/);
+  assert.match(delivery, /nothing is ordered until you confirm/);
+});
+
+test("returns, terms, policies and sign-in pages gate ordering claims on the checkout flag", async () => {
+  for (const path of [
+    "src/routes/returns.tsx",
+    "src/routes/terms.tsx",
+    "src/routes/legal.index.tsx",
+    "src/routes/login.tsx",
+  ]) {
+    const source = await read(path);
+    assert.match(source, /ONLINE_ORDERING_ENABLED/, `${path} must use the ordering flag`);
+  }
+  const terms = await read("src/routes/terms.tsx");
+  // live branch must not describe prices as "not an offer to sell" and must name
+  // the documents that govern orders, while staying honest about legal review
+  const liveTerms = terms.slice(terms.indexOf("ONLINE_ORDERING_ENABLED ?"), terms.indexOf(") : ("));
+  assert.doesNotMatch(liveTerms, /not an offer to sell/);
+  assert.match(liveTerms, /slug: "terms-and-conditions"/);
+  assert.match(liveTerms, /slug: "returns-refunds"/);
+  assert.match(liveTerms, /pending review by qualified UAE legal counsel/);
+  const returns = await read("src/routes/returns.tsx");
+  const liveReturns = returns.slice(
+    returns.indexOf("ONLINE_ORDERING_ENABLED ?"),
+    returns.indexOf(") : ("),
+  );
+  assert.match(liveReturns, /slug: "returns-refunds"/);
+});
+
+test("the ordering flag defaults to closed outside a Vite build", async () => {
+  const { ONLINE_ORDERING_ENABLED } = await import("../../src/lib/commerce-mode.ts");
+  assert.equal(ONLINE_ORDERING_ENABLED, false);
+});
+
+test("no public surface states unconditionally that online orders are not accepted", async () => {
+  for (const path of [
+    "src/lib/i18n.ts",
+    "src/routes/__root.tsx",
+    "src/routes/index.tsx",
+    "src/routes/about.tsx",
+  ]) {
+    const source = await read(path);
+    assert.doesNotMatch(
+      source,
+      /does not accept online orders|no acepta pedidos en línea|commercial preview/i,
+      path,
+    );
+  }
 });
 
 test("/delivery makes no unsupported absolute guarantee", async () => {

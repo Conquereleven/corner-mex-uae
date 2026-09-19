@@ -3,6 +3,7 @@ import { FileText, ShieldCheck } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { siteUrl } from "@/lib/site-url";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
+import { ONLINE_ORDERING_ENABLED } from "@/lib/commerce-mode";
 
 const POLICIES = [
   {
@@ -18,22 +19,22 @@ const POLICIES = [
   {
     to: "/privacy" as const,
     title: "Privacy",
-    summary: "What this public preview processes and how to contact us.",
+    summary: "What CornerMex processes and how to contact us.",
   },
   {
     to: "/terms" as const,
     title: "Terms",
-    summary: "The non-transactional terms of this commercial preview.",
+    summary: "The terms for using CornerMex and for website orders.",
   },
 ];
 
 export const Route = createFileRoute("/legal/")({
   head: () => ({
     meta: [
-      { title: "Policies — CornerMex commercial preview" },
+      { title: "Policies — CornerMex" },
       {
         name: "description",
-        content: "Shipping, returns, privacy and preview terms for CornerMex in the UAE.",
+        content: "Delivery, returns, privacy and terms for CornerMex in the UAE.",
       },
       { property: "og:url", content: siteUrl("/legal") },
     ],
@@ -47,15 +48,15 @@ function LegalIndex() {
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-primary">
-          <ShieldCheck className="h-3.5 w-3.5" /> Commercial preview policies
+          <ShieldCheck className="h-3.5 w-3.5" /> Policies
         </div>
         <h1 className="mt-3 font-display text-5xl tracking-tight">
           Clear boundaries before commerce
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
-          CornerMex currently supports catalogue discovery, optional accounts, B2C cart preparation
-          and manual B2B enquiries. Order execution, payments, marketplace participation and
-          automated messaging run only when authorized configuration is enabled.
+          {ONLINE_ORDERING_ENABLED
+            ? "CornerMex supports catalogue discovery, customer accounts, cash-on-delivery orders for signed-in customers and manual B2B enquiries. Card payments, marketplace participation and automated messaging run only when authorized configuration is enabled."
+            : "CornerMex currently supports catalogue discovery, optional accounts, B2C cart preparation and manual B2B enquiries. Order execution, payments, marketplace participation and automated messaging run only when authorized configuration is enabled."}
         </p>
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {POLICIES.map((policy) => (

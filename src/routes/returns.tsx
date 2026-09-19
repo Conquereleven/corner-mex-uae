@@ -3,6 +3,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { PolicyLinkGroup } from "@/components/site/Trust";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { siteUrl } from "@/lib/site-url";
+import { ONLINE_ORDERING_ENABLED } from "@/lib/commerce-mode";
 
 export const Route = createFileRoute("/returns")({
   head: () => {
@@ -30,17 +31,39 @@ function Returns() {
         </p>
         <h1 className="mt-3 font-display text-5xl tracking-tight">Returns &amp; refunds</h1>
         <div className="mt-8 space-y-5 text-base leading-7 text-muted-foreground">
-          <p>
-            Order execution is not currently enabled on this website, so no website purchase — and
-            therefore no website return — is being processed today. We would rather tell you that
-            plainly than display a policy that is not yet in operation.
-          </p>
-          <p>
-            When ordering is activated, the applicable cancellation, return and refund terms will be
-            presented before you place an order. For business orders, those terms are stated in the
-            written quote before acceptance. Statutory rights under applicable UAE law are not
-            limited by this page.
-          </p>
+          {ONLINE_ORDERING_ENABLED ? (
+            <p>
+              Website orders are covered by our{" "}
+              <Link
+                to="/legal/$slug"
+                params={{ slug: "returns-refunds" }}
+                className="underline underline-offset-4"
+              >
+                Returns &amp; Refunds Policy
+              </Link>
+              , which you accept before placing an order. To raise a return or refund request, email{" "}
+              <a className="underline underline-offset-4" href={mailto(PUBLIC_CONTACT.complaints)}>
+                {PUBLIC_CONTACT.complaints}
+              </a>{" "}
+              with your order number. For business orders, the applicable terms are stated in the
+              written quote before acceptance. Statutory rights under applicable UAE law are not
+              limited by this page.
+            </p>
+          ) : (
+            <>
+              <p>
+                Order execution is not currently enabled on this website, so no website purchase —
+                and therefore no website return — is being processed today. We would rather tell you
+                that plainly than display a policy that is not yet in operation.
+              </p>
+              <p>
+                When ordering is activated, the applicable cancellation, return and refund terms
+                will be presented before you place an order. For business orders, those terms are
+                stated in the written quote before acceptance. Statutory rights under applicable UAE
+                law are not limited by this page.
+              </p>
+            </>
+          )}
           <p>
             The structured returns policy template is maintained in the{" "}
             <Link to="/legal" className="underline underline-offset-4">

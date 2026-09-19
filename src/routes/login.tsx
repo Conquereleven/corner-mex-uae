@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { safeInternalRedirect } from "@/lib/safe-internal-redirect";
+import { ONLINE_ORDERING_ENABLED } from "@/lib/commerce-mode";
 
 function mapLoginError(error: { message?: string; code?: string } | null) {
   if (!error) return "";
@@ -75,7 +76,9 @@ function Login() {
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight">Sign in</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Use your confirmed CornerMex email and password. Account access does not enable checkout.
+          {ONLINE_ORDERING_ENABLED
+            ? "Sign in with Google or your confirmed CornerMex email and password."
+            : "Use your confirmed CornerMex email and password. Account access does not enable checkout."}
         </p>
         <Button
           type="button"

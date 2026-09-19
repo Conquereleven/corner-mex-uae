@@ -78,24 +78,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CornerMex — UAE commercial preview" },
+      { title: "CornerMex — Authentic Mexican pantry in the UAE" },
       {
         name: "description",
         content:
           "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders and business quotes are reviewed manually.",
       },
-      { property: "og:title", content: "CornerMex — UAE commercial preview" },
+      { property: "og:title", content: "CornerMex — Authentic Mexican pantry in the UAE" },
       {
         property: "og:description",
-        content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+        content: "Authentic Mexican chiles, salsas, masa and snacks for the UAE. Cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
       },
       { property: "og:site_name", content: "CornerMex" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "CornerMex — UAE commercial preview" },
+      { name: "twitter:title", content: "CornerMex — Authentic Mexican pantry in the UAE" },
       {
         name: "twitter:description",
-        content: "Catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+        content: "Authentic Mexican chiles, salsas, masa and snacks for the UAE. Cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
       },
       {
         name: "keywords",
@@ -124,7 +124,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "CornerMex",
           url: siteOrigin(),
           description:
-            "CornerMex commercial preview for catalogue discovery and manual B2B quote enquiries in the UAE.",
+            "Authentic Mexican chiles, salsas, masa and snacks for the UAE. Cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
           currenciesAccepted: "AED",
           knowsLanguage: ["en", "es", "ar"],
         }),

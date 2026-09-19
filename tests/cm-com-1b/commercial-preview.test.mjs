@@ -20,7 +20,7 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
     source("src/routes/checkout.tsx"),
   ]);
 
-  assert.match(header, /Commercial preview/);
+  assert.doesNotMatch(header, /commercial preview/i);
   for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"]) {
     assert.match(header, new RegExp(label));
   }
@@ -36,7 +36,7 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
   assert.match(footer, /not an order, payment or\s+confirmed quote/);
   assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote confirmed/i);
   assert.match(shop, /Product discovery only/);
-  assert.match(home, /UAE commercial preview/);
+  assert.doesNotMatch(home, /commercial preview/i);
   assert.doesNotMatch(filters, /In stock only|title="Availability"/);
   assert.match(login, /signInWithPassword/);
   assert.match(cart, /component: Cart/);

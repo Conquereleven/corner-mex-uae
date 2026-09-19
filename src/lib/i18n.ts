@@ -13,7 +13,7 @@ const en = {
     signup: "Get started",
   },
   hero: {
-    eyebrow: "Commercial preview · UAE",
+    eyebrow: "Mexican pantry · UAE",
     title: "Discover the pantry of Mexico,",
     titleAccent: "curated for the UAE.",
     sub: "Explore chiles, salsas, masa and snacks. Signed-in customers can place cash-on-delivery orders; current availability is verified at checkout and business quotes are reviewed manually.",
@@ -48,7 +48,7 @@ const en = {
     eyebrow: "For restaurants, hotels & caterings",
     title: "Stock your kitchen with the real thing.",
     body: "Tell CornerMex what your business needs. Availability, AED pricing, delivery and terms are confirmed in a human-approved written quote.",
-    cta: "Business preview",
+    cta: "For business",
   },
   footer: {
     tagline: "Mexican corner. Emirati table.",
@@ -350,11 +350,11 @@ const en = {
       meta: {
         title: "For Business — Wholesale Mexican supply in the UAE | CornerMex",
         description:
-          "Commercial preview for UAE businesses seeking a manually reviewed Mexican pantry quote.",
+          "Human-reviewed wholesale quotes for UAE businesses sourcing Mexican pantry products.",
       },
       eyebrow: "For business",
       title: "A manual quote path for UAE businesses.",
-      lede: "Browse the preview catalogue, then email your product, volume and destination requirements. CornerMex reviews each enquiry before confirming availability, AED pricing, delivery options or terms.",
+      lede: "Browse the catalogue, then email your product, volume and destination requirements. CornerMex reviews each enquiry before confirming availability, AED pricing, delivery options or terms.",
       ctaQuote: "Request a manual quote",
       ctaContact: "Email CornerMex",
       perks: {
@@ -374,12 +374,12 @@ const en = {
     },
     about: {
       meta: {
-        title: "About CornerMex — UAE commercial preview",
+        title: "About CornerMex — Authentic Mexican pantry in the UAE",
         description:
-          "CornerMex is preparing a curated Mexican pantry discovery and manual B2B quote experience for the UAE.",
+          "CornerMex is a curated Mexican pantry for the UAE, with cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
       },
       title: "A Mexican corner in the Emirates.",
-      lede: "CornerMex is preparing a curated Mexican pantry experience for the UAE. This commercial preview supports catalogue discovery and manual, human-approved B2B quotes; it does not accept online orders.",
+      lede: "CornerMex is a curated Mexican pantry for the UAE. Signed-in customers can order for cash on delivery, and businesses can request human-approved written quotes.",
       ctaShop: "Browse the catalogue",
       ctaB2B: "For business",
     },
@@ -398,7 +398,7 @@ const es = {
     signup: "Empezar",
   },
   hero: {
-    eyebrow: "Vista previa comercial · EAU",
+    eyebrow: "Despensa mexicana · EAU",
     title: "Descubre la despensa de México,",
     titleAccent: "curada para EAU.",
     sub: "Explora chiles, salsas, masa y snacks. Los clientes con sesión iniciada pueden pedir contra entrega; la disponibilidad se verifica al pagar y las cotizaciones empresariales se revisan manualmente.",
@@ -433,7 +433,7 @@ const es = {
     eyebrow: "Para restaurantes, hoteles y caterings",
     title: "Surte tu cocina con lo auténtico.",
     body: "Cuéntanos qué necesita tu negocio. Disponibilidad, precios en AED, entrega y condiciones se confirman en una cotización escrita aprobada por una persona.",
-    cta: "Vista previa B2B",
+    cta: "Para negocios",
   },
   footer: {
     tagline: "Esquina mexicana. Mesa emiratí.",
@@ -734,9 +734,9 @@ const es = {
   pages: {
     b2b: {
       meta: {
-        title: "Para negocios — Vista previa comercial | CornerMex",
+        title: "Para negocios — Cotizaciones mayoristas | CornerMex",
         description:
-          "Vista previa para negocios en EAU que buscan una cotización manual de despensa mexicana.",
+          "Cotizaciones mayoristas revisadas por personas para negocios en EAU que buscan productos de despensa mexicana.",
       },
       eyebrow: "Para negocios",
       title: "Una ruta de cotización manual para negocios en EAU.",
@@ -760,12 +760,12 @@ const es = {
     },
     about: {
       meta: {
-        title: "Nosotros — Vista previa comercial de CornerMex en EAU",
+        title: "Nosotros — CornerMex, despensa mexicana en EAU",
         description:
-          "CornerMex prepara una experiencia curada de descubrimiento y cotización B2B manual para EAU.",
+          "CornerMex es una despensa mexicana curada para EAU, con pedidos contra entrega para clientes registrados y cotizaciones para negocios revisadas por personas.",
       },
       title: "Un rincón mexicano en los Emiratos.",
-      lede: "CornerMex prepara una experiencia curada de despensa mexicana para EAU. Esta vista previa permite explorar el catálogo y solicitar cotizaciones B2B manuales; no acepta pedidos en línea.",
+      lede: "CornerMex es una despensa mexicana curada para EAU. Los clientes registrados pueden pedir con pago contra entrega y los negocios pueden solicitar cotizaciones escritas aprobadas por una persona.",
       ctaShop: "Ver catálogo",
       ctaB2B: "Para negocios",
     },
@@ -784,7 +784,7 @@ const ar = {
     signup: "ابدأ الآن",
   },
   hero: {
-    eyebrow: "معاينة تجارية · الإمارات",
+    eyebrow: "الإمارات",
     title: "اكتشف مؤن المكسيك،",
     titleAccent: "مختارة لدولة الإمارات.",
     sub: "استكشف الكتالوج. يمكن للعملاء المسجلين طلب الدفع عند الاستلام؛ يتم التحقق من التوفر عند إتمام الطلب وتُراجع عروض الأعمال يدوياً.",
@@ -819,7 +819,7 @@ const ar = {
     eyebrow: "للمطاعم والفنادق وشركات التموين",
     title: "زوّد مطبخك بالأصيل.",
     body: "أخبر CornerMex باحتياجات عملك. يؤكد التوفر والسعر بالدرهم والتسليم والشروط في عرض مكتوب يوافق عليه شخص.",
-    cta: "معاينة الأعمال",
+    cta: "للأعمال",
   },
   footer: {
     tagline: "ركن مكسيكي. مائدة إماراتية.",
@@ -1119,8 +1119,8 @@ const ar = {
   pages: {
     b2b: {
       meta: {
-        title: "للأعمال — معاينة CornerMex التجارية",
-        description: "معاينة تجارية للشركات في الإمارات التي تطلب عرضاً يدوياً لمؤن مكسيكية.",
+        title: "للأعمال — CornerMex",
+        description: "للشركات في الإمارات التي تطلب عرضاً يدوياً لمؤن مكسيكية.",
       },
       eyebrow: "للأعمال",
       title: "مسار عرض يدوي للشركات في الإمارات.",
@@ -1141,12 +1141,12 @@ const ar = {
     },
     about: {
       meta: {
-        title: "من نحن — معاينة CornerMex التجارية في الإمارات",
+        title: "من نحن — CornerMex في الإمارات",
         description:
           "تُعد CornerMex تجربة مختارة لاكتشاف المؤن المكسيكية وطلب عروض أعمال يدوية في الإمارات.",
       },
       title: "ركن مكسيكي في الإمارات.",
-      lede: "تُعد CornerMex تجربة مختارة للمؤن المكسيكية في الإمارات. تتيح هذه المعاينة استكشاف الكتالوج وطلب عروض أعمال يدوية، ولا تقبل الطلبات عبر الإنترنت.",
+      lede: "تُعد CornerMex تجربة مختارة للمؤن المكسيكية في الإمارات.",
       ctaShop: "تصفح الكتالوج",
       ctaB2B: "للأعمال",
     },
