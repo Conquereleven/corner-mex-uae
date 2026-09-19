@@ -9,11 +9,36 @@ import {
   type ExternalInvoice,
   type ZohoProduct,
 } from "./accounting-integration.ts";
+import { SUPPLIER_ENTITIES } from "./business-identity.ts";
 
 // Repository-only implementation. A separate reviewed activation change must
-// turn this constant on after Intermex confirms product, organization, data
-// center and UAE VAT mappings. Credentials alone can never authorize writes.
+// turn this constant on after the seller of record's (BUSINESS_IDENTITY.merchantOfRecord)
+// Zoho organization, data center and UAE VAT mappings are confirmed.
+// Intermex Pro General Trading LLC is a supplier and must never be the issuing
+// organization for CornerMex customer invoices (see SUPPLIER_ENTITIES and
+// docs/cornermex-2/LEGAL-IDENTITY.md). Credentials alone can never authorize writes.
 export const ZOHO_LIVE_ACTIVATION_AUTHORIZED = false as const;
+
+/** Zoho organizations that belong to supplier entities (see SUPPLIER_ENTITIES). */
+const SUPPLIER_ZOHO_ORGANIZATION_IDS: ReadonlySet<string> = new Set(
+  SUPPLIER_ENTITIES.map((entity) => entity.zohoOrganizationId),
+);
+
+/**
+ * CornerMex customer invoices, customers and payments must be written to the
+ * seller of record's Zoho organization. A supplier's organization (Intermex Pro
+ * General Trading LLC, 773588238) can never issue them, whatever the
+ * environment says. Read-only calls and supplier purchase-order flows are not
+ * affected.
+ */
+export const SUPPLIER_ORGANIZATION_FORBIDDEN =
+  "ZOHO_SUPPLIER_ORGANIZATION_CANNOT_ISSUE_CORNERMEX_DOCUMENTS";
+
+export function isSupplierZohoOrganization(organizationId: string | undefined): boolean {
+  return (
+    Boolean(organizationId) && SUPPLIER_ZOHO_ORGANIZATION_IDS.has(String(organizationId).trim())
+  );
+}
 
 export type ZohoRuntimeConfig = {
   product: ZohoProduct;
@@ -38,6 +63,8 @@ export function evaluateZohoActivation(
   const product = environment.CORNERMEX_ZOHO_PRODUCT;
   if (product !== "books" && product !== "invoice") reasons.push("product_unconfirmed");
   if (!environment.CORNERMEX_ZOHO_ORGANIZATION_ID) reasons.push("organization_unconfirmed");
+  else if (isSupplierZohoOrganization(environment.CORNERMEX_ZOHO_ORGANIZATION_ID))
+    reasons.push("organization_is_supplier_entity");
   if (!environment.CORNERMEX_ZOHO_API_BASE_URL) reasons.push("data_center_unconfirmed");
   if (!environment.CORNERMEX_ZOHO_ACCESS_TOKEN) reasons.push("credentials_not_configured");
   if (!environment.CORNERMEX_ZOHO_VAT_TAX_ID) reasons.push("vat_mapping_unconfirmed");
@@ -144,6 +171,13 @@ export class ZohoAccountingProvider implements AccountingProvider {
     return body;
   }
 
+  /** Refuses CornerMex customer-document writes into a supplier's organization. */
+  private assertCornerMexIssuer() {
+    if (isSupplierZohoOrganization(this.config.organizationId)) {
+      throw new AccountingIntegrationError("mapping_error", false, SUPPLIER_ORGANIZATION_FORBIDDEN);
+    }
+  }
+
   private assertPoScope(po: ComposedPo) {
     if (this.product !== "books" || po.organizationId !== this.config.organizationId)
       throw new PoError("ZOHO_PO_SCOPE_MISMATCH");
@@ -209,6 +243,7 @@ export class ZohoAccountingProvider implements AccountingProvider {
   }
 
   async createCustomer(customer: CanonicalCustomer) {
+    this.assertCornerMexIssuer();
     const body = await this.request("contacts", {
       method: "POST",
       body: JSON.stringify({
@@ -252,6 +287,7 @@ export class ZohoAccountingProvider implements AccountingProvider {
   }
 
   async createInvoice(input: CanonicalOrderInvoice, externalCustomerId: string) {
+    this.assertCornerMexIssuer();
     const body = await this.request("invoices?send=false", {
       method: "POST",
       body: JSON.stringify(this.invoicePayload(input, externalCustomerId)),
@@ -260,6 +296,7 @@ export class ZohoAccountingProvider implements AccountingProvider {
   }
 
   async updateInvoice(id: string, input: CanonicalOrderInvoice, externalCustomerId: string) {
+    this.assertCornerMexIssuer();
     const body = await this.request(`invoices/${encodeURIComponent(id)}`, {
       method: "PUT",
       body: JSON.stringify(this.invoicePayload(input, externalCustomerId)),
@@ -289,6 +326,7 @@ export class ZohoAccountingProvider implements AccountingProvider {
     providerReference: string;
     paidAt: string;
   }) {
+    this.assertCornerMexIssuer();
     const body = await this.request("customerpayments", {
       method: "POST",
       body: JSON.stringify({
