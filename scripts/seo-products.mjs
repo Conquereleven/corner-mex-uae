@@ -268,10 +268,10 @@ function buildLocalizedSeo(product, lang) {
         : `Buy ${name} in the UAE. A ${copy.label} option to ${copy.shortUse}.`;
   const availability =
     lang === "es"
-      ? "Disponible en Intermex para entrega en Dubái, Abu Dabi y otros emiratos."
+      ? "Disponible en CornerMex para entrega en Dubái, Abu Dabi y otros emiratos."
       : lang === "ar"
-        ? "متوفر من Intermex للتوصيل في دبي وأبوظبي وبقية الإمارات."
-        : "Available from Intermex for delivery in Dubai, Abu Dhabi and across the UAE.";
+        ? "متوفر من CornerMex للتوصيل في دبي وأبوظبي وبقية الإمارات."
+        : "Available from CornerMex for delivery in Dubai, Abu Dhabi and across the UAE.";
   const longDescription =
     existing.length >= 80
       ? truncate(
@@ -285,7 +285,7 @@ function buildLocalizedSeo(product, lang) {
   const shortDescription = truncate(intro, 220);
   const metaDescription = truncate(`${intro} ${availability}`, 158);
   const titleSuffix =
-    lang === "es" ? "EAU · Intermex" : lang === "ar" ? "الإمارات · Intermex" : "UAE · Intermex";
+    lang === "es" ? "EAU · CornerMex" : lang === "ar" ? "الإمارات · CornerMex" : "UAE · CornerMex";
   const title = seoTitle(name, titleSuffix);
   const keywords = unique([
     name,

@@ -53,7 +53,7 @@ export function ProductCard({
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <span className="text-[11px] uppercase tracking-widest text-[color:var(--brand-verde-jalapeno)]">
-          Intermex UAE
+          CornerMex
         </span>
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         <div className="mt-auto flex items-end justify-between pt-3">

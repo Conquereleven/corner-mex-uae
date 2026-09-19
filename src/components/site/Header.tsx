@@ -30,7 +30,7 @@ export function Header() {
     <>
       <DesertGlassHeader className="sticky inset-x-0 top-2 z-40 mx-2 rounded-2xl sm:top-3 sm:mx-4">
         <div className="intermex-header mx-auto grid min-h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-3 sm:px-5 lg:px-7">
-          <Link to="/" aria-label="Intermex UAE home" className="justify-self-start">
+          <Link to="/" aria-label="CornerMex home" className="justify-self-start">
             <BrandLogo className="h-11 w-24 sm:h-12 sm:w-28" />
           </Link>
 
@@ -99,7 +99,7 @@ export function Header() {
                 <SheetHeader className="text-left">
                   <BrandLogo className="h-12 w-28" />
                   <SheetTitle className="text-[color:var(--brand-cream)]">
-                    Explore Intermex
+                    Explore CornerMex
                   </SheetTitle>
                   <SheetDescription className="text-[color:color-mix(in_srgb,var(--brand-cream)_72%,transparent)]">
                     Mexican food and wholesale supply across the UAE.

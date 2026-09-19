@@ -89,8 +89,8 @@ test("4. catalog surface contains no public numeric product price", () => {
   assert.match(SURFACE_SOURCE, /Price on request/);
 });
 
-test("5. Intermex retail pricing is not rendered", () => {
-  assert.doesNotMatch(SURFACE_SOURCE, /Intermex[^\n]*(?:AED\s*\d|retail price)/i);
+test("5. CornerMex retail pricing is not rendered", () => {
+  assert.doesNotMatch(SURFACE_SOURCE, /CornerMex[^\n]*(?:AED\s*\d|retail price)/i);
 });
 
 test("6. sales surface has no cart, checkout, payment, or order controls", () => {
@@ -136,7 +136,7 @@ test("12. request copy distinguishes prepared and persisted states truthfully", 
     "utf8",
   );
   assert.match(preview, /Your request is ready\./);
-  assert.match(preview, /Enquiry received by Intermex\./);
+  assert.match(preview, /Enquiry received by CornerMex\./);
   assert.match(preview, /does not\s+create an order/i);
   assert.doesNotMatch(preview, /order confirmed|quote confirmed|payment confirmed/i);
 });

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LEGAL_INDEX, BUSINESS_MODEL } from "@/lib/legal-docs";
 import { AlertTriangle, ExternalLink, FileText } from "lucide-react";
+import { sellerOfRecordLine } from "@/lib/business-identity";
 
 export const Route = createFileRoute("/_authenticated/admin/legal")({
   component: AdminLegal,
@@ -49,7 +50,7 @@ function AdminLegal() {
               <tr><td className="py-2 pr-4">Complaint SLA</td><td className="py-2 pr-4"><Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700">Configured</Badge></td><td className="py-2 text-muted-foreground">Acknowledge 1 bd · resolve 5-10 bd · escalate after 30 d</td></tr>
               <tr><td className="py-2 pr-4">Refund timing</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Configured · provider review pending</Badge></td><td className="py-2 text-muted-foreground">Review 1-3 bd · card 5-10 bd after initiation</td></tr>
               <tr><td className="py-2 pr-4">Courier SLA</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Configured · courier contract pending</Badge></td><td className="py-2 text-muted-foreground">Express 1-2 bd · Standard 2-5 bd · Remote +1-3 bd</td></tr>
-              <tr><td className="py-2 pr-4">Intermex disclosure</td><td className="py-2 pr-4"><Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700">Configured</Badge></td><td className="py-2 text-muted-foreground">Sourced from selected suppliers incl. Intermex. CornerMex remains seller of record.</td></tr>
+              <tr><td className="py-2 pr-4">Supplier disclosure</td><td className="py-2 pr-4"><Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700">Configured</Badge></td><td className="py-2 text-muted-foreground">Sourced from selected suppliers incl. Intermex (supplier only). {sellerOfRecordLine()}.</td></tr>
               <tr><td className="py-2 pr-4">Arabic version</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Pending</Badge></td><td className="py-2 text-muted-foreground">Translation and UAE counsel review required</td></tr>
               <tr><td className="py-2 pr-4">UAE counsel review</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Pending</Badge></td><td className="py-2 text-muted-foreground">Required before public launch</td></tr>
               <tr><td className="py-2 pr-4">VAT / TDRA / food registration</td><td className="py-2 pr-4"><Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">Pending</Badge></td><td className="py-2 text-muted-foreground">Subject to regulatory review; placeholders in legal docs</td></tr>

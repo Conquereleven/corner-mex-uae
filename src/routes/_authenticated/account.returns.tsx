@@ -16,7 +16,7 @@ import { buyerListReturns, buyerCreateReturn, buyerCancelReturn } from "@/lib/re
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/account/returns")({
-  head: () => ({ meta: [{ title: "Returns — Intermex" }] }),
+  head: () => ({ meta: [{ title: "Returns — CornerMex" }] }),
   component: ReturnsPage,
 });
 

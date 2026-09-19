@@ -46,7 +46,7 @@ export function GoLiveReadiness() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Intermex operational readiness</CardTitle>
+        <CardTitle>CornerMex operational readiness</CardTitle>
         <p className="text-sm text-muted-foreground">
           Runtime evidence is read from the current database. READY means the boundary is available;
           production activation and controlled E2E evidence remain separate gates. No provider is

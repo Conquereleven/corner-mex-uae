@@ -9,13 +9,12 @@ export type BrandAsset = {
   src: string;
   alt: string;
   sourceUrl: string;
-  sourceType: "official-live-site" | "official-brand-file" | "awaiting_official_asset";
+  sourceType: "cornermex-brand-kit";
 };
 
 export type BrandConfig = {
   id: string;
   displayName: string;
-  legalName: string;
   verbal: {
     primary: string;
     secondary: string;
@@ -33,84 +32,72 @@ export type BrandConfig = {
   };
 };
 
-const INTERMEX_SOURCE = "https://intermexuae.com/";
+const KIT = "/brand-kit";
 
-export const INTERMEX_BRAND: BrandConfig = {
-  id: "intermex-uae",
-  displayName: "Intermex UAE",
-  legalName: "Intermex UAE",
+/**
+ * CornerMex public brand (founder decision, 2026-09-19): CornerMex is the only
+ * public ecommerce brand; BUSINESS_IDENTITY.merchantOfRecord is the seller of record
+ * (see src/lib/business-identity.ts); Intermex is a supplier only and has no
+ * storefront brand configuration.
+ *
+ * Every value below comes from the CornerMex brand kit already in this
+ * repository (public/brand-kit/guide/brand-guide.md, palette line "Clay #B4362B,
+ * Sage #3E7A54, Cream #F8F3E8, Sand #EFE6D2, Obsidian #2A2622 …"). The colour
+ * keys keep their historical names because they only feed the generic
+ * --brand-* CSS variables; the values are CornerMex's.
+ *
+ * Imagery uses the kit's master-scene photographs directly. The kit's composite
+ * SVGs embed those photos via <image href>, which browsers do not load when an
+ * SVG is rendered through <img>, so they are not used here.
+ */
+export const CORNERMEX_BRAND: BrandConfig = {
+  id: "cornermex",
+  displayName: "CornerMex",
   verbal: {
-    primary: "Del barrio pa’l mundo",
-    secondary: "Tradition you can taste",
+    // Previously published CornerMex copy (site meta before 2026-08-28).
+    primary: "Authentic Mexican pantry in the UAE",
+    secondary: "Authentic Mexican chiles, salsas, masa and snacks — sourced for the UAE.",
   },
   colors: {
-    // Implementation-derived from the current intermexuae.com visual system;
-    // these red and cream values are not verified exact Brand Book colors.
-    structuralRed: "#b42127",
-    cream: "#fff8e7",
-    // Exact verified Brand Book values captured in GitHub issue #70.
-    moleBrown: "#6e441d",
-    verdeJalapeno: "#2d9849",
+    structuralRed: "#B4362B", // Clay
+    cream: "#F8F3E8", // Cream
+    moleBrown: "#2A2622", // Obsidian
+    verdeJalapeno: "#3E7A54", // Sage
   },
   assets: {
     logo: {
-      src: "/brand-kit/intermex/source-assets/intermex-logo-yellow.png",
-      alt: "Intermex UAE",
-      sourceUrl: `${INTERMEX_SOURCE}cdn/shop/files/YELLOW_PNG.png?v=1749546480&width=220`,
-      sourceType: "official-live-site",
+      src: `${KIT}/logos/horizontal/cornermex-logo-horizontal-full-color.svg`,
+      alt: "CornerMex",
+      sourceUrl: `${KIT}/logos/horizontal/cornermex-logo-horizontal-full-color.svg`,
+      sourceType: "cornermex-brand-kit",
     },
     hero: {
-      src: "/brand-kit/intermex/source-assets/intermex-hero-cactus.jpg",
-      alt: "Cactus growing against a warm yellow wall",
-      sourceUrl: `${INTERMEX_SOURCE}cdn/shop/files/tryagain.jpg?v=1751631403&width=3000`,
-      sourceType: "official-live-site",
+      src: `${KIT}/master-scenes/chiles-lime-macro.jpg`,
+      alt: "Dried chiles and fresh lime",
+      sourceUrl: `${KIT}/master-scenes/chiles-lime-macro.jpg`,
+      sourceType: "cornermex-brand-kit",
     },
+    // Keyed by real canonical category slugs (public.categories), so every
+    // homepage tile links to a populated category.
     collections: {
-      "mexican-candy": {
-        src: "/brand-kit/intermex/source-assets/mexican-candy.png",
-        alt: "Mexican Candy",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/Candy.png?v=1749649037&width=750`,
-        sourceType: "official-live-site",
-      },
-      "mexican-sauces": {
-        src: "/brand-kit/intermex/source-assets/mexican-sauces.png",
-        alt: "Mexican Sauces",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/sauces3.png?v=1749647189&width=750`,
-        sourceType: "official-live-site",
-      },
-      "from-our-production": {
-        src: "/brand-kit/intermex/source-assets/intermex-production.png",
-        alt: "Intermex Production",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/production2.png?v=1749651517&width=750`,
-        sourceType: "official-live-site",
-      },
-      chilis: {
-        src: "/brand-kit/intermex/source-assets/chilis.png",
-        alt: "Chilis",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/chillis.png?v=1749728090&width=750`,
-        sourceType: "official-live-site",
-      },
-      "mexican-pantry": {
-        src: "/brand-kit/intermex/source-assets/mexican-pantry.png",
-        alt: "Mexican Pantry",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/OtherFood.png?v=1751363061&width=750`,
-        sourceType: "official-live-site",
-      },
-      drinks: {
-        src: "/brand-kit/intermex/source-assets/drinks.png",
-        alt: "Drinks",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/drinks.png?v=1751363139&width=750`,
-        sourceType: "official-live-site",
-      },
-      "mexican-accessories": {
-        src: "/brand-kit/intermex/source-assets/mexican-accessories.png",
-        alt: "Mexican Accessories",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/Accessories.png?v=1751363265&width=750`,
-        sourceType: "official-live-site",
-      },
+      "salsas-moles": scene("chiles-lime-corn.jpg", "Salsas and moles"),
+      "snacks-sweets": scene("snacks-styled.jpg", "Mexican snacks and sweets"),
+      "pantry-staples": scene("pantry-editorial.jpg", "Mexican pantry staples"),
+      "chiles-spices": scene("chiles-lime-macro.jpg", "Dried chiles and spices"),
+      "tortillas-masa": scene("pantry.jpg", "Tortillas and masa"),
+      drinks: scene("minimal-still-life.jpg", "Mexican drinks"),
+      "gifts-lifestyle": scene("shelf-assortment.jpg", "Gifts and lifestyle"),
     },
   },
 };
+
+function scene(file: string, alt: string): BrandAsset {
+  const src = `${KIT}/master-scenes/${file}`;
+  return { src, alt, sourceUrl: src, sourceType: "cornermex-brand-kit" };
+}
+
+/** The storefront's active brand. */
+export const ACTIVE_BRAND = CORNERMEX_BRAND;
 
 export function brandCssVariables(brand: BrandConfig): CSSProperties {
   return {
