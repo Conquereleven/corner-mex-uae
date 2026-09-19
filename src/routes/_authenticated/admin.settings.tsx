@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon, Tags, Ticket } from "lucide-react";
+import { Settings as SettingsIcon, Tags } from "lucide-react";
 import { PageHeader } from "@/components/site/PageHeader";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
@@ -14,12 +14,6 @@ const HUBS = [
     icon: Tags,
     title: "Categories",
     desc: "Manage canonical catalog categories and visibility.",
-  },
-  {
-    to: "/admin/coupons",
-    icon: Ticket,
-    title: "Coupons",
-    desc: "Create and manage canonical discount coupons.",
   },
 ] as const;
 

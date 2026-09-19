@@ -4,6 +4,21 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertAdmin } from "@/lib/admin-authorization.server";
 
+/**
+ * Coupons are disabled until canonical coupon support exists
+ * (docs/cornermex-2/LAUNCH-READINESS-PLAN.md §3.2). This module targets legacy
+ * columns (kind, value, min_subtotal_aed, max_uses, uses_count, max_discount_aed)
+ * that the canonical public.coupons table does not have, so every call failed
+ * against production. Fail closed and explicitly instead. No coupon exists in
+ * canonical DB2 and none has ever been redeemed, so no customer behaviour is lost.
+ */
+export const COUPONS_UNAVAILABLE = "COUPONS_UNAVAILABLE";
+export const COUPONS_ENABLED = false as const;
+
+function assertCouponsAvailable(): void {
+  if (!COUPONS_ENABLED) throw new Error(COUPONS_UNAVAILABLE);
+}
+
 export type CouponPreview = {
   id: string;
   code: string;
@@ -15,6 +30,7 @@ export type CouponPreview = {
 
 /** Server-only: validate a coupon against a subtotal. Returns { ok, coupon|error }. */
 export async function evaluateCoupon(code: string, subtotal: number) {
+  if (!COUPONS_ENABLED) return { ok: false as const, error: "Coupons are not available" };
   const normalized = code.trim().toUpperCase();
   if (!normalized) return { ok: false as const, error: "Enter a code" };
 
@@ -38,8 +54,7 @@ export async function evaluateCoupon(code: string, subtotal: number) {
       error: `Minimum subtotal AED ${Number(row.min_subtotal_aed).toFixed(0)}`,
     };
 
-  let discount =
-    row.kind === "percent" ? subtotal * (Number(row.value) / 100) : Number(row.value);
+  let discount = row.kind === "percent" ? subtotal * (Number(row.value) / 100) : Number(row.value);
   if (row.max_discount_aed != null) discount = Math.min(discount, Number(row.max_discount_aed));
   discount = Math.min(discount, subtotal);
   discount = +discount.toFixed(2);
@@ -59,11 +74,12 @@ export async function evaluateCoupon(code: string, subtotal: number) {
 
 export const validateCoupon = createServerFn({ method: "POST" })
   .inputValidator((input: { code: string; subtotal: number }) =>
-    z
-      .object({ code: z.string().min(1).max(64), subtotal: z.number().nonnegative() })
-      .parse(input),
+    z.object({ code: z.string().min(1).max(64), subtotal: z.number().nonnegative() }).parse(input),
   )
-  .handler(async ({ data }) => evaluateCoupon(data.code, data.subtotal));
+  .handler(async ({ data }) => {
+    assertCouponsAvailable();
+    return evaluateCoupon(data.code, data.subtotal);
+  });
 
 const CouponInput = z.object({
   id: z.string().uuid().optional(),
@@ -109,6 +125,7 @@ export const upsertCoupon = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof CouponInput>) => CouponInput.parse(input))
   .handler(async ({ data, context }) => {
+    assertCouponsAvailable();
     const admin = await isAdminUser(context.userId);
     let sellerId = data.seller_id ?? null;
 
@@ -154,11 +171,10 @@ export const upsertCoupon = createServerFn({ method: "POST" })
 export const listCoupons = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { scope?: "all" | "mine" } | undefined) =>
-    z
-      .object({ scope: z.enum(["all", "mine"]).default("all") })
-      .parse(input ?? {}),
+    z.object({ scope: z.enum(["all", "mine"]).default("all") }).parse(input ?? {}),
   )
   .handler(async ({ data, context }) => {
+    assertCouponsAvailable();
     if (data.scope === "all") {
       await assertAdmin(context.userId);
       const { data: rows, error } = await supabaseAdmin
@@ -183,10 +199,9 @@ export const listCoupons = createServerFn({ method: "GET" })
 
 export const deleteCoupon = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) =>
-    z.object({ id: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
+    assertCouponsAvailable();
     const admin = await isAdminUser(context.userId);
     let deletion = supabaseAdmin.from("coupons").delete().eq("id", data.id);
 
