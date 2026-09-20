@@ -6,6 +6,7 @@ import { businessIdentityLine } from "@/lib/business-identity";
 import { openCookiePreferences } from "@/lib/cookie-consent";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { BrandLogo } from "@/components/site/BrandLogo";
+import { ACTIVE_BRAND } from "@/config/brand";
 
 type FooterLink =
   | {
@@ -92,7 +93,7 @@ export function Footer() {
         <div>
           <BrandLogo className="h-14 w-28 rounded-md bg-[color:var(--brand-mole-brown)] p-1" />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Del barrio pa’l mundo · Tradition you can taste
+            {ACTIVE_BRAND.verbal.primary}
           </p>
           <p className="mt-3 max-w-xs text-xs leading-5 text-muted-foreground">
             AED is the primary display currency. Prices and availability shown in preview are not

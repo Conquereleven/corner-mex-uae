@@ -17,7 +17,9 @@ test("public presentation surfaces use current operating language", async () => 
   assert.match(header, />\s*Shop\s*</);
   assert.match(header, />\s*Wholesale\s*</);
   assert.match(home, /CornerMex · Authentic Mexican pantry in the UAE/);
-  assert.match(home, /Tradition you can taste\./);
+  // The hero headline comes from the CornerMex brand voice, not from the
+  // Intermex Brand Book line this previously asserted.
+  assert.match(home, /\{ACTIVE_BRAND\.verbal\.primary\}/);
   assert.match(shop, />\s*CornerMex\s*</);
   assert.match(b2b, />\s*For business · UAE\s*</);
   assert.match(about, /CornerMex combines a curated Mexican pantry catalogue/);

@@ -27,6 +27,8 @@ export type BrandConfig = {
   };
   assets: {
     logo: BrandAsset;
+    /** Light mark for dark surfaces (the header band is the brand red). */
+    logoReversed: BrandAsset;
     hero: BrandAsset;
     collections: Record<string, BrandAsset>;
   };
@@ -71,6 +73,12 @@ export const CORNERMEX_BRAND: BrandConfig = {
       sourceUrl: `${KIT}/logos/horizontal/cornermex-logo-horizontal-full-color.svg`,
       sourceType: "cornermex-brand-kit",
     },
+    logoReversed: {
+      src: `${KIT}/logos/horizontal/cornermex-logo-horizontal-cream.svg`,
+      alt: "CornerMex",
+      sourceUrl: `${KIT}/logos/horizontal/cornermex-logo-horizontal-cream.svg`,
+      sourceType: "cornermex-brand-kit",
+    },
     hero: {
       src: `${KIT}/master-scenes/chiles-lime-macro.jpg`,
       alt: "Dried chiles and fresh lime",
@@ -91,9 +99,12 @@ export const CORNERMEX_BRAND: BrandConfig = {
   },
 };
 
+// Category tiles render at roughly 180 CSS px, so they use 750 px derivatives of
+// the master scenes (sips -Z 750). Pointing tiles at the 1920 px originals cost
+// 2.3 MB on the homepage; the derivatives cost 0.76 MB for the same result.
 function scene(file: string, alt: string): BrandAsset {
-  const src = `${KIT}/master-scenes/${file}`;
-  return { src, alt, sourceUrl: src, sourceType: "cornermex-brand-kit" };
+  const src = `${KIT}/master-scenes/tiles/${file}`;
+  return { src, alt, sourceUrl: `${KIT}/master-scenes/${file}`, sourceType: "cornermex-brand-kit" };
 }
 
 /** The storefront's active brand. */

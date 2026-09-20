@@ -87,3 +87,38 @@ test("persisted compatibility identifiers are unchanged", async () => {
   }
   assert.match(po, /PO_VERSION = "intermex-po-v1"/);
 });
+
+test("the Intermex verbal territory is not used by the CornerMex storefront", async () => {
+  // "Del barrio pa'l mundo" and "Tradition you can taste" are Intermex Brand
+  // Book lines (GitHub issue #70). They were hardcoded in the storefront and are
+  // not CornerMex's to use.
+  const { readdir } = await import("node:fs/promises");
+  const roots = ["src/routes", "src/components/site", "src/lib"];
+  const offenders = [];
+  for (const dir of roots) {
+    for (const entry of await readdir(dir, { withFileTypes: true, recursive: true })) {
+      if (!entry.isFile() || !/\.(ts|tsx)$/.test(entry.name)) continue;
+      const file = `${entry.parentPath ?? dir}/${entry.name}`;
+      const source = await readFile(file, "utf8");
+      if (/Del barrio|Tradition you can taste/i.test(source)) offenders.push(file);
+    }
+  }
+  assert.deepEqual(offenders, [], `Intermex verbal territory in: ${offenders.join(", ")}`);
+});
+
+test("the header uses the light mark, because its band is the brand red", async () => {
+  const header = await readFile("src/components/site/Header.tsx", "utf8");
+  const logos = header.match(/<BrandLogo[^>]*/g) ?? [];
+  assert.ok(logos.length > 0, "the header must show the brand mark");
+  for (const tag of logos) assert.match(tag, /reversed/, `dark-on-red contrast: ${tag}`);
+  assert.match(ACTIVE_BRAND.assets.logoReversed.src, /cream|reversed|mono-white/);
+});
+
+test("category tiles use the small derivatives, not the full-size master scenes", async () => {
+  const { stat } = await import("node:fs/promises");
+  for (const [slug, asset] of Object.entries(ACTIVE_BRAND.assets.collections)) {
+    assert.match(asset.src, /\/master-scenes\/tiles\//, `${slug} must use the tile derivative`);
+    const { size } = await stat(`public${asset.src}`);
+    assert.ok(size < 200 * 1024, `${slug} tile is ${Math.round(size / 1024)} KB; keep tiles small`);
+  }
+});
