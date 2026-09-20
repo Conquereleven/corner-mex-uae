@@ -200,3 +200,30 @@ Verified: `commerce_private.mcp_grants` does **not** exist in DB2, and `docs/mcp
 - `validate:program-state` fails `PROGRAM_STATE_EVIDENCE_STALE` (evidence expired 2026-07-27).
 - Local and CI builds need `NODE_OPTIONS=--max-old-space-size=8192`; Railway builds succeed without it.
 - Dead code: legacy `placeOrder` (not in the build output), `listSellers` / `getSeller` (query a table DB2 lacks; no callers), the inert BNPL route.
+
+---
+
+## Launch gate (updated 2026-09-20, after the second Founder decision set)
+
+The gate below replaces the per-track exit criteria above. Launch is allowed
+when every line is GREEN, except where the line itself says a YELLOW is
+acceptable.
+
+| #   | Item                                                                                          | Status                        | Evidence / what is missing                                                                                                                                                           |
+| --- | --------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Legal review of the customer-facing documents                                                 | GREEN                         | FD-CM-LEGAL-REVIEW-001; nine documents are `Approved` in `src/lib/legal-docs.ts`. The seller agreement stays `Draft` because it was not in scope.                                    |
+| 2   | Commercial identity (CornerMex brand, RodMor TradeCo LLC seller of record, Intermex supplier) | GREEN                         | `docs/cornermex-2/LEGAL-IDENTITY.md`; the identity is centralised, and a test fails the build if a source file hardcodes it.                                                         |
+| 3   | Guest checkout with no account wall                                                           | GREEN                         | One pipeline (`place_cod_order_v2`), guest and authenticated; `tests/cm2/guest-checkout.test.mjs` and the SQL harness.                                                               |
+| 4   | Guest order tracking without exposing data by order id                                        | GREEN                         | Capability token, sha256 at rest, payload carries no email or address.                                                                                                               |
+| 5   | Account claim of a guest order                                                                | GREEN                         | Requires the token **and** a verified matching email; the token is retired on claim.                                                                                                 |
+| 6   | COD idempotency and stock release                                                             | GREEN                         | `cm_create_cod_order_v2`, `cm_release_order_stock_v1`, concurrency and negative controls in `npm run test:cm2:sql`.                                                                  |
+| 7   | Domain                                                                                        | YELLOW — acceptable           | The domain is not bought. The app derives its host at runtime, so no code change is needed at cutover; `docs/cornermex-2/DOMAIN-CUTOVER.md` is the runbook.                          |
+| 8   | Zoho invoicing                                                                                | YELLOW — acceptable           | The provider refuses to issue a CornerMex customer invoice inside a supplier organisation. Invoicing stays off until the RodMor organisation exists; checkout does not depend on it. |
+| 9   | Card payments                                                                                 | Intentionally OFF             | Not activated. COD only.                                                                                                                                                             |
+| 10  | Google sign-in verified with a genuinely new external account                                 | **BLOCKING — Founder action** | Cannot be done from here: it needs a real Google account that has never touched this project.                                                                                        |
+| 11  | Production migration applied before the app deploy                                            | **BLOCKING**                  | The three `2026091*` migrations are unapplied on DB2. They must be applied first, under the existing rollout checklist, then the app deploys.                                        |
+| 12  | Program state evidence                                                                        | Expired                       | `docs/program/CURRENT_STATE.json` went stale on 2026-09-19 by its own seven-day window. It needs a fresh read-only observation; it is not a code defect.                             |
+
+**Ordering that must be respected at release:** migrations to DB2 first, app
+deploy second. The app tolerates the old schema only for authenticated COD;
+guest checkout fails closed until the migration lands.
