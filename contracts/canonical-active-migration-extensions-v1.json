@@ -106,6 +106,13 @@
       "requiresFounderProductionGate": true
     },
     {
+      "filename": "20260919115000_cm2_guest_checkout_schema.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm2_guest_checkout_schema",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
       "filename": "20260919120000_cm2_release_stock_on_cancellation.sql",
       "owner": "canonical_cornermex",
       "purpose": "cm2_release_stock_on_cancellation",

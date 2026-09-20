@@ -6,383 +6,304 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "orders",
-      "files": [
-        "src/lib/inventory-intelligence.functions.ts"
-      ]
+      "files": ["src/lib/inventory-intelligence.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "order_items",
-      "files": [
-        "src/lib/inventory-intelligence.functions.ts"
-      ]
+      "files": ["src/lib/inventory-intelligence.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "product_variants",
-      "files": [
-        "src/lib/inventory-intelligence.functions.ts"
-      ]
+      "files": ["src/lib/inventory-intelligence.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "products",
-      "files": [
-        "src/lib/admin-products.functions.ts"
-      ]
+      "files": ["src/lib/admin-products.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "product_translations",
-      "files": [
-        "src/lib/admin-products.functions.ts"
-      ]
+      "files": ["src/lib/admin-products.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "product_images",
-      "files": [
-        "src/lib/admin-products.functions.ts"
-      ]
+      "files": ["src/lib/admin-products.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "product_variants",
-      "files": [
-        "src/lib/admin-products.functions.ts"
-      ]
+      "files": ["src/lib/admin-products.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "categories",
-      "files": [
-        "src/lib/admin-products.functions.ts"
-      ]
+      "files": ["src/lib/admin-products.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "orders",
-      "files": [
-        "src/lib/accounting-worker.server.ts"
-      ]
+      "files": ["src/lib/accounting-worker.server.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "profiles",
-      "files": [
-        "src/lib/accounting-worker.server.ts"
-      ]
+      "files": ["src/lib/accounting-worker.server.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "user_roles",
-      "files": [
-        "src/lib/payments.functions.ts"
-      ]
+      "files": ["src/lib/payments.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "payments",
-      "files": [
-        "src/lib/admin.functions.ts"
-      ]
+      "files": ["src/lib/admin.functions.ts"]
     }
   ],
   "fileRemovals": [
     {
       "kind": "table_or_storage_bucket",
       "name": "b2b_leads",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ]
+      "files": ["src/lib/b2b-leads.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "user_roles",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ]
+      "files": ["src/lib/b2b-leads.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "lead_status_history",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ]
+      "files": ["src/lib/b2b-leads.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "lead_notes",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ]
+      "files": ["src/lib/b2b-leads.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
       "name": "orders",
-      "files": [
-        "src/routes/api/public/stripe-webhook.ts"
-      ]
+      "files": ["src/routes/api/public/stripe-webhook.ts"]
     },
     {
       "kind": "function",
       "name": "place_cod_order_v1",
-      "files": [
-        "src/lib/cod-order.functions.ts"
-      ]
+      "files": ["src/lib/cod-order.functions.ts"]
     }
   ],
   "newReferences": [
     {
       "kind": "function",
       "name": "admin_add_b2b_lead_note_v1",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_delete_b2b_lead_note_v1",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_get_b2b_lead_v1",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_import_product_row_v1",
-      "files": [
-        "src/lib/admin-products-import.functions.ts"
-      ],
+      "files": ["src/lib/admin-products-import.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_list_b2b_leads_v1",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_save_b2b_quote_draft_v1",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_update_b2b_lead_pipeline_v1",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_update_b2b_lead_v1",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_upsert_product_v1",
-      "files": [
-        "src/lib/admin-products.functions.ts"
-      ],
+      "files": ["src/lib/admin-products.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "admin_upsert_product_variant_v1",
-      "files": [
-        "src/lib/admin-products.functions.ts"
-      ],
+      "files": ["src/lib/admin-products.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "b2b_portal_v1",
-      "files": [
-        "src/lib/b2b-portal.functions.ts"
-      ],
+      "files": ["src/lib/b2b-portal.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_accounting_admin_action_v2",
-      "files": [
-        "src/lib/accounting-control-center.functions.ts"
-      ],
+      "files": ["src/lib/accounting-control-center.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_accounting_control_center_v2",
-      "files": [
-        "src/lib/accounting-control-center.functions.ts"
-      ],
+      "files": ["src/lib/accounting-control-center.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_accounting_job_action_v2",
-      "files": [
-        "src/lib/accounting-worker.server.ts"
-      ],
+      "files": ["src/lib/accounting-worker.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_claim_accounting_jobs_v2",
-      "files": [
-        "src/lib/accounting-worker.server.ts"
-      ],
+      "files": ["src/lib/accounting-worker.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_completed_checkout_operation_v2",
-      "files": [
-        "src/lib/payments.functions.ts"
-      ],
+      "files": ["src/lib/payments.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_create_card_order_v2",
-      "files": [
-        "src/lib/card-checkout.functions.ts"
-      ],
+      "files": ["src/lib/card-checkout.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_create_cod_order_v2",
-      "files": [
-        "src/lib/cod-order.functions.ts"
-      ],
+      "files": ["src/lib/cod-order.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_invoice_projection_v2",
-      "files": [
-        "src/lib/invoice-projection.functions.ts"
-      ],
+      "files": ["src/lib/invoice-projection.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_operational_status_v2",
-      "files": [
-        "src/lib/operational-status.functions.ts"
-      ],
+      "files": ["src/lib/operational-status.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_pay_bind_stripe_session_v2",
-      "files": [
-        "src/lib/payments.functions.ts"
-      ],
+      "files": ["src/lib/payments.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_pay_create_stripe_attempt_v2",
-      "files": [
-        "src/lib/payments.functions.ts"
-      ],
+      "files": ["src/lib/payments.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_pay_note_stripe_attempt_degraded_v1",
-      "files": [
-        "src/lib/payments.functions.ts"
-      ],
+      "files": ["src/lib/payments.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_pay_process_stripe_webhook_v2",
-      "files": [
-        "src/routes/api/public/stripe-webhook.ts"
-      ],
+      "files": ["src/routes/api/public/stripe-webhook.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_po_action_v1",
-      "files": [
-        "src/lib/po/service.server.ts"
-      ],
+      "files": ["src/lib/po/service.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_po_claim_v1",
-      "files": [
-        "src/lib/po/service.server.ts"
-      ],
+      "files": ["src/lib/po/service.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_runtime_capabilities_v2",
-      "files": [
-        "src/lib/accounting-runtime.server.ts",
-        "src/lib/card-capability.server.ts"
-      ],
+      "files": ["src/lib/accounting-runtime.server.ts", "src/lib/card-capability.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "submit_b2b_lead_v2",
-      "files": [
-        "src/lib/b2b-leads.functions.ts"
-      ],
+      "files": ["src/lib/b2b-leads.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_claim_guest_order_v1",
+      "files": ["src/lib/guest-order.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_guest_order_by_token_v1",
+      "files": ["src/lib/guest-order.functions.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }

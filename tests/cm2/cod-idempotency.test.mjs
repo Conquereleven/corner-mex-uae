@@ -67,9 +67,10 @@ test("the server sends the operation id to the idempotent order function", async
 
 test("checkout obtains and clears the COD operation id around the order", async () => {
   const checkout = await read("src/routes/checkout.tsx");
-  const call = checkout.indexOf("codCheckoutOperation(user.id, input)");
-  const place = checkout.indexOf("placeCod({ data: { ...input, operationId } })");
-  const clear = checkout.indexOf("clearCodCheckoutOperation(user.id)");
+  // The operation is keyed per identity: user id for a session, guest email otherwise.
+  const call = checkout.indexOf("codCheckoutOperation(operationKey, codInput)");
+  const place = checkout.indexOf("placeCod({ data: { ...codInput, operationId } })");
+  const clear = checkout.indexOf("clearCodCheckoutOperation(operationKey)");
   assert.ok(call > -1 && place > -1 && clear > -1, "COD checkout must use the operation helpers");
   assert.ok(call < place, "the id must be obtained before the order call");
   assert.ok(place < clear, "the id must only be cleared once the order exists");
@@ -78,8 +79,12 @@ test("checkout obtains and clears the COD operation id around the order", async 
 test("the migrations keep place_cod_order_v1 as the single pricing authority", async () => {
   const migration = await read("supabase/migrations/20260919121000_cm2_cod_order_idempotency.sql");
   assert.match(migration, /create or replace function public\.cm_create_cod_order_v2/);
-  assert.match(migration, /public\.place_cod_order_v1\(/, "must delegate, not reimplement pricing");
-  assert.match(migration, /'cod', v_norm/, "the fingerprint must distinguish COD from card");
+  assert.match(migration, /public\.place_cod_order_v2\(/, "must delegate, not reimplement pricing");
+  assert.match(
+    migration,
+    /'cod', p_buyer_id, v_guest_email, v_norm/,
+    "the fingerprint must distinguish COD from card and one identity from another",
+  );
   assert.match(migration, /CHECKOUT_IDEMPOTENCY_CONFLICT/);
   assert.match(
     migration,

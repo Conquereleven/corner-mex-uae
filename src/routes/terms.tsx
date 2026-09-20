@@ -62,11 +62,11 @@ function Terms() {
                 separate human-approved written quote containing the applicable commercial terms.
               </p>
               <p>
-                These documents are maintained in the{" "}
+                The full documents are maintained in the{" "}
                 <Link to="/legal" className="underline underline-offset-4">
                   legal centre
-                </Link>{" "}
-                and are pending review by qualified UAE legal counsel.
+                </Link>
+                .
               </p>
             </>
           ) : (
@@ -85,11 +85,11 @@ function Terms() {
                 human-approved written quote containing the applicable commercial terms.
               </p>
               <p>
-                The full terms template is maintained in the{" "}
+                The full terms are maintained in the{" "}
                 <Link to="/legal" className="underline underline-offset-4">
                   legal centre
-                </Link>{" "}
-                and is finalised with qualified UAE legal review before commercial activation.
+                </Link>
+                .
               </p>
             </>
           )}

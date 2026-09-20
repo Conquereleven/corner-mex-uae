@@ -33,6 +33,7 @@ import { getAvailablePaymentMethods, type EmirateCode } from "@/lib/payment-meth
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 import { getCardCheckoutCapability, initiateCardCheckout } from "@/lib/card-checkout.functions";
+import { rememberGuestOrderToken } from "@/lib/guest-order-token";
 import {
   checkoutOperation,
   clearCodCheckoutOperation,
@@ -111,6 +112,7 @@ function Checkout() {
   });
   const previewRequestId = useRef(0);
   const [form, setForm] = useState({
+    email: "",
     recipient_name: "",
     phone: "",
     emirate: "DU" as EmirateCode,
@@ -204,8 +206,12 @@ function Checkout() {
     form.recipient_name.trim().length >= 2 &&
     form.phone.trim().length >= 7 &&
     form.area.trim().length >= 2;
+  // Guest checkout: buying never requires an account. A signed-in customer needs
+  // no email field; a guest supplies one so the order has a contact.
+  const guestEmailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim());
+  const identityReady = Boolean(user) || guestEmailValid;
   const readyToOrder =
-    Boolean(user) &&
+    identityReady &&
     items.length > 0 &&
     requiredFilled &&
     accepted &&
@@ -257,14 +263,19 @@ function Checkout() {
         window.location.assign(result.url);
         return;
       }
-      if (!user) throw new Error("COD_ORDER_SIGN_IN_REQUIRED");
-      // Idempotency: a retry or a second tab reuses this id, so the server
-      // replays the same order instead of creating a duplicate.
-      const operationId = await codCheckoutOperation(user.id, input);
-      const order = await placeCod({ data: { ...input, operationId } });
-      // The order exists (created now, or replayed from a previous attempt), so
-      // the next checkout must start a fresh operation.
-      clearCodCheckoutOperation(user.id);
+      const guestEmail = user ? null : form.email.trim().toLowerCase();
+      const codInput = guestEmail ? { ...input, guest: { email: guestEmail } } : input;
+      // Idempotency is per identity: a signed-in buyer keys on the user id, a
+      // guest on their email, so a retry or a second tab replays the same order.
+      const operationKey = user ? user.id : `guest:${guestEmail}`;
+      const operationId = await codCheckoutOperation(operationKey, codInput);
+      const order = await placeCod({ data: { ...codInput, operationId } });
+      // Keep the one-time tracking token so the confirmation and tracking views
+      // work without an account. It is never put in the URL.
+      if (order.guest_token) rememberGuestOrderToken(order.order_id, order.guest_token);
+      // The order exists (created now, or replayed), so the next checkout starts
+      // a fresh operation.
+      clearCodCheckoutOperation(operationKey);
       // Only clear the cart after the order genuinely exists.
       clear();
       await navigate({ to: "/order-confirmed", search: { order: order.order_id } });
@@ -325,6 +336,20 @@ function Checkout() {
             <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-xl">Delivery address</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {!user && (
+                  <Field id="checkout-email" label="Email *">
+                    <Input
+                      id="checkout-email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      inputMode="email"
+                      placeholder="you@example.com"
+                      value={form.email}
+                      onChange={(event) => setForm({ ...form, email: event.target.value })}
+                    />
+                  </Field>
+                )}
                 <Field id="checkout-recipient-name" label="Recipient name *">
                   <Input
                     id="checkout-recipient-name"
@@ -550,7 +575,11 @@ function Checkout() {
             )}
             {!sessionLoading && !user && (
               <p className="mt-5 text-xs leading-5 text-muted-foreground">
-                Sign in before an authorized checkout can proceed.
+                You are checking out as a guest — no account needed. Already have one?{" "}
+                <Link to="/login" className="underline underline-offset-4">
+                  Sign in for faster checkout
+                </Link>
+                .
               </p>
             )}
             {error && (

@@ -15,7 +15,9 @@ const BASE_COUNTS = Object.freeze({
 const COMBINED_COUNTS = Object.freeze({
   canonical_supported: 20,
   lovable_live_only: 19,
-  requires_future_migration: 30,
+  // +2: the guest order tracking/claim RPCs land with
+  // 20260919115000_cm2_guest_checkout_schema.sql (not yet applied to DB2).
+  requires_future_migration: 32,
 });
 
 export function expandApplicationSchemaReferenceContract(base, extensions) {
@@ -145,7 +147,7 @@ export function validateApplicationSchemaReferenceContract(contract) {
   }
 
   const isCombined = identities.has("function:admin_import_product_row_v1");
-  const expectedCount = isCombined ? 69 : 44;
+  const expectedCount = isCombined ? 71 : 44;
   const expectedCounts = isCombined ? COMBINED_COUNTS : BASE_COUNTS;
   if (contract.references.length !== expectedCount) errors.push("reference count mismatch");
   for (const [classification, expected] of Object.entries(expectedCounts)) {

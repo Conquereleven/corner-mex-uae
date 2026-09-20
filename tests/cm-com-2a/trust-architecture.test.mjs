@@ -154,7 +154,9 @@ test("returns, terms, policies and sign-in pages gate ordering claims on the che
   assert.doesNotMatch(liveTerms, /not an offer to sell/);
   assert.match(liveTerms, /slug: "terms-and-conditions"/);
   assert.match(liveTerms, /slug: "returns-refunds"/);
-  assert.match(liveTerms, /pending review by qualified UAE legal counsel/);
+  // Legal review is complete (FD-CM-LEGAL-REVIEW-001), so the page must no
+  // longer describe the terms as pending review.
+  assert.doesNotMatch(liveTerms, /pending review|working template|before commercial activation/i);
   const returns = await read("src/routes/returns.tsx");
   const liveReturns = returns.slice(
     returns.indexOf("ONLINE_ORDERING_ENABLED ?"),
@@ -305,14 +307,22 @@ test("sitemaps include contact and delivery and drop the legacy shipping path", 
 });
 
 test("robots.txt references no retired origin and keeps private surfaces disallowed", async () => {
-  const text = await read("public/robots.txt");
-  assert.doesNotMatch(text, /lovable\.app/);
+  // robots.txt is now a server route so its Sitemap line follows the serving
+  // host; see docs/cornermex-2/DOMAIN-CUTOVER.md.
+  const text = await read("src/routes/robots[.]txt.ts");
   assert.match(
     text,
-    /Sitemap: https:\/\/corner-mex-uae-production\.up\.railway\.app\/sitemap\.xml/,
+    /Sitemap: \$\{origin\}\/sitemap\.xml/,
+    "the sitemap URL must derive from the request origin",
   );
-  for (const p of ["/admin", "/account", "/checkout", "/cart"]) {
-    assert.ok(text.includes(`Disallow: ${p}`), `robots must disallow ${p}`);
+  assert.doesNotMatch(text, /https:\/\/[a-z0-9.-]*(railway|cornermex\.ae)/i, "no hardcoded host");
+  assert.doesNotMatch(text, /lovable\.app/);
+  // The serving host is no longer asserted here: the route derives it.
+
+  // The disallow list is built from an array, so assert membership there.
+  const disallow = text.slice(text.indexOf("const DISALLOW"), text.indexOf("];", text.indexOf("const DISALLOW")));
+  for (const path of ["/admin", "/account", "/checkout", "/cart", "/login", "/seller"]) {
+    assert.ok(disallow.includes(`"${path}"`), `robots must disallow ${path}`);
   }
 });
 

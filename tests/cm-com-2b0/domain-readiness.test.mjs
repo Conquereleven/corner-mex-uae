@@ -83,11 +83,12 @@ test("the legal website field stays pending until an authorized cutover", async 
 });
 
 test("robots and sitemap remain coherent with the pre-cutover origin", async () => {
-  const robots = await read("public/robots.txt");
-  assert.match(
-    robots,
-    new RegExp(`Sitemap: ${RAILWAY_ORIGIN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/sitemap\\.xml`),
-  );
+  // robots.txt became a server route: the Sitemap line derives from the request
+  // origin, so it is correct before AND after the cornermex.ae cutover without
+  // an edit. See docs/cornermex-2/DOMAIN-CUTOVER.md.
+  const robots = await read("src/routes/robots[.]txt.ts");
+  assert.match(robots, /Sitemap: \$\{origin\}\/sitemap\.xml/);
+  assert.doesNotMatch(robots, new RegExp(RAILWAY_ORIGIN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.ok(!robots.includes(UNOWNED_DOMAIN), "robots must not reference the unapproved domain");
   assert.doesNotMatch(robots, /lovable\.app/);
 

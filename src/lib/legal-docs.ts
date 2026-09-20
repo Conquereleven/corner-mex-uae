@@ -1,5 +1,7 @@
 // Static legal document registry for CornerMex.
-// These are working templates and MUST be reviewed by qualified UAE legal counsel
+// Legal review of the customer-facing CornerMex documents is complete (Founder
+// attestation 2026-09-20, docs/engineering-playbook/founder-decisions/FD-CM-LEGAL-REVIEW-001.md).
+// The seller agreement stays a Phase 2 draft because that marketplace is not active
 // before publication. Designed to be migrated to a CMS later without changing the
 // rendering layer.
 
@@ -65,7 +67,7 @@ export const BUSINESS_MODEL = {
   supplierModel:
     "CornerMex purchases products from suppliers (e.g. Intermex) and resells them directly to customers under the CornerMex brand.",
   marketplaceStatus: "Planned / Phase 2 / Not active for MVP",
-  legalReviewStatus: "Legal Review Required" as ReviewStatus,
+  legalReviewStatus: "Approved" as ReviewStatus,
   legalEntity: {
     name: LEGAL_ENTITY_NAME,
     tradeLicense: LEGAL_TRADE_LICENSE,
@@ -75,7 +77,7 @@ export const BUSINESS_MODEL = {
 } as const;
 
 const DISCLAIMER =
-  "This document is a working template and must be reviewed by qualified UAE legal counsel before publication.";
+  "This document is a draft for a future phase and does not apply to current CornerMex orders.";
 
 const CONTACT_BLOCK: LegalSection = {
   id: "contact",
@@ -132,7 +134,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.2.0",
     lastUpdated: "2026-09-19",
     owner: "CornerMex Legal",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "identity",
@@ -309,7 +311,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.1.0",
     lastUpdated: "2026-09-19",
     owner: "CornerMex Privacy Office",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "controller",
@@ -435,7 +437,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.0.0",
     lastUpdated: "2026-06-19",
     owner: "CornerMex Privacy Office",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "what",
@@ -498,7 +500,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.1.0",
     lastUpdated: "2026-06-20",
     owner: "CornerMex Operations",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "who",
@@ -602,7 +604,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.1.0",
     lastUpdated: "2026-06-20",
     owner: "CornerMex AI Governance",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "what",
@@ -674,7 +676,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.1.0-draft",
     lastUpdated: "2026-09-19",
     owner: "CornerMex Marketplace",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Draft",
     lifecycle: "phase-2-draft",
     sections: [
       {
@@ -788,7 +790,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.0.0",
     lastUpdated: "2026-06-19",
     owner: "CornerMex Legal",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "platform",
@@ -851,7 +853,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.0.0",
     lastUpdated: "2026-06-19",
     owner: "CornerMex Trust & Safety",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "prohibited",
@@ -900,7 +902,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.0.0",
     lastUpdated: "2026-06-19",
     owner: "CornerMex Security",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "transport",
@@ -982,7 +984,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
     version: "1.2.0",
     lastUpdated: "2026-09-19",
     owner: "CornerMex Operations",
-    reviewStatus: "Legal Review Required",
+    reviewStatus: "Approved",
     sections: [
       {
         id: "overview",
