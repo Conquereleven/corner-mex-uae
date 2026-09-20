@@ -29,6 +29,8 @@
     "test:cm-com-2a": "node --experimental-strip-types --test tests/cm-com-2a/*.test.mjs",
     "test:cm-com-2b0": "node --experimental-strip-types --test tests/cm-com-2b0/*.test.mjs",
     "test:cm-com-3a": "node --experimental-strip-types --test tests/cm-com-3a/*.test.mjs",
+    "test:cm2": "node --experimental-strip-types --test tests/cm2/*.test.mjs",
+    "test:cm2:sql": "node scripts/cm2/test-launch-hardening-sql.mjs",
     "test:cm-com-3a:sql": "node scripts/cm-com-3a/test-cod-order-sql.mjs",
     "test:cm-com-4a": "node --experimental-strip-types --test tests/cm-com-4a/*.test.mjs",
     "test:cm-com-4a:sql": "node scripts/cm-com-4a/test-post-order-lifecycle-sql.mjs",

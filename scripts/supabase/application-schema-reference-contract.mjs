@@ -9,10 +9,13 @@ const BASE_COUNTS = Object.freeze({
   lovable_live_only: 21,
   requires_future_migration: 2,
 });
+// cod-order.functions.ts calls cm_create_cod_order_v2 (owned by the unapplied
+// 20260919121000 migration) instead of place_cod_order_v1, moving one reference
+// from canonical_supported to requires_future_migration. The total is unchanged.
 const COMBINED_COUNTS = Object.freeze({
-  canonical_supported: 21,
+  canonical_supported: 20,
   lovable_live_only: 19,
-  requires_future_migration: 29,
+  requires_future_migration: 30,
 });
 
 export function expandApplicationSchemaReferenceContract(base, extensions) {

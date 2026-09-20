@@ -33,7 +33,11 @@ import { getAvailablePaymentMethods, type EmirateCode } from "@/lib/payment-meth
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 import { getCardCheckoutCapability, initiateCardCheckout } from "@/lib/card-checkout.functions";
-import { checkoutOperation } from "@/lib/checkout-operation";
+import {
+  checkoutOperation,
+  clearCodCheckoutOperation,
+  codCheckoutOperation,
+} from "@/lib/checkout-operation";
 import { deliveryEstimateText } from "@/lib/delivery-sla";
 
 const CHECKOUT_ENABLED = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
@@ -253,7 +257,14 @@ function Checkout() {
         window.location.assign(result.url);
         return;
       }
-      const order = await placeCod({ data: input });
+      if (!user) throw new Error("COD_ORDER_SIGN_IN_REQUIRED");
+      // Idempotency: a retry or a second tab reuses this id, so the server
+      // replays the same order instead of creating a duplicate.
+      const operationId = await codCheckoutOperation(user.id, input);
+      const order = await placeCod({ data: { ...input, operationId } });
+      // The order exists (created now, or replayed from a previous attempt), so
+      // the next checkout must start a fresh operation.
+      clearCodCheckoutOperation(user.id);
       // Only clear the cart after the order genuinely exists.
       clear();
       await navigate({ to: "/order-confirmed", search: { order: order.order_id } });

@@ -111,6 +111,20 @@
       "purpose": "intermex_po_automation_1",
       "productionApplied": false,
       "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260919120000_cm2_release_stock_on_cancellation.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm2_release_stock_on_cancellation",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260919121000_cm2_cod_order_idempotency.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm2_cod_order_idempotency",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
     }
   ]
 }
