@@ -58,7 +58,7 @@ function Hero() {
             CornerMex · Authentic Mexican pantry in the UAE
           </p>
           <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-[color:var(--brand-mole-brown)] sm:text-7xl">
-            Tradition you can taste.
+            {ACTIVE_BRAND.verbal.primary}
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-[color:var(--brand-mole-brown)]/85 sm:text-lg">
             We bring traditional Mexican products to the Middle East for everyone looking to
@@ -188,7 +188,9 @@ function Features() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">
             Our promise
           </p>
-          <h2 className="mt-6 font-display text-3xl tracking-tight">Del barrio pa’l mundo</h2>
+          <h2 className="mt-6 font-display text-3xl tracking-tight">
+            {ACTIVE_BRAND.verbal.secondary}
+          </h2>
           <p className="mt-3 text-sm leading-6 text-white/85">
             Authentic Mexican products, thoughtfully brought to the Middle East.
           </p>
