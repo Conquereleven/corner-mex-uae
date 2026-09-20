@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const migrationPath = "supabase/migrations/20260822050535_cm_mcp_db2_read_boundary.sql";
+// Deliberately not in the active migration path: this migration is not applied
+// to production, so it lives in pending-canonical where `supabase db push`
+// cannot pick it up.
+const migrationPath = "supabase/pending-canonical/20260822050535_cm_mcp_db2_read_boundary.sql";
 const edgePath = "supabase/functions/cornermex-mcp/index.ts";
 
 const read = (path) => readFile(path, "utf8");
@@ -128,27 +131,33 @@ test("remote order and B2B RPC outputs keep direct PII out", async () => {
   }
 });
 
-test("CM-MCP-DB2 remains Founder-gated and unapplied", async () => {
-  const [contractText, replay] = await Promise.all([
+test("CM-MCP-DB2 remains Founder-gated, unapplied and outside the active push path", async () => {
+  const [ownershipText, extensionsText, replay, validator] = await Promise.all([
+    read("contracts/lovable-cloud-migration-ownership-v1.json"),
     read("contracts/canonical-active-migration-extensions-v1.json"),
     read("scripts/supabase/test-canonical-migration-replay.mjs"),
+    read("scripts/supabase/validate-migration-ownership.mjs"),
   ]);
-  const contract = JSON.parse(contractText);
-  const entry = contract.migrations.find(
-    (item) => item.filename === "20260822050535_cm_mcp_db2_read_boundary.sql",
+  const filename = "20260822050535_cm_mcp_db2_read_boundary.sql";
+
+  // It must be declared pending, never active, so a routine db push cannot apply it.
+  const ownership = JSON.parse(ownershipText);
+  assert.ok(ownership.pendingCanonicalMigrations.includes(filename), "must be declared pending");
+  assert.ok(!ownership.activeCanonicalMigrations.includes(filename), "must not be active");
+  assert.match(validator, /REQUIRED_PENDING = \[[^\]]*"cm_mcp_db2_read_boundary"/);
+
+  // And it must carry no production evidence anywhere.
+  const extensions = JSON.parse(extensionsText);
+  assert.equal(
+    extensions.migrations.some((item) => item.filename === filename),
+    false,
+    "an unapplied migration must not sit in the active extension contract",
   );
 
-  assert.ok(entry);
-  assert.equal(entry.owner, "canonical_cornermex");
-  assert.equal(entry.purpose, "cm_mcp_db2_read_boundary");
-  assert.equal(entry.productionApplied, false);
-  assert.equal(entry.requiresFounderProductionGate, true);
-  assert.equal("productionVersion" in entry, false);
-  assert.equal("productionProjectRef" in entry, false);
-
-  assert.match(replay, /mcpGrantRlsTables: 1/);
-  assert.match(replay, /mcpGrantPolicies: 0/);
-  assert.match(replay, /mcpGrantDirectGrants: 0/);
-  assert.match(replay, /mcpReadFunctions: 9/);
-  assert.match(replay, /mcpAuthenticatedExecuteFunctions: 9/);
+  // The canonical replay describes the active set, which no longer includes it.
+  // commerce_private.mcp_grants does not exist in canonical DB2 (verified
+  // read-only 2026-09-19), so zero is what production actually looks like.
+  assert.match(replay, /mcpGrantRlsTables: 0/);
+  assert.match(replay, /mcpReadFunctions: 0/);
+  assert.match(replay, /mcpAuthenticatedExecuteFunctions: 0/);
 });

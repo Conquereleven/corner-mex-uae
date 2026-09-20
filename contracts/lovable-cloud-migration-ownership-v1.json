@@ -15,7 +15,8 @@
     "20260819220000_cm_launch_1_notifications_canonical.sql"
   ],
   "pendingCanonicalMigrations": [
-    "20260716010000_catalog_import_foundation_a3_2b.sql"
+    "20260716010000_catalog_import_foundation_a3_2b.sql",
+    "20260822050535_cm_mcp_db2_read_boundary.sql"
   ],
   "canonicalProductionMigrations": [
     {

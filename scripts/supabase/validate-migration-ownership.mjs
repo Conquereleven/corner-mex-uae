@@ -148,7 +148,11 @@ if (active.length !== expectedActive.length)
     `expected ${expectedActive.length} active canonical source migrations, found ${active.length}`,
   );
 
-const REQUIRED_PENDING = ["catalog_import_foundation_a3_2b"];
+// cm_mcp_db2_read_boundary is deliberately not applied to production
+// (docs/mcp/CM-MCP-3-DB-PROPOSAL.md); it lives here so `supabase db push`
+// cannot apply it by accident. Verified 2026-09-19: commerce_private.mcp_grants
+// does not exist in canonical DB2.
+const REQUIRED_PENDING = ["catalog_import_foundation_a3_2b", "cm_mcp_db2_read_boundary"];
 if (pending.length !== REQUIRED_PENDING.length) {
   errors.push("pending canonical migration count drift");
 }
