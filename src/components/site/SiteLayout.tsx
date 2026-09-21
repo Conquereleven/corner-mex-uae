@@ -3,11 +3,11 @@ import { Footer } from "./Footer";
 import { LanguageProvider } from "./LanguageProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "./CookieConsent";
-import { brandCssVariables, INTERMEX_BRAND, type BrandConfig } from "@/config/brand";
+import { brandCssVariables, ACTIVE_BRAND, type BrandConfig } from "@/config/brand";
 
 export function SiteLayout({
   children,
-  brand = INTERMEX_BRAND,
+  brand = ACTIVE_BRAND,
 }: {
   children: React.ReactNode;
   brand?: BrandConfig;
@@ -15,7 +15,7 @@ export function SiteLayout({
   return (
     <LanguageProvider>
       <div
-        className="intermex-storefront flex min-h-screen flex-col bg-background pb-20 md:pb-0"
+        className="cornermex-storefront flex min-h-screen flex-col bg-background pb-20 md:pb-0"
         style={brandCssVariables(brand)}
         data-brand={brand.id}
       >

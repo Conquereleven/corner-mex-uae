@@ -26,11 +26,11 @@ import { siteUrl } from "@/lib/site-url";
 export const Route = createFileRoute("/b2b_/quote")({
   head: () => ({
     meta: [
-      { title: "Request a B2B quote — Intermex UAE" },
+      { title: "Request a B2B quote — CornerMex" },
       {
         name: "description",
         content:
-          "Build and submit a B2B enquiry for human-reviewed Intermex pricing, availability and commercial terms.",
+          "Build and submit a B2B enquiry for human-reviewed CornerMex pricing, availability and commercial terms.",
       },
     ],
     links: [{ rel: "canonical", href: siteUrl("/b2b/quote") }],
@@ -122,14 +122,14 @@ function B2bQuoteRoute() {
           </Button>
         </Link>
         <div className="mt-6 max-w-3xl">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-primary">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-eyebrow">
             Human-reviewed B2B pipeline
           </span>
           <h1 className="mt-3 font-display text-5xl leading-none tracking-tight text-foreground sm:text-6xl">
             Request commercial terms.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Build your shortlist, review the enquiry, then submit it directly to Intermex. A team
+            Build your shortlist, review the enquiry, then submit it directly to CornerMex. A team
             member reviews every request before any pricing, availability, delivery or commercial
             commitment is made.
           </p>

@@ -10,7 +10,7 @@ import { listMyNotifications, markRead, markAllRead } from "@/lib/notifications.
 import { getNotificationsQueryState } from "@/lib/notifications-query-state";
 
 export const Route = createFileRoute("/_authenticated/account/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — Intermex" }] }),
+  head: () => ({ meta: [{ title: "Notifications — CornerMex" }] }),
   component: NotificationsPage,
 });
 

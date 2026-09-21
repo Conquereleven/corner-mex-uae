@@ -388,7 +388,7 @@ function KycDocRow({ doc, kind, label, required, busy, onFile, onRemove }: any) 
       <div className="flex-1">
         <div className="text-sm font-medium flex items-center gap-2">{label}{required && <Badge variant="outline" className="text-[10px]">Required</Badge>}</div>
         {doc ? (
-          <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">View uploaded ({new Date(doc.uploaded_at).toLocaleDateString()})</a>
+          <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-eyebrow hover:underline">View uploaded ({new Date(doc.uploaded_at).toLocaleDateString()})</a>
         ) : (
           <div className="text-xs text-muted-foreground">No file uploaded</div>
         )}

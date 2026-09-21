@@ -8,9 +8,9 @@ import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/b2b")({
   head: () => {
-    const title = "For Business — Mexican supply for UAE businesses | Intermex";
+    const title = "For Business — Mexican supply for UAE businesses | CornerMex";
     const description =
-      "Browse the Intermex UAE catalogue and submit product, volume and destination requirements for a human-reviewed written B2B quote.";
+      "Browse the CornerMex catalogue and submit product, volume and destination requirements for a human-reviewed written B2B quote.";
     return {
       meta: [
         { title },
@@ -32,14 +32,14 @@ function B2B() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
-        <span className="text-[11px] uppercase tracking-[0.2em] text-primary">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-eyebrow">
           For business · UAE
         </span>
         <h1 className="mt-4 font-display text-5xl tracking-tight">
           Mexican supply for UAE businesses.
         </h1>
         <p className="mt-6 text-lg text-muted-foreground">
-          Browse the Intermex catalogue, then submit your product, volume and destination
+          Browse the CornerMex catalogue, then submit your product, volume and destination
           requirements. Availability, AED pricing, delivery options and commercial terms are
           confirmed through a human-reviewed written quote before commitment.
         </p>
@@ -49,7 +49,7 @@ function B2B() {
               Explore business catalogue <ArrowRight className="ms-2 h-4 w-4" />
             </Button>
           </Link>
-          <a href={mailto(PUBLIC_CONTACT.b2b, "Intermex manual quote request")}>
+          <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
             <Button size="lg" variant="outline" className="min-h-11 rounded-full">
               <Mail className="me-2 h-4 w-4" /> {t("pages.b2b.ctaQuote")}
             </Button>

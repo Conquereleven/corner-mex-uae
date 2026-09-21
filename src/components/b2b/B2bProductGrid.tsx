@@ -25,7 +25,7 @@ export function B2bProductGrid({
           >
             <div className="mb-6 flex items-end justify-between gap-4 border-b border-border pb-4">
               <div>
-                <span className="text-[11px] uppercase tracking-[0.18em] text-primary">
+                <span className="text-[11px] uppercase tracking-[0.18em] text-eyebrow">
                   Category {categoryIndex + 1}
                 </span>
                 <h2

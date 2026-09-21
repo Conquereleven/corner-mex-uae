@@ -50,7 +50,7 @@ const FALLBACK_EMIRATES: Array<{ code: EmirateCode; name: string }> = [
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
-    meta: [{ title: "Checkout — Intermex" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Checkout — CornerMex" }, { name: "robots", content: "noindex" }],
   }),
   component: Checkout,
 });
@@ -294,7 +294,7 @@ function Checkout() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           B2C checkout
         </p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Delivery and payment details</h1>
@@ -523,7 +523,9 @@ function Checkout() {
               <div className="flex justify-between border-t border-border pt-3 font-medium">
                 <dt>Total</dt>
                 {/* Amounts are always the server's, never computed in the browser. */}
-                <dd>{preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by Intermex"}</dd>
+                <dd>
+                  {preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by CornerMex"}
+                </dd>
               </div>
             </dl>
             {config?.vatTrn && (

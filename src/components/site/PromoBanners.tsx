@@ -19,7 +19,7 @@ export function PromoBanners() {
               <div className="p-5">
                 <h3 className="font-display text-lg tracking-tight">{b.title}</h3>
                 {b.subtitle && <p className="mt-1 text-sm text-muted-foreground">{b.subtitle}</p>}
-                {b.cta_label && <span className="mt-3 inline-flex text-xs font-semibold uppercase tracking-widest text-primary">{b.cta_label} →</span>}
+                {b.cta_label && <span className="mt-3 inline-flex text-xs font-semibold uppercase tracking-widest text-eyebrow">{b.cta_label} →</span>}
               </div>
             </article>
           );

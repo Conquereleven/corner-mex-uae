@@ -7,9 +7,9 @@ import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/delivery")({
   head: () => {
-    const title = "Delivery in the UAE — Intermex";
+    const title = "Delivery in the UAE — CornerMex";
     const description =
-      "How Intermex handles delivery across the United Arab Emirates: emirate-based coverage, transparent charges confirmed before you commit, and no hidden promises.";
+      "How CornerMex handles delivery across the United Arab Emirates: emirate-based coverage, transparent charges confirmed before you commit, and no hidden promises.";
     return {
       meta: [
         { title },
@@ -38,12 +38,12 @@ function Delivery() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           Transparent by design
         </p>
         <h1 className="mt-3 font-display text-5xl tracking-tight">Delivery in the UAE</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
-          Intermex is built for the United Arab Emirates. Delivery is organised by emirate, and any
+          CornerMex is built for the United Arab Emirates. Delivery is organised by emirate, and any
           charge or timeframe that applies to you is intended to be confirmed in your specific flow
           — at checkout for retail, or in a written quote for business orders — before you commit to
           anything.
