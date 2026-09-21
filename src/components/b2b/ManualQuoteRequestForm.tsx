@@ -40,7 +40,7 @@ export function ManualQuoteRequestForm({
   return (
     <section aria-labelledby="request-details-heading" className="mt-10">
       <div>
-        <span className="text-[11px] uppercase tracking-[0.18em] text-primary">
+        <span className="text-[11px] uppercase tracking-[0.18em] text-eyebrow">
           Request details
         </span>
         <h2 id="request-details-heading" className="mt-1 font-display text-3xl text-foreground">
@@ -199,7 +199,7 @@ function Field({
     <Label className={`block space-y-2 ${className ?? ""}`}>
       <span>{label}</span>
       {children}
-      {error && <span className="block text-xs font-normal text-primary">{error}</span>}
+      {error && <span className="block text-xs font-normal text-destructive">{error}</span>}
     </Label>
   );
 }

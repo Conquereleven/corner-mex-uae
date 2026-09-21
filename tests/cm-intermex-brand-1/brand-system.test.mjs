@@ -9,21 +9,22 @@ import { access, readFile } from "node:fs/promises";
 const { ACTIVE_BRAND, CORNERMEX_BRAND } = await import("../../src/config/brand.ts");
 const identity = await import("../../src/lib/business-identity.ts");
 
-test("the active storefront brand is CornerMex with the brand-kit palette", () => {
+test("the active storefront brand is CornerMex with the 1.0 core palette", () => {
   assert.equal(ACTIVE_BRAND, CORNERMEX_BRAND);
   assert.equal(ACTIVE_BRAND.displayName, "CornerMex");
-  // public/brand-kit/guide/brand-guide.md: Clay #B4362B, Sage #3E7A54, Cream #F8F3E8, Obsidian #2A2622
+  // Founder brand decision 2026-09-20; see docs/cornermex-2/BRAND-SYSTEM.md.
+  // The clay/sage kit palette is retired: it was the inherited red-dominant
+  // language. tests/cm-brand-1 owns the full token contract.
   assert.deepEqual(ACTIVE_BRAND.colors, {
-    structuralRed: "#B4362B",
-    cream: "#F8F3E8",
-    moleBrown: "#2A2622",
-    verdeJalapeno: "#3E7A54",
+    arenaBeige: "#D8C3A5",
+    sunsetOrange: "#E77B30",
+    black: "#111111",
   });
 });
 
 test("every brand asset is a CornerMex kit file that exists on disk", async () => {
-  const { logo, hero, collections } = ACTIVE_BRAND.assets;
-  for (const asset of [logo, hero, ...Object.values(collections)]) {
+  const { logos, hero, collections } = ACTIVE_BRAND.assets;
+  for (const asset of [...Object.values(logos), hero, ...Object.values(collections)]) {
     assert.equal(asset.sourceType, "cornermex-brand-kit");
     assert.match(asset.src, /^\/brand-kit\//);
     assert.doesNotMatch(asset.src, /intermex/i);
@@ -106,12 +107,14 @@ test("the Intermex verbal territory is not used by the CornerMex storefront", as
   assert.deepEqual(offenders, [], `Intermex verbal territory in: ${offenders.join(", ")}`);
 });
 
-test("the header uses the light mark, because its band is the brand red", async () => {
+test("the header names the surface its mark sits on", async () => {
+  // The header band is no longer the brand red; it is Warm Ivory, so the mark
+  // is the dark one. The surface is declared rather than inferred.
   const header = await readFile("src/components/site/Header.tsx", "utf8");
-  const logos = header.match(/<BrandLogo[^>]*/g) ?? [];
-  assert.ok(logos.length > 0, "the header must show the brand mark");
-  for (const tag of logos) assert.match(tag, /reversed/, `dark-on-red contrast: ${tag}`);
-  assert.match(ACTIVE_BRAND.assets.logoReversed.src, /cream|reversed|mono-white/);
+  const marks = header.match(/<BrandLogo[^>]*/g) ?? [];
+  assert.ok(marks.length > 0, "the header must show the brand mark");
+  for (const tag of marks) assert.match(tag, /surface="onIvory"/, `undeclared surface: ${tag}`);
+  assert.match(ACTIVE_BRAND.assets.logos.onIvory.src, /mono-black|charcoal/);
 });
 
 test("category tiles use the small derivatives, not the full-size master scenes", async () => {

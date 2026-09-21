@@ -91,7 +91,7 @@ function AdminKyc() {
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
                       {(s.kyc_documents ?? []).map((d: any) => (
-                        <a key={d.kind} href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                        <a key={d.kind} href={d.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-eyebrow hover:underline">
                           <FileText className="h-3 w-3" />{d.kind}
                         </a>
                       ))}

@@ -25,7 +25,7 @@ function Returns() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           Honest by default
         </p>
         <h1 className="mt-3 font-display text-5xl tracking-tight">Returns &amp; refunds</h1>

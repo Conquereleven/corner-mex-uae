@@ -294,7 +294,7 @@ function Checkout() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           B2C checkout
         </p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Delivery and payment details</h1>

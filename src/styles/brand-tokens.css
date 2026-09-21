@@ -1,0 +1,101 @@
+/*
+ * GENERATED FILE — do not edit.
+ *
+ * Source of truth: src/config/brand-tokens.ts
+ * Regenerate with: npm run brand:css
+ *
+ * The CornerMex palette: Arena Beige, Sunset Orange and Black, plus the
+ * supporting neutrals that usability requires. See
+ * docs/cornermex-2/BRAND-SYSTEM.md for the usage rules.
+ */
+
+:root {
+  --cm-palette-arena-beige: oklch(0.827 0.0469 76.8); /* #D8C3A5 */
+  --cm-palette-sunset-orange: oklch(0.6932 0.158 51.2); /* #E77B30 */
+  --cm-palette-black: oklch(0.1776 0 89.9); /* #111111 */
+  --cm-palette-warm-ivory: oklch(0.9631 0.0108 76.6); /* #F7F2EB */
+  --cm-palette-sand-light: oklch(0.9026 0.0263 76.8); /* #E9DDCC */
+  --cm-palette-charcoal: oklch(0.285 0 89.9); /* #2A2A2A */
+  --cm-palette-soft-border: oklch(0.8427 0.028 72.8); /* #D7C9B8 */
+  --cm-palette-sunset-orange-hover: oklch(0.6458 0.1615 49.4); /* #D96A1C */
+  --cm-palette-sunset-orange-active: oklch(0.6006 0.1512 49.6); /* #C66418 */
+  --cm-palette-ember-ink: oklch(0.4918 0.131 47.5); /* #9A4408 */
+  --cm-palette-muted-ink: oklch(0.4473 0.0224 75.1); /* #5C5347 */
+  --cm-palette-success: oklch(0.4794 0.078 161.1); /* #2F6B4F */
+  --cm-palette-warning: oklch(0.6048 0.1302 67.6); /* #B4700B */
+  --cm-palette-error: oklch(0.5013 0.1783 28.7); /* #B3261E */
+
+  --cm-primary: oklch(0.6932 0.158 51.2); /* sunsetOrange #E77B30 */
+  --cm-primary-foreground: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-secondary: oklch(0.9026 0.0263 76.8); /* sandLight #E9DDCC */
+  --cm-secondary-foreground: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-accent: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-accent-foreground: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-background: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-surface: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-surface-raised: oklch(0.9026 0.0263 76.8); /* sandLight #E9DDCC */
+  --cm-text: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-text-muted: oklch(0.4473 0.0224 75.1); /* mutedInk #5C5347 */
+  --cm-border: oklch(0.8427 0.028 72.8); /* softBorder #D7C9B8 */
+  --cm-success: oklch(0.4794 0.078 161.1); /* success #2F6B4F */
+  --cm-warning: oklch(0.6048 0.1302 67.6); /* warning #B4700B */
+  --cm-error: oklch(0.5013 0.1783 28.7); /* error #B3261E */
+  --cm-cta-primary: oklch(0.6932 0.158 51.2); /* sunsetOrange #E77B30 */
+  --cm-cta-primary-hover: oklch(0.6458 0.1615 49.4); /* sunsetOrangeHover #D96A1C */
+  --cm-cta-primary-active: oklch(0.6006 0.1512 49.6); /* sunsetOrangeActive #C66418 */
+  --cm-cta-primary-text: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-cta-secondary: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-cta-secondary-text: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-page-background: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-card-background: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-hero-background: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-nav-background: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-nav-text: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-footer-background: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-footer-text: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-badge-background: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-badge-text: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-eyebrow-text: oklch(0.4918 0.131 47.5); /* emberInk #9A4408 */
+  --cm-price-color: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-sale-color: oklch(0.4918 0.131 47.5); /* emberInk #9A4408 */
+  --cm-input-border: oklch(0.8427 0.028 72.8); /* softBorder #D7C9B8 */
+  --cm-focus-ring: oklch(0.6006 0.1512 49.6); /* sunsetOrangeActive #C66418 */
+}
+
+.dark {
+  --cm-primary: oklch(0.6932 0.158 51.2); /* sunsetOrange #E77B30 */
+  --cm-primary-foreground: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-secondary: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-secondary-foreground: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-accent: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-accent-foreground: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-background: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-surface: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-surface-raised: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-text: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-text-muted: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-border: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-success: oklch(0.4794 0.078 161.1); /* success #2F6B4F */
+  --cm-warning: oklch(0.6048 0.1302 67.6); /* warning #B4700B */
+  --cm-error: oklch(0.5013 0.1783 28.7); /* error #B3261E */
+  --cm-cta-primary: oklch(0.6932 0.158 51.2); /* sunsetOrange #E77B30 */
+  --cm-cta-primary-hover: oklch(0.6458 0.1615 49.4); /* sunsetOrangeHover #D96A1C */
+  --cm-cta-primary-active: oklch(0.6006 0.1512 49.6); /* sunsetOrangeActive #C66418 */
+  --cm-cta-primary-text: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-cta-secondary: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-cta-secondary-text: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-page-background: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-card-background: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-hero-background: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-nav-background: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-nav-text: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-footer-background: oklch(0.1776 0 89.9); /* black #111111 */
+  --cm-footer-text: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-badge-background: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-badge-text: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-eyebrow-text: oklch(0.827 0.0469 76.8); /* arenaBeige #D8C3A5 */
+  --cm-price-color: oklch(0.9631 0.0108 76.6); /* warmIvory #F7F2EB */
+  --cm-sale-color: oklch(0.6932 0.158 51.2); /* sunsetOrange #E77B30 */
+  --cm-input-border: oklch(0.285 0 89.9); /* charcoal #2A2A2A */
+  --cm-focus-ring: oklch(0.6932 0.158 51.2); /* sunsetOrange #E77B30 */
+}

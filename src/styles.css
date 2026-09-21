@@ -1,5 +1,7 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
+/* CornerMex brand tokens. GENERATED from src/config/brand-tokens.ts. */
+@import "./styles/brand-tokens.css";
 
 @source "../src";
 
@@ -62,190 +64,205 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-clay: var(--clay);
-  --color-clay-foreground: var(--clay-foreground);
-  --color-sand: var(--sand);
-  --color-sage: var(--sage);
-  --color-obsidian: var(--obsidian);
+  /* CornerMex brand utilities. Every one resolves to a token in
+   * src/config/brand-tokens.ts; none carries a literal colour. */
+  --color-arena: var(--cm-palette-arena-beige);
+  --color-sunset: var(--cm-palette-sunset-orange);
+  --color-ink: var(--cm-palette-black);
+  --color-ivory: var(--cm-palette-warm-ivory);
+  --color-sand: var(--cm-palette-sand-light);
+  --color-charcoal: var(--cm-palette-charcoal);
+  --color-ember: var(--cm-palette-ember-ink);
+  --color-eyebrow: var(--cm-eyebrow-text);
+  --color-cta: var(--cm-cta-primary);
+  --color-cta-foreground: var(--cm-cta-primary-text);
+  --color-hero: var(--cm-hero-background);
+  --color-nav: var(--cm-nav-background);
+  --color-footer: var(--cm-footer-background);
+  --color-footer-foreground: var(--cm-footer-text);
+  --color-badge: var(--cm-badge-background);
+  --color-badge-foreground: var(--cm-badge-text);
+  --color-price: var(--cm-price-color);
+  --color-sale: var(--cm-sale-color);
+  --color-success: var(--cm-success);
+  --color-warning: var(--cm-warning);
+  --color-error: var(--cm-error);
+  /* Retained so existing markup keeps resolving; both now point at brand
+   * tokens rather than the retired clay/sage palette. */
+  --color-clay: var(--cm-primary);
+  --color-clay-foreground: var(--cm-primary-foreground);
+  --color-obsidian: var(--cm-text);
 }
 
 :root {
   --radius: 0.5rem;
-  /* CornerMex storefront — cream canvas, clay field, sage accents, obsidian depth. */
-  --background: oklch(0.99 0.015 90);
-  --foreground: oklch(0.25 0.005 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.005 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.005 60);
-  --primary: oklch(0.51 0.21 27);
-  --primary-foreground: oklch(0.99 0.015 90);
-  --secondary: oklch(0.95 0.018 85);
-  --secondary-foreground: oklch(0.28 0.01 60);
-  --muted: oklch(0.95 0.014 85);
-  --muted-foreground: oklch(0.5 0.012 60);
-  --accent: oklch(0.52 0.14 152);
-  --accent-foreground: oklch(0.99 0.015 90);
-  --destructive: oklch(0.55 0.22 28);
-  --destructive-foreground: oklch(0.99 0.015 90);
-  --border: oklch(0.9 0.012 80);
-  --input: oklch(0.9 0.012 80);
-  --ring: oklch(0.51 0.21 27);
-  --clay: oklch(0.51 0.21 27);
-  --clay-foreground: oklch(0.99 0.015 90);
-  --sand: oklch(0.96 0.02 85);
-  --sage: oklch(0.52 0.14 152);
-  --obsidian: oklch(0.25 0.005 60);
-  --desert-glass-surface: oklch(0.985 0.018 88 / 78%);
-  --desert-glass-elevated: oklch(0.995 0.012 88 / 88%);
-  --desert-glass-control: oklch(0.97 0.022 83 / 74%);
-  --desert-glass-border: oklch(0.78 0.055 72 / 42%);
-  --desert-glass-highlight: oklch(1 0 0 / 72%);
-  --desert-glass-shadow: 0 18px 50px oklch(0.28 0.035 55 / 12%);
-  --desert-glass-cactus: oklch(0.43 0.105 151);
-  --desert-glass-chile: oklch(0.49 0.19 28);
-  --desert-glass-amber: oklch(0.73 0.15 68);
-  --chart-1: oklch(0.51 0.21 27);
-  --chart-2: oklch(0.52 0.14 152);
-  --chart-3: oklch(0.68 0.16 55);
-  --chart-4: oklch(0.42 0.04 60);
-  --chart-5: oklch(0.7 0.18 35);
-  --sidebar: oklch(0.97 0.018 85);
-  --sidebar-foreground: oklch(0.25 0.005 60);
-  --sidebar-primary: oklch(0.51 0.21 27);
-  --sidebar-primary-foreground: oklch(0.99 0.015 90);
-  --sidebar-accent: oklch(0.93 0.02 85);
-  --sidebar-accent-foreground: oklch(0.25 0.005 60);
-  --sidebar-border: oklch(0.9 0.012 80);
-  --sidebar-ring: oklch(0.51 0.21 27);
+  /*
+   * The shadcn semantic layer is now a thin mapping onto the CornerMex brand
+   * tokens. Nothing here holds a colour of its own: to change the brand, edit
+   * src/config/brand-tokens.ts and run `npm run brand:css`.
+   */
+  --background: var(--cm-page-background);
+  --foreground: var(--cm-text);
+  --card: var(--cm-card-background);
+  --card-foreground: var(--cm-text);
+  --popover: var(--cm-card-background);
+  --popover-foreground: var(--cm-text);
+  --primary: var(--cm-primary);
+  --primary-foreground: var(--cm-primary-foreground);
+  --secondary: var(--cm-secondary);
+  --secondary-foreground: var(--cm-secondary-foreground);
+  --muted: var(--cm-surface-raised);
+  --muted-foreground: var(--cm-text-muted);
+  --accent: var(--cm-accent);
+  --accent-foreground: var(--cm-accent-foreground);
+  --destructive: var(--cm-error);
+  --destructive-foreground: var(--cm-palette-warm-ivory);
+  --border: var(--cm-border);
+  --input: var(--cm-input-border);
+  --ring: var(--cm-focus-ring);
+  --sand: var(--cm-surface-raised);
+  /*
+   * "Desert glass" is CornerMex's translucent surface treatment. It keeps its
+   * name but is now built from Arena Beige and Sunset Orange, so it reads as
+   * warm paper rather than the retired clay-red glass.
+   */
+  --desert-glass-surface: color-mix(in srgb, var(--cm-card-background) 82%, transparent);
+  --desert-glass-elevated: color-mix(in srgb, var(--cm-card-background) 92%, transparent);
+  --desert-glass-control: color-mix(in srgb, var(--cm-surface-raised) 78%, transparent);
+  --desert-glass-border: color-mix(in srgb, var(--cm-border) 70%, transparent);
+  --desert-glass-highlight: color-mix(in srgb, var(--cm-card-background) 70%, transparent);
+  --desert-glass-shadow: 0 18px 50px color-mix(in srgb, var(--cm-palette-black) 12%, transparent);
+  --desert-glass-accent: var(--cm-palette-sunset-orange);
+  --chart-1: var(--cm-palette-sunset-orange);
+  --chart-2: var(--cm-palette-arena-beige);
+  --chart-3: var(--cm-palette-ember-ink);
+  --chart-4: var(--cm-palette-charcoal);
+  --chart-5: var(--cm-palette-muted-ink);
+  --sidebar: var(--cm-surface-raised);
+  --sidebar-foreground: var(--cm-text);
+  --sidebar-primary: var(--cm-primary);
+  --sidebar-primary-foreground: var(--cm-primary-foreground);
+  --sidebar-accent: var(--cm-accent);
+  --sidebar-accent-foreground: var(--cm-accent-foreground);
+  --sidebar-border: var(--cm-border);
+  --sidebar-ring: var(--cm-focus-ring);
 }
 
-/* CornerMex storefront semantic layer. Values are injected by BrandConfig so
- * shared commerce primitives can be reused by another tenant without visual
- * CornerMex coupling. */
-.intermex-storefront {
-  --intermex-cream-surface: color-mix(in srgb, var(--brand-cream) 94%, white);
-  --intermex-ink: var(--brand-mole-brown);
-  --intermex-action: var(--brand-verde-jalapeno);
+/*
+ * Translucency below mixes in srgb, not oklch: color-mix(in oklch, var(--x) N%,
+ * transparent) drops the hue to `none` once the colour arrives through a custom
+ * property, which turned Warm Ivory into a grey-pink. srgb keeps the warmth.
+ *
+ * CornerMex storefront surface layer.
+ *
+ * The header used to be a solid brand-red band with cream text, which was the
+ * single strongest Intermex cue on the site. It is now an ivory nav with black
+ * type and a soft border: the structure comes from contrast and spacing, and
+ * Sunset Orange is spent only on action.
+ */
+.cornermex-storefront {
+  --cornermex-surface: var(--cm-surface);
+  --cornermex-ink: var(--cm-text);
+  --cornermex-action: var(--cm-cta-primary);
 }
 
-.intermex-storefront .intermex-header {
+.cornermex-storefront .cornermex-header {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
-  border-color: color-mix(in srgb, var(--brand-cream) 28%, transparent);
-  background: var(--brand-structural-red);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--brand-cream) 38%, transparent),
-    inset 0 -1px 0 color-mix(in srgb, black 12%, transparent),
-    0 14px 34px color-mix(in srgb, var(--brand-mole-brown) 16%, transparent);
-  color: var(--brand-cream);
+  border-color: var(--cm-border);
+  background: color-mix(in srgb, var(--cm-nav-background) 92%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--cm-border) 80%, transparent);
+  color: var(--cm-nav-text);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  backdrop-filter: blur(18px) saturate(1.1);
 }
 
-.intermex-storefront .intermex-header::before {
+/* A single hairline of Sunset Orange: brand presence without a colour field. */
+.cornermex-storefront .cornermex-header::after {
   position: absolute;
-  z-index: -1;
-  inset: 1px;
-  border-radius: inherit;
-  background: color-mix(in srgb, var(--brand-cream) 8%, transparent);
-  box-shadow: inset 0 0 28px color-mix(in srgb, var(--brand-cream) 7%, transparent);
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--cm-palette-sunset-orange) 35%,
+    var(--cm-palette-sunset-orange) 65%,
+    transparent
+  );
   content: "";
+  opacity: 0.55;
   pointer-events: none;
 }
 
-.intermex-storefront .intermex-header::after {
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  right: 8%;
-  left: 8%;
-  height: 1px;
-  background: color-mix(in srgb, var(--brand-cream) 68%, transparent);
-  content: "";
-  pointer-events: none;
+.cornermex-mobile-menu {
+  background: var(--cm-nav-background);
+  box-shadow: -20px 0 48px color-mix(in srgb, var(--cm-palette-black) 22%, transparent);
+  color: var(--cm-nav-text);
 }
 
-.intermex-mobile-menu {
-  background: color-mix(in srgb, var(--brand-structural-red) 94%, transparent);
-  box-shadow:
-    inset 1px 0 0 color-mix(in srgb, var(--brand-cream) 30%, transparent),
-    -20px 0 48px color-mix(in srgb, var(--brand-mole-brown) 18%, transparent);
-  backdrop-filter: blur(24px) saturate(135%);
+.cornermex-mobile-menu button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--cm-palette-sunset-orange) 16%, transparent);
+  box-shadow: inset 2px 0 0 var(--cm-palette-sunset-orange);
 }
 
-.intermex-mobile-menu button[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--brand-cream) 18%, transparent);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--brand-cream) 30%, transparent);
-}
-
-.intermex-storefront .intermex-header a,
-.intermex-storefront .intermex-header button {
+.cornermex-storefront .cornermex-header a,
+.cornermex-storefront .cornermex-header button {
   color: inherit;
 }
 
-.intermex-storefront .intermex-header a:hover,
-.intermex-storefront .intermex-header button:hover {
-  background: color-mix(in srgb, var(--brand-cream) 12%, transparent);
-  color: var(--brand-cream);
+.cornermex-storefront .cornermex-header a:hover,
+.cornermex-storefront .cornermex-header button:hover {
+  background: color-mix(in srgb, var(--cm-palette-arena-beige) 45%, transparent);
+  color: var(--cm-nav-text);
 }
 
-.intermex-product-card {
-  border-color: var(--brand-mole-brown);
+/*
+ * Product cards sit on the page as paper, not as outlined boxes: a soft warm
+ * border at rest, Sunset Orange only on hover, where it reads as intent.
+ */
+/*
+ * The footer is the palette's anchor: Black ground, Warm Ivory type. Rather
+ * than restyling every child, the surface tokens are re-pointed inside it, so
+ * existing utilities (text-muted-foreground, border-border) keep working and
+ * keep their contrast — Arena Beige on Black measures 9.3:1.
+ */
+.cornermex-footer {
+  --background: var(--cm-footer-background);
+  --foreground: var(--cm-footer-text);
+  --muted-foreground: var(--cm-palette-arena-beige);
+  /* Ember on Black is 2.88:1; on this surface the accent role is Arena Beige. */
+  --cm-eyebrow-text: var(--cm-palette-arena-beige);
+  --border: color-mix(in srgb, var(--cm-palette-arena-beige) 24%, transparent);
+  --secondary: color-mix(in srgb, var(--cm-palette-charcoal) 70%, transparent);
+  --secondary-foreground: var(--cm-palette-warm-ivory);
+  --accent: var(--cm-palette-charcoal);
+  --accent-foreground: var(--cm-palette-warm-ivory);
+  --input: color-mix(in srgb, var(--cm-palette-arena-beige) 30%, transparent);
+  background: var(--cm-footer-background);
+  color: var(--cm-footer-text);
 }
 
-.intermex-product-card:hover {
-  border-color: var(--brand-verde-jalapeno);
-  box-shadow: 0 18px 36px color-mix(in srgb, var(--brand-mole-brown) 18%, transparent);
+.cornermex-product-card {
+  border-color: var(--cm-border);
+  background: var(--cm-card-background);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
 }
 
-.dark {
-  --background: oklch(0.18 0.015 50);
-  --foreground: oklch(0.96 0.012 80);
-  --card: oklch(0.22 0.018 50);
-  --card-foreground: oklch(0.96 0.012 80);
-  --popover: oklch(0.22 0.018 50);
-  --popover-foreground: oklch(0.96 0.012 80);
-  --primary: oklch(0.65 0.15 38);
-  --primary-foreground: oklch(0.15 0.015 50);
-  --secondary: oklch(0.28 0.02 50);
-  --secondary-foreground: oklch(0.96 0.012 80);
-  --muted: oklch(0.28 0.02 50);
-  --muted-foreground: oklch(0.72 0.025 70);
-  --accent: oklch(0.62 0.08 145);
-  --accent-foreground: oklch(0.15 0.015 50);
-  --destructive: oklch(0.65 0.2 28);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.15 38);
-  --clay: oklch(0.65 0.15 38);
-  --clay-foreground: oklch(0.15 0.015 50);
-  --sand: oklch(0.28 0.02 50);
-  --sage: oklch(0.62 0.08 145);
-  --obsidian: oklch(0.96 0.012 80);
-  --desert-glass-surface: oklch(0.25 0.025 58 / 84%);
-  --desert-glass-elevated: oklch(0.28 0.024 58 / 91%);
-  --desert-glass-control: oklch(0.32 0.028 61 / 80%);
-  --desert-glass-border: oklch(0.73 0.07 72 / 32%);
-  --desert-glass-highlight: oklch(0.9 0.025 80 / 16%);
-  --desert-glass-shadow: 0 18px 50px oklch(0.05 0.01 45 / 42%);
-  --desert-glass-cactus: oklch(0.68 0.105 151);
-  --desert-glass-chile: oklch(0.68 0.15 34);
-  --desert-glass-amber: oklch(0.78 0.13 72);
-  --chart-1: oklch(0.65 0.15 38);
-  --chart-2: oklch(0.62 0.08 145);
-  --chart-3: oklch(0.75 0.13 70);
-  --chart-4: oklch(0.55 0.06 50);
-  --chart-5: oklch(0.7 0.18 28);
-  --sidebar: oklch(0.22 0.018 50);
-  --sidebar-foreground: oklch(0.96 0.012 80);
-  --sidebar-primary: oklch(0.65 0.15 38);
-  --sidebar-primary-foreground: oklch(0.15 0.015 50);
-  --sidebar-accent: oklch(0.28 0.02 50);
-  --sidebar-accent-foreground: oklch(0.96 0.012 80);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.65 0.15 38);
+.cornermex-product-card:hover {
+  border-color: var(--cm-palette-sunset-orange);
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--cm-palette-black) 12%, transparent);
 }
+
+/*
+ * The dark theme needs no block of its own: every shadcn variable above reads
+ * a --cm-* token, and src/styles/brand-tokens.css redefines those tokens under
+ * .dark. One palette change therefore moves both themes.
+ */
 
 @layer components {
   .desert-glass {
@@ -262,18 +279,18 @@
     background: var(--desert-glass-elevated);
     box-shadow:
       inset 0 1px 0 var(--desert-glass-highlight),
-      0 20px 55px oklch(0.28 0.035 55 / 16%);
+      0 20px 55px color-mix(in srgb, var(--cm-palette-black) 16%, transparent);
   }
 
   .desert-glass--control {
     background: var(--desert-glass-control);
     box-shadow:
       inset 0 1px 0 var(--desert-glass-highlight),
-      0 8px 24px oklch(0.28 0.035 55 / 9%);
+      0 8px 24px color-mix(in srgb, var(--cm-palette-black) 9%, transparent);
   }
 
   .desert-glass-overlay {
-    background: oklch(0.19 0.025 52 / 38%);
+    background: color-mix(in srgb, var(--cm-palette-black) 38%, transparent);
     -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
   }
@@ -282,9 +299,9 @@
     display: inline-flex;
     min-height: 1.75rem;
     align-items: center;
-    border: 1px solid color-mix(in oklch, var(--desert-glass-amber), transparent 55%);
+    border: 1px solid color-mix(in srgb, var(--cm-palette-sunset-orange), transparent 55%);
     border-radius: 999px;
-    background: color-mix(in oklch, var(--desert-glass-amber), transparent 84%);
+    background: color-mix(in srgb, var(--cm-palette-sunset-orange), transparent 84%);
     padding-inline: 0.7rem;
     color: var(--foreground);
     box-shadow: inset 0 1px 0 var(--desert-glass-highlight);
@@ -298,7 +315,7 @@
     }
 
     .desert-glass-overlay {
-      background: oklch(0.19 0.025 52 / 72%);
+      background: color-mix(in srgb, var(--cm-palette-black) 72%, transparent);
     }
   }
 }
@@ -334,6 +351,22 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Native controls (radio, checkbox, range, progress) otherwise paint in the
+   * browser's blue, which is the one colour on the page that belongs to no
+   * brand at all. */
+  :root {
+    accent-color: var(--cm-primary);
+  }
+
+  :focus-visible {
+    /* The ring is the brand's pressed orange (3.6:1 on the page); the outline
+     * keeps it visible on Arena Beige surfaces, where orange alone would not
+     * clear 3:1. Accessibility outranks a single-colour ring here. */
+    outline: 2px solid var(--cm-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--cm-palette-black) 55%, transparent);
   }
 
   .font-display {

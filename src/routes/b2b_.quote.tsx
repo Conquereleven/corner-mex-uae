@@ -122,7 +122,7 @@ function B2bQuoteRoute() {
           </Button>
         </Link>
         <div className="mt-6 max-w-3xl">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-primary">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-eyebrow">
             Human-reviewed B2B pipeline
           </span>
           <h1 className="mt-3 font-display text-5xl leading-none tracking-tight text-foreground sm:text-6xl">

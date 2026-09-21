@@ -23,9 +23,9 @@ export function ProductCard({
       to="/product/$slug"
       params={{ slug: p.slug }}
       preload="intent"
-      className="intermex-product-card group flex flex-col overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-0.5 hover:shadow-xl"
+      className="cornermex-product-card group flex flex-col overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-0.5 hover:shadow-xl"
     >
-      <div className="relative aspect-square overflow-hidden bg-[color:var(--intermex-cream-surface)]">
+      <div className="relative aspect-square overflow-hidden bg-[color:var(--cm-surface-raised)]">
         {p.image && (
           <img
             src={img.src}
@@ -41,24 +41,24 @@ export function ProductCard({
           />
         )}
         {p.is_bulk && (
-          <span className="absolute start-3 bottom-3 rounded-full bg-[color:var(--brand-verde-jalapeno)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+          <span className="absolute start-3 bottom-3 rounded-full bg-badge px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-badge-foreground">
             HORECA
           </span>
         )}
         {onSale && (
-          <span className="absolute end-3 top-3 rounded-full bg-[color:var(--brand-mole-brown)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+          <span className="absolute end-3 top-3 rounded-full bg-ink px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-ivory">
             Sale
           </span>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <span className="text-[11px] uppercase tracking-widest text-[color:var(--brand-verde-jalapeno)]">
+        <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
           CornerMex
         </span>
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         <div className="mt-auto flex items-end justify-between pt-3">
           <span className="font-display text-lg font-semibold text-foreground">
-            <span className={onSale ? "text-[color:var(--brand-mole-brown)]" : ""}>
+            <span className={onSale ? "text-sale" : "text-price"}>
               {cur.format(p.price_aed)}
             </span>
             {onSale && p.compare_at_price_aed != null && (

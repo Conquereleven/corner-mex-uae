@@ -63,11 +63,11 @@ const FOOTER_GROUPS: Array<{ heading: string; links: FooterLink[] }> = [
 export function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="mt-24 border-t border-border/60 bg-secondary/40 pb-24 md:pb-0">
+    <footer className="cornermex-footer mt-24 border-t border-border pb-24 md:pb-0">
       <div className="mx-auto max-w-7xl border-b border-border/60 px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--brand-verde-jalapeno)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
               CornerMex
             </p>
             <h3 className="mt-2 font-display text-2xl tracking-tight">
@@ -91,7 +91,7 @@ export function Footer() {
 
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] lg:px-8">
         <div>
-          <BrandLogo className="h-14 w-28 rounded-md bg-[color:var(--brand-mole-brown)] p-1" />
+          <BrandLogo surface="onDark" className="h-14 w-28" />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             {ACTIVE_BRAND.verbal.primary}
           </p>

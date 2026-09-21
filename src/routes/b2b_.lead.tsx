@@ -23,7 +23,7 @@ function BusinessEnquiry() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           Human-reviewed B2B
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight">Request a CornerMex B2B quote</h1>

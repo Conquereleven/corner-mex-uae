@@ -15,7 +15,7 @@ export function SiteLayout({
   return (
     <LanguageProvider>
       <div
-        className="intermex-storefront flex min-h-screen flex-col bg-background pb-20 md:pb-0"
+        className="cornermex-storefront flex min-h-screen flex-col bg-background pb-20 md:pb-0"
         style={brandCssVariables(brand)}
         data-brand={brand.id}
       >
