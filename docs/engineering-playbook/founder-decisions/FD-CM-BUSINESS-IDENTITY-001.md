@@ -1,4 +1,5 @@
 # Founder Decision Record
+
 ## Canonical Customer-Visible Business Identity
 
 **Decision ID:** FD-CM-BUSINESS-IDENTITY-001
@@ -21,14 +22,14 @@ authority.
 
 ## Attested values
 
-| Field | Value |
-| --- | --- |
-| Brand name | `CornerMex` |
-| Legal entity | `RodMor TradeCo LLC` |
-| Licensing authority | `Sharjah Media City` |
+| Field                                  | Value                                |
+| -------------------------------------- | ------------------------------------ |
+| Brand name                             | `CornerMex`                          |
+| Legal entity                           | `RodMor TradeCo LLC`                 |
+| Licensing authority                    | `Sharjah Media City`                 |
 | Licensing authority / location wording | `Sharjah Media City, Free Zone, UAE` |
-| Trade licence | `2647014.01` |
-| Bank-account beneficiary | `RodMor TradeCo LLC` |
+| Trade licence                          | `2647014.01`                         |
+| Bank-account beneficiary               | `RodMor TradeCo LLC`                 |
 
 ## Provenance and limits of this record
 
@@ -84,3 +85,17 @@ fallback) is resolved to the attested `RodMor TradeCo LLC`.
 Any change to an attested value requires a new Founder decision record. If
 documentary verification is later obtained, a follow-up record may upgrade the
 evidence class from `FOUNDER-ATTESTED` to `VERIFIED`.
+
+## Addendum — 2026-09-19 founder reaffirmation
+
+The Founder reaffirmed this record as final for CornerMex 2.0:
+
+- Public ecommerce brand: **CornerMex**.
+- Seller / merchant of record: **RodMor TradeCo LLC**.
+- **Intermex is a supplier only** — never the CornerMex merchant, seller of
+  record, invoice issuer for CornerMex customer orders, payment merchant identity
+  or public brand.
+
+Between 2026-08-29 (`4d8b4ff`) and this addendum the code set
+`brandName: "Intermex"` while citing this record, which attested `CornerMex`.
+That divergence is corrected; see `docs/cornermex-2/LEGAL-IDENTITY.md`.

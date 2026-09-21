@@ -176,13 +176,17 @@ const expected = {
   b2bOpsPrivateTables: 6,
   b2bOpsPrivatePolicies: 0,
   b2bOpsPrivateDirectGrants: 0,
-  // CM-MCP-DB2 keeps the grant store private while exposing exactly nine guarded
-  // SECURITY DEFINER read RPCs to authenticated OAuth callers only.
-  mcpGrantRlsTables: 1,
+  // CM-MCP-DB2 is NOT part of the active canonical set: its migration lives in
+  // supabase/pending-canonical/ because it is deliberately not applied to
+  // production (docs/mcp/CM-MCP-3-DB-PROPOSAL.md). Verified read-only on
+  // 2026-09-19: commerce_private.mcp_grants does not exist in canonical DB2, so
+  // zero here is what production actually looks like. These expectations return
+  // to 1/9/9 if and when that migration is approved and moved back.
+  mcpGrantRlsTables: 0,
   mcpGrantPolicies: 0,
   mcpGrantDirectGrants: 0,
-  mcpReadFunctions: 9,
-  mcpAuthenticatedExecuteFunctions: 9,
+  mcpReadFunctions: 0,
+  mcpAuthenticatedExecuteFunctions: 0,
 };
 if (JSON.stringify(first) !== JSON.stringify(expected))
   throw new Error(`canonical replay mismatch: ${JSON.stringify(first)}`);

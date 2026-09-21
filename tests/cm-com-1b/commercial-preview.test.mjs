@@ -20,7 +20,7 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
     source("src/routes/checkout.tsx"),
   ]);
 
-  assert.match(header, /Commercial preview/);
+  assert.doesNotMatch(header, /commercial preview/i);
   for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"]) {
     assert.match(header, new RegExp(label));
   }
@@ -36,7 +36,7 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
   assert.match(footer, /not an order, payment or\s+confirmed quote/);
   assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote confirmed/i);
   assert.match(shop, /Product discovery only/);
-  assert.match(home, /UAE commercial preview/);
+  assert.doesNotMatch(home, /commercial preview/i);
   assert.doesNotMatch(filters, /In stock only|title="Availability"/);
   assert.match(login, /signInWithPassword/);
   assert.match(cart, /component: Cart/);
@@ -55,7 +55,7 @@ test("B2B conversion persists an enquiry without creating orders, payments or au
   const publicCombined = `${quote}\n${preview}\n${leadPage}\n${catalog}`;
 
   assert.match(quote, /submitB2bLead/);
-  assert.match(preview, /Submit enquiry to Intermex/);
+  assert.match(preview, /Submit enquiry to CornerMex/);
   assert.match(leadServer, /submit_b2b_lead_v2/);
   assert.match(leadServer, /getB2bIntakeAbuseKey/);
   assert.match(preview, /does not\s+create an order/i);

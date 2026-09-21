@@ -11,7 +11,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import {
   COD_ORDER_VARIANT_UNAVAILABLE as PREVIEW_VARIANT_UNAVAILABLE,
   PreviewInput,
@@ -62,6 +62,12 @@ const LegalAcceptance = z.object({
 // Only variant ids and quantities are accepted. There is intentionally no
 // price, subtotal, shipping or total field: the client cannot influence money.
 export const PlaceCodOrderInput = z.object({
+  // Idempotency key for this checkout attempt. The server fingerprints the
+  // request against it so a retry, a second tab or a replayed request returns
+  // the original order instead of creating another.
+  operationId: z.string().uuid(),
+  // Guest checkout only; ignored when a session is supplied.
+  guest: z.object({ email: z.string().trim().toLowerCase().email().max(320) }).optional(),
   items: z
     .array(z.object({ variant_id: z.string().uuid(), qty: z.number().int().min(1).max(500) }))
     .min(1)
@@ -79,6 +85,10 @@ export type PlaceCodOrderResult = {
   shipping_aed: number;
   tax_aed: number;
   total_aed: number;
+  /** true when this attempt replayed an order an earlier attempt had created. */
+  replayed: boolean;
+  /** One-time guest tracking token; null for authenticated orders and replays. */
+  guest_token: string | null;
 };
 
 /**
@@ -90,7 +100,10 @@ export const getCommercialCheckoutConfig = createServerFn({ method: "GET" }).han
 );
 
 export const placeCodOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  // Guest checkout: buying never requires an account. An identity is resolved
+  // when a session is presented, otherwise the guest contact on the request is
+  // used. Both paths run the same canonical order transaction.
+  .middleware([optionalSupabaseAuth])
   .inputValidator((input: z.input<typeof PlaceCodOrderInput>) => PlaceCodOrderInput.parse(input))
   .handler(async ({ data, context }): Promise<PlaceCodOrderResult> => {
     // 1. Execution gate + complete commercial configuration, or refuse.
@@ -116,14 +129,23 @@ export const placeCodOrder = createServerFn({ method: "POST" })
       throw new Error("COD_ORDER_LEGAL_ACCEPTANCE_REQUIRED");
     }
 
+    // 5. Exactly one identity, mirroring orders_identity_check in the database.
+    const buyerId = (context as unknown as { userId: string | null }).userId ?? null;
+    const guestEmail = buyerId ? null : (data.guest?.email ?? null);
+    if (!buyerId && !guestEmail) {
+      throw new Error("COD_ORDER_IDENTITY_REQUIRED");
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 5. The transactional function performs validation, pricing, insertion and
+    // 6. The transactional function performs validation, pricing, insertion and
     //    the stock decrement atomically. Prices come from the database only.
     const { data: result, error } = await supabaseAdmin.rpc(
-      "place_cod_order_v1" as never,
+      "cm_create_cod_order_v2" as never,
       {
-        p_buyer_id: context.userId,
+        p_buyer_id: buyerId,
+        p_guest_email: guestEmail,
+        p_operation_id: data.operationId,
         p_items: data.items,
         p_shipping_address: {
           recipient_name: data.address.recipient_name,
@@ -149,11 +171,16 @@ export const placeCodOrder = createServerFn({ method: "POST" })
 
     if (error) {
       // Surface the stable contract code without leaking database internals.
-      const code = /COD_ORDER_[A-Z_]+/.exec(error.message)?.[0] ?? "COD_ORDER_FAILED";
+      const code =
+        /COD_ORDER_[A-Z_]+|COD_(?:ITEMS|QTY)_INVALID|CHECKOUT_[A-Z_]+|LEGAL_ACCEPTANCE_REQUIRED/.exec(
+          error.message,
+        )?.[0] ?? "COD_ORDER_FAILED";
       throw new Error(code);
     }
 
     const payload = result as unknown as {
+      replayed?: boolean;
+      guest_token?: string;
       order_id: string;
       order_number: string;
       subtotal_aed: number;
@@ -170,6 +197,11 @@ export const placeCodOrder = createServerFn({ method: "POST" })
       shipping_aed: Number(payload.shipping_aed),
       tax_aed: Number(payload.tax_aed),
       total_aed: Number(payload.total_aed),
+      // true when this attempt replayed an order a previous attempt created.
+      replayed: Boolean(payload.replayed),
+      // Returned once, for guest orders only: the capability token that lets a
+      // customer track the order without an account.
+      guest_token: payload.guest_token ?? null,
     };
   });
 

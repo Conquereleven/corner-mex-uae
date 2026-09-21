@@ -109,7 +109,7 @@ export const createStripeSession = createServerFn({ method: "POST" })
               {
                 price_data: {
                   currency: "aed",
-                  product_data: { name: `Intermex order #${attempt.order_number}` },
+                  product_data: { name: `CornerMex order #${attempt.order_number}` },
                   unit_amount: Math.round(amount * 100),
                 },
                 quantity: 1,

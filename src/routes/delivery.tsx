@@ -4,12 +4,14 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { PolicyLinkGroup, TrustCard } from "@/components/site/Trust";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { siteUrl } from "@/lib/site-url";
+import { ONLINE_ORDERING_ENABLED } from "@/lib/commerce-mode";
+import { deliveryEstimateText } from "@/lib/delivery-sla";
 
 export const Route = createFileRoute("/delivery")({
   head: () => {
-    const title = "Delivery in the UAE — Intermex";
+    const title = "Delivery in the UAE — CornerMex";
     const description =
-      "How Intermex handles delivery across the United Arab Emirates: emirate-based coverage, transparent charges confirmed before you commit, and no hidden promises.";
+      "How CornerMex handles delivery across the United Arab Emirates: emirate-based coverage, transparent charges confirmed before you commit, and no hidden promises.";
     return {
       meta: [
         { title },
@@ -38,12 +40,12 @@ function Delivery() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           Transparent by design
         </p>
         <h1 className="mt-3 font-display text-5xl tracking-tight">Delivery in the UAE</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
-          Intermex is built for the United Arab Emirates. Delivery is organised by emirate, and any
+          CornerMex is built for the United Arab Emirates. Delivery is organised by emirate, and any
           charge or timeframe that applies to you is intended to be confirmed in your specific flow
           — at checkout for retail, or in a written quote for business orders — before you commit to
           anything.
@@ -53,15 +55,31 @@ function Delivery() {
           role="note"
           className="mt-8 max-w-3xl rounded-2xl border border-border bg-secondary/40 p-6 leading-7"
         >
-          <p className="font-medium text-foreground">
-            Online order and delivery execution are not currently enabled on this website.
-          </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            No delivery can be booked or dispatched through this site today, and no delivery area,
-            charge or timeframe shown anywhere on this site should be treated as confirmed. This
-            page describes how delivery is intended to work once ordering is activated. Business
-            enquiries continue to be handled manually in writing.
-          </p>
+          {ONLINE_ORDERING_ENABLED ? (
+            <>
+              <p className="font-medium text-foreground">
+                Cash-on-delivery ordering is open to signed-in customers.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                The delivery charge for your emirate is calculated by our server and shown at
+                checkout before you confirm; nothing is ordered until you confirm.{" "}
+                {deliveryEstimateText()} Business enquiries continue to be handled manually in
+                writing.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium text-foreground">
+                Online order and delivery execution are not currently enabled on this website.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                No delivery can be booked or dispatched through this site today, and no delivery
+                area, charge or timeframe shown anywhere on this site should be treated as
+                confirmed. This page describes how delivery is intended to work once ordering is
+                activated. Business enquiries continue to be handled manually in writing.
+              </p>
+            </>
+          )}
         </div>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-3">

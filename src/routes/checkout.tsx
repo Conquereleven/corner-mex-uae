@@ -33,7 +33,13 @@ import { getAvailablePaymentMethods, type EmirateCode } from "@/lib/payment-meth
 import { useSession } from "@/lib/use-session";
 import { toast } from "sonner";
 import { getCardCheckoutCapability, initiateCardCheckout } from "@/lib/card-checkout.functions";
-import { checkoutOperation } from "@/lib/checkout-operation";
+import { rememberGuestOrderToken } from "@/lib/guest-order-token";
+import {
+  checkoutOperation,
+  clearCodCheckoutOperation,
+  codCheckoutOperation,
+} from "@/lib/checkout-operation";
+import { deliveryEstimateText } from "@/lib/delivery-sla";
 
 const CHECKOUT_ENABLED = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
 // Fallback list used only until the server configuration resolves; the
@@ -50,7 +56,7 @@ const FALLBACK_EMIRATES: Array<{ code: EmirateCode; name: string }> = [
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
-    meta: [{ title: "Checkout — Intermex" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Checkout — CornerMex" }, { name: "robots", content: "noindex" }],
   }),
   component: Checkout,
 });
@@ -106,6 +112,7 @@ function Checkout() {
   });
   const previewRequestId = useRef(0);
   const [form, setForm] = useState({
+    email: "",
     recipient_name: "",
     phone: "",
     emirate: "DU" as EmirateCode,
@@ -199,8 +206,12 @@ function Checkout() {
     form.recipient_name.trim().length >= 2 &&
     form.phone.trim().length >= 7 &&
     form.area.trim().length >= 2;
+  // Guest checkout: buying never requires an account. A signed-in customer needs
+  // no email field; a guest supplies one so the order has a contact.
+  const guestEmailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim());
+  const identityReady = Boolean(user) || guestEmailValid;
   const readyToOrder =
-    Boolean(user) &&
+    identityReady &&
     items.length > 0 &&
     requiredFilled &&
     accepted &&
@@ -252,7 +263,19 @@ function Checkout() {
         window.location.assign(result.url);
         return;
       }
-      const order = await placeCod({ data: input });
+      const guestEmail = user ? null : form.email.trim().toLowerCase();
+      const codInput = guestEmail ? { ...input, guest: { email: guestEmail } } : input;
+      // Idempotency is per identity: a signed-in buyer keys on the user id, a
+      // guest on their email, so a retry or a second tab replays the same order.
+      const operationKey = user ? user.id : `guest:${guestEmail}`;
+      const operationId = await codCheckoutOperation(operationKey, codInput);
+      const order = await placeCod({ data: { ...codInput, operationId } });
+      // Keep the one-time tracking token so the confirmation and tracking views
+      // work without an account. It is never put in the URL.
+      if (order.guest_token) rememberGuestOrderToken(order.order_id, order.guest_token);
+      // The order exists (created now, or replayed), so the next checkout starts
+      // a fresh operation.
+      clearCodCheckoutOperation(operationKey);
       // Only clear the cart after the order genuinely exists.
       clear();
       await navigate({ to: "/order-confirmed", search: { order: order.order_id } });
@@ -294,7 +317,7 @@ function Checkout() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           B2C checkout
         </p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Delivery and payment details</h1>
@@ -313,6 +336,20 @@ function Checkout() {
             <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
               <h2 className="font-display text-xl">Delivery address</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {!user && (
+                  <Field id="checkout-email" label="Email *">
+                    <Input
+                      id="checkout-email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      inputMode="email"
+                      placeholder="you@example.com"
+                      value={form.email}
+                      onChange={(event) => setForm({ ...form, email: event.target.value })}
+                    />
+                  </Field>
+                )}
                 <Field id="checkout-recipient-name" label="Recipient name *">
                   <Input
                     id="checkout-recipient-name"
@@ -520,10 +557,15 @@ function Checkout() {
                 </dt>
                 <dd>{preview ? `AED ${preview.shippingAed.toFixed(2)}` : "—"}</dd>
               </div>
+              <p className="text-[11px] leading-5 text-muted-foreground">
+                {deliveryEstimateText()}
+              </p>
               <div className="flex justify-between border-t border-border pt-3 font-medium">
                 <dt>Total</dt>
                 {/* Amounts are always the server's, never computed in the browser. */}
-                <dd>{preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by Intermex"}</dd>
+                <dd>
+                  {preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by CornerMex"}
+                </dd>
               </div>
             </dl>
             {config?.vatTrn && (
@@ -533,7 +575,11 @@ function Checkout() {
             )}
             {!sessionLoading && !user && (
               <p className="mt-5 text-xs leading-5 text-muted-foreground">
-                Sign in before an authorized checkout can proceed.
+                You are checking out as a guest — no account needed. Already have one?{" "}
+                <Link to="/login" className="underline underline-offset-4">
+                  Sign in for faster checkout
+                </Link>
+                .
               </p>
             )}
             {error && (

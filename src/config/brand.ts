@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { CORNERMEX_PALETTE, CORNERMEX_LIGHT } from "./brand-tokens.ts";
 
 /**
  * Brand configuration is intentionally separate from the CornerMex commerce
@@ -9,115 +10,145 @@ export type BrandAsset = {
   src: string;
   alt: string;
   sourceUrl: string;
-  sourceType: "official-live-site" | "official-brand-file" | "awaiting_official_asset";
+  sourceType: "cornermex-brand-kit";
 };
 
 export type BrandConfig = {
   id: string;
   displayName: string;
-  legalName: string;
   verbal: {
     primary: string;
     secondary: string;
   };
+  /**
+   * The three core brand colours, read from the token module so a storefront
+   * cannot disagree with the design system.
+   */
   colors: {
-    structuralRed: string;
-    cream: string;
-    moleBrown: string;
-    verdeJalapeno: string;
+    arenaBeige: string;
+    sunsetOrange: string;
+    black: string;
   };
   assets: {
-    logo: BrandAsset;
+    /**
+     * One mark per surface the logo actually lands on. Picking a variant is a
+     * lookup, never a judgement call at the call site.
+     */
+    logos: {
+      onIvory: BrandAsset;
+      onBeige: BrandAsset;
+      onSunset: BrandAsset;
+      onDark: BrandAsset;
+    };
     hero: BrandAsset;
     collections: Record<string, BrandAsset>;
   };
 };
 
-const INTERMEX_SOURCE = "https://intermexuae.com/";
+const KIT = "/brand-kit";
 
-export const INTERMEX_BRAND: BrandConfig = {
-  id: "intermex-uae",
-  displayName: "Intermex UAE",
-  legalName: "Intermex UAE",
+/**
+ * CornerMex public brand (founder decision, 2026-09-19): CornerMex is the only
+ * public ecommerce brand; BUSINESS_IDENTITY.merchantOfRecord is the seller of record
+ * (see src/lib/business-identity.ts); Intermex is a supplier only and has no
+ * storefront brand configuration.
+ *
+ * Every value below comes from the CornerMex brand kit already in this
+ * repository (public/brand-kit/guide/brand-guide.md, palette line "Clay #B4362B,
+ * Sage #3E7A54, Cream #F8F3E8, Sand #EFE6D2, Obsidian #2A2622 …"). The colour
+ * keys keep their historical names because they only feed the generic
+ * --brand-* CSS variables; the values are CornerMex's.
+ *
+ * Imagery uses the kit's master-scene photographs directly. The kit's composite
+ * SVGs embed those photos via <image href>, which browsers do not load when an
+ * SVG is rendered through <img>, so they are not used here.
+ */
+export const CORNERMEX_BRAND: BrandConfig = {
+  id: "cornermex",
+  displayName: "CornerMex",
   verbal: {
-    primary: "Del barrio pa’l mundo",
-    secondary: "Tradition you can taste",
+    // Previously published CornerMex copy (site meta before 2026-08-28).
+    primary: "Authentic Mexican pantry in the UAE",
+    secondary: "Authentic Mexican chiles, salsas, masa and snacks — sourced for the UAE.",
   },
   colors: {
-    // Implementation-derived from the current intermexuae.com visual system;
-    // these red and cream values are not verified exact Brand Book colors.
-    structuralRed: "#b42127",
-    cream: "#fff8e7",
-    // Exact verified Brand Book values captured in GitHub issue #70.
-    moleBrown: "#6e441d",
-    verdeJalapeno: "#2d9849",
+    arenaBeige: CORNERMEX_PALETTE.arenaBeige.hex,
+    sunsetOrange: CORNERMEX_PALETTE.sunsetOrange.hex,
+    black: CORNERMEX_PALETTE.black.hex,
   },
   assets: {
-    logo: {
-      src: "/brand-kit/intermex/source-assets/intermex-logo-yellow.png",
-      alt: "Intermex UAE",
-      sourceUrl: `${INTERMEX_SOURCE}cdn/shop/files/YELLOW_PNG.png?v=1749546480&width=220`,
-      sourceType: "official-live-site",
+    /*
+     * The kit's full-colour mark is drawn in clay red (#B4362B), which is the
+     * retired palette and the strongest inherited cue, so the storefront does
+     * not use it. Every warm and orange surface takes the prepared mono-black
+     * mark (>= 6.5:1 on all three), and dark surfaces take the cream mark.
+     */
+    logos: {
+      onIvory: mark("mono-black"),
+      onBeige: mark("mono-black"),
+      onSunset: mark("mono-black"),
+      onDark: mark("cream"),
     },
     hero: {
-      src: "/brand-kit/intermex/source-assets/intermex-hero-cactus.jpg",
-      alt: "Cactus growing against a warm yellow wall",
-      sourceUrl: `${INTERMEX_SOURCE}cdn/shop/files/tryagain.jpg?v=1751631403&width=3000`,
-      sourceType: "official-live-site",
+      src: `${KIT}/master-scenes/chiles-lime-macro.jpg`,
+      alt: "Dried chiles and fresh lime",
+      sourceUrl: `${KIT}/master-scenes/chiles-lime-macro.jpg`,
+      sourceType: "cornermex-brand-kit",
     },
+    // Keyed by real canonical category slugs (public.categories), so every
+    // homepage tile links to a populated category.
     collections: {
-      "mexican-candy": {
-        src: "/brand-kit/intermex/source-assets/mexican-candy.png",
-        alt: "Mexican Candy",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/Candy.png?v=1749649037&width=750`,
-        sourceType: "official-live-site",
-      },
-      "mexican-sauces": {
-        src: "/brand-kit/intermex/source-assets/mexican-sauces.png",
-        alt: "Mexican Sauces",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/sauces3.png?v=1749647189&width=750`,
-        sourceType: "official-live-site",
-      },
-      "from-our-production": {
-        src: "/brand-kit/intermex/source-assets/intermex-production.png",
-        alt: "Intermex Production",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/production2.png?v=1749651517&width=750`,
-        sourceType: "official-live-site",
-      },
-      chilis: {
-        src: "/brand-kit/intermex/source-assets/chilis.png",
-        alt: "Chilis",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/chillis.png?v=1749728090&width=750`,
-        sourceType: "official-live-site",
-      },
-      "mexican-pantry": {
-        src: "/brand-kit/intermex/source-assets/mexican-pantry.png",
-        alt: "Mexican Pantry",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/OtherFood.png?v=1751363061&width=750`,
-        sourceType: "official-live-site",
-      },
-      drinks: {
-        src: "/brand-kit/intermex/source-assets/drinks.png",
-        alt: "Drinks",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/drinks.png?v=1751363139&width=750`,
-        sourceType: "official-live-site",
-      },
-      "mexican-accessories": {
-        src: "/brand-kit/intermex/source-assets/mexican-accessories.png",
-        alt: "Mexican Accessories",
-        sourceUrl: `${INTERMEX_SOURCE}cdn/shop/collections/Accessories.png?v=1751363265&width=750`,
-        sourceType: "official-live-site",
-      },
+      "salsas-moles": scene("chiles-lime-corn.jpg", "Salsas and moles"),
+      "snacks-sweets": scene("snacks-styled.jpg", "Mexican snacks and sweets"),
+      "pantry-staples": scene("pantry-editorial.jpg", "Mexican pantry staples"),
+      "chiles-spices": scene("chiles-lime-macro.jpg", "Dried chiles and spices"),
+      "tortillas-masa": scene("pantry.jpg", "Tortillas and masa"),
+      drinks: scene("minimal-still-life.jpg", "Mexican drinks"),
+      "gifts-lifestyle": scene("shelf-assortment.jpg", "Gifts and lifestyle"),
     },
   },
 };
 
+// Category tiles render at roughly 180 CSS px, so they use 750 px derivatives of
+// the master scenes (sips -Z 750). Pointing tiles at the 1920 px originals cost
+// 2.3 MB on the homepage; the derivatives cost 0.76 MB for the same result.
+function mark(variant: string): BrandAsset {
+  const src = `${KIT}/logos/horizontal/cornermex-logo-horizontal-${variant}.svg`;
+  return { src, alt: "CornerMex", sourceUrl: src, sourceType: "cornermex-brand-kit" };
+}
+
+function scene(file: string, alt: string): BrandAsset {
+  const src = `${KIT}/master-scenes/tiles/${file}`;
+  return { src, alt, sourceUrl: `${KIT}/master-scenes/${file}`, sourceType: "cornermex-brand-kit" };
+}
+
+/** The storefront's active brand. */
+export const ACTIVE_BRAND = CORNERMEX_BRAND;
+
+/**
+ * Legacy `--brand-*` aliases. The colour values live in the token layer
+ * (src/styles/brand-tokens.css); these exist only so markup that still reads a
+ * `--brand-*` variable resolves to the current brand instead of a stale hex.
+ */
 export function brandCssVariables(brand: BrandConfig): CSSProperties {
   return {
-    "--brand-structural-red": brand.colors.structuralRed,
-    "--brand-cream": brand.colors.cream,
-    "--brand-mole-brown": brand.colors.moleBrown,
-    "--brand-verde-jalapeno": brand.colors.verdeJalapeno,
+    "--brand-surface": "var(--cm-surface)",
+    "--brand-ink": "var(--cm-text)",
+    "--brand-action": "var(--cm-cta-primary)",
     "--brand-display-name": `"${brand.displayName}"`,
   } as CSSProperties;
 }
+
+/** The surfaces a CornerMex mark may sit on. */
+export type BrandSurface = keyof BrandConfig["assets"]["logos"];
+
+/**
+ * The mark for a surface. `onSunset` is mono-black on purpose: white on Sunset
+ * Orange measures 2.89:1, black measures 6.54:1.
+ */
+export function brandMark(surface: BrandSurface, brand: BrandConfig = ACTIVE_BRAND): BrandAsset {
+  return brand.assets.logos[surface];
+}
+
+/** The active CTA colour, for anything that must render it outside CSS. */
+export const CTA_COLOR = CORNERMEX_PALETTE[CORNERMEX_LIGHT.ctaPrimary].hex;

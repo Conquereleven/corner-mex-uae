@@ -57,13 +57,6 @@
       "requiresFounderProductionGate": true
     },
     {
-      "filename": "20260822050535_cm_mcp_db2_read_boundary.sql",
-      "owner": "canonical_cornermex",
-      "purpose": "cm_mcp_db2_read_boundary",
-      "productionApplied": false,
-      "requiresFounderProductionGate": true
-    },
-    {
       "filename": "20260823023904_cm_b2b_ops_foundation_1.sql",
       "owner": "canonical_cornermex",
       "purpose": "cm_b2b_ops_foundation_1",
@@ -109,6 +102,27 @@
       "filename": "20260914114744_intermex_po_automation_1.sql",
       "owner": "canonical_cornermex",
       "purpose": "intermex_po_automation_1",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260919115000_cm2_guest_checkout_schema.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm2_guest_checkout_schema",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260919120000_cm2_release_stock_on_cancellation.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm2_release_stock_on_cancellation",
+      "productionApplied": false,
+      "requiresFounderProductionGate": true
+    },
+    {
+      "filename": "20260919121000_cm2_cod_order_idempotency.sql",
+      "owner": "canonical_cornermex",
+      "purpose": "cm2_cod_order_idempotency",
       "productionApplied": false,
       "requiresFounderProductionGate": true
     }

@@ -9,10 +9,15 @@ const BASE_COUNTS = Object.freeze({
   lovable_live_only: 21,
   requires_future_migration: 2,
 });
+// cod-order.functions.ts calls cm_create_cod_order_v2 (owned by the unapplied
+// 20260919121000 migration) instead of place_cod_order_v1, moving one reference
+// from canonical_supported to requires_future_migration. The total is unchanged.
 const COMBINED_COUNTS = Object.freeze({
-  canonical_supported: 21,
+  canonical_supported: 20,
   lovable_live_only: 19,
-  requires_future_migration: 29,
+  // +2: the guest order tracking/claim RPCs land with
+  // 20260919115000_cm2_guest_checkout_schema.sql (not yet applied to DB2).
+  requires_future_migration: 32,
 });
 
 export function expandApplicationSchemaReferenceContract(base, extensions) {
@@ -142,7 +147,7 @@ export function validateApplicationSchemaReferenceContract(contract) {
   }
 
   const isCombined = identities.has("function:admin_import_product_row_v1");
-  const expectedCount = isCombined ? 69 : 44;
+  const expectedCount = isCombined ? 71 : 44;
   const expectedCounts = isCombined ? COMBINED_COUNTS : BASE_COUNTS;
   if (contract.references.length !== expectedCount) errors.push("reference count mismatch");
   for (const [classification, expected] of Object.entries(expectedCounts)) {

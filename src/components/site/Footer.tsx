@@ -6,6 +6,7 @@ import { businessIdentityLine } from "@/lib/business-identity";
 import { openCookiePreferences } from "@/lib/cookie-consent";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { BrandLogo } from "@/components/site/BrandLogo";
+import { ACTIVE_BRAND } from "@/config/brand";
 
 type FooterLink =
   | {
@@ -45,7 +46,7 @@ const FOOTER_GROUPS: Array<{ heading: string; links: FooterLink[] }> = [
   {
     heading: "Company",
     links: [
-      { to: "/about", label: "About Intermex" },
+      { to: "/about", label: "About CornerMex" },
       { to: "/contact", label: "Find Us" },
     ],
   },
@@ -62,12 +63,12 @@ const FOOTER_GROUPS: Array<{ heading: string; links: FooterLink[] }> = [
 export function Footer() {
   const { t } = useTranslation();
   return (
-    <footer className="mt-24 border-t border-border/60 bg-secondary/40 pb-24 md:pb-0">
+    <footer className="cornermex-footer mt-24 border-t border-border pb-24 md:pb-0">
       <div className="mx-auto max-w-7xl border-b border-border/60 px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--brand-verde-jalapeno)]">
-              Intermex UAE
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
+              CornerMex
             </p>
             <h3 className="mt-2 font-display text-2xl tracking-tight">
               Exploring Mexican pantry supply for the UAE
@@ -75,7 +76,7 @@ export function Footer() {
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               B2C cart and account access are available. Checkout and order processing run only when
               authorized configuration is enabled; prices, availability, shipping and payment are
-              confirmed in the applicable flow. B2B enquiries can be submitted to the Intermex
+              confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
               commercial pipeline for human review, but an enquiry is not an order, payment or
               confirmed quote and creates no commercial commitment.
             </p>
@@ -90,20 +91,20 @@ export function Footer() {
 
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] lg:px-8">
         <div>
-          <BrandLogo className="h-14 w-28 rounded-md bg-[color:var(--brand-mole-brown)] p-1" />
+          <BrandLogo surface="onDark" className="h-14 w-28" />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Del barrio pa’l mundo · Tradition you can taste
+            {ACTIVE_BRAND.verbal.primary}
           </p>
           <p className="mt-3 max-w-xs text-xs leading-5 text-muted-foreground">
             AED is the primary display currency. Prices and availability shown in preview are not
             offers and must be confirmed manually.
           </p>
           <a
-            href={mailto(PUBLIC_CONTACT.complaints, "Intermex customer enquiry")}
+            href={mailto(PUBLIC_CONTACT.complaints, "CornerMex customer enquiry")}
             className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             <Mail className="h-3.5 w-3.5" aria-hidden="true" />
-            Email Intermex
+            Email CornerMex
           </a>
         </div>
         {FOOTER_GROUPS.map((group) => (

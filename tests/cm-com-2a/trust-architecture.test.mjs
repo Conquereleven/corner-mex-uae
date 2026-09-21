@@ -47,8 +47,11 @@ async function sourceFiles(dir) {
 // ---------------------------------------------------------------------------
 
 test("business identity matches the exact Founder-attested values", () => {
-  assert.equal(BUSINESS_IDENTITY.brandName, "Intermex");
+  // Founder decision 2026-09-19 reaffirms FD-CM-BUSINESS-IDENTITY-001: CornerMex brand,
+  // RodMor TradeCo LLC seller of record, Intermex supplier only.
+  assert.equal(BUSINESS_IDENTITY.brandName, "CornerMex");
   assert.equal(BUSINESS_IDENTITY.legalEntity, "RodMor TradeCo LLC");
+  assert.equal(BUSINESS_IDENTITY.merchantOfRecord, BUSINESS_IDENTITY.legalEntity);
   assert.equal(BUSINESS_IDENTITY.location, "Sharjah Media City, Free Zone, UAE");
   assert.equal(BUSINESS_IDENTITY.licensingAuthority, "Sharjah Media City");
   assert.equal(BUSINESS_IDENTITY.tradeLicense, "2647014.01");
@@ -119,10 +122,68 @@ test("the Founder decision record exists and states its evidence limits", async 
 // Delivery truthfulness
 // ---------------------------------------------------------------------------
 
-test("/delivery discloses that ordering and delivery execution are not enabled", async () => {
+// Ordering statements must follow the same flag the checkout page uses, so the
+// site can never claim ordering is closed while checkout takes orders, or open
+// while it does not (src/lib/commerce-mode.ts).
+test("/delivery states the ordering status from the checkout flag", async () => {
   const delivery = await read("src/routes/delivery.tsx");
+  assert.match(delivery, /import \{ ONLINE_ORDERING_ENABLED \} from "@\/lib\/commerce-mode"/);
+  assert.match(delivery, /\{ONLINE_ORDERING_ENABLED \? \(/);
+  // closed branch keeps the original non-promising disclosure
   assert.match(delivery, /not currently enabled on this website/i);
-  assert.match(delivery, /should be treated as confirmed/i);
+  assert.match(delivery, /should be treated as\s+confirmed/i);
+  // open branch describes what checkout actually does
+  assert.match(delivery, /Cash-on-delivery ordering is open to signed-in customers/);
+  assert.match(delivery, /nothing is ordered until you confirm/);
+});
+
+test("returns, terms, policies and sign-in pages gate ordering claims on the checkout flag", async () => {
+  for (const path of [
+    "src/routes/returns.tsx",
+    "src/routes/terms.tsx",
+    "src/routes/legal.index.tsx",
+    "src/routes/login.tsx",
+  ]) {
+    const source = await read(path);
+    assert.match(source, /ONLINE_ORDERING_ENABLED/, `${path} must use the ordering flag`);
+  }
+  const terms = await read("src/routes/terms.tsx");
+  // live branch must not describe prices as "not an offer to sell" and must name
+  // the documents that govern orders, while staying honest about legal review
+  const liveTerms = terms.slice(terms.indexOf("ONLINE_ORDERING_ENABLED ?"), terms.indexOf(") : ("));
+  assert.doesNotMatch(liveTerms, /not an offer to sell/);
+  assert.match(liveTerms, /slug: "terms-and-conditions"/);
+  assert.match(liveTerms, /slug: "returns-refunds"/);
+  // Legal review is complete (FD-CM-LEGAL-REVIEW-001), so the page must no
+  // longer describe the terms as pending review.
+  assert.doesNotMatch(liveTerms, /pending review|working template|before commercial activation/i);
+  const returns = await read("src/routes/returns.tsx");
+  const liveReturns = returns.slice(
+    returns.indexOf("ONLINE_ORDERING_ENABLED ?"),
+    returns.indexOf(") : ("),
+  );
+  assert.match(liveReturns, /slug: "returns-refunds"/);
+});
+
+test("the ordering flag defaults to closed outside a Vite build", async () => {
+  const { ONLINE_ORDERING_ENABLED } = await import("../../src/lib/commerce-mode.ts");
+  assert.equal(ONLINE_ORDERING_ENABLED, false);
+});
+
+test("no public surface states unconditionally that online orders are not accepted", async () => {
+  for (const path of [
+    "src/lib/i18n.ts",
+    "src/routes/__root.tsx",
+    "src/routes/index.tsx",
+    "src/routes/about.tsx",
+  ]) {
+    const source = await read(path);
+    assert.doesNotMatch(
+      source,
+      /does not accept online orders|no acepta pedidos en línea|commercial preview/i,
+      path,
+    );
+  }
 });
 
 test("/delivery makes no unsupported absolute guarantee", async () => {
@@ -246,14 +307,22 @@ test("sitemaps include contact and delivery and drop the legacy shipping path", 
 });
 
 test("robots.txt references no retired origin and keeps private surfaces disallowed", async () => {
-  const text = await read("public/robots.txt");
-  assert.doesNotMatch(text, /lovable\.app/);
+  // robots.txt is now a server route so its Sitemap line follows the serving
+  // host; see docs/cornermex-2/DOMAIN-CUTOVER.md.
+  const text = await read("src/routes/robots[.]txt.ts");
   assert.match(
     text,
-    /Sitemap: https:\/\/corner-mex-uae-production\.up\.railway\.app\/sitemap\.xml/,
+    /Sitemap: \$\{origin\}\/sitemap\.xml/,
+    "the sitemap URL must derive from the request origin",
   );
-  for (const p of ["/admin", "/account", "/checkout", "/cart"]) {
-    assert.ok(text.includes(`Disallow: ${p}`), `robots must disallow ${p}`);
+  assert.doesNotMatch(text, /https:\/\/[a-z0-9.-]*(railway|cornermex\.ae)/i, "no hardcoded host");
+  assert.doesNotMatch(text, /lovable\.app/);
+  // The serving host is no longer asserted here: the route derives it.
+
+  // The disallow list is built from an array, so assert membership there.
+  const disallow = text.slice(text.indexOf("const DISALLOW"), text.indexOf("];", text.indexOf("const DISALLOW")));
+  for (const path of ["/admin", "/account", "/checkout", "/cart", "/login", "/seller"]) {
+    assert.ok(disallow.includes(`"${path}"`), `robots must disallow ${path}`);
   }
 });
 
@@ -391,7 +460,7 @@ test("no application source composes or hardcodes an unowned-domain mailbox", as
 test("/contact uses the registry and explains the shared temporary mailbox", async () => {
   const contact = await read("src/routes/contact.tsx");
   assert.match(contact, /PUBLIC_CONTACT\./, "contact must resolve addresses via the registry");
-  assert.match(contact, /confirmed way to contact Intermex/i);
+  assert.match(contact, /confirmed way to contact CornerMex/i);
   assert.match(contact, /same address with a different\s*\n?\s*subject line/i);
   assert.ok(!contact.includes(UNOWNED_MAIL_DOMAIN), "contact must not name the unowned domain");
 });

@@ -54,8 +54,9 @@ test("non-canonical admin capabilities are not presented as operational", async 
 test("admin settings links only to canonical actionable configuration", async () => {
   const settings = await read("src/routes/_authenticated/admin.settings.tsx");
   assert.match(settings, /\/admin\/categories/);
-  assert.match(settings, /\/admin\/coupons/);
-  for (const path of ["banners", "newsletter", "shipping", "shipments", "returns"]) {
+  // Coupons are disabled until canonical coupon support exists, so they are no
+  // longer actionable configuration.
+  for (const path of ["banners", "newsletter", "shipping", "shipments", "returns", "coupons"]) {
     assert.doesNotMatch(settings, new RegExp(`/admin/${path}`));
   }
 });

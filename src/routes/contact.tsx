@@ -8,9 +8,9 @@ import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/contact")({
   head: () => {
-    const title = "Contact Intermex — customer support and B2B enquiries in the UAE";
+    const title = "Contact CornerMex — customer support and B2B enquiries in the UAE";
     const description =
-      "Reach Intermex by email for customer support, B2B and wholesale enquiries, or privacy and legal questions. Every enquiry is reviewed manually.";
+      "Reach CornerMex by email for customer support, B2B and wholesale enquiries, or privacy and legal questions. Every enquiry is reviewed manually.";
     return {
       meta: [
         { title },
@@ -32,7 +32,7 @@ const CHANNELS = [
     description:
       "Questions about the catalogue, your cart or account, or an enquiry you have already sent.",
     email: PUBLIC_CONTACT.complaints,
-    subject: "Intermex customer enquiry",
+    subject: "CornerMex customer enquiry",
   },
   {
     icon: Building2,
@@ -40,14 +40,14 @@ const CHANNELS = [
     description:
       "Restaurants, retailers and distributors. Quote requests are reviewed and answered manually in writing.",
     email: PUBLIC_CONTACT.b2b,
-    subject: "Intermex B2B enquiry",
+    subject: "CornerMex B2B enquiry",
   },
   {
     icon: ShieldCheck,
     title: "Privacy and legal",
     description: "Privacy requests, legal questions and formal correspondence.",
     email: PUBLIC_CONTACT.legal,
-    subject: "Intermex legal enquiry",
+    subject: "CornerMex legal enquiry",
   },
 ];
 
@@ -55,12 +55,12 @@ function Contact() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           We read every message
         </p>
-        <h1 className="mt-3 font-display text-5xl tracking-tight">Contact Intermex</h1>
+        <h1 className="mt-3 font-display text-5xl tracking-tight">Contact CornerMex</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
-          Intermex is reachable by email. Enquiries are reviewed by a person — sending one does not
+          CornerMex is reachable by email. Enquiries are reviewed by a person — sending one does not
           create an order, a contract or an automated process.
         </p>
 
@@ -91,14 +91,14 @@ function Contact() {
         >
           <p>{businessIdentityLine()}</p>
           <p className="mt-2">
-            Email is currently the confirmed way to contact Intermex. One shared mailbox handles
+            Email is currently the confirmed way to contact CornerMex. One shared mailbox handles
             every enquiry type for now, so each option above uses the same address with a different
             subject line — please keep the subject so your message is routed correctly.
           </p>
           <p className="mt-2">
             A phone line, street address for visits and published support hours are not yet
-            available. Intermex does not operate a branded email domain yet, so any address on
-            another domain is not an Intermex contact channel.
+            available. CornerMex does not operate a branded email domain yet, so any address on
+            another domain is not an CornerMex contact channel.
           </p>
         </div>
 
