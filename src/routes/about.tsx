@@ -54,7 +54,7 @@ function About() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-24 sm:px-6 lg:px-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           About CornerMex
         </p>
         <h1 className="mt-3 max-w-3xl font-display text-5xl tracking-tight sm:text-6xl">

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { CORNERMEX_PALETTE as P } from "@/config/brand-tokens";
 
 type Point = { lat: number; lng: number; label: string; total?: number };
 type Arc = { startLat: number; startLng: number; endLat: number; endLng: number; label?: string };
@@ -23,7 +24,9 @@ export function LiveGlobe({
     import("react-globe.gl").then((m) => {
       if (mounted) setGlobe(() => m.default);
     });
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -37,7 +40,11 @@ export function LiveGlobe({
   }, [height]);
 
   return (
-    <div ref={ref} style={{ height }} className="relative w-full overflow-hidden rounded-2xl border border-border bg-[oklch(0.18_0.02_240)]">
+    <div
+      ref={ref}
+      style={{ height }}
+      className="relative w-full overflow-hidden rounded-2xl border border-border bg-ink"
+    >
       {Globe ? (
         <Globe
           width={size.w}
@@ -45,17 +52,19 @@ export function LiveGlobe({
           backgroundColor="rgba(0,0,0,0)"
           // TODO: Replace external texture with local asset for offline resilience
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-          atmosphereColor="#7dd3fc"
+          atmosphereColor={P.arenaBeige.hex}
           atmosphereAltitude={0.18}
           pointsData={points}
           pointLat={(d: any) => d.lat}
           pointLng={(d: any) => d.lng}
-          pointColor={() => "#34d399"}
+          pointColor={() => P.sunsetOrange.hex}
           pointAltitude={(d: any) => Math.min(0.25, 0.02 + (d.total ?? 0) / 5000)}
           pointRadius={0.35}
-          pointLabel={(d: any) => `<div style="padding:6px 10px;border-radius:6px;background:#0f172a;color:#fff;font-size:12px">${d.label}${d.total ? ` · AED ${d.total.toFixed(2)}` : ""}</div>`}
+          pointLabel={(d: any) =>
+            `<div style="padding:6px 10px;border-radius:6px;background:${P.black.hex};color:${P.warmIvory.hex};font-size:12px">${d.label}${d.total ? ` · AED ${d.total.toFixed(2)}` : ""}</div>`
+          }
           arcsData={arcs}
-          arcColor={() => ["rgba(125,211,252,0.6)", "rgba(167,139,250,0.6)"]}
+          arcColor={() => [`${P.sunsetOrange.hex}99`, `${P.arenaBeige.hex}99`]}
           arcStroke={0.4}
           arcDashLength={0.4}
           arcDashGap={0.2}
@@ -64,7 +73,9 @@ export function LiveGlobe({
           arcLabel={(d: any) => d.label}
         />
       ) : (
-        <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">Loading globe…</div>
+        <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
+          Loading globe…
+        </div>
       )}
 
       {stats && (
@@ -75,9 +86,7 @@ export function LiveGlobe({
             <span className="text-white/40">·</span>
             <span>{stats.emirates} emirates</span>
           </div>
-          {stats.lastLabel && (
-            <div className="mt-0.5 text-white/60">Last: {stats.lastLabel}</div>
-          )}
+          {stats.lastLabel && <div className="mt-0.5 text-white/60">Last: {stats.lastLabel}</div>}
         </div>
       )}
 
@@ -85,7 +94,9 @@ export function LiveGlobe({
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-center text-xs text-white/70 backdrop-blur-sm">
             <div className="font-medium text-white/90">Waiting for paid orders…</div>
-            <div className="mt-1 text-[11px] text-white/50">New orders appear here in real time.</div>
+            <div className="mt-1 text-[11px] text-white/50">
+              New orders appear here in real time.
+            </div>
           </div>
         </div>
       )}

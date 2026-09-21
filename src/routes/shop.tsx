@@ -148,7 +148,7 @@ function Shop() {
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
               CornerMex
             </p>
             <h1 className="mt-1 font-display text-4xl tracking-tight sm:text-5xl">Catalogue</h1>
@@ -179,7 +179,9 @@ function Shop() {
               className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
             >
               <DesertGlassBadge
-                className={!filterState.category ? "border-primary/50 text-primary" : ""}
+                className={
+                  !filterState.category ? "border-primary bg-primary text-primary-foreground" : ""
+                }
               >
                 All
               </DesertGlassBadge>
@@ -193,7 +195,9 @@ function Shop() {
               >
                 <DesertGlassBadge
                   className={
-                    filterState.category === category.slug ? "border-primary/50 text-primary" : ""
+                    filterState.category === category.slug
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : ""
                   }
                 >
                   {category.name}

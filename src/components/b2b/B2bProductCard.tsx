@@ -15,7 +15,7 @@ export function B2bProductCard({
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-xl">
       <div className="flex aspect-[4/3] items-end bg-sand p-5">
         <div>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-eyebrow">
             {product.brand ?? "Wave 1 selection"}
           </span>
           <p className="mt-2 max-w-[14rem] font-display text-2xl leading-none text-obsidian">

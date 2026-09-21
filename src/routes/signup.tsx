@@ -13,7 +13,7 @@ function SignupUnavailable() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           Accounts
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight">

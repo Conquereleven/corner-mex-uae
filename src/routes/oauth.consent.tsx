@@ -111,7 +111,7 @@ function OAuthConsent() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-xl px-4 py-20 sm:px-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           CornerMex secure connection
         </p>
         <h1 className="mt-3 font-display text-4xl tracking-tight">Authorize application</h1>
