@@ -21,13 +21,24 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { ACTIVE_MARKET } from "@/config/market";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { buildPreviewLines, previewSubtotal, type TrustedVariantRow } from "@/lib/cod-preview";
+import { clipWebhookToken } from "@/lib/payments/clip";
+import { PaymentError, type NormalizedPayment } from "@/lib/payments/types";
 import {
   computeMxTotals,
   evaluateMxCheckout,
   getPublicMxCheckoutConfig,
+  paymentAllowedFor,
 } from "@/lib/mx-checkout-config.server";
+import {
+  assertMexicoDatabase,
+  reconcileOrderPayment,
+  type RpcClient,
+} from "@/lib/mx-payments.server";
+import { paymentProviderById } from "@/lib/payments/providers";
+import { siteUrl } from "@/lib/site-url";
 import { MX_STATES, MxAddress, toAddressSnapshot } from "@/lib/mx-address";
 import { manualQuotes, quoteAddressOf } from "@/lib/shipping/fulfillment";
 import { estimateParcels } from "@/lib/shipping/parcel";
@@ -89,6 +100,8 @@ type VariantRow = TrustedVariantRow & { sku: string | null; weight_grams: number
 
 async function loadVariants(ids: string[]): Promise<Map<string, VariantRow> | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // Prices are only ever read from a database that says it is Mexico / MXN.
+  await assertMexicoDatabase(supabaseAdmin as unknown as RpcClient);
   const { data, error } = await supabaseAdmin
     .from("product_variants")
     .select(
@@ -214,8 +227,9 @@ const LegalAcceptance = z.object({
 });
 
 export const PlaceMxOrderInput = z.object({
-  // Idempotency key for this checkout attempt; the database fingerprints the
-  // request against it, so a retry or a second tab replays the original order.
+  // Idempotency key for this checkout attempt. The database fingerprints the
+  // request against it, and the same key is the payment's idempotency key, so a
+  // retry or a second tab replays the original order AND the original payment.
   operationId: z.string().uuid(),
   // Guest checkout only; ignored when a session is supplied.
   guest: z.object({ email: z.string().trim().toLowerCase().email().max(320) }).optional(),
@@ -223,9 +237,18 @@ export const PlaceMxOrderInput = z.object({
   address: MxAddress,
   /** The signed option returned by quoteMxShipping. */
   shipping_token: z.string().min(20).max(4000),
-  payment_method: z.enum(["cod"]),
+  payment_method: z.enum(["mercado_pago", "clip", "cod"]),
+  /** Contact email for a signed-in customer's payment receipt. */
+  payer_email: z.string().trim().toLowerCase().email().max(320).optional(),
   legal_acceptance: LegalAcceptance,
 });
+
+/** What the customer must do next to pay. Null for cash on delivery. */
+export type MxPaymentStep =
+  | { kind: "redirect"; url: string }
+  | { kind: "instructions"; url: string | null; reference: string | null }
+  /** The provider did not answer. The order exists; repeating the checkout is safe. */
+  | { kind: "retry" };
 
 export type PlaceMxOrderResult = {
   ok: true;
@@ -237,9 +260,24 @@ export type PlaceMxOrderResult = {
   total: number;
   currency: string;
   replayed: boolean;
+  payment_method: "mercado_pago" | "clip" | "cod";
+  payment: MxPaymentStep | null;
   /** One-time guest tracking token; null for authenticated orders and replays. */
   guest_token: string | null;
 };
+
+// Mercado Pago method offered until the card Brick is built: a cash voucher
+// needs no card data, so nothing PCI-sensitive passes through the storefront.
+const MERCADO_PAGO_METHOD = { kind: "offline", methodId: "oxxo", methodType: "ticket" } as const;
+
+function paymentStep(payment: NormalizedPayment): MxPaymentStep {
+  if (payment.redirectUrl) return { kind: "redirect", url: payment.redirectUrl };
+  return {
+    kind: "instructions",
+    url: payment.instructions?.url ?? null,
+    reference: payment.instructions?.reference ?? null,
+  };
+}
 
 export const placeMxOrder = createServerFn({ method: "POST" })
   // Buying never requires an account: an identity is resolved when a session is
@@ -254,12 +292,7 @@ export const placeMxOrder = createServerFn({ method: "POST" })
     }
     const config = evaluation.config;
 
-    // 2. Only an enabled method may execute, whatever the client claims.
-    if (!config.paymentMethods.includes(data.payment_method)) {
-      throw new Error("MX_ORDER_PAYMENT_METHOD_UNAVAILABLE");
-    }
-
-    // 3. The shipping amount is taken from the signed option, bound to this
+    // 2. The shipping amount is taken from the signed option, bound to this
     //    destination and this cart. Nothing the browser sends can change it.
     const verified = verifyQuoteToken(
       data.shipping_token,
@@ -270,6 +303,20 @@ export const placeMxOrder = createServerFn({ method: "POST" })
     const quote = verified.quote;
     if (quote.currency !== ACTIVE_MARKET.currency) throw new Error("SHIPPING_QUOTE_INVALID");
 
+    // 3. Only an enabled method may execute, and cash on delivery only with a
+    //    local delivery option — never for a parcel shipped across the country.
+    const option = config.paymentOptions.find((entry) => entry.id === data.payment_method);
+    if (!paymentAllowedFor(option, quote.fulfillmentMode)) {
+      throw new Error("MX_ORDER_PAYMENT_METHOD_UNAVAILABLE");
+    }
+    const provider =
+      data.payment_method === "cod"
+        ? null
+        : (config.paymentProviders.find((entry) => entry.id === data.payment_method) ?? null);
+    if (data.payment_method !== "cod" && !provider) {
+      throw new Error("MX_ORDER_PAYMENT_METHOD_UNAVAILABLE");
+    }
+
     // 4. Terms, privacy and returns must all be accepted before execution.
     const { terms, privacy, returns } = data.legal_acceptance;
     if (!terms || !privacy || !returns) throw new Error("MX_ORDER_LEGAL_ACCEPTANCE_REQUIRED");
@@ -278,53 +325,55 @@ export const placeMxOrder = createServerFn({ method: "POST" })
     const buyerId = (context as unknown as { userId: string | null }).userId ?? null;
     const guestEmail = buyerId ? null : (data.guest?.email ?? null);
     if (!buyerId && !guestEmail) throw new Error("MX_ORDER_IDENTITY_REQUIRED");
+    const payerEmail = guestEmail ?? data.payer_email ?? null;
+    if (provider && !payerEmail) throw new Error("MX_ORDER_PAYER_EMAIL_REQUIRED");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as RpcClient;
+    await assertMexicoDatabase(db);
 
-    // 6. The canonical transaction validates, prices, inserts and decrements
-    //    stock atomically. No label is bought here: label purchase happens after
-    //    the order exists and its payment rule is satisfied.
-    const { data: result, error } = await supabaseAdmin.rpc(
-      "cm_create_cod_order_v2" as never,
-      {
-        p_buyer_id: buyerId,
-        p_guest_email: guestEmail,
-        p_operation_id: data.operationId,
-        p_items: data.items,
-        p_shipping_address: {
-          ...toAddressSnapshot(data.address),
-          // What the customer chose and was promised, snapshotted with the order.
-          shipping_option: {
-            provider: quote.provider,
-            carrier: quote.carrier,
-            carrier_name: quote.carrierName,
-            service: quote.service,
-            service_code: quote.serviceCode,
-            fulfillment_mode: quote.fulfillmentMode,
-            price: quote.price,
-            currency: quote.currency,
-            estimated_days_min: quote.estimatedDaysMin,
-            estimated_days_max: quote.estimatedDaysMax,
-            provider_quote_id: quote.providerQuoteId,
-            provider_rate_id: quote.providerRateId,
-            expires_at: quote.expiresAt,
-          },
+    // 6. The canonical transaction validates, prices, inserts and takes stock
+    //    atomically, and refuses any item that is not launch-ACTIVE. No label is
+    //    bought here: a label is reserved only after payment is confirmed.
+    const { data: result, error } = await db.rpc("cm_mx_create_order_v1", {
+      p_buyer_id: buyerId,
+      p_guest_email: guestEmail,
+      p_operation_id: data.operationId,
+      p_items: data.items,
+      p_shipping_address: {
+        ...toAddressSnapshot(data.address),
+        // What the customer chose and was promised, snapshotted with the order.
+        shipping_option: {
+          provider: quote.provider,
+          carrier: quote.carrier,
+          carrier_name: quote.carrierName,
+          service: quote.service,
+          service_code: quote.serviceCode,
+          fulfillment_mode: quote.fulfillmentMode,
+          price: quote.price,
+          currency: quote.currency,
+          estimated_days_min: quote.estimatedDaysMin,
+          estimated_days_max: quote.estimatedDaysMax,
+          provider_quote_id: quote.providerQuoteId,
+          provider_rate_id: quote.providerRateId,
+          expires_at: quote.expiresAt,
         },
-        p_shipping_aed: quote.price,
-        p_tax_rate: config.addedTaxRate,
-        p_legal_acceptance: {
-          accepted_at: new Date().toISOString(),
-          terms: { accepted: terms, reference: "/terms" },
-          privacy: { accepted: privacy, reference: "/privacy" },
-          returns: { accepted: returns, reference: "/returns" },
-        },
-      } as never,
-    );
+      },
+      p_shipping: quote.price,
+      p_tax_rate: config.addedTaxRate,
+      p_legal_acceptance: {
+        accepted_at: new Date().toISOString(),
+        terms: { accepted: terms, reference: "/terms" },
+        privacy: { accepted: privacy, reference: "/privacy" },
+        returns: { accepted: returns, reference: "/returns" },
+      },
+      p_payment_method: data.payment_method,
+    });
 
     if (error) {
       // Surface the stable contract code without leaking database internals.
       const code =
-        /COD_ORDER_[A-Z_]+|COD_(?:ITEMS|QTY)_INVALID|CHECKOUT_[A-Z_]+|LEGAL_ACCEPTANCE_REQUIRED/.exec(
+        /MX_ORDER_[A-Z_]+|COD_ORDER_[A-Z_]+|COD_(?:ITEMS|QTY)_INVALID|CHECKOUT_[A-Z_]+|LEGAL_ACCEPTANCE_REQUIRED/.exec(
           error.message,
         )?.[0] ?? "MX_ORDER_FAILED";
       throw new Error(code);
@@ -342,8 +391,8 @@ export const placeMxOrder = createServerFn({ method: "POST" })
     };
     // Totals are the database's. computeMxTotals only normalises rounding.
     const totals = computeMxTotals(Number(payload.subtotal_aed), Number(payload.shipping_aed), 0);
-    return {
-      ok: true,
+    const base = {
+      ok: true as const,
       order_id: payload.order_id,
       order_number: payload.order_number,
       subtotal: totals.subtotal,
@@ -352,6 +401,123 @@ export const placeMxOrder = createServerFn({ method: "POST" })
       total: Number(payload.total_aed),
       currency: ACTIVE_MARKET.currency,
       replayed: Boolean(payload.replayed),
+      payment_method: data.payment_method,
       guest_token: payload.guest_token ?? null,
     };
+    if (!provider) return { ...base, payment: null };
+
+    // 7. Open the payment attempt. Its amount is read from the order row by the
+    //    database; this code never passes one in.
+    const { data: attemptData, error: attemptError } = await db.rpc(
+      "cm_mx_start_payment_attempt_v1",
+      {
+        p_order_id: payload.order_id,
+        p_provider: provider.id,
+        p_idempotency_key: data.operationId,
+      },
+    );
+    if (attemptError) {
+      throw new Error(/MX_PAYMENT_[A-Z_]+/.exec(attemptError.message)?.[0] ?? "MX_PAYMENT_FAILED");
+    }
+    const attempt = attemptData as unknown as {
+      attempt_id: string;
+      amount: number | string;
+      currency: string;
+      provider_payment_id: string | null;
+      redirect_url: string | null;
+    };
+
+    // 8. Ask the provider. A replay of this checkout reuses the same key, so the
+    //    provider can never be asked to charge the order twice.
+    const returnUrl = siteUrl(`/order-confirmed?order=${payload.order_id}`);
+    const webhookSecret = process.env.CLIP_WEBHOOK_SECRET ?? "";
+    let payment: NormalizedPayment;
+    try {
+      payment = attempt.provider_payment_id
+        ? await provider.getPayment(attempt.provider_payment_id)
+        : await provider.createPayment({
+            orderReference: payload.order_number,
+            amount: Number(attempt.amount),
+            currency: attempt.currency,
+            idempotencyKey: data.operationId,
+            description: `Pedido ${payload.order_number} · CornerMex`,
+            payer: { email: payerEmail as string, firstName: data.address.recipient_name },
+            method: provider.id === "mercado_pago" ? MERCADO_PAGO_METHOD : { kind: "redirect" },
+            returnUrls: { success: returnUrl, failure: returnUrl, pending: returnUrl },
+            ...(provider.id === "clip"
+              ? {
+                  webhookUrl: siteUrl(
+                    `/api/public/hooks/clip?ref=${encodeURIComponent(payload.order_number)}&token=${clipWebhookToken(payload.order_number, webhookSecret)}`,
+                  ),
+                }
+              : {}),
+          });
+    } catch (caught) {
+      // Unknown outcome: the order and its attempt exist, and repeating this
+      // exact checkout is safe. A definite rejection is reported as a failure.
+      if (caught instanceof PaymentError && caught.code === "AMBIGUOUS_WRITE") {
+        return { ...base, payment: { kind: "retry" } };
+      }
+      throw new Error("MX_PAYMENT_PROVIDER_REJECTED");
+    }
+
+    if (!attempt.provider_payment_id) {
+      const { error: bindError } = await db.rpc("cm_mx_bind_payment_attempt_v1", {
+        p_attempt_id: attempt.attempt_id,
+        p_provider_payment_id: payment.providerPaymentId,
+        p_raw_status: payment.rawStatus,
+        p_raw_status_detail: payment.rawStatusDetail,
+        p_redirect_url: payment.redirectUrl,
+      });
+      if (bindError) throw new Error("MX_PAYMENT_FAILED");
+    }
+    return { ...base, payment: paymentStep(payment) };
+  });
+
+/**
+ * Called by the confirmation page. It does not take the browser's word for
+ * anything: it re-reads the order's payment from the provider and applies what
+ * the provider says. Safe to call by anyone, any number of times.
+ */
+export const refreshMxOrderPayment = createServerFn({ method: "POST" })
+  .inputValidator((input: { orderId: string }) =>
+    z.object({ orderId: z.string().uuid() }).strict().parse(input),
+  )
+  .handler(async ({ data }): Promise<{ state: string }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    try {
+      const outcome = await reconcileOrderPayment(
+        supabaseAdmin as unknown as RpcClient,
+        data.orderId,
+        (id) => paymentProviderById(id),
+      );
+      if (outcome.outcome === "CHANGED") return { state: outcome.change.to };
+      if (outcome.outcome === "UNCHANGED") return { state: outcome.state };
+      return { state: outcome.outcome };
+    } catch {
+      // The page falls back to whatever the order already says.
+      return { state: "UNAVAILABLE" };
+    }
+  });
+
+/**
+ * A signed-in customer's own order, for the confirmation page. Read-only, and
+ * never proof of payment: the status it returns was written by
+ * refreshMxOrderPayment or a verified webhook.
+ */
+export const getMxOrderForConfirmation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { orderId: string }) =>
+    z.object({ orderId: z.string().uuid() }).strict().parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select("id, order_number, status, payment_status, payment_method, total_aed, created_at")
+      .eq("id", data.orderId)
+      .eq("buyer_id", context.userId)
+      .single();
+    if (error || !order) throw new Error("ORDER_NOT_FOUND");
+    return order;
   });

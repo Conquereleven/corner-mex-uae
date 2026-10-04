@@ -167,6 +167,7 @@ jobs:
           CM_PAY_POSTGRES_TEST: "1"
       - run: npm run test:cm-com-3a:sql
       - run: npm run test:cm2:sql
+      - run: npm run test:cornermex-mx:sql
       - run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
 
   merged-tree-verification:

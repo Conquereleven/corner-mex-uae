@@ -59,7 +59,7 @@ test("Checkout is server-priced and offers only the payment methods the server e
   assert.match(checkout, /quoteMxShipping/);
   assert.match(checkout, /placeMxOrder/);
   // Methods come from the server configuration; none is hardcoded as available.
-  assert.match(checkout, /config\?\.paymentMethods \?\? \[\]/);
+  assert.match(checkout, /config\?\.paymentOptions \?\? \[\]/);
   assert.doesNotMatch(checkout, /codOnly|getCardCheckoutCapability|initiateCardCheckout/);
   assert.doesNotMatch(checkout, /createPaymentSession|stripe\.checkout|paymentIntent/);
 });

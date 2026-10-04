@@ -178,7 +178,11 @@ export function createClipProvider(config: ClipConfig): PaymentProvider {
       }
       // The create response does not always echo the amount; it is checked again
       // on every status read before a payment is accepted.
-      return { ...payment, amount: payment.amount ?? amount, currency: payment.currency ?? request.currency };
+      return {
+        ...payment,
+        amount: payment.amount ?? amount,
+        currency: payment.currency ?? request.currency,
+      };
     },
 
     async getPayment(providerPaymentId) {
@@ -232,7 +236,11 @@ export function createClipProvider(config: ClipConfig): PaymentProvider {
       const rawStatus = text(body.resource_status);
       const reference = text(body.me_reference_id) ?? request.query.ref ?? null;
       // The URL token was minted for one order; an event for another is refused.
-      if (request.query.ref && text(body.me_reference_id) && request.query.ref !== body.me_reference_id) {
+      if (
+        request.query.ref &&
+        text(body.me_reference_id) &&
+        request.query.ref !== body.me_reference_id
+      ) {
         return null;
       }
       return {

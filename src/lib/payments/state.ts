@@ -53,19 +53,21 @@ export function fromCanonicalStatus(
   }
 }
 
+const states = (...values: PaymentState[]): ReadonlySet<PaymentState> => new Set(values);
+
 const ALLOWED: Readonly<Record<PaymentState, ReadonlySet<PaymentState>>> = Object.freeze({
-  CREATED: new Set(["PENDING", "AUTHORIZED", "PAID", "FAILED", "CANCELLED"]),
-  PENDING: new Set(["AUTHORIZED", "PAID", "FAILED", "CANCELLED"]),
-  AUTHORIZED: new Set(["PAID", "FAILED", "CANCELLED"]),
+  CREATED: states("PENDING", "AUTHORIZED", "PAID", "FAILED", "CANCELLED"),
+  PENDING: states("AUTHORIZED", "PAID", "FAILED", "CANCELLED"),
+  AUTHORIZED: states("PAID", "FAILED", "CANCELLED"),
   // Money was received: the only way out is a refund.
-  PAID: new Set(["PARTIALLY_REFUNDED", "REFUNDED"]),
-  PARTIALLY_REFUNDED: new Set(["PARTIALLY_REFUNDED", "REFUNDED"]),
+  PAID: states("PARTIALLY_REFUNDED", "REFUNDED"),
+  PARTIALLY_REFUNDED: states("PARTIALLY_REFUNDED", "REFUNDED"),
   // A failed or cancelled attempt can still turn out paid (a late capture, a
   // cash payment made after expiry). That is real money and must be recorded;
   // the order layer flags it for a person instead of shipping automatically.
-  FAILED: new Set(["PAID"]),
-  CANCELLED: new Set(["PAID"]),
-  REFUNDED: new Set(),
+  FAILED: states("PAID"),
+  CANCELLED: states("PAID"),
+  REFUNDED: states(),
 });
 
 export type PaymentTransition =

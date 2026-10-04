@@ -52,8 +52,22 @@ type QuoteState =
   | { status: "ready"; key: string; quote: Quote }
   | { status: "error"; key: string; reasons: string[] };
 
-const PAYMENT_LABELS: Record<string, { title: string; subtitle: string }> = {
-  cod: { title: "Pago contra entrega", subtitle: "Pagas al recibir tu pedido." },
+const PAYMENT_LABELS: Record<string, { title: string; subtitle: string; action: string }> = {
+  mercado_pago: {
+    title: "Mercado Pago · Efectivo en OXXO",
+    subtitle: "Te damos una referencia para pagar en cualquier tienda OXXO.",
+    action: "Continuar al pago",
+  },
+  clip: {
+    title: "Tarjeta de crédito o débito · Clip",
+    subtitle: "Pagas con tu tarjeta en la página segura de Clip.",
+    action: "Continuar al pago",
+  },
+  cod: {
+    title: "Pago contra entrega",
+    subtitle: "Solo en entregas locales. Pagas al recibir tu pedido.",
+    action: "Realizar pedido",
+  },
 };
 
 const FULFILLMENT_LABELS: Record<string, string> = {
@@ -106,13 +120,6 @@ function Checkout() {
       cancelled = true;
     };
   }, [loadConfig]);
-
-  // The only enabled method is preselected; with several, the customer chooses.
-  const paymentMethods = config?.paymentMethods ?? [];
-  useEffect(() => {
-    if (paymentMethods.length === 1) setMethod(paymentMethods[0]);
-    else if (method && !paymentMethods.includes(method as never)) setMethod(null);
-  }, [method, paymentMethods]);
 
   const cartLines = useMemo(
     () => items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
@@ -191,6 +198,23 @@ function Checkout() {
   // Display only. The order total is recomputed by the database at placement.
   const total = quote && selected ? quote.subtotal + selected.price + tax : null;
 
+  // Methods come from the server configuration; none is hardcoded as available.
+  // Cash on delivery is offered only with a local delivery option.
+  const paymentMethods = useMemo(
+    () =>
+      (config?.paymentOptions ?? [])
+        .filter(
+          (option) => !option.localDeliveryOnly || selected?.fulfillmentMode === "LOCAL_DELIVERY",
+        )
+        .map((option) => option.id),
+    [config?.paymentOptions, selected?.fulfillmentMode],
+  );
+  // The only available method is preselected; with several, the customer chooses.
+  useEffect(() => {
+    if (paymentMethods.length === 1) setMethod(paymentMethods[0]);
+    else if (method && !paymentMethods.includes(method as never)) setMethod(null);
+  }, [method, paymentMethods]);
+
   const addressValid =
     form.recipient_name.trim().length >= 2 &&
     normalizeMxPhone(form.phone) !== null &&
@@ -241,7 +265,7 @@ function Checkout() {
         // Identity and quantity only. No price, shipping, tax or total: money is
         // derived on the server, and the shipping option is an opaque signed token.
         items: cartLines,
-        payment_method: method as "cod",
+        payment_method: method as "mercado_pago" | "clip" | "cod",
         address: {
           recipient_name: form.recipient_name.trim(),
           phone: form.phone.trim(),
@@ -259,7 +283,9 @@ function Checkout() {
         legal_acceptance: { terms: accepted, privacy: accepted, returns: accepted },
       };
       const guestEmail = user ? null : form.email.trim().toLowerCase();
-      const orderInput = guestEmail ? { ...input, guest: { email: guestEmail } } : input;
+      const orderInput = guestEmail
+        ? { ...input, guest: { email: guestEmail } }
+        : { ...input, ...(user?.email ? { payer_email: user.email } : {}) };
       // Idempotency is per identity: a signed-in buyer keys on the user id, a
       // guest on their email, so a retry or a second tab replays the same order.
       const operationKey = user ? user.id : `guest:${guestEmail}`;
@@ -268,11 +294,33 @@ function Checkout() {
       // Keep the one-time tracking token so the confirmation and tracking views
       // work without an account. It is never put in the URL.
       if (order.guest_token) rememberGuestOrderToken(order.order_id, order.guest_token);
+      if (order.payment?.kind === "retry") {
+        // The payment provider did not answer. The order exists; keeping the
+        // operation and the cart means pressing the button again replays this
+        // exact checkout instead of creating a second order or a second charge.
+        const message =
+          "No pudimos conectar con el servicio de pago. Tu pedido quedó registrado: vuelve a presionar el botón para continuar al pago.";
+        setError(message);
+        toast.error(message);
+        return;
+      }
       // The order exists (created now, or replayed), so the next checkout starts
       // a fresh operation.
       clearCodCheckoutOperation(operationKey);
       // Only clear the cart after the order genuinely exists.
       clear();
+      const nextUrl =
+        order.payment?.kind === "redirect"
+          ? order.payment.url
+          : order.payment?.kind === "instructions"
+            ? order.payment.url
+            : null;
+      if (nextUrl) {
+        // Paying happens on the provider's own page. Coming back proves nothing:
+        // the confirmation page re-reads the payment from the provider.
+        window.location.assign(nextUrl);
+        return;
+      }
       await navigate({ to: "/order-confirmed", search: { order: order.order_id } });
     } catch (caught) {
       // Failure keeps the cart and the customer's entered details intact.
@@ -285,7 +333,11 @@ function Checkout() {
             ? "Tu pedido o dirección cambió. Elige una opción de envío de nuevo."
             : message.includes("MX_CHECKOUT_DISABLED")
               ? "Por el momento no estamos recibiendo pedidos."
-              : "No pudimos registrar tu pedido. No se realizó ningún cargo y tu carrito sigue intacto.";
+              : message.includes("MX_ORDER_VARIANT_NOT_ACTIVE")
+                ? "Uno de los productos de tu carrito ya no está a la venta."
+                : message.includes("MX_PAYMENT_PROVIDER_REJECTED")
+                  ? "El servicio de pago no aceptó la operación. No se realizó ningún cargo; elige otra forma de pago o inténtalo de nuevo."
+                  : "No pudimos registrar tu pedido. No se realizó ningún cargo y tu carrito sigue intacto.";
       setError(safe);
       toast.error(safe);
       if (message.includes("SHIPPING_QUOTE_")) {
@@ -547,7 +599,9 @@ function Checkout() {
               <h2 className="font-display text-xl">Forma de pago</h2>
               {paymentMethods.length === 0 ? (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Aún no hay formas de pago disponibles.
+                  {selected
+                    ? "Aún no hay formas de pago disponibles."
+                    : "Elige una opción de envío para ver las formas de pago."}
                 </p>
               ) : (
                 <div className="mt-5 grid gap-3" role="radiogroup" aria-label="Forma de pago">
@@ -685,7 +739,9 @@ function Checkout() {
               disabled={!canExecute || submitting}
               className="mt-6 w-full rounded-full"
             >
-              {submitting ? "Registrando tu pedido…" : "Realizar pedido"}
+              {submitting
+                ? "Registrando tu pedido…"
+                : (PAYMENT_LABELS[method ?? ""]?.action ?? "Realizar pedido")}
             </Button>
             <TrustBar context="b2c" className="mt-5" />
           </aside>

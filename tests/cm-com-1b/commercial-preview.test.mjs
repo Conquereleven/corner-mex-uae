@@ -157,7 +157,7 @@ test("dual commerce execution fails closed and public sitemaps exclude seller ro
   assert.equal((payments.match(/assertCheckoutExecutionEnabled\(\);/g) ?? []).length, 3);
 
   assert.match(bnpl, /throw redirect\(\{ to: "\/cart" \}\)/);
-  assert.match(orderConfirmed, /getOrderForConfirmation/);
+  assert.match(orderConfirmed, /getMxOrderForConfirmation/);
   assert.match(cartStore, /B2C_CART_STORAGE_KEY = "cornermex-cart-v1"/);
   assert.match(quoteSelection, /QUOTE_SELECTION_STORAGE_KEY = "cm\.quoteSelection"/);
   assert.doesNotMatch(checkout, /quote-selection|cm\.quoteSelection/);

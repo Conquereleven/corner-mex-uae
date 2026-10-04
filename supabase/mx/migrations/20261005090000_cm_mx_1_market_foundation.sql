@@ -577,6 +577,32 @@ as $$
   where a.provider = p_provider and a.provider_payment_id = p_provider_payment_id
 $$;
 
+-- The live attempt for an order, for the return page and for reconciliation.
+create function public.cm_mx_order_payment_attempt_v1(p_order_id uuid)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+    'attempt_id', a.id,
+    'order_id', a.order_id,
+    'order_number', o.order_number,
+    'provider', a.provider,
+    'provider_payment_id', a.provider_payment_id,
+    'amount', a.amount,
+    'currency', a.currency,
+    'status', a.status,
+    'refunded_amount', a.refunded_amount
+  )
+  from commerce_private.mx_payment_attempts a
+  join public.orders o on o.id = a.order_id
+  where a.order_id = p_order_id and a.provider_payment_id is not null
+  order by a.created_at desc
+  limit 1
+$$;
+
 -- Applies a payment status the application READ from the provider. Everything
 -- the order needs happens in this one transaction: the attempt, the order's
 -- payment status, confirmation, or cancellation with stock release.
@@ -785,6 +811,7 @@ begin
     where n.nspname = 'public' and p.proname in (
       'cm_mx_claim_webhook_event_v1', 'cm_mx_complete_webhook_event_v1', 'cm_mx_create_order_v1',
       'cm_mx_start_payment_attempt_v1', 'cm_mx_bind_payment_attempt_v1', 'cm_mx_payment_attempt_v1',
+      'cm_mx_order_payment_attempt_v1',
       'cm_mx_apply_payment_state_v1', 'cm_mx_reserve_label_v1'
     )
   loop

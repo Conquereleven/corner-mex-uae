@@ -1,3 +1,4 @@
+import { assertUaeMarketActive } from "@/lib/uae-market-gate";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { OperationalDatabase } from "./operational-schema";
 import { createServerFn } from "@tanstack/react-start";
@@ -47,6 +48,8 @@ export const createStripeSession = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     assertCheckoutExecutionEnabled();
+    // Stripe served the deferred UAE market only.
+    assertUaeMarketActive();
     if (!(await readCardCapability()).available) throw unavailable();
     // Verify ownership before invoking a service-role-only payment RPC.
     const { data: order, error: orderError } = await supabaseAdmin
@@ -230,6 +233,7 @@ export const confirmBnplPayment = createServerFn({ method: "POST" })
   )
   .handler(async () => {
     assertCheckoutExecutionEnabled();
+    assertUaeMarketActive();
     throw unavailable();
   });
 

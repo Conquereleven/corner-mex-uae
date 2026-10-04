@@ -97,6 +97,8 @@ import { Route as AuthenticatedAccountOrdersIndexRouteImport } from './routes/_a
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
 import { Route as ApiPublicHooksRefreshRatesRouteImport } from './routes/api/public/hooks/refresh-rates'
 import { Route as ApiPublicHooksPoIntakeRouteImport } from './routes/api/public/hooks/po-intake'
+import { Route as ApiPublicHooksMercadoPagoRouteImport } from './routes/api/public/hooks/mercado-pago'
+import { Route as ApiPublicHooksClipRouteImport } from './routes/api/public/hooks/clip'
 import { Route as ApiPublicHooksAutoPayoutsRouteImport } from './routes/api/public/hooks/auto-payouts'
 import { Route as ApiPublicHooksAccountingWorkerRouteImport } from './routes/api/public/hooks/accounting-worker'
 import { Route as AuthenticatedSellerProductsNewRouteImport } from './routes/_authenticated/seller.products.new'
@@ -599,6 +601,17 @@ const ApiPublicHooksPoIntakeRoute = ApiPublicHooksPoIntakeRouteImport.update({
   path: '/api/public/hooks/po-intake',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksMercadoPagoRoute =
+  ApiPublicHooksMercadoPagoRouteImport.update({
+    id: '/api/public/hooks/mercado-pago',
+    path: '/api/public/hooks/mercado-pago',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksClipRoute = ApiPublicHooksClipRouteImport.update({
+  id: '/api/public/hooks/clip',
+  path: '/api/public/hooks/clip',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksAutoPayoutsRoute =
   ApiPublicHooksAutoPayoutsRouteImport.update({
     id: '/api/public/hooks/auto-payouts',
@@ -782,6 +795,8 @@ export interface FileRoutesByFullPath {
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/clip': typeof ApiPublicHooksClipRoute
+  '/api/public/hooks/mercado-pago': typeof ApiPublicHooksMercadoPagoRoute
   '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -876,6 +891,8 @@ export interface FileRoutesByTo {
   '/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/clip': typeof ApiPublicHooksClipRoute
+  '/api/public/hooks/mercado-pago': typeof ApiPublicHooksMercadoPagoRoute
   '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -982,6 +999,8 @@ export interface FileRoutesById {
   '/_authenticated/seller/products/new': typeof AuthenticatedSellerProductsNewRoute
   '/api/public/hooks/accounting-worker': typeof ApiPublicHooksAccountingWorkerRoute
   '/api/public/hooks/auto-payouts': typeof ApiPublicHooksAutoPayoutsRoute
+  '/api/public/hooks/clip': typeof ApiPublicHooksClipRoute
+  '/api/public/hooks/mercado-pago': typeof ApiPublicHooksMercadoPagoRoute
   '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
@@ -1088,6 +1107,8 @@ export interface FileRouteTypes {
     | '/seller/products/new'
     | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/clip'
+    | '/api/public/hooks/mercado-pago'
     | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
@@ -1182,6 +1203,8 @@ export interface FileRouteTypes {
     | '/seller/products/new'
     | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/clip'
+    | '/api/public/hooks/mercado-pago'
     | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
@@ -1287,6 +1310,8 @@ export interface FileRouteTypes {
     | '/_authenticated/seller/products/new'
     | '/api/public/hooks/accounting-worker'
     | '/api/public/hooks/auto-payouts'
+    | '/api/public/hooks/clip'
+    | '/api/public/hooks/mercado-pago'
     | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
     | '/checkout/bnpl/$provider/$orderId'
@@ -1334,6 +1359,8 @@ export interface RootRouteChildren {
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
   ApiPublicHooksAccountingWorkerRoute: typeof ApiPublicHooksAccountingWorkerRoute
   ApiPublicHooksAutoPayoutsRoute: typeof ApiPublicHooksAutoPayoutsRoute
+  ApiPublicHooksClipRoute: typeof ApiPublicHooksClipRoute
+  ApiPublicHooksMercadoPagoRoute: typeof ApiPublicHooksMercadoPagoRoute
   ApiPublicHooksPoIntakeRoute: typeof ApiPublicHooksPoIntakeRoute
   ApiPublicHooksRefreshRatesRoute: typeof ApiPublicHooksRefreshRatesRoute
 }
@@ -1956,6 +1983,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPoIntakeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/mercado-pago': {
+      id: '/api/public/hooks/mercado-pago'
+      path: '/api/public/hooks/mercado-pago'
+      fullPath: '/api/public/hooks/mercado-pago'
+      preLoaderRoute: typeof ApiPublicHooksMercadoPagoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/clip': {
+      id: '/api/public/hooks/clip'
+      path: '/api/public/hooks/clip'
+      fullPath: '/api/public/hooks/clip'
+      preLoaderRoute: typeof ApiPublicHooksClipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/auto-payouts': {
       id: '/api/public/hooks/auto-payouts'
       path: '/api/public/hooks/auto-payouts'
@@ -2391,6 +2432,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
   ApiPublicHooksAccountingWorkerRoute: ApiPublicHooksAccountingWorkerRoute,
   ApiPublicHooksAutoPayoutsRoute: ApiPublicHooksAutoPayoutsRoute,
+  ApiPublicHooksClipRoute: ApiPublicHooksClipRoute,
+  ApiPublicHooksMercadoPagoRoute: ApiPublicHooksMercadoPagoRoute,
   ApiPublicHooksPoIntakeRoute: ApiPublicHooksPoIntakeRoute,
   ApiPublicHooksRefreshRatesRoute: ApiPublicHooksRefreshRatesRoute,
 }

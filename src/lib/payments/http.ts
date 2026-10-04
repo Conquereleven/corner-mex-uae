@@ -116,5 +116,7 @@ export async function send(
     }
     throw last;
   }
-  throw last ?? new PaymentError("PROVIDER_ERROR", "request failed", { provider: options.provider });
+  throw (
+    last ?? new PaymentError("PROVIDER_ERROR", "request failed", { provider: options.provider })
+  );
 }

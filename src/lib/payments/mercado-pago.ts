@@ -207,7 +207,11 @@ export function createMercadoPagoProvider(config: MercadoPagoConfig): PaymentPro
         method: "POST",
         url: `${base}/v1/orders/${encodeURIComponent(providerPaymentId)}/cancel`,
         kind: "money",
-        headers: { ...auth, "Content-Type": "application/json", "X-Idempotency-Key": idempotencyKey },
+        headers: {
+          ...auth,
+          "Content-Type": "application/json",
+          "X-Idempotency-Key": idempotencyKey,
+        },
       });
       return normalize(json);
     },
@@ -269,7 +273,8 @@ export function createMercadoPagoProvider(config: MercadoPagoConfig): PaymentPro
       );
       const ts = parts.ts;
       const v1 = parts.v1;
-      if (!ts || !v1 || !/^[0-9a-f]+$/i.test(v1)) return { ok: false, reason: "signature_malformed" };
+      if (!ts || !v1 || !/^[0-9a-f]+$/i.test(v1))
+        return { ok: false, reason: "signature_malformed" };
 
       const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`;
       const expected = createHmac("sha256", config.webhookSecret).update(manifest).digest();

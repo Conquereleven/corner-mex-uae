@@ -40,7 +40,11 @@ export function supabaseProjectRef(url: string | undefined | null): string | nul
   }
 }
 
-export type MarketDatabaseEvaluation = { ok: boolean; reasons: string[]; projectRef: string | null };
+export type MarketDatabaseEvaluation = {
+  ok: boolean;
+  reasons: string[];
+  projectRef: string | null;
+};
 
 type Environment = Record<string, string | undefined>;
 
@@ -69,7 +73,8 @@ export function evaluateMarketDatabase(environment: Environment): MarketDatabase
       continue;
     }
     if (ref in NON_MX_SUPABASE_PROJECTS) reasons.push(`${name}_points_at_a_uae_database`);
-    else if (declared && ref !== declared) reasons.push(`${name}_is_not_the_declared_mexico_project`);
+    else if (declared && ref !== declared)
+      reasons.push(`${name}_is_not_the_declared_mexico_project`);
   }
 
   return { ok: reasons.length === 0, reasons, projectRef: serverRef };

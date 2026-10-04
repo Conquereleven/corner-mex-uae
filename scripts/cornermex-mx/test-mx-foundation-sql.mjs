@@ -14,7 +14,12 @@ import path from "node:path";
 const root = path.resolve(import.meta.dirname, "../..");
 const url = process.env.MX_SQL_TEST_DATABASE_URL;
 if (!url && !(process.env.PGHOST && process.env.PGUSER)) {
-  console.log(JSON.stringify({ status: "mx_sql_test_skipped", reason: "no disposable PostgreSQL configured" }));
+  console.log(
+    JSON.stringify({
+      status: "mx_sql_test_skipped",
+      reason: "no disposable PostgreSQL configured",
+    }),
+  );
   process.exit(0);
 }
 if (url && /supabase\.(co|com)/i.test(url)) {
@@ -56,8 +61,12 @@ const prelude = readFileSync(
   (_m, role) =>
     `do $$ begin if not exists (select 1 from pg_roles where rolname='${role}') then create role ${role} nologin; end if; end $$;`,
 );
-const canonical = readdirSync(path.join(root, "supabase/migrations")).filter((n) => n.endsWith(".sql")).sort();
-const mexico = readdirSync(path.join(root, "supabase/mx/migrations")).filter((n) => n.endsWith(".sql")).sort();
+const canonical = readdirSync(path.join(root, "supabase/migrations"))
+  .filter((n) => n.endsWith(".sql"))
+  .sort();
+const mexico = readdirSync(path.join(root, "supabase/mx/migrations"))
+  .filter((n) => n.endsWith(".sql"))
+  .sort();
 
 function bootstrapCanonical(db) {
   db.script(prelude);
@@ -96,7 +105,7 @@ check(
 expectError(
   "the market identity cannot be changed to another market",
   "update commerce_private.market_identity set market = 'AE', currency = 'AED'",
-  "violates check constraint \"market_identity_",
+  'violates check constraint "market_identity_',
 );
 
 // A database that already holds a catalogue (the UAE one does) is refused.
@@ -107,7 +116,11 @@ dirty.query(`insert into public.products (id, slug, status) values ('99999999-99
   values ('99999999-9999-4999-8999-999999999999','UAE-SKU', 20, 5, true, true);`);
 try {
   dirty.file(`supabase/mx/migrations/${mexico[0]}`);
-  check("the Mexico migration refuses a database that already has a catalogue", false, "it applied");
+  check(
+    "the Mexico migration refuses a database that already has a catalogue",
+    false,
+    "it applied",
+  );
 } catch (error) {
   check(
     "the Mexico migration refuses a database that already has a catalogue",
@@ -173,7 +186,9 @@ db.query(`
 `);
 check(
   "one SKU has several suppliers and exactly one preferred",
-  db.query(`select count(*) || ':' || count(*) filter (where is_preferred) from commerce_private.variant_suppliers where variant_id='${V1}'`) === "2:1",
+  db.query(
+    `select count(*) || ':' || count(*) filter (where is_preferred) from commerce_private.variant_suppliers where variant_id='${V1}'`,
+  ) === "2:1",
 );
 expectError(
   "a second preferred supplier for the same SKU is refused",
@@ -193,7 +208,11 @@ expectError(
 );
 check(
   "a B2B customer account defaults to MXN",
-  db.query(`insert into commerce_private.b2b_customer_accounts (legal_name) values ('Taquería Demo') returning currency_code`).startsWith("MXN"),
+  db
+    .query(
+      `insert into commerce_private.b2b_customer_accounts (legal_name) values ('Taquería Demo') returning currency_code`,
+    )
+    .startsWith("MXN"),
 );
 
 db.query(`
@@ -203,7 +222,8 @@ db.query(`
 `);
 check(
   "a complete variant has no gaps",
-  db.query(`select coalesce(array_length(commerce_private.variant_launch_gaps('${V1}'), 1), 0)`) === "0",
+  db.query(`select coalesce(array_length(commerce_private.variant_launch_gaps('${V1}'), 1), 0)`) ===
+    "0",
 );
 db.query(`select public.cm_mx_set_launch_status_v1('${V1}', 'READY')`);
 check(
@@ -213,12 +233,15 @@ check(
 db.query(`select public.cm_mx_set_launch_status_v1('${V1}', 'ACTIVE')`);
 check(
   "ACTIVE makes the variant sellable and lists its product",
-  db.query(`select v.is_active || ':' || p.status from public.product_variants v join public.products p on p.id=v.product_id where v.id='${V1}'`) === "true:active",
+  db.query(
+    `select v.is_active || ':' || p.status from public.product_variants v join public.products p on p.id=v.product_id where v.id='${V1}'`,
+  ) === "true:active",
 );
 check(
   "the replenishment view reports stock, policy and the preferred supplier",
   db.query(`select launch_status||'|'||on_hand||'|'||available||'|'||reorder_point||'|'||preferred_supplier||'|'||supplier_cost||'|'||last_purchase_cost||'|'||lead_time_days||'|'||case_pack
-    from public.cm_mx_launch_assortment_v1() where variant_id='${V1}'`) === "ACTIVE|20|20|24|Abarrotes Central A|21.00|20.50|1|12",
+    from public.cm_mx_launch_assortment_v1() where variant_id='${V1}'`) ===
+    "ACTIVE|20|20|24|Abarrotes Central A|21.00|20.50|1|12",
 );
 
 // ── Orders ───────────────────────────────────────────────────────────────────
@@ -236,24 +259,35 @@ expectError(
   order(OP3, V2, 1, "mercado_pago"),
   "MX_ORDER_VARIANT_NOT_ACTIVE",
 );
-expectError("an unknown payment method is refused", order(OP3, V1, 1, "stripe"), "MX_ORDER_PAYMENT_METHOD_INVALID");
+expectError(
+  "an unknown payment method is refused",
+  order(OP3, V1, 1, "stripe"),
+  "MX_ORDER_PAYMENT_METHOD_INVALID",
+);
 
 const created = JSON.parse(db.query(order(OP1, V1, 2, "mercado_pago")));
 check(
   "an online order is priced by the database in MXN and takes stock",
-  Number(created.total_aed) === 214 && created.payment_method === "mercado_pago" && created.replayed === false,
+  Number(created.total_aed) === 214 &&
+    created.payment_method === "mercado_pago" &&
+    created.replayed === false,
   JSON.stringify(created),
 );
 check(
   "the order is pending payment and records the chosen method",
-  db.query(`select status||':'||payment_status||':'||payment_method from public.orders where id='${created.order_id}'`) ===
-    "pending:pending:mercado_pago",
+  db.query(
+    `select status||':'||payment_status||':'||payment_method from public.orders where id='${created.order_id}'`,
+  ) === "pending:pending:mercado_pago",
 );
-check("stock was taken once", db.query(`select stock from public.product_variants where id='${V1}'`) === "18");
+check(
+  "stock was taken once",
+  db.query(`select stock from public.product_variants where id='${V1}'`) === "18",
+);
 const replay = JSON.parse(db.query(order(OP1, V1, 2, "mercado_pago")));
 check(
   "replaying the operation returns the same order and takes no more stock",
-  replay.order_id === created.order_id && replay.replayed === true &&
+  replay.order_id === created.order_id &&
+    replay.replayed === true &&
     db.query(`select stock from public.product_variants where id='${V1}'`) === "18",
 );
 expectError(
@@ -273,7 +307,8 @@ check(
 );
 check(
   "the same idempotency key returns the same attempt",
-  JSON.parse(db.query(start(created.order_id, "mercado_pago", KEY1))).attempt_id === attempt.attempt_id &&
+  JSON.parse(db.query(start(created.order_id, "mercado_pago", KEY1))).attempt_id ===
+    attempt.attempt_id &&
     db.query("select count(*) from commerce_private.mx_payment_attempts") === "1",
 );
 expectError(
@@ -281,7 +316,9 @@ expectError(
   start(created.order_id, "clip", "dddddddd-0000-4000-8000-000000000009"),
   "MX_PAYMENT_PROVIDER_MISMATCH",
 );
-db.query(`select public.cm_mx_bind_payment_attempt_v1('${attempt.attempt_id}'::uuid, 'ORD-1', 'action_required', 'waiting_payment', null)`);
+db.query(
+  `select public.cm_mx_bind_payment_attempt_v1('${attempt.attempt_id}'::uuid, 'ORD-1', 'action_required', 'waiting_payment', null)`,
+);
 expectError(
   "an attempt cannot be re-bound to another provider payment",
   `select public.cm_mx_bind_payment_attempt_v1('${attempt.attempt_id}'::uuid, 'ORD-OTHER', null, null, null)`,
@@ -299,7 +336,8 @@ expectError(
 const tampered = JSON.parse(db.query(apply("ORD-1", "paid", 1)));
 check(
   "amount tampering: a payment for another amount is not applied and is flagged",
-  tampered.applied === false && tampered.reason === "AMOUNT_MISMATCH" &&
+  tampered.applied === false &&
+    tampered.reason === "AMOUNT_MISMATCH" &&
     db.query(`select o.payment_status||':'||o.status||':'||a.status||':'||a.attention from public.orders o
       join commerce_private.mx_payment_attempts a on a.order_id=o.id where o.id='${created.order_id}'`) ===
       "under_review:pending:pending:AMOUNT_MISMATCH",
@@ -309,43 +347,70 @@ db.query(`update public.orders set payment_status='pending' where id='${created.
 const paid = JSON.parse(db.query(apply("ORD-1", "paid", 214)));
 check(
   "a verified payment confirms the order and makes it eligible for fulfilment",
-  paid.applied === true && paid.fulfillment_eligible === true &&
-    db.query(`select status||':'||payment_status from public.orders where id='${created.order_id}'`) === "confirmed:paid",
+  paid.applied === true &&
+    paid.fulfillment_eligible === true &&
+    db.query(
+      `select status||':'||payment_status from public.orders where id='${created.order_id}'`,
+    ) === "confirmed:paid",
 );
 check(
   "applying the same paid state again changes nothing",
   JSON.parse(db.query(apply("ORD-1", "paid", 214))).applied === true &&
-    db.query(`select status||':'||payment_status from public.orders where id='${created.order_id}'`) === "confirmed:paid",
+    db.query(
+      `select status||':'||payment_status from public.orders where id='${created.order_id}'`,
+    ) === "confirmed:paid",
 );
 check(
   "the first label reservation is granted once payment is confirmed",
-  db.query(`select public.cm_mx_reserve_label_v1('${created.order_id}'::uuid, 'skydropx', 'rate-1')`) === "t",
+  db.query(
+    `select public.cm_mx_reserve_label_v1('${created.order_id}'::uuid, 'skydropx', 'rate-1')`,
+  ) === "t",
 );
 check(
   "a second label for the same order is never reserved",
-  db.query(`select public.cm_mx_reserve_label_v1('${created.order_id}'::uuid, 'solo_envios', 'rate-2')`) === "f" &&
-    db.query(`select count(*)||':'||min(provider) from commerce_private.shipments where order_id='${created.order_id}'`) === "1:skydropx",
+  db.query(
+    `select public.cm_mx_reserve_label_v1('${created.order_id}'::uuid, 'solo_envios', 'rate-2')`,
+  ) === "f" &&
+    db.query(
+      `select count(*)||':'||min(provider) from commerce_private.shipments where order_id='${created.order_id}'`,
+    ) === "1:skydropx",
 );
 
 const partial = JSON.parse(db.query(apply("ORD-1", "paid", 214, 50)));
 check(
   "a partial refund keeps the order paid and records the refunded amount",
   partial.applied === true &&
-    db.query(`select status||':'||refunded_amount from commerce_private.mx_payment_attempts where provider_payment_id='ORD-1'`) === "paid:50.00",
+    db.query(
+      `select status||':'||refunded_amount from commerce_private.mx_payment_attempts where provider_payment_id='ORD-1'`,
+    ) === "paid:50.00",
 );
-expectError("a refund larger than the payment is refused", apply("ORD-1", "paid", 214, 999), "MX_PAYMENT_REFUND_AMOUNT_INVALID");
+expectError(
+  "a refund larger than the payment is refused",
+  apply("ORD-1", "paid", 214, 999),
+  "MX_PAYMENT_REFUND_AMOUNT_INVALID",
+);
 
 // A payment that fails: the order is cancelled and its stock comes back.
 const second = JSON.parse(db.query(order(OP2, V1, 3, "clip", "otro@example.invalid")));
-check("the second order took stock", db.query(`select stock from public.product_variants where id='${V1}'`) === "15");
-const a2 = JSON.parse(db.query(start(second.order_id, "clip", "dddddddd-0000-4000-8000-000000000002")));
-db.query(`select public.cm_mx_bind_payment_attempt_v1('${a2.attempt_id}'::uuid, 'CLIP-1', 'CHECKOUT_CREATED', null, 'https://pago.example.invalid/x')`);
-const failed = JSON.parse(db.query(
-  `select public.cm_mx_apply_payment_state_v1('clip', 'CLIP-1', 'cancelled', null, 0, 'CHECKOUT_EXPIRED', null, false)`,
-));
+check(
+  "the second order took stock",
+  db.query(`select stock from public.product_variants where id='${V1}'`) === "15",
+);
+const a2 = JSON.parse(
+  db.query(start(second.order_id, "clip", "dddddddd-0000-4000-8000-000000000002")),
+);
+db.query(
+  `select public.cm_mx_bind_payment_attempt_v1('${a2.attempt_id}'::uuid, 'CLIP-1', 'CHECKOUT_CREATED', null, 'https://pago.example.invalid/x')`,
+);
+const failed = JSON.parse(
+  db.query(
+    `select public.cm_mx_apply_payment_state_v1('clip', 'CLIP-1', 'cancelled', null, 0, 'CHECKOUT_EXPIRED', null, false)`,
+  ),
+);
 check(
   "a failed payment cancels the order and restores exactly its stock",
-  failed.stock_released === true && failed.fulfillment_eligible === false &&
+  failed.stock_released === true &&
+    failed.fulfillment_eligible === false &&
     db.query(`select o.status||':'||o.payment_status||':'||v.stock||':'||i.quantity_on_hand
       from public.orders o, public.product_variants v join public.inventory i on i.variant_id=v.id
       where o.id='${second.order_id}' and v.id='${V1}'`) === "cancelled:cancelled:18:18",
@@ -355,9 +420,11 @@ expectError(
   `select public.cm_mx_reserve_label_v1('${second.order_id}'::uuid, 'skydropx', 'rate-9')`,
   "MX_LABEL_ORDER_CANCELLED",
 );
-const late = JSON.parse(db.query(
-  `select public.cm_mx_apply_payment_state_v1('clip', 'CLIP-1', 'paid', ${Number(second.total_aed)}, 0, 'CHECKOUT_COMPLETED', null, true)`,
-));
+const late = JSON.parse(
+  db.query(
+    `select public.cm_mx_apply_payment_state_v1('clip', 'CLIP-1', 'paid', ${Number(second.total_aed)}, 0, 'CHECKOUT_COMPLETED', null, true)`,
+  ),
+);
 check(
   "money arriving after cancellation is held for review and does not ship",
   late.fulfillment_eligible === false &&
@@ -368,14 +435,18 @@ check(
 );
 
 // ── Webhook ledger ───────────────────────────────────────────────────────────
-const claim = (id) => `select public.cm_mx_claim_webhook_event_v1('mercado_pago', '${id}', 'hash', '{"action":"order.processed"}'::jsonb)`;
+const claim = (id) =>
+  `select public.cm_mx_claim_webhook_event_v1('mercado_pago', '${id}', 'hash', '{"action":"order.processed"}'::jsonb)`;
 check("a new webhook event is claimed", db.query(claim("evt-1")) === "t");
 check("a duplicate delivery is not claimed again", db.query(claim("evt-1")) === "f");
 db.query(`select public.cm_mx_complete_webhook_event_v1('mercado_pago', 'evt-1', 'processed')`);
 check("a processed event stays processed", db.query(claim("evt-1")) === "f");
 db.query(claim("evt-2"));
 db.query(`select public.cm_mx_complete_webhook_event_v1('mercado_pago', 'evt-2', 'failed')`);
-check("an event whose processing failed can be claimed once more", db.query(claim("evt-2")) === "t" && db.query(claim("evt-2")) === "f");
+check(
+  "an event whose processing failed can be claimed once more",
+  db.query(claim("evt-2")) === "t" && db.query(claim("evt-2")) === "f",
+);
 check(
   "the ledger keeps provider, event id, payload hash, raw payload and timestamps",
   db.query(`select provider||'|'||external_event_id||'|'||payload_hash||'|'||(raw_payload->>'action')||'|'||(received_at is not null)||'|'||(processed_at is not null)||'|'||processing_status
@@ -388,7 +459,8 @@ check(
   "no Mexico function is executable by anon or authenticated",
   db.query(`select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace
     where n.nspname='public' and p.proname like 'cm_m%' and p.proname ~ '^(cm_mx_|cm_market_)'
-      and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))`) === "0",
+      and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))`) ===
+    "0",
 );
 check(
   "every Mexico function is executable by the service role",
@@ -401,9 +473,15 @@ check(
   db.query(`select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace
     where n.nspname='commerce_private' and c.relname in ('market_identity','variant_launch_profiles','suppliers','variant_suppliers','mx_payment_attempts','integration_webhook_events','shipments','shipment_events')
       and c.relrowsecurity and c.relforcerowsecurity
-      and not has_table_privilege('anon', c.oid, 'select') and not has_table_privilege('authenticated', c.oid, 'select')`) === "8",
+      and not has_table_privilege('anon', c.oid, 'select') and not has_table_privilege('authenticated', c.oid, 'select')`) ===
+    "8",
 );
-check("no stock drift", db.query(`select count(*) from public.product_variants v join public.inventory i on i.variant_id=v.id where v.stock <> i.quantity_on_hand`) === "0");
+check(
+  "no stock drift",
+  db.query(
+    `select count(*) from public.product_variants v join public.inventory i on i.variant_id=v.id where v.stock <> i.quantity_on_hand`,
+  ) === "0",
+);
 
 db.drop();
 console.log(JSON.stringify({ status: failures.length ? "failed" : "passed", failures }));

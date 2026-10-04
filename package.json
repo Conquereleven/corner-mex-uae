@@ -32,6 +32,7 @@
     "test:cm2": "node --experimental-strip-types --test tests/cm2/*.test.mjs",
     "test:cornermex-mx": "node --experimental-strip-types --test tests/cornermex-mx/*.test.mjs",
     "catalog:classify:mx": "node scripts/cornermex-mx/classify-catalog.mjs",
+    "test:cornermex-mx:sql": "node scripts/cornermex-mx/test-mx-foundation-sql.mjs",
     "test:cm2:sql": "node scripts/cm2/test-launch-hardening-sql.mjs",
     "test:cm-com-3a:sql": "node scripts/cm-com-3a/test-cod-order-sql.mjs",
     "test:cm-com-4a": "node --experimental-strip-types --test tests/cm-com-4a/*.test.mjs",

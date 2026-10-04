@@ -12,14 +12,17 @@
 //   * a quote-signing secret exists (the browser can never set a shipping price)
 //   * at least one shipping source exists: a manual rule, or an enabled carrier
 //     provider together with a configured origin address
-//   * at least one payment method is enabled — cash on delivery is NOT inherited
-//     from the UAE configuration; in Mexico it is its own explicit flag
+//   * the deployment points at its declared Mexico database (never a UAE one)
+//   * at least one payment provider is enabled and fully configured. The launch
+//     providers are Mercado Pago and Clip. Cash on delivery is OFF by default and
+//     is never offered nationally: its flag only allows it for LOCAL_DELIVERY
 //   * the Mexico legal documents are published (production only)
 //
 // No rate, origin address, tax rate or payment method is invented: the defaults
 // keep the checkout inert.
 
 import { ACTIVE_MARKET, taxLineLabel } from "../config/market.ts";
+import { evaluateMarketDatabase } from "../config/market-database.ts";
 import { isCheckoutExecutionEnabled } from "./checkout-execution.server.ts";
 import {
   parseFulfillmentOrigin,
@@ -27,21 +30,31 @@ import {
   type FulfillmentLocation,
   type ManualShippingRule,
 } from "./shipping/fulfillment.ts";
+import { configuredPaymentProviders, paymentConfigHealth } from "./payments/providers.ts";
+import type { PaymentProvider, ProviderHealth as PaymentProviderHealth } from "./payments/types.ts";
 import { configuredShippingProviders, shippingConfigHealth } from "./shipping/providers.ts";
 import { QUOTE_SECRET_MIN_LENGTH } from "./shipping/quote-token.server.ts";
 import type { ProviderHealth, RankingPolicy, ShippingProvider } from "./shipping/types.ts";
 
 type Environment = Record<string, string | undefined>;
 
-/** Payment methods the Mexico checkout can execute today. */
-export type MxPaymentMethod = "cod";
+/** Payment methods the Mexico checkout can execute. */
+export type MxPaymentMethod = "mercado_pago" | "clip" | "cod";
+
+/** A method as the checkout is told about it. */
+export type MxPaymentOption = {
+  id: MxPaymentMethod;
+  /** True when the method may only be used with a LOCAL_DELIVERY shipping option. */
+  localDeliveryOnly: boolean;
+};
 
 export type MxCheckoutConfig = {
   origin: FulfillmentLocation | null;
   manualRules: ManualShippingRule[];
   providers: ShippingProvider[];
   rankingPolicy: RankingPolicy;
-  paymentMethods: MxPaymentMethod[];
+  paymentOptions: MxPaymentOption[];
+  paymentProviders: PaymentProvider[];
   /** Rate added on top of the subtotal. 0 unless the market's tax model is ADDED. */
   addedTaxRate: number;
   quoteSecret: string;
@@ -88,9 +101,20 @@ export function evaluateMxCheckout(environment: Environment = process.env): MxCh
     reasons.push("no_shipping_source_configured");
   }
 
-  const paymentMethods: MxPaymentMethod[] = [];
-  if (environment.CORNERMEX_MX_COD_ENABLED === "true") paymentMethods.push("cod");
-  if (paymentMethods.length === 0) reasons.push("no_payment_method_enabled");
+  const database = evaluateMarketDatabase(environment);
+  reasons.push(...database.reasons.map((reason) => `market_database:${reason}`));
+
+  const paymentProviders = configuredPaymentProviders(environment);
+  const paymentOptions: MxPaymentOption[] = paymentProviders.map((provider) => ({
+    id: provider.id,
+    localDeliveryOnly: false,
+  }));
+  // Cash on delivery: a future, local-only capability. It can never be the only
+  // way to pay for a parcel shipped across the country.
+  if (environment.CORNERMEX_MX_COD_LOCAL_ENABLED === "true") {
+    paymentOptions.push({ id: "cod", localDeliveryOnly: true });
+  }
+  if (paymentOptions.length === 0) reasons.push("no_payment_method_enabled");
 
   const policyRaw = (environment.CORNERMEX_MX_SHIPPING_RANKING ?? "BEST_VALUE").trim();
   const rankingPolicy = POLICIES.includes(policyRaw as RankingPolicy)
@@ -116,7 +140,8 @@ export function evaluateMxCheckout(environment: Environment = process.env): MxCh
       manualRules: manualRules as ManualShippingRule[],
       providers: carrierQuoting ? providers : [],
       rankingPolicy: rankingPolicy as RankingPolicy,
-      paymentMethods,
+      paymentOptions,
+      paymentProviders,
       addedTaxRate: taxRate,
       quoteSecret,
     },
@@ -128,7 +153,7 @@ export function getPublicMxCheckoutConfig(environment: Environment = process.env
   active: boolean;
   reasons: string[];
   market: { country: string; currency: string; locale: string };
-  paymentMethods: MxPaymentMethod[];
+  paymentOptions: MxPaymentOption[];
   taxLabel: string | null;
 } {
   const evaluation = evaluateMxCheckout(environment);
@@ -140,7 +165,7 @@ export function getPublicMxCheckoutConfig(environment: Environment = process.env
       currency: ACTIVE_MARKET.currency,
       locale: ACTIVE_MARKET.locale,
     },
-    paymentMethods: evaluation.ready ? evaluation.config.paymentMethods : [],
+    paymentOptions: evaluation.ready ? evaluation.config.paymentOptions : [],
     taxLabel: evaluation.ready ? taxLineLabel(evaluation.config.addedTaxRate) : null,
   };
 }
@@ -150,6 +175,25 @@ export function getShippingIntegrationHealth(
   environment: Environment = process.env,
 ): ProviderHealth[] {
   return shippingConfigHealth(environment);
+}
+
+/** Payment integration health from configuration alone. Never includes secrets. */
+export function getPaymentIntegrationHealth(
+  environment: Environment = process.env,
+): PaymentProviderHealth[] {
+  return paymentConfigHealth(environment);
+}
+
+/**
+ * Whether a payment method may pay for a given shipping option. Cash on
+ * delivery is allowed only with local delivery; the providers have no limit.
+ */
+export function paymentAllowedFor(
+  option: MxPaymentOption | undefined,
+  fulfillmentMode: string,
+): boolean {
+  if (!option) return false;
+  return !option.localDeliveryOnly || fulfillmentMode === "LOCAL_DELIVERY";
 }
 
 /** Server-authoritative totals. The shipping amount comes from a verified quote token. */

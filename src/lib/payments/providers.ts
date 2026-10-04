@@ -55,7 +55,8 @@ function resolveMercadoPago(environment: Environment): Resolved {
   if (accessToken && mode) {
     const isTest = accessToken.startsWith("TEST-");
     if (mode === "sandbox" && !isTest) missing.push("MERCADO_PAGO_ACCESS_TOKEN:not_a_test_token");
-    if (mode === "production" && isTest) missing.push("MERCADO_PAGO_ACCESS_TOKEN:test_token_in_production");
+    if (mode === "production" && isTest)
+      missing.push("MERCADO_PAGO_ACCESS_TOKEN:test_token_in_production");
   }
   return {
     enabled: value(environment.MERCADO_PAGO_ENABLED) === "true",
@@ -100,7 +101,12 @@ export function paymentConfigHealth(environment: Environment = process.env): Pro
   return PAYMENT_PROVIDER_ORDER.map((provider) => {
     const resolved = RESOLVERS[provider](environment);
     if (!resolved.build) {
-      return { provider, state: "NOT_CONFIGURED", environment: resolved.environment, missing: resolved.missing };
+      return {
+        provider,
+        state: "NOT_CONFIGURED",
+        environment: resolved.environment,
+        missing: resolved.missing,
+      };
     }
     if (!resolved.enabled) {
       return {
@@ -114,7 +120,12 @@ export function paymentConfigHealth(environment: Environment = process.env): Pro
       return { provider, state: "SANDBOX", environment: "sandbox", missing: [] };
     }
     // Production credentials with no observed successful call are not CONNECTED.
-    return { provider, state: "NOT_CONFIGURED", environment: "production", missing: ["PRODUCTION_VERIFICATION"] };
+    return {
+      provider,
+      state: "NOT_CONFIGURED",
+      environment: "production",
+      missing: ["PRODUCTION_VERIFICATION"],
+    };
   });
 }
 
@@ -122,7 +133,9 @@ export function paymentConfigHealth(environment: Environment = process.env): Pro
  * Providers that are enabled and fully configured, in display order. Adapters
  * hold no state, so a fresh instance per call is correct and cheap.
  */
-export function configuredPaymentProviders(environment: Environment = process.env): PaymentProvider[] {
+export function configuredPaymentProviders(
+  environment: Environment = process.env,
+): PaymentProvider[] {
   const providers: PaymentProvider[] = [];
   for (const id of PAYMENT_PROVIDER_ORDER) {
     const resolved = RESOLVERS[id](environment);

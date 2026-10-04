@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
-import { getOrderForConfirmation } from "@/lib/payments.functions";
+import { getMxOrderForConfirmation, refreshMxOrderPayment } from "@/lib/mx-checkout.functions";
 import { claimGuestOrder, getGuestOrder } from "@/lib/guest-order.functions";
 import { forgetGuestOrderToken, guestOrderToken } from "@/lib/guest-order-token";
 
@@ -19,7 +19,8 @@ export const Route = createFileRoute("/order-confirmed")({
 function Confirmation() {
   const { order } = Route.useSearch();
   const { user } = useSession();
-  const load = useServerFn(getOrderForConfirmation);
+  const load = useServerFn(getMxOrderForConfirmation);
+  const refreshPayment = useServerFn(refreshMxOrderPayment);
   const loadGuest = useServerFn(getGuestOrder);
   const claim = useServerFn(claimGuestOrder);
 
@@ -47,19 +48,26 @@ function Confirmation() {
   const value = authed.data ?? guest.data ?? null;
   const isGuestOrder = !user && Boolean(guest.data);
 
+  // Arriving here — even on a provider's "success" URL — proves nothing. The
+  // server re-reads the payment from the provider and records what it says;
+  // only then is the order shown as paid.
+  const refetchAuthed = authed.refetch;
+  const refetchGuest = guest.refetch;
   useEffect(() => {
-    const completed = authed.data?.completedOperationId;
-    if (!user || !completed || !navigator.locks) return;
-    void navigator.locks.request(`intermex-checkout:${user.id}`, () => {
-      const key = `intermex-card-operation:${user.id}`;
-      try {
-        const stored = JSON.parse(localStorage.getItem(key) ?? "null");
-        if (stored?.id === completed) localStorage.removeItem(key);
-      } catch {
-        /* Storage unavailable: keep the operation closed. */
-      }
-    });
-  }, [user, authed.data?.completedOperationId]);
+    if (!order) return undefined;
+    let cancelled = false;
+    refreshPayment({ data: { orderId: order } }).then(
+      () => {
+        if (cancelled) return;
+        void refetchAuthed();
+        void refetchGuest();
+      },
+      () => undefined,
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [order, refreshPayment, refetchAuthed, refetchGuest]);
 
   // A signed-in customer who still holds a guest token for this order can link
   // it. The server requires a verified email match as well, so a token alone
@@ -103,8 +111,14 @@ function Confirmation() {
             ? value.payment_method === "cod"
               ? `Recibimos tu pedido #${orderNumber}. Pagas al recibirlo. El tiempo de entrega es el de la opción de envío que elegiste.`
               : value.payment_status === "paid"
-                ? `Recibimos el pago de tu pedido #${orderNumber}.`
-                : `Pedido #${orderNumber}: pago ${value.payment_status.replaceAll("_", " ")}.`
+                ? `Recibimos el pago de tu pedido #${orderNumber}. Ya lo estamos preparando.`
+                : value.payment_status === "pending"
+                  ? `Tu pedido #${orderNumber} está registrado y en espera de pago. En cuanto se confirme el pago lo preparamos.`
+                  : value.payment_status === "under_review"
+                    ? `Estamos revisando el pago de tu pedido #${orderNumber}. Te contactaremos si necesitamos algo.`
+                    : value.payment_status === "refunded"
+                      ? `El pago de tu pedido #${orderNumber} fue reembolsado.`
+                      : `El pago de tu pedido #${orderNumber} no se completó, así que el pedido fue cancelado. No se realizó ningún cargo.`
             : !order
               ? "No encontramos ese pedido."
               : loading

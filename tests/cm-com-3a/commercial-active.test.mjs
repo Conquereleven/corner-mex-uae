@@ -404,7 +404,7 @@ test("checkout executes only the canonical Mexico order path", async () => {
     assert.ok(!source.includes(forbidden), `checkout must not execute ${forbidden}`);
   }
   // Offered methods are whatever the server enables — never a client-side list.
-  assert.match(source, /config\?\.paymentMethods \?\? \[\]/);
+  assert.match(source, /config\?\.paymentOptions \?\? \[\]/);
   assert.ok(!source.includes("emirate"), "no UAE address field in the active checkout");
 });
 

@@ -18,7 +18,12 @@ function transport(routes) {
   const fetchImpl = async (url, init = {}) => {
     const { pathname } = new URL(url);
     const key = `${init.method ?? "GET"} ${pathname}`;
-    calls.push({ key, url, headers: init.headers ?? {}, body: init.body ? JSON.parse(init.body) : null });
+    calls.push({
+      key,
+      url,
+      headers: init.headers ?? {},
+      body: init.body ? JSON.parse(init.body) : null,
+    });
     let handler = routes[key];
     if (Array.isArray(handler)) handler = handler.length > 1 ? handler.shift() : handler[0];
     if (!handler) throw new Error(`unexpected request: ${key}`);
@@ -62,7 +67,12 @@ const mpOrder = (overrides = {}) => ({
         amount: "349.50",
         status: "action_required",
         status_detail: "waiting_payment",
-        payment_method: { id: "oxxo", type: "ticket", ticket_url: "https://mp.example.test/ticket", reference: "1234567890" },
+        payment_method: {
+          id: "oxxo",
+          type: "ticket",
+          ticket_url: "https://mp.example.test/ticket",
+          reference: "1234567890",
+        },
       },
     ],
   },
@@ -103,8 +113,14 @@ test("the eight normalised states map onto the canonical stored statuses", () =>
   // The view is recoverable from what is stored: no second source of truth.
   const ctx = { hasProviderReference: true, amount: 100, refundedAmount: 0 };
   assert.equal(state.fromCanonicalStatus("paid", ctx), "PAID");
-  assert.equal(state.fromCanonicalStatus("paid", { ...ctx, refundedAmount: 40 }), "PARTIALLY_REFUNDED");
-  assert.equal(state.fromCanonicalStatus("pending", { ...ctx, hasProviderReference: false }), "CREATED");
+  assert.equal(
+    state.fromCanonicalStatus("paid", { ...ctx, refundedAmount: 40 }),
+    "PARTIALLY_REFUNDED",
+  );
+  assert.equal(
+    state.fromCanonicalStatus("pending", { ...ctx, hasProviderReference: false }),
+    "CREATED",
+  );
   assert.equal(state.fromCanonicalStatus("pending", ctx), "PENDING");
 });
 
@@ -144,7 +160,9 @@ test("amounts are compared in cents and formatted with two decimals", () => {
 // ── Mercado Pago ───────────────────────────────────────────────────────────
 
 test("Mercado Pago: an order is created on the Orders API with idempotency and the CornerMex reference", async () => {
-  const { provider, t } = mercadoPago({ "POST /v1/orders": () => ({ status: 201, body: mpOrder() }) });
+  const { provider, t } = mercadoPago({
+    "POST /v1/orders": () => ({ status: 201, body: mpOrder() }),
+  });
   const payment = await provider.createPayment(request());
 
   const call = t.calls[0];
@@ -158,7 +176,9 @@ test("Mercado Pago: an order is created on the Orders API with idempotency and t
     total_amount: "349.50",
     description: "Pedido CM-20261005-ABCD1234",
     payer: { email: "cliente@example.test", first_name: "María" },
-    transactions: { payments: [{ amount: "349.50", payment_method: { id: "oxxo", type: "ticket" } }] },
+    transactions: {
+      payments: [{ amount: "349.50", payment_method: { id: "oxxo", type: "ticket" } }],
+    },
   });
   assert.deepEqual(
     {
@@ -186,10 +206,15 @@ test("Mercado Pago: an order is created on the Orders API with idempotency and t
 
 test("Mercado Pago: a card payment carries only a provider-minted token, never card data", async () => {
   const { provider, t } = mercadoPago({
-    "POST /v1/orders": () => ({ status: 201, body: mpOrder({ status: "processed", status_detail: "accredited" }) }),
+    "POST /v1/orders": () => ({
+      status: 201,
+      body: mpOrder({ status: "processed", status_detail: "accredited" }),
+    }),
   });
   const payment = await provider.createPayment(
-    request({ method: { kind: "card_token", token: "tok_abc", methodId: "master", installments: 1 } }),
+    request({
+      method: { kind: "card_token", token: "tok_abc", methodId: "master", installments: 1 },
+    }),
   );
   assert.equal(payment.state, "PAID");
   assert.deepEqual(t.calls[0].body.transactions.payments[0].payment_method, {
@@ -203,7 +228,10 @@ test("Mercado Pago: a card payment carries only a provider-minted token, never c
 
 test("Mercado Pago: repeating a request with the same idempotency key replays it and is flagged", async () => {
   const { provider, t } = mercadoPago({
-    "POST /v1/orders": [() => ({ status: 201, body: mpOrder() }), () => ({ status: 200, body: mpOrder() })],
+    "POST /v1/orders": [
+      () => ({ status: 201, body: mpOrder() }),
+      () => ({ status: 200, body: mpOrder() }),
+    ],
   });
   const first = await provider.createPayment(request());
   const second = await provider.createPayment(request());
@@ -231,15 +259,30 @@ test("Mercado Pago: a creation with an unknown outcome is AMBIGUOUS_WRITE and is
 });
 
 test("Mercado Pago: a rejected payment is a definite INVALID_REQUEST and bad credentials are AUTH_FAILED", async () => {
-  const rejected = mercadoPago({ "POST /v1/orders": () => ({ status: 400, body: { message: "invalid payment_method" } }) });
-  await assert.rejects(rejected.provider.createPayment(request()), (error) => error.code === "INVALID_REQUEST");
-  const unauthorized = mercadoPago({ "POST /v1/orders": () => ({ status: 401, body: { message: "unauthorized" } }) });
-  await assert.rejects(unauthorized.provider.createPayment(request()), (error) => error.code === "AUTH_FAILED");
+  const rejected = mercadoPago({
+    "POST /v1/orders": () => ({ status: 400, body: { message: "invalid payment_method" } }),
+  });
+  await assert.rejects(
+    rejected.provider.createPayment(request()),
+    (error) => error.code === "INVALID_REQUEST",
+  );
+  const unauthorized = mercadoPago({
+    "POST /v1/orders": () => ({ status: 401, body: { message: "unauthorized" } }),
+  });
+  await assert.rejects(
+    unauthorized.provider.createPayment(request()),
+    (error) => error.code === "AUTH_FAILED",
+  );
 });
 
 test("Mercado Pago: an order recorded for a different amount is refused", async () => {
-  const { provider } = mercadoPago({ "POST /v1/orders": () => ({ status: 201, body: mpOrder({ total_amount: "1.00" }) }) });
-  await assert.rejects(provider.createPayment(request()), (error) => error.code === "AMOUNT_MISMATCH");
+  const { provider } = mercadoPago({
+    "POST /v1/orders": () => ({ status: 201, body: mpOrder({ total_amount: "1.00" }) }),
+  });
+  await assert.rejects(
+    provider.createPayment(request()),
+    (error) => error.code === "AMOUNT_MISMATCH",
+  );
 });
 
 test("Mercado Pago: every documented status maps to a CornerMex state; unknown ones map to none", () => {
@@ -280,21 +323,41 @@ test("Mercado Pago: cancel and refund are idempotent money calls; a partial refu
   const id = "ORD01J6TC8BYRR0T4ZKY0QR39WGYE";
   const paid = mpOrder({ status: "processed", status_detail: "accredited" });
   const { provider, t } = mercadoPago({
-    [`POST /v1/orders/${id}/cancel`]: () => ({ status: 200, body: mpOrder({ status: "canceled", status_detail: "canceled" }) }),
+    [`POST /v1/orders/${id}/cancel`]: () => ({
+      status: 200,
+      body: mpOrder({ status: "canceled", status_detail: "canceled" }),
+    }),
     [`GET /v1/orders/${id}`]: () => ({ status: 200, body: paid }),
     [`POST /v1/orders/${id}/refund`]: [
-      () => ({ status: 201, body: { ...paid, status_detail: "partially_refunded", total_refunded_amount: "100.00" } }),
-      () => ({ status: 201, body: { ...paid, status: "refunded", status_detail: "refunded", total_refunded_amount: "349.50" } }),
+      () => ({
+        status: 201,
+        body: { ...paid, status_detail: "partially_refunded", total_refunded_amount: "100.00" },
+      }),
+      () => ({
+        status: 201,
+        body: {
+          ...paid,
+          status: "refunded",
+          status_detail: "refunded",
+          total_refunded_amount: "349.50",
+        },
+      }),
     ],
   });
 
   assert.equal((await provider.cancelPayment(id, "cancel-key")).state, "CANCELLED");
   assert.equal(t.calls.at(-1).headers["X-Idempotency-Key"], "cancel-key");
 
-  const partial = await provider.refund({ providerPaymentId: id, amount: 100, idempotencyKey: "refund-1" });
+  const partial = await provider.refund({
+    providerPaymentId: id,
+    amount: 100,
+    idempotencyKey: "refund-1",
+  });
   assert.deepEqual([partial.state, partial.refundedAmount], ["PARTIALLY_REFUNDED", 100]);
   const partialCall = t.calls.filter((call) => call.key.endsWith("/refund"))[0];
-  assert.deepEqual(partialCall.body, { transactions: [{ id: "PAY01J6TC8BYRR0T4ZKY0QRTZ0E24", amount: "100.00" }] });
+  assert.deepEqual(partialCall.body, {
+    transactions: [{ id: "PAY01J6TC8BYRR0T4ZKY0QRTZ0E24", amount: "100.00" }],
+  });
   assert.equal(partialCall.headers["X-Idempotency-Key"], "refund-1");
 
   const full = await provider.refund({ providerPaymentId: id, idempotencyKey: "refund-2" });
@@ -314,12 +377,25 @@ const mpWebhook = (overrides = {}) => {
     api_version: "v1",
     type: "order",
     live_mode: false,
-    data: { id: "ORD01J6TC8BYRR0T4ZKY0QR39WGYE", status: "processed", status_detail: "accredited", external_reference: "CM-20261005-ABCD1234", total_amount: "349.50" },
+    data: {
+      id: "ORD01J6TC8BYRR0T4ZKY0QR39WGYE",
+      status: "processed",
+      status_detail: "accredited",
+      external_reference: "CM-20261005-ABCD1234",
+      total_amount: "349.50",
+    },
   });
-  const input = { dataId: "ORD01J6TC8BYRR0T4ZKY0QR39WGYE", requestId: "2066ca19-c6f1-498a-be75-1923005edd06", ts: String(NOW) };
+  const input = {
+    dataId: "ORD01J6TC8BYRR0T4ZKY0QR39WGYE",
+    requestId: "2066ca19-c6f1-498a-be75-1923005edd06",
+    ts: String(NOW),
+  };
   return {
     rawBody: body,
-    headers: { "x-signature": mp.signMercadoPagoWebhook(input, "mp-webhook-secret"), "x-request-id": input.requestId },
+    headers: {
+      "x-signature": mp.signMercadoPagoWebhook(input, "mp-webhook-secret"),
+      "x-request-id": input.requestId,
+    },
     query: { "data.id": input.dataId, type: "order" },
     ...overrides,
   };
@@ -337,12 +413,30 @@ test("Mercado Pago: forged, unsigned, replayed-late and unconfigured webhooks ar
   const { provider } = mercadoPago({}, { now: () => NOW });
   const reason = (hook) => provider.verifyWebhook(hook).reason;
   const good = mpWebhook();
-  assert.equal(reason({ ...good, headers: { ...good.headers, "x-signature": undefined } }), "signature_missing");
-  assert.equal(reason({ ...good, headers: { ...good.headers, "x-request-id": undefined } }), "signature_inputs_missing");
-  assert.equal(reason({ ...good, headers: { ...good.headers, "x-signature": `ts=${NOW},v1=${"a".repeat(64)}` } }), "signature_mismatch");
+  assert.equal(
+    reason({ ...good, headers: { ...good.headers, "x-signature": undefined } }),
+    "signature_missing",
+  );
+  assert.equal(
+    reason({ ...good, headers: { ...good.headers, "x-request-id": undefined } }),
+    "signature_inputs_missing",
+  );
+  assert.equal(
+    reason({
+      ...good,
+      headers: { ...good.headers, "x-signature": `ts=${NOW},v1=${"a".repeat(64)}` },
+    }),
+    "signature_mismatch",
+  );
   // A signature is bound to the order it was issued for.
-  assert.equal(reason({ ...good, query: { "data.id": "ORD-OTHER", type: "order" } }), "signature_mismatch");
-  assert.equal(reason({ ...good, headers: { ...good.headers, "x-signature": "garbage" } }), "signature_malformed");
+  assert.equal(
+    reason({ ...good, query: { "data.id": "ORD-OTHER", type: "order" } }),
+    "signature_mismatch",
+  );
+  assert.equal(
+    reason({ ...good, headers: { ...good.headers, "x-signature": "garbage" } }),
+    "signature_malformed",
+  );
 
   const late = mercadoPago({}, { now: () => NOW + 60 * 60 * 1000 });
   assert.equal(late.provider.verifyWebhook(good).reason, "signature_expired");
@@ -355,7 +449,13 @@ test("Mercado Pago: a webhook parses into an event with a stable identity", () =
   const { provider } = mercadoPago({});
   const event = provider.parseWebhook(mpWebhook());
   assert.deepEqual(
-    { id: event.externalEventId, payment: event.providerPaymentId, ref: event.externalReference, claimed: event.claimedState, action: event.action },
+    {
+      id: event.externalEventId,
+      payment: event.providerPaymentId,
+      ref: event.externalReference,
+      claimed: event.claimedState,
+      action: event.action,
+    },
     {
       id: "ORD01J6TC8BYRR0T4ZKY0QR39WGYE:order.processed:processed:accredited",
       payment: "ORD01J6TC8BYRR0T4ZKY0QR39WGYE",
@@ -366,7 +466,13 @@ test("Mercado Pago: a webhook parses into an event with a stable identity", () =
   );
   assert.match(event.payloadHash, /^[0-9a-f]{64}$/);
   assert.equal(provider.parseWebhook({ ...mpWebhook(), rawBody: "{" }), null);
-  assert.equal(provider.parseWebhook({ ...mpWebhook(), rawBody: JSON.stringify({ type: "payment", data: { id: "1" } }) }), null);
+  assert.equal(
+    provider.parseWebhook({
+      ...mpWebhook(),
+      rawBody: JSON.stringify({ type: "payment", data: { id: "1" } }),
+    }),
+    null,
+  );
 });
 
 // ── Clip ───────────────────────────────────────────────────────────────────
@@ -399,9 +505,14 @@ function clipProvider(routes) {
 }
 
 test("Clip: a redirected checkout is created with the reference, return URLs and webhook", async () => {
-  const { provider, t } = clipProvider({ "POST /v2/checkout": () => ({ status: 200, body: clipLink() }) });
+  const { provider, t } = clipProvider({
+    "POST /v2/checkout": () => ({ status: 200, body: clipLink() }),
+  });
   const payment = await provider.createPayment(
-    request({ method: { kind: "redirect" }, webhookUrl: "https://tienda.example.test/api/public/hooks/clip?ref=x&token=y" }),
+    request({
+      method: { kind: "redirect" },
+      webhookUrl: "https://tienda.example.test/api/public/hooks/clip?ref=x&token=y",
+    }),
   );
   const call = t.calls[0];
   assert.equal(call.url, "https://api.payclip.com/v2/checkout");
@@ -410,13 +521,32 @@ test("Clip: a redirected checkout is created with the reference, return URLs and
     amount: 349.5,
     currency: "MXN",
     purchase_description: "Pedido CM-20261005-ABCD1234",
-    redirection_url: { success: returnUrls.success, error: returnUrls.failure, default: returnUrls.pending },
-    metadata: { external_reference: "CM-20261005-ABCD1234", customer_info: { email: "cliente@example.test" } },
+    redirection_url: {
+      success: returnUrls.success,
+      error: returnUrls.failure,
+      default: returnUrls.pending,
+    },
+    metadata: {
+      external_reference: "CM-20261005-ABCD1234",
+      customer_info: { email: "cliente@example.test" },
+    },
     webhook_url: "https://tienda.example.test/api/public/hooks/clip?ref=x&token=y",
   });
   assert.deepEqual(
-    [payment.providerPaymentId, payment.state, payment.redirectUrl, payment.externalReference, payment.amount],
-    ["e1961597-eccd-4bf5-94f3-c343d529caaa", "CREATED", "https://pago.clip.mx/e1961597-eccd-4bf5-94f3-c343d529caaa", "CM-20261005-ABCD1234", 349.5],
+    [
+      payment.providerPaymentId,
+      payment.state,
+      payment.redirectUrl,
+      payment.externalReference,
+      payment.amount,
+    ],
+    [
+      "e1961597-eccd-4bf5-94f3-c343d529caaa",
+      "CREATED",
+      "https://pago.clip.mx/e1961597-eccd-4bf5-94f3-c343d529caaa",
+      "CM-20261005-ABCD1234",
+      349.5,
+    ],
   );
 });
 
@@ -427,7 +557,10 @@ test("Clip: only the redirected flow exists — card data can never be sent thro
     { kind: "card_token", token: "t", methodId: "visa", installments: 1 },
     { kind: "offline", methodId: "oxxo", methodType: "ticket" },
   ]) {
-    await assert.rejects(provider.createPayment(request({ method })), (error) => error.code === "NOT_SUPPORTED");
+    await assert.rejects(
+      provider.createPayment(request({ method })),
+      (error) => error.code === "NOT_SUPPORTED",
+    );
   }
   assert.equal(t.calls.length, 0);
 });
@@ -435,23 +568,45 @@ test("Clip: only the redirected flow exists — card data can never be sent thro
 test("Clip: creation failures are explicit, and an unknown outcome is not retried", async () => {
   const tooLong = clipProvider({});
   await assert.rejects(
-    tooLong.provider.createPayment(request({ method: { kind: "redirect" }, orderReference: "X".repeat(37) })),
+    tooLong.provider.createPayment(
+      request({ method: { kind: "redirect" }, orderReference: "X".repeat(37) }),
+    ),
     (error) => error.code === "INVALID_REQUEST",
   );
-  const rejected = clipProvider({ "POST /v2/checkout": () => ({ status: 400, body: { message: "Invalid field" } }) });
-  await assert.rejects(rejected.provider.createPayment(request({ method: { kind: "redirect" } })), (error) => error.code === "INVALID_REQUEST");
-  const unauthorized = clipProvider({ "POST /v2/checkout": () => ({ status: 401, body: { message: "Authorization error" } }) });
-  await assert.rejects(unauthorized.provider.createPayment(request({ method: { kind: "redirect" } })), (error) => error.code === "AUTH_FAILED");
+  const rejected = clipProvider({
+    "POST /v2/checkout": () => ({ status: 400, body: { message: "Invalid field" } }),
+  });
+  await assert.rejects(
+    rejected.provider.createPayment(request({ method: { kind: "redirect" } })),
+    (error) => error.code === "INVALID_REQUEST",
+  );
+  const unauthorized = clipProvider({
+    "POST /v2/checkout": () => ({ status: 401, body: { message: "Authorization error" } }),
+  });
+  await assert.rejects(
+    unauthorized.provider.createPayment(request({ method: { kind: "redirect" } })),
+    (error) => error.code === "AUTH_FAILED",
+  );
   const unknown = clipProvider({ "POST /v2/checkout": () => ({ status: 500, body: {} }) });
-  await assert.rejects(unknown.provider.createPayment(request({ method: { kind: "redirect" } })), (error) => error.code === "AMBIGUOUS_WRITE");
+  await assert.rejects(
+    unknown.provider.createPayment(request({ method: { kind: "redirect" } })),
+    (error) => error.code === "AMBIGUOUS_WRITE",
+  );
   assert.equal(unknown.t.count("POST /v2/checkout"), 1);
-  const noUrl = clipProvider({ "POST /v2/checkout": () => ({ status: 200, body: clipLink({ payment_request_url: null }) }) });
-  await assert.rejects(noUrl.provider.createPayment(request({ method: { kind: "redirect" } })), (error) => error.code === "PROVIDER_ERROR");
+  const noUrl = clipProvider({
+    "POST /v2/checkout": () => ({ status: 200, body: clipLink({ payment_request_url: null }) }),
+  });
+  await assert.rejects(
+    noUrl.provider.createPayment(request({ method: { kind: "redirect" } })),
+    (error) => error.code === "PROVIDER_ERROR",
+  );
 });
 
 test("Clip: status is verified by reading the payment link from Clip", async () => {
   const path = "GET /v2/checkout/e1961597-eccd-4bf5-94f3-c343d529caaa";
-  const { provider } = clipProvider({ [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_COMPLETED" }) }) });
+  const { provider } = clipProvider({
+    [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_COMPLETED" }) }),
+  });
   assert.equal((await provider.getPayment("e1961597-eccd-4bf5-94f3-c343d529caaa")).state, "PAID");
   for (const [raw, expected] of [
     ["CHECKOUT_CREATED", "CREATED"],
@@ -490,15 +645,27 @@ test("Clip: the unsigned webhook is authenticated by the per-order URL token", (
   const { provider } = clipProvider({});
   assert.deepEqual(provider.verifyWebhook(clipHook()), { ok: true });
   assert.equal(provider.verifyWebhook(clipHook({}, {})).reason, "webhook_token_missing");
-  assert.equal(provider.verifyWebhook(clipHook({}, { ref: "CM-20261005-ABCD1234", token: "f".repeat(64) })).reason, "webhook_token_mismatch");
+  assert.equal(
+    provider.verifyWebhook(clipHook({}, { ref: "CM-20261005-ABCD1234", token: "f".repeat(64) }))
+      .reason,
+    "webhook_token_mismatch",
+  );
   // A token minted for one order does not authenticate another.
-  const other = { ref: "CM-OTHER", token: clip.clipWebhookToken("CM-20261005-ABCD1234", "c".repeat(40)) };
+  const other = {
+    ref: "CM-OTHER",
+    token: clip.clipWebhookToken("CM-20261005-ABCD1234", "c".repeat(40)),
+  };
   assert.equal(provider.verifyWebhook(clipHook({}, other)).reason, "webhook_token_mismatch");
 
   const event = provider.parseWebhook(clipHook());
   assert.deepEqual(
     [event.externalEventId, event.providerPaymentId, event.claimedState, event.externalReference],
-    ["e1961597-eccd-4bf5-94f3-c343d529caaa:COMPLETED", "e1961597-eccd-4bf5-94f3-c343d529caaa", "PAID", "CM-20261005-ABCD1234"],
+    [
+      "e1961597-eccd-4bf5-94f3-c343d529caaa:COMPLETED",
+      "e1961597-eccd-4bf5-94f3-c343d529caaa",
+      "PAID",
+      "CM-20261005-ABCD1234",
+    ],
   );
   assert.equal(provider.parseWebhook(clipHook({ resource: "REFUND" })), null);
   assert.equal(provider.parseWebhook(clipHook({ me_reference_id: "CM-SOMEONE-ELSE" })), null);
@@ -507,7 +674,10 @@ test("Clip: the unsigned webhook is authenticated by the per-order URL token", (
 test("Clip: cancellation and refunds are reported as not supported rather than faked", async () => {
   const { provider } = clipProvider({});
   await assert.rejects(provider.cancelPayment("x", "k"), (error) => error.code === "NOT_SUPPORTED");
-  await assert.rejects(provider.refund({ providerPaymentId: "x", idempotencyKey: "k" }), (error) => error.code === "NOT_SUPPORTED");
+  await assert.rejects(
+    provider.refund({ providerPaymentId: "x", idempotencyKey: "k" }),
+    (error) => error.code === "NOT_SUPPORTED",
+  );
 });
 
 // ── Exactly-once processing ────────────────────────────────────────────────
@@ -540,7 +710,9 @@ const attempt = (overrides = {}) => ({
 });
 
 function processing(orderBody, attemptOverrides = {}) {
-  const { provider } = mercadoPago({ "GET /v1/orders/ORD01J6TC8BYRR0T4ZKY0QR39WGYE": () => ({ status: 200, body: orderBody }) });
+  const { provider } = mercadoPago({
+    "GET /v1/orders/ORD01J6TC8BYRR0T4ZKY0QR39WGYE": () => ({ status: 200, body: orderBody }),
+  });
   const ledger = memoryLedger();
   const applied = [];
   const rejected = [];
@@ -559,7 +731,9 @@ function processing(orderBody, attemptOverrides = {}) {
 }
 
 test("a duplicate webhook changes the order exactly once and stores the raw event", async () => {
-  const { run, ledger, applied } = processing(mpOrder({ status: "processed", status_detail: "accredited" }));
+  const { run, ledger, applied } = processing(
+    mpOrder({ status: "processed", status_detail: "accredited" }),
+  );
   const first = await run();
   assert.equal(first.status, "processed");
   assert.deepEqual((await run()).status, "duplicate");
@@ -570,13 +744,23 @@ test("a duplicate webhook changes the order exactly once and stores the raw even
     ["PENDING", "PAID", true, false],
   );
   const row = [...ledger.rows.values()][0];
-  assert.deepEqual(Object.keys(row).sort(), ["external_event_id", "payload_hash", "processed_at", "processing_status", "provider", "raw_payload", "received_at"]);
+  assert.deepEqual(Object.keys(row).sort(), [
+    "external_event_id",
+    "payload_hash",
+    "processed_at",
+    "processing_status",
+    "provider",
+    "raw_payload",
+    "received_at",
+  ]);
   assert.equal(row.processing_status, "processed");
   assert.match(row.raw_payload, /order\.processed/);
 });
 
 test("amount tampering: a paid order for a different amount is rejected, never applied", async () => {
-  const { run, applied, rejected } = processing(mpOrder({ status: "processed", status_detail: "accredited", total_amount: "1.00" }));
+  const { run, applied, rejected } = processing(
+    mpOrder({ status: "processed", status_detail: "accredited", total_amount: "1.00" }),
+  );
   const result = await run();
   assert.deepEqual(result.reconciliation, { outcome: "REJECTED", reason: "AMOUNT_MISMATCH" });
   assert.equal(applied.length, 0);
@@ -584,9 +768,13 @@ test("amount tampering: a paid order for a different amount is rejected, never a
 });
 
 test("a payment for another order or another currency is rejected", async () => {
-  const wrongRef = processing(mpOrder({ status: "processed", status_detail: "accredited", external_reference: "CM-OTHER" }));
+  const wrongRef = processing(
+    mpOrder({ status: "processed", status_detail: "accredited", external_reference: "CM-OTHER" }),
+  );
   assert.equal((await wrongRef.run()).reconciliation.reason, "REFERENCE_MISMATCH");
-  const wrongCurrency = processing(mpOrder({ status: "processed", status_detail: "accredited", currency_id: "USD" }));
+  const wrongCurrency = processing(
+    mpOrder({ status: "processed", status_detail: "accredited", currency_id: "USD" }),
+  );
   assert.equal((await wrongCurrency.run()).reconciliation.reason, "CURRENCY_MISMATCH");
   assert.equal(wrongRef.applied.length + wrongCurrency.applied.length, 0);
 });
@@ -609,9 +797,15 @@ test("a failed payment releases stock and never becomes eligible for fulfilment"
 });
 
 test("money arriving after a cancellation is recorded and held for a person", async () => {
-  const { run, applied } = processing(mpOrder({ status: "processed", status_detail: "accredited" }), { state: "CANCELLED" });
+  const { run, applied } = processing(
+    mpOrder({ status: "processed", status_detail: "accredited" }),
+    { state: "CANCELLED" },
+  );
   await run();
-  assert.deepEqual([applied[0].to, applied[0].lateCapture, applied[0].fulfillmentEligible], ["PAID", true, false]);
+  assert.deepEqual(
+    [applied[0].to, applied[0].lateCapture, applied[0].fulfillmentEligible],
+    ["PAID", true, false],
+  );
 });
 
 test("an event for a payment CornerMex never created is ignored", async () => {
@@ -637,7 +831,13 @@ test("an event whose processing failed is retried on redelivery", async () => {
       return { status: 200, body: mpOrder({ status: "processed", status_detail: "accredited" }) };
     },
   });
-  const provider = mp.createMercadoPagoProvider({ environment: "sandbox", accessToken: "TEST-x", webhookSecret: "s", fetch: t.fetchImpl, sleep: noSleep });
+  const provider = mp.createMercadoPagoProvider({
+    environment: "sandbox",
+    accessToken: "TEST-x",
+    webhookSecret: "s",
+    fetch: t.fetchImpl,
+    sleep: noSleep,
+  });
   const ledger = memoryLedger();
   const hook = mpWebhook();
   const applied = [];
@@ -659,25 +859,46 @@ test("an event whose processing failed is retried on redelivery", async () => {
 
 test("a Clip return is verified against Clip, not taken from the browser", async () => {
   const path = "GET /v2/checkout/e1961597-eccd-4bf5-94f3-c343d529caaa";
-  const clipAttempt = attempt({ provider: "clip", providerPaymentId: "e1961597-eccd-4bf5-94f3-c343d529caaa", state: "CREATED" });
+  const clipAttempt = attempt({
+    provider: "clip",
+    providerPaymentId: "e1961597-eccd-4bf5-94f3-c343d529caaa",
+    state: "CREATED",
+  });
 
   // The customer lands on the success URL, but Clip says the link is unpaid.
-  const unpaid = clipProvider({ [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_PENDING" }) }) });
+  const unpaid = clipProvider({
+    [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_PENDING" }) }),
+  });
   const pending = await processor.reconcilePayment(unpaid.provider, clipAttempt);
   assert.equal(pending.outcome, "CHANGED");
   assert.deepEqual([pending.change.to, pending.change.fulfillmentEligible], ["PENDING", false]);
 
-  const paid = clipProvider({ [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_COMPLETED" }) }) });
+  const paid = clipProvider({
+    [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_COMPLETED" }) }),
+  });
   const done = await processor.reconcilePayment(paid.provider, clipAttempt);
   assert.deepEqual([done.change.to, done.change.fulfillmentEligible], ["PAID", true]);
 
   // Clip reports a completed link for a different amount.
-  const tampered = clipProvider({ [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_COMPLETED", amount: 10 }) }) });
-  assert.deepEqual(await processor.reconcilePayment(tampered.provider, clipAttempt), { outcome: "REJECTED", reason: "AMOUNT_MISMATCH" });
+  const tampered = clipProvider({
+    [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_COMPLETED", amount: 10 }) }),
+  });
+  assert.deepEqual(await processor.reconcilePayment(tampered.provider, clipAttempt), {
+    outcome: "REJECTED",
+    reason: "AMOUNT_MISMATCH",
+  });
 
   // A completed link that does not report its amount cannot be accepted.
-  const silent = clipProvider({ [path]: () => ({ status: 200, body: clipLink({ status: "CHECKOUT_COMPLETED", amount: undefined }) }) });
-  assert.deepEqual(await processor.reconcilePayment(silent.provider, clipAttempt), { outcome: "REJECTED", reason: "AMOUNT_MISMATCH" });
+  const silent = clipProvider({
+    [path]: () => ({
+      status: 200,
+      body: clipLink({ status: "CHECKOUT_COMPLETED", amount: undefined }),
+    }),
+  });
+  assert.deepEqual(await processor.reconcilePayment(silent.provider, clipAttempt), {
+    outcome: "REJECTED",
+    reason: "AMOUNT_MISMATCH",
+  });
 });
 
 // ── Configuration ──────────────────────────────────────────────────────────
@@ -685,24 +906,52 @@ test("a Clip return is verified against Clip, not taken from the browser", async
 test("providers default to off and report missing names, never values", () => {
   assert.deepEqual(providers.configuredPaymentProviders({}), []);
   const health = providers.paymentConfigHealth({});
-  assert.deepEqual(health.map((entry) => [entry.provider, entry.state]), [["mercado_pago", "NOT_CONFIGURED"], ["clip", "NOT_CONFIGURED"]]);
+  assert.deepEqual(
+    health.map((entry) => [entry.provider, entry.state]),
+    [
+      ["mercado_pago", "NOT_CONFIGURED"],
+      ["clip", "NOT_CONFIGURED"],
+    ],
+  );
   assert.deepEqual(health[0].missing, ["MERCADO_PAGO_ACCESS_TOKEN", "MERCADO_PAGO_WEBHOOK_SECRET"]);
 
-  const env = { MERCADO_PAGO_ACCESS_TOKEN: "TEST-secret-token", MERCADO_PAGO_WEBHOOK_SECRET: "hook-secret-value" };
+  const env = {
+    MERCADO_PAGO_ACCESS_TOKEN: "TEST-secret-token",
+    MERCADO_PAGO_WEBHOOK_SECRET: "hook-secret-value",
+  };
   // Credentials alone do not enable a provider.
   assert.deepEqual(providers.configuredPaymentProviders(env), []);
   const enabled = { ...env, MERCADO_PAGO_ENABLED: "true" };
-  assert.deepEqual(providers.configuredPaymentProviders(enabled).map((provider) => provider.id), ["mercado_pago"]);
+  assert.deepEqual(
+    providers.configuredPaymentProviders(enabled).map((provider) => provider.id),
+    ["mercado_pago"],
+  );
   assert.equal(providers.paymentConfigHealth(enabled)[0].state, "SANDBOX");
-  assert.doesNotMatch(JSON.stringify(providers.paymentConfigHealth(enabled)), /secret-token|hook-secret-value/);
+  assert.doesNotMatch(
+    JSON.stringify(providers.paymentConfigHealth(enabled)),
+    /secret-token|hook-secret-value/,
+  );
 });
 
 test("a production token cannot be used in sandbox, nor a test token in production", () => {
-  const live = { MERCADO_PAGO_ENABLED: "true", MERCADO_PAGO_ACCESS_TOKEN: "APP_USR-live", MERCADO_PAGO_WEBHOOK_SECRET: "s" };
+  const live = {
+    MERCADO_PAGO_ENABLED: "true",
+    MERCADO_PAGO_ACCESS_TOKEN: "APP_USR-live",
+    MERCADO_PAGO_WEBHOOK_SECRET: "s",
+  };
   assert.deepEqual(providers.configuredPaymentProviders(live), []);
-  assert.ok(providers.paymentConfigHealth(live)[0].missing.includes("MERCADO_PAGO_ACCESS_TOKEN:not_a_test_token"));
+  assert.ok(
+    providers
+      .paymentConfigHealth(live)[0]
+      .missing.includes("MERCADO_PAGO_ACCESS_TOKEN:not_a_test_token"),
+  );
 
-  const testInProd = { MERCADO_PAGO_ENABLED: "true", MERCADO_PAGO_ENVIRONMENT: "production", MERCADO_PAGO_ACCESS_TOKEN: "TEST-x", MERCADO_PAGO_WEBHOOK_SECRET: "s" };
+  const testInProd = {
+    MERCADO_PAGO_ENABLED: "true",
+    MERCADO_PAGO_ENVIRONMENT: "production",
+    MERCADO_PAGO_ACCESS_TOKEN: "TEST-x",
+    MERCADO_PAGO_WEBHOOK_SECRET: "s",
+  };
   assert.deepEqual(providers.configuredPaymentProviders(testInProd), []);
 
   // Production credentials are never reported CONNECTED or LIVE from config alone.
@@ -712,12 +961,20 @@ test("a production token cannot be used in sandbox, nor a test token in producti
 });
 
 test("Clip is never reported as sandbox: its redirected checkout has no test mode", () => {
-  const base = { CLIP_ENABLED: "true", CLIP_API_KEY: "k", CLIP_API_SECRET: "s", CLIP_WEBHOOK_SECRET: "w".repeat(40) };
+  const base = {
+    CLIP_ENABLED: "true",
+    CLIP_API_KEY: "k",
+    CLIP_API_SECRET: "s",
+    CLIP_WEBHOOK_SECRET: "w".repeat(40),
+  };
   const health = providers.paymentConfigHealth(base)[1];
   assert.equal(health.state, "NOT_CONFIGURED");
   assert.ok(health.missing.includes("CLIP_ENVIRONMENT:redirected_checkout_has_no_sandbox"));
   assert.deepEqual(providers.configuredPaymentProviders(base), []);
   const production = { ...base, CLIP_ENVIRONMENT: "production" };
-  assert.deepEqual(providers.configuredPaymentProviders(production).map((provider) => provider.id), ["clip"]);
+  assert.deepEqual(
+    providers.configuredPaymentProviders(production).map((provider) => provider.id),
+    ["clip"],
+  );
   assert.notEqual(providers.paymentConfigHealth(production)[1].state, "SANDBOX");
 });

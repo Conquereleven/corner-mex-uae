@@ -82,10 +82,13 @@ test("persisted compatibility identifiers are unchanged", async () => {
     readFile("src/routes/order-confirmed.tsx", "utf8"),
     readFile("src/lib/po/domain.ts", "utf8"),
   ]);
-  for (const source of [op, confirmed]) {
-    assert.match(source, /`intermex-card-operation:\$\{/);
-    assert.match(source, /`intermex-checkout:\$\{/);
-  }
+  // The identifiers are defined once, where the card operation is created, and
+  // are not renamed. The Mexico confirmation page no longer reads them: those
+  // keys belong to the deferred UAE Stripe flow, and Mexico payments are keyed
+  // by the checkout operation id on the server.
+  assert.match(op, /`intermex-card-operation:\$\{/);
+  assert.match(op, /`intermex-checkout:\$\{/);
+  assert.doesNotMatch(confirmed, /intermex-/);
   assert.match(po, /PO_VERSION = "intermex-po-v1"/);
 });
 

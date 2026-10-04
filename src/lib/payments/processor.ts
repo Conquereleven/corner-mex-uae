@@ -93,7 +93,9 @@ export async function reconcilePayment(
     return { outcome: "REJECTED", reason: "REFERENCE_MISMATCH" };
   }
   const acceptsMoney =
-    payment.state === "PAID" || payment.state === "AUTHORIZED" || payment.state === "PARTIALLY_REFUNDED";
+    payment.state === "PAID" ||
+    payment.state === "AUTHORIZED" ||
+    payment.state === "PARTIALLY_REFUNDED";
   if (acceptsMoney) {
     if (!amountsMatch(attempt.amount, payment.amount)) {
       return { outcome: "REJECTED", reason: "AMOUNT_MISMATCH" };
@@ -144,7 +146,8 @@ export async function processPaymentEventOnce(input: {
 }): Promise<ProcessedEvent> {
   const { provider, ledger, event } = input;
   const now = input.now ?? (() => new Date());
-  if (event.provider !== provider.id) throw new PaymentError("INVALID_REQUEST", "provider mismatch");
+  if (event.provider !== provider.id)
+    throw new PaymentError("INVALID_REQUEST", "provider mismatch");
 
   const claimed = await ledger.claim({
     provider: event.provider,
