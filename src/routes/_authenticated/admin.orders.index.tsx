@@ -80,7 +80,14 @@ function Orders() {
   }, [q.data, search, statusFilter, tab]);
 
   const exportCsv = () => {
-    const header = ["Order", "Date", "Payment", "Method", "Status", `Total (${ACTIVE_MARKET.currency})`];
+    const header = [
+      "Order",
+      "Date",
+      "Payment",
+      "Method",
+      "Status",
+      `Total (${ACTIVE_MARKET.currency})`,
+    ];
     const lines = rows.map((o: any) =>
       [
         o.order_number,

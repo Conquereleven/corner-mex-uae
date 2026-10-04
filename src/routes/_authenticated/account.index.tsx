@@ -158,7 +158,8 @@ function BecomeSellerCard() {
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Las solicitudes de vendedores no están activas en esta etapa. Puedes seguir comprando en la tienda y solicitando cotizaciones para tu negocio.
+          Las solicitudes de vendedores no están activas en esta etapa. Puedes seguir comprando en
+          la tienda y solicitando cotizaciones para tu negocio.
         </p>
         <Button className="w-full rounded-full" disabled>
           Próximamente

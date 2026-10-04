@@ -71,12 +71,50 @@ explicitly as above.
 Shipping quotes still work without this data: the parcel is estimated and the
 quote is flagged `parcelDataComplete: false` (`SHIPPING.md`).
 
+## Launch assortment
+
+The 195 UAE products are **not** migrated. Mexico starts from an empty catalogue
+and a **launch assortment of 50–75 SKUs** entered for Mexico.
+
+Every variant has a launch status
+(`commerce_private.variant_launch_profiles`):
+
+| Status | Meaning | Sellable |
+| --- | --- | --- |
+| `DRAFT` | Created, nothing decided | No |
+| `SOURCING` | Looking for a supplier and a cost | No |
+| `READY` | Every required datum present | No |
+| `ACTIVE` | On sale | **Yes** |
+| `PAUSED` | Temporarily off sale | No |
+
+`READY` and `ACTIVE` are refused by the database while any of these is missing:
+SKU, retail price, weight, dimensions, B2B price, an inventory record, case
+pack, minimum order quantity, a preferred supplier and its lead time. The error
+names the gaps (`MX_LAUNCH_NOT_READY: dimensions,b2b_price,…`).
+
+A variant cannot be switched on any other way: a trigger rejects
+`is_active = true` unless the variant is launch-`ACTIVE`, and the order function
+refuses any item that is not. A product is listed exactly while it has an
+`ACTIVE` variant. So a product with missing shipping or commercial data cannot
+silently become launch-ready.
+
+| Launch field | Where it lives |
+| --- | --- |
+| supplier, supplier SKU, cost, last cost, lead time, MOQ, case pack, preferred | `variant_suppliers` |
+| retail price, weight, stock | `product_variants`, `inventory` (canonical) |
+| B2B price, length, width, height | `variant_launch_profiles` |
+| case pack, MOQ, reorder point (selling side) | `inventory_policies` (canonical, reused) |
+
+`cm_mx_launch_assortment_v1()` returns every variant with its status, its gaps,
+stock position, preferred supplier, cost and 30-day units sold.
+
+The classification below is the shortlist to choose those 50–75 SKUs from: the
+102 `RESOURCE` rows first, then the `REVIEW` rows the Founder approves.
+
 ## What must happen before anything is sold in Mexico
 
-1. **Decide the database.** Recommended: a new Supabase project for Mexico, so
-   AED prices and UAE orders can never be read as pesos. The alternative —
-   re-pricing in place — needs every sellable variant re-priced in one
-   controlled change.
+1. **Create the Mexico database** — decided: a new Supabase project
+   (`DATABASE-BOOTSTRAP.md`). Nothing from the UAE catalogue is copied.
 2. **Founder review of the 56 `REVIEW` rows** and confirmation of the 12
    `INTERMEX_PRIVATE` rows (two are inferred).
 3. **Real catalogue load:** for each `RESOURCE` product, a local supplier,

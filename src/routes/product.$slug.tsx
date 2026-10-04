@@ -327,7 +327,9 @@ function ProductPage() {
 
             {sellableVariants.length > 1 && (
               <div className="mt-8">
-                <h3 className="text-xs uppercase tracking-widest text-muted-foreground">Presentación</h3>
+                <h3 className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Presentación
+                </h3>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {sellableVariants.map((candidate) => (
                     <button
@@ -375,7 +377,8 @@ function ProductPage() {
 
             <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
               <p className="text-sm leading-6 text-muted-foreground">
-                Compra sin crear una cuenta. El precio vigente, la disponibilidad y el envío se confirman antes de finalizar tu pedido.
+                Compra sin crear una cuenta. El precio vigente, la disponibilidad y el envío se
+                confirman antes de finalizar tu pedido.
               </p>
               <a href={mailto(PUBLIC_CONTACT.b2b, `Solicitud de cotización CornerMex: ${p.name}`)}>
                 <Button size="lg" className="mt-4 rounded-full">

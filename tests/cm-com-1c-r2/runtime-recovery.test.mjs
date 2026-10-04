@@ -42,16 +42,16 @@ test("native AsyncLocalStorage retains context through awaited continuations", a
 });
 
 test("Shop distinguishes a retryable error from a successful empty state", () => {
-  assert.match(shop, /products\.isError[\s\S]*catálogo no está disponible por el momento/i);
+  assert.match(shop, /products\.isError[\s\S]*catálogo\s+no\s+está\s+disponible\s+por\s+el\s+momento/i);
   assert.match(shop, /onClick=\{\(\) => void products\.refetch\(\)\}/);
   assert.match(shop, /products\.isSuccess && productItems\.length === 0/);
-  assert.match(shop, /Estamos surtiendo la despensa/);
+  assert.match(shop, /Estamos\s+surtiendo\s+la\s+despensa/);
 });
 
 test("category and facet failures do not become zero-product claims", () => {
   assert.match(shop, /const supportingDataError = cats\.isError \|\| facets\.isError/);
   assert.match(shop, /Reintentar filtros/);
-  assert.match(shop, /Los productos se siguen mostrando con normalidad/);
+  assert.match(shop, /Los\s+productos\s+se\s+siguen\s+mostrando\s+con\s+normalidad/);
 });
 
 test("Google sign-in uses direct Supabase OAuth and an internal callback", () => {
@@ -122,9 +122,15 @@ test("checkout order and payment execution remain fail closed", () => {
 test("B2B copy stays local while canonical enquiry submission remains non-transactional", () => {
   assert.match(b2bActions, /role="status" aria-live="polite"/);
   assert.match(b2bActions, /Solicitud copiada\. Aún no se ha enviado/i);
-  assert.match(previewFormatter, /Solo es una solicitud: no es un pedido ni una cotización confirmada/);
-  assert.match(b2bPreview, /la solicitud queda registrada para que una persona de CornerMex la revise/);
-  assert.match(b2bPreview, /no crea un pedido/i);
+  assert.match(
+    previewFormatter,
+    /Solo es una solicitud: no\s+es\s+un\s+pedido\s+ni\s+una\s+cotización\s+confirmada/,
+  );
+  assert.match(
+    b2bPreview,
+    /la\s+solicitud\s+queda\s+registrada\s+para\s+que\s+una\s+persona\s+de\s+CornerMex\s+la\s+revise/,
+  );
+  assert.match(b2bPreview, /no\s+crea\s+un\s+pedido/i);
   assert.doesNotMatch(b2bPreview, /order confirmed|quote confirmed|payment confirmed/i);
 });
 

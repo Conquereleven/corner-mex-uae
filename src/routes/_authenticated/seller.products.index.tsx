@@ -211,7 +211,9 @@ function Products() {
                       {" · "}stock {p.stock}
                     </p>
                   </div>
-                  <div className="hidden tabular-nums sm:block">{formatMoneyWithCode(p.price_aed)}</div>
+                  <div className="hidden tabular-nums sm:block">
+                    {formatMoneyWithCode(p.price_aed)}
+                  </div>
                   <Badge
                     variant={
                       p.status === "active"

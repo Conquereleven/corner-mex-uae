@@ -55,7 +55,8 @@ export function validateManualQuoteRequest(
   const errors: ManualQuoteRequestErrors = {};
   if (!fields.businessName.trim()) errors.businessName = "Escribe el nombre del negocio.";
   if (!fields.businessType) errors.businessType = "Selecciona el tipo de negocio.";
-  if (!fields.contactPerson.trim()) errors.contactPerson = "Escribe el nombre de la persona de contacto.";
+  if (!fields.contactPerson.trim())
+    errors.contactPerson = "Escribe el nombre de la persona de contacto.";
   if (!fields.email.trim()) {
     errors.email = "Escribe un correo electrónico.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {

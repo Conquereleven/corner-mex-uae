@@ -213,7 +213,8 @@ function Shop() {
             className="mt-5 flex flex-col gap-3 rounded-2xl border border-amber-300/60 bg-amber-50 p-4 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between"
           >
             <p>
-              Algunos filtros no están disponibles por el momento. Los productos se siguen mostrando con normalidad.
+              Algunos filtros no están disponibles por el momento. Los productos se siguen mostrando
+              con normalidad.
             </p>
             <Button
               type="button"
@@ -322,7 +323,9 @@ function Shop() {
                 role="alert"
                 className="scroll-mt-24 rounded-3xl px-6 py-12 text-center"
               >
-                <p className="font-display text-2xl">El catálogo no está disponible por el momento.</p>
+                <p className="font-display text-2xl">
+                  El catálogo no está disponible por el momento.
+                </p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                   No pudimos cargar los productos. Esto no significa que el catálogo esté vacío.
                 </p>

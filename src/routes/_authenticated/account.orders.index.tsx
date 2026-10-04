@@ -33,7 +33,8 @@ function MyOrdersPage() {
             <p className="text-sm text-muted-foreground">Cuenta</p>
             <h1 className="font-display text-4xl tracking-tight">Mis pedidos</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Consulta tu historial de pedidos, el estado de pago, los importes y el detalle de cada pedido.
+              Consulta tu historial de pedidos, el estado de pago, los importes y el detalle de cada
+              pedido.
             </p>
           </div>
           <AccountNavigation />

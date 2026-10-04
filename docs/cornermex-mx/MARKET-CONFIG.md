@@ -59,10 +59,12 @@ The storefront defaults to Spanish and offers English. Only an explicit choice
 overrides the default, so a browser set to English still lands in Spanish. The
 Arabic dictionary is retained for the deferred market and is not offered.
 
-Copy written in this pass is Spanish. Pages whose body is still English and
-needs the es-MX copy pass: `shop.tsx` (filters and sort labels), `product.$slug.tsx`
-(detail body), `contact.tsx`, `login.tsx`, `signup.tsx`, `b2b_.quote.tsx`,
-`b2b_.lead.tsx` and the customer account pages.
+The public storefront, checkout, sign-in, contact, cookie banner, error pages,
+account navigation, order history and the B2B quote flow are in Spanish. Still
+English: the account sub-pages for the B2B portal, loyalty, notifications,
+returns and wishlist, and the back-office. Copy is hard-coded per page; a future
+English localisation means moving it into the `i18n` dictionaries, which already
+carry both languages for the strings that use them.
 
 ## Environment
 
@@ -74,6 +76,9 @@ needs the es-MX copy pass: `shop.tsx` (filters and sort labels), `product.$slug.
 | `CORNERMEX_MX_ORIGIN_JSON` | Ship-from address of the Tecámac stock point. |
 | `CORNERMEX_MX_MANUAL_SHIPPING_JSON` | Manual / local delivery rules. |
 | `CORNERMEX_MX_SHIPPING_RANKING` | `CHEAPEST` · `FASTEST` · `BEST_VALUE` (default). |
-| `CORNERMEX_MX_COD_ENABLED` | Enables cash on delivery in Mexico. Off by default. |
+| `CORNERMEX_MARKET` | Must be `MX`. |
+| `CORNERMEX_MX_SUPABASE_PROJECT_REF` | The Mexico Supabase project ref; must match `SUPABASE_URL`. |
+| `CORNERMEX_MX_COD_LOCAL_ENABLED` | Cash on delivery for local delivery only. Off by default. |
+| `MERCADO_PAGO_*`, `CLIP_*` | See `PAYMENTS.md`. |
 | `CORNERMEX_MX_LEGAL_DOCS_PUBLISHED` | Must be `true` in production before orders are taken. |
 | `SKYDROPX_*`, `SOLO_ENVIOS_*` | See `SKYDROPX.md`, `SOLO-ENVIOS.md`. |

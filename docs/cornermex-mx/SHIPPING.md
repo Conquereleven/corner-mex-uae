@@ -106,12 +106,26 @@ state. `READY_FOR_PICKUP` is reserved for scheduled carrier pickups (MX-3).
   acknowledged and ignored; an event whose processing failed is retried when the
   provider re-delivers it.
 
+## Database
+
+`supabase/mx/migrations` creates `shipments` (unique per order — the
+duplicate-label guard), `shipment_events`, `integration_webhook_events`, and
+`cm_mx_reserve_label_v1`, which refuses a reservation until the order is paid
+and grants it exactly once. Proven by the SQL contract test.
+
+## Sandbox readiness
+
+Both adapters are still `SCAFFOLDED`: no credentials exist, so no sandbox request
+has been made and none is claimed. Configuration, health reporting and the
+contract tests are complete; the first real call needs only
+`<PROVIDER>_ENABLED`, `_CLIENT_ID`, `_CLIENT_SECRET` and
+`CORNERMEX_MX_ORIGIN_JSON`.
+
 ## Not built yet
 
 | Item | Sprint |
 | --- | --- |
-| Tables: `shipments`, `shipment_events`, `label_reservations`, `integration_webhook_events` (the modules define the storage contracts as interfaces) | MX-3 |
-| Webhook HTTP routes | MX-3 |
+| Shipping webhook HTTP routes (payment webhook routes exist) | MX-3 |
 | Label purchase wired to the order lifecycle | MX-3 |
 | Pickup scheduling, multi-package packing | later |
 | A local last-mile provider (none is invented; `LOCAL_DELIVERY` is a manual rule) | later |

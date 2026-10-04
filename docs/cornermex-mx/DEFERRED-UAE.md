@@ -28,17 +28,34 @@ noon or RodMor, and separately asserts that the retired modules still exist.
 
 ## Not yet migrated (back-office)
 
-Admin and seller screens still carry UAE labels: payouts, performance,
-catalogue analytics, live view and its UAE map, customer screens, the B2B lead
-pipeline's "AED pricing" and "VAT treatment" fields, and the whole seller area.
-Scheduled for Sprint MX-4.
+Money in admin and seller screens now follows the market. Still UAE-specific:
+the admin live view (UAE map, "UAE time"), the admin legal view of the retired
+UAE documents, and field labels in the inactive seller area (coupons, shipping
+zones by emirate, settings).
 
 ## Production
 
-The UAE deployment (`origin/main` @ `f90134b`, Railway service `corner-mex-uae`)
-is still running with `checkoutEnabled: true` and cash on delivery. This branch
-does not touch it. Whether to switch that checkout off now that the UAE launch
-is cancelled is a Founder decision — see `MX-LAUNCH-PLAN.md`.
+**UAE checkout is off** (Founder decision, applied 2026-10-05).
+`CORNERMEX_CHECKOUT_ENABLED` and `VITE_CORNERMEX_CHECKOUT_ENABLED` are `false`
+on the Railway service `corner-mex-uae`. Verified after the redeploy:
+`/api/ready` → `checkoutEnabled: false`, commit `f90134b` unchanged, service
+healthy. The storefront still serves the catalogue; it takes no order.
+
+Nothing was deleted: the two historical UAE orders, the database, the
+migrations, the audit history and the code are intact. Setting both variables
+back to `true` reverses it.
+
+## Second lock, in code
+
+In every build whose active market is not the UAE, the UAE entry points refuse
+to run even if checkout is switched on:
+
+| Entry point | Behaviour in a Mexico build |
+| --- | --- |
+| `placeCodOrder`, `previewCodOrderTotals` | throw `UAE_MARKET_DEFERRED` |
+| `initiateCardCheckout`, `createStripeSession`, `confirmBnplPayment` | throw `UAE_MARKET_DEFERRED` |
+| legacy `placeOrder` | throws `UAE_MARKET_DEFERRED` |
+| `/api/public/stripe-webhook` | answers `410 Gone` |
 
 ## Historical records
 

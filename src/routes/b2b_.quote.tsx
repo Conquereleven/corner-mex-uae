@@ -130,7 +130,9 @@ function B2bQuoteRoute() {
             Solicita condiciones comerciales.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Arma tu lista, revisa la solicitud y envíala a CornerMex. Una persona de nuestro equipo revisa cada solicitud antes de confirmar precios, disponibilidad, entrega o cualquier compromiso comercial.
+            Arma tu lista, revisa la solicitud y envíala a CornerMex. Una persona de nuestro equipo
+            revisa cada solicitud antes de confirmar precios, disponibilidad, entrega o cualquier
+            compromiso comercial.
           </p>
         </div>
 

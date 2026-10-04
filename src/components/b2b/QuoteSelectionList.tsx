@@ -13,9 +13,7 @@ export function QuoteSelectionList({
     <section aria-labelledby="quote-selection-heading">
       <div className="flex items-end justify-between border-b border-border pb-4">
         <div>
-          <span className="text-[11px] uppercase tracking-[0.18em] text-eyebrow">
-            Tu lista
-          </span>
+          <span className="text-[11px] uppercase tracking-[0.18em] text-eyebrow">Tu lista</span>
           <h2 id="quote-selection-heading" className="mt-1 font-display text-3xl text-foreground">
             Productos seleccionados
           </h2>

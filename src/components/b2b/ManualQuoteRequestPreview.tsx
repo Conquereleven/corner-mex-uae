@@ -27,7 +27,8 @@ export function ManualQuoteRequestPreview({
         Tu solicitud está lista.
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Al enviarla, la solicitud queda registrada para que una persona de CornerMex la revise. No crea un pedido ni confirma precios, existencias, entrega o condiciones comerciales.
+        Al enviarla, la solicitud queda registrada para que una persona de CornerMex la revise. No
+        crea un pedido ni confirma precios, existencias, entrega o condiciones comerciales.
       </p>
       <pre className="mt-5 max-h-96 overflow-auto whitespace-pre-wrap rounded-xl border border-border bg-background p-4 font-sans text-sm leading-relaxed text-foreground">
         {preview}
@@ -43,7 +44,8 @@ export function ManualQuoteRequestPreview({
             <div>
               <p className="font-medium text-foreground">CornerMex recibió tu solicitud.</p>
               <p className="mt-1 text-muted-foreground">
-                Folio {submittedLeadId.slice(0, 8)}. Nuestro equipo la revisará y te responderá por escrito.
+                Folio {submittedLeadId.slice(0, 8)}. Nuestro equipo la revisará y te responderá por
+                escrito.
               </p>
             </div>
           </div>
@@ -73,7 +75,8 @@ export function ManualQuoteRequestPreview({
 
       <div className="mt-7 border-t border-border/70 pt-1">
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-          ¿Prefieres otro medio? También puedes enviar la misma solicitud desde tu correo o copiarla.
+          ¿Prefieres otro medio? También puedes enviar la misma solicitud desde tu correo o
+          copiarla.
         </p>
         <ManualContactActions preview={preview} />
       </div>

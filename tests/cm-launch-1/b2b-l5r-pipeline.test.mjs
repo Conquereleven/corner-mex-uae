@@ -196,8 +196,8 @@ test("L5R B2B customer copy remains non-transactional and human approved", async
   ]);
 
   assert.match(quote, /revisa(da)? (por )?una persona/i);
-  assert.match(preview, /no crea un pedido/i);
-  assert.match(leadPage, /Una solicitud no es un pedido/);
+  assert.match(preview, /no\s+crea\s+un\s+pedido/i);
+  assert.match(leadPage, /Una\s+solicitud\s+no\s+es\s+un\s+pedido/);
   assert.match(formatter, /no es un pedido/i);
   assert.doesNotMatch(preview, /order confirmed|quote confirmed/i);
 });

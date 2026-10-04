@@ -29,7 +29,7 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
   assert.match(header, /user \? "\/account" : "\/login"/);
   assert.match(footer, /se confirman\s+antes de que finalices tu pedido/);
   assert.match(footer, /las revisa una persona/);
-  assert.match(footer, /no es un pedido ni una cotización confirmada/);
+  assert.match(footer, /no\s+es\s+un\s+pedido\s+ni\s+una\s+cotización\s+confirmada/);
   assert.match(footer, /no crea ningún\s+compromiso comercial/);
   assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote confirmed/i);
   assert.match(shop, /Product discovery only/);
@@ -55,7 +55,7 @@ test("B2B conversion persists an enquiry without creating orders, payments or au
   assert.match(preview, /Enviar solicitud a CornerMex/);
   assert.match(leadServer, /submit_b2b_lead_v2/);
   assert.match(leadServer, /getB2bIntakeAbuseKey/);
-  assert.match(preview, /no crea un pedido/i);
+  assert.match(preview, /no\s+crea\s+un\s+pedido/i);
   assert.match(publicCombined, /una persona/i);
 
   for (const forbidden of [
@@ -107,7 +107,7 @@ test("delivery, returns, privacy and terms are discoverable without unsupported 
   assert.match(shipping, /redirect\(\{ to: "\/delivery" \}\)/);
   const policies = `${delivery}\n${returns}\n${privacy}\n${terms}`;
   assert.match(policies, /no estamos recibiendo pedidos en línea/i);
-  assert.match(policies, /no crea un pedido/i);
+  assert.match(policies, /no\s+crea\s+un\s+pedido/i);
   assert.doesNotMatch(
     policies,
     /same[- ]day|within one business day|free shipping|guaranteed delivery/i,

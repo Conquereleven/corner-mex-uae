@@ -1,7 +1,8 @@
 # B2B distribution and procurement
 
-**Status:** `PLANNED` (Sprint MX-4). Existing B2B capability is preserved; the
-pricing tiers and the supplier model below are designed, not built.
+**Status:** procurement schema **built and tested** (`supabase/mx/migrations`);
+pricing tiers and the admin screens are `PLANNED`. Existing B2B capability is
+preserved.
 
 ## What exists today (kept)
 
@@ -17,8 +18,8 @@ pricing tiers and the supplier model below are designed, not built.
 In this pass the public B2B pages and the quote form were moved to Mexico (state
 instead of emirate, Spanish copy, no AED).
 
-**Blocker:** `b2b_account_variant_prices.currency_code` is constrained to
-`'AED'`. Account pricing cannot hold MXN until a migration relaxes it.
+The AED constraint on B2B customer accounts is replaced by MXN in the Mexico
+migration (the Mexico database starts empty, so nothing is converted).
 
 ## Customer type is not sales channel
 
@@ -46,10 +47,13 @@ currency)`; account-specific prices keep overriding it. The order transaction
 stays the single pricing authority: tiers are resolved inside it, never in the
 browser.
 
-## Procurement (design)
+## Procurement (built)
 
 One SKU, many suppliers, one preferred supplier chosen operationally. No second
-product truth.
+product truth. Implemented in the Mexico migration and proven by the SQL
+contract test: several suppliers per SKU, a second preferred supplier refused by
+a unique index, AED costs refused. What is not built is the admin screen to
+edit it.
 
 ```
 suppliers                (id, name, contact, location, notes, is_active)

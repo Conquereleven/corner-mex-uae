@@ -38,7 +38,8 @@ export function ManualQuoteRequestForm({
           Cuéntanos de tu negocio
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Revisa estos datos antes de enviar. CornerMex guarda la solicitud solo después de que la envíes en el siguiente paso.
+          Revisa estos datos antes de enviar. CornerMex guarda la solicitud solo después de que la
+          envíes en el siguiente paso.
         </p>
       </div>
 

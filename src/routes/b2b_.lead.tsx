@@ -26,7 +26,9 @@ function BusinessEnquiry() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
           Ventas a negocios
         </p>
-        <h1 className="mt-3 font-display text-4xl tracking-tight">Solicita una cotización de CornerMex</h1>
+        <h1 className="mt-3 font-display text-4xl tracking-tight">
+          Solicita una cotización de CornerMex
+        </h1>
         <p className="mt-5 text-base leading-7 text-muted-foreground">
           Usa el catálogo para negocios para elegir productos y enviar tu solicitud a CornerMex. Una
           persona revisa cada solicitud antes de confirmar precios, disponibilidad, entrega o

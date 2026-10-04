@@ -29,8 +29,7 @@ const CHANNELS = [
   {
     icon: Mail,
     title: "Atención a clientes",
-    description:
-      "Dudas sobre el catálogo, tu carrito, tu cuenta o una consulta que ya enviaste.",
+    description: "Dudas sobre el catálogo, tu carrito, tu cuenta o una consulta que ya enviaste.",
     email: PUBLIC_CONTACT.complaints,
     subject: "Consulta a CornerMex",
   },
@@ -60,7 +59,8 @@ function Contact() {
         </p>
         <h1 className="mt-3 font-display text-5xl tracking-tight">Contacta a CornerMex</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
-          Puedes escribirnos por correo. Cada consulta la revisa una persona; enviar una no crea un pedido, un contrato ni un proceso automatizado.
+          Puedes escribirnos por correo. Cada consulta la revisa una persona; enviar una no crea un
+          pedido, un contrato ni un proceso automatizado.
         </p>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -90,10 +90,14 @@ function Contact() {
         >
           <p>{marketIdentityLine()}</p>
           <p className="mt-2">
-            Por ahora el correo es el medio confirmado para contactar a CornerMex. Un mismo buzón atiende todos los tipos de consulta, así que cada opción usa la misma dirección con un asunto distinto: conserva el asunto para que tu mensaje llegue a quien corresponde.
+            Por ahora el correo es el medio confirmado para contactar a CornerMex. Un mismo buzón
+            atiende todos los tipos de consulta, así que cada opción usa la misma dirección con un
+            asunto distinto: conserva el asunto para que tu mensaje llegue a quien corresponde.
           </p>
           <p className="mt-2">
-            Aún no contamos con teléfono, domicilio para visitas ni horario de atención publicados. CornerMex todavía no opera un dominio de correo propio, así que una dirección en otro dominio no es un canal de contacto de CornerMex.
+            Aún no contamos con teléfono, domicilio para visitas ni horario de atención publicados.
+            CornerMex todavía no opera un dominio de correo propio, así que una dirección en otro
+            dominio no es un canal de contacto de CornerMex.
           </p>
         </div>
 

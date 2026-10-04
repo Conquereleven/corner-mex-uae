@@ -70,11 +70,10 @@ templates, the English and Spanish dictionaries, brand copy and site metadata.
 
 **B. Retired UAE modules — kept, inactive.** See `DEFERRED-UAE.md`.
 
-**C. Back-office — not yet migrated.** 21 admin files and 12 seller files still
-show AED, emirates or UAE VAT labels (`admin.payouts`, `admin.performance`,
-`admin.live-view` and its UAE map, `AdminB2bLeadPipeline`, the seller area).
-Money in the admin order views already follows the market. The rest is
-Sprint MX-4 (Phase 8).
+**C. Back-office — money migrated, some labels left.** Admin and seller screens
+now format money through `MarketConfig`. Still UAE-specific: the admin live view
+(UAE map and "UAE time"), the admin legal view of the retired UAE documents, and
+field labels in the seller area, which is inactive (`sellerAuthEnabled: false`).
 
 ## 5. Database facts that constrain the migration
 
@@ -99,8 +98,10 @@ Sprint MX-4 (Phase 8).
 
 | Gate | PR #81 (`c3fa0ba`) | `feat/cornermex-mx` |
 | --- | --- | --- |
-| Tests | 812: 804 pass / 4 fail / 4 skipped | **881: 873 pass / 4 fail / 4 skipped** (+69 Mexico tests) |
+| Tests | 812: 804 pass / 4 fail / 4 skipped | **936: 928 pass / 4 fail / 4 skipped** (+124 Mexico tests) |
 | `tsc --noEmit` | 299 errors | **299 errors** (no new) |
+| Mexico SQL contract | — | **50 assertions pass** on a clean bootstrap |
+| `lint:changed` | fails | **passes** |
 
 The 4 failures are the same four, by name, that fail on `main`. 35 existing guard
 tests pinned UAE copy or the UAE checkout; each was updated to assert the Mexico

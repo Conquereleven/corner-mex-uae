@@ -240,7 +240,7 @@ test("contact remains manual mailto only — no form, POST, CRM or automation", 
     assert.doesNotMatch(contact, pattern, `contact must stay manual-only: ${pattern}`);
   }
   assert.match(contact, /mailto\(/, "contact must use the central mailto helper");
-  assert.match(contact, /no crea un pedido/i);
+  assert.match(contact, /no\s+crea\s+un\s+pedido/i);
 });
 
 test("contact and trust components use the central public contact registry", async () => {
@@ -465,8 +465,8 @@ test("no application source composes or hardcodes an unowned-domain mailbox", as
 test("/contact uses the registry and explains the shared temporary mailbox", async () => {
   const contact = await read("src/routes/contact.tsx");
   assert.match(contact, /PUBLIC_CONTACT\./, "contact must resolve addresses via the registry");
-  assert.match(contact, /medio confirmado para contactar a CornerMex/i);
-  assert.match(contact, /la misma dirección con un asunto distinto/i);
+  assert.match(contact, /medio\s+confirmado\s+para\s+contactar\s+a\s+CornerMex/i);
+  assert.match(contact, /la\s+misma\s+dirección\s+con\s+un\s+asunto\s+distinto/i);
   assert.ok(!contact.includes(UNOWNED_MAIL_DOMAIN), "contact must not name the unowned domain");
 });
 
@@ -680,8 +680,8 @@ test("B2B customer copy makes no unauthorized commercial promise", async () => {
   ]) {
     assert.doesNotMatch(customerCopy, pattern, `unauthorized B2B promise: ${pattern}`);
   }
-  assert.match(customerCopy, /no es un pedido ni una cotización confirmada/i);
-  assert.match(preview, /no crea un pedido/i);
+  assert.match(customerCopy, /no\s+es\s+un\s+pedido\s+ni\s+una\s+cotización\s+confirmada/i);
+  assert.match(preview, /no\s+crea\s+un\s+pedido/i);
 });
 
 test("no application source falls back to an unowned origin for emails", async () => {
