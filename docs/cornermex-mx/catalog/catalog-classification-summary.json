@@ -1,0 +1,33 @@
+{
+  "source": "wlrfknmrhowldygmvtvn.supabase.co",
+  "products": 195,
+  "variants": 204,
+  "summary": {
+    "KEEP": 0,
+    "RESOURCE": 102,
+    "REMOVE_FROM_ACTIVE_MX": 25,
+    "INTERMEX_PRIVATE": 12,
+    "REVIEW": 56
+  },
+  "byRule": {
+    "kitchenware": 3,
+    "generic-pantry": 6,
+    "assembled-by-supplier": 4,
+    "small-producer": 38,
+    "souvenir-lifestyle": 15,
+    "national-brand": 96,
+    "legacy-intermex-slug": 1,
+    "export-market-brand": 7,
+    "unbranded-tortilla-line": 2,
+    "intermex-named": 8,
+    "non-mexican-uae-brand": 10,
+    "cold-chain": 3,
+    "intermex-own-production": 2
+  },
+  "dataGaps": {
+    "variantsWithoutWeight": 124,
+    "variantsWithoutDimensions": 204,
+    "variantsPricedZero": 1,
+    "variantsPricedInAed": 204
+  }
+}

@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET, formatMoney } from "@/config/market";
 import { useEffect, useState } from "react";
 import { Flame, X } from "lucide-react";
 import {
@@ -125,7 +126,7 @@ export function ShopFilters({
           </div>
         </Section>
 
-        <Section value="price" title="Price (AED)">
+        <Section value="price" title={`Precio (${ACTIVE_MARKET.currency})`}>
           <div className="grid grid-cols-2 gap-2">
             <Input
               type="number"
@@ -356,9 +357,9 @@ function ActiveChips({
   if (state.origin)
     chips.push({ label: state.origin, clear: () => update({ origin: undefined }) });
   if (state.priceMin != null)
-    chips.push({ label: `Min AED ${state.priceMin}`, clear: () => update({ priceMin: undefined }) });
+    chips.push({ label: `Mín. ${formatMoney(state.priceMin)}`, clear: () => update({ priceMin: undefined }) });
   if (state.priceMax != null)
-    chips.push({ label: `Max AED ${state.priceMax}`, clear: () => update({ priceMax: undefined }) });
+    chips.push({ label: `Máx. ${formatMoney(state.priceMax)}`, clear: () => update({ priceMax: undefined }) });
   if (state.bulk)
     chips.push({ label: "HORECA / Bulk", clear: () => update({ bulk: undefined }) });
   if (state.spice != null)

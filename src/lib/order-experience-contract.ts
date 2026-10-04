@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "../config/market.ts";
 export type OrderQueryResult<T> = { data: T | null; error: unknown };
 
 export async function loadOwnedOrderHistory<T>(
@@ -83,7 +84,8 @@ export function presentCanonicalCustomerOrder(order: {
   tax_aed: number | string;
   total_aed: number | string;
 }) {
-  const aed = (value: number | string) => `${Number(value).toFixed(2)} AED`;
+  // Stored amounts are in the active market currency (src/config/market.ts).
+  const aed = (value: number | string) => formatMoneyWithCode(value);
   return {
     orderNumber: order.order_number,
     orderStatus: order.status,

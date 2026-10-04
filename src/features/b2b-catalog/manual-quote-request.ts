@@ -26,7 +26,8 @@ export type ManualQuoteRequestFields = {
   role: string;
   email: string;
   phone: string;
-  emirate: string;
+  /** State (entidad federativa) the business operates in. */
+  location: string;
   notes: string;
   quantityInterest: QuantityInterest;
 };
@@ -42,7 +43,7 @@ export const EMPTY_MANUAL_QUOTE_REQUEST: ManualQuoteRequestFields = {
   role: "",
   email: "",
   phone: "",
-  emirate: "",
+  location: "",
   notes: "",
   quantityInterest: "NOT_SURE",
 };
@@ -60,7 +61,7 @@ export function validateManualQuoteRequest(
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
     errors.email = "Enter a valid email address.";
   }
-  if (!fields.emirate) errors.emirate = "Select an emirate.";
+  if (!fields.location) errors.location = "Selecciona un estado.";
   if (products.length === 0) errors.products = "Select at least one Wave 1 product.";
   return errors;
 }
@@ -79,7 +80,7 @@ export function formatManualQuoteRequest(
     `Role: ${fields.role.trim() || "Not provided"}`,
     `Email: ${fields.email.trim()}`,
     `Phone / WhatsApp: ${fields.phone.trim() || "Not provided"}`,
-    `Emirate: ${fields.emirate}`,
+    `Estado: ${fields.location}`,
     `Quantity interest: ${quantityInterestLabel(fields.quantityInterest)}`,
     "",
     "Selected products:",

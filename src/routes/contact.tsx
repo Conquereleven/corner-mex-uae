@@ -2,15 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Building2, Mail, ShieldCheck } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PolicyLinkGroup } from "@/components/site/Trust";
-import { businessIdentityLine } from "@/lib/business-identity";
+import { marketIdentityLine } from "@/lib/business-identity";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/contact")({
   head: () => {
-    const title = "Contact CornerMex — customer support and B2B enquiries in the UAE";
+    const title = "Contacto — atención a clientes y ventas a negocios | CornerMex";
     const description =
-      "Reach CornerMex by email for customer support, B2B and wholesale enquiries, or privacy and legal questions. Every enquiry is reviewed manually.";
+      "Escribe a CornerMex para atención a clientes, ventas por mayoreo o temas de privacidad y legales. Cada consulta la revisa una persona.";
     return {
       meta: [
         { title },
@@ -89,7 +89,7 @@ function Contact() {
           id="find-us"
           className="mt-12 scroll-mt-24 rounded-2xl border border-border bg-secondary/40 p-6 text-sm leading-6 text-muted-foreground"
         >
-          <p>{businessIdentityLine()}</p>
+          <p>{marketIdentityLine()}</p>
           <p className="mt-2">
             Email is currently the confirmed way to contact CornerMex. One shared mailbox handles
             every enquiry type for now, so each option above uses the same address with a different

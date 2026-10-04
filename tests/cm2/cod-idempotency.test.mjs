@@ -68,8 +68,8 @@ test("the server sends the operation id to the idempotent order function", async
 test("checkout obtains and clears the COD operation id around the order", async () => {
   const checkout = await read("src/routes/checkout.tsx");
   // The operation is keyed per identity: user id for a session, guest email otherwise.
-  const call = checkout.indexOf("codCheckoutOperation(operationKey, codInput)");
-  const place = checkout.indexOf("placeCod({ data: { ...codInput, operationId } })");
+  const call = checkout.indexOf("codCheckoutOperation(operationKey, orderInput)");
+  const place = checkout.indexOf("placeMx({ data: { ...orderInput, operationId } })");
   const clear = checkout.indexOf("clearCodCheckoutOperation(operationKey)");
   assert.ok(call > -1 && place > -1 && clear > -1, "COD checkout must use the operation helpers");
   assert.ok(call < place, "the id must be obtained before the order call");

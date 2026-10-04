@@ -129,12 +129,12 @@ test("/delivery states the ordering status from the checkout flag", async () => 
   const delivery = await read("src/routes/delivery.tsx");
   assert.match(delivery, /import \{ ONLINE_ORDERING_ENABLED \} from "@\/lib\/commerce-mode"/);
   assert.match(delivery, /\{ONLINE_ORDERING_ENABLED \? \(/);
-  // closed branch keeps the original non-promising disclosure
-  assert.match(delivery, /not currently enabled on this website/i);
-  assert.match(delivery, /should be treated as\s+confirmed/i);
+  // closed branch keeps the non-promising disclosure
+  assert.match(delivery, /no estamos recibiendo pedidos en línea/i);
+  assert.match(delivery, /no es posible contratar ni despachar un envío/i);
   // open branch describes what checkout actually does
-  assert.match(delivery, /Cash-on-delivery ordering is open to signed-in customers/);
-  assert.match(delivery, /nothing is ordered until you confirm/);
+  assert.match(delivery, /Puedes comprar en línea sin necesidad de crear una cuenta/);
+  assert.match(delivery, /No se registra ningún pedido hasta que\s+confirmas/);
 });
 
 test("returns, terms, policies and sign-in pages gate ordering claims on the checkout flag", async () => {
@@ -151,18 +151,19 @@ test("returns, terms, policies and sign-in pages gate ordering claims on the che
   // live branch must not describe prices as "not an offer to sell" and must name
   // the documents that govern orders, while staying honest about legal review
   const liveTerms = terms.slice(terms.indexOf("ONLINE_ORDERING_ENABLED ?"), terms.indexOf(") : ("));
-  assert.doesNotMatch(liveTerms, /not an offer to sell/);
-  assert.match(liveTerms, /slug: "terms-and-conditions"/);
-  assert.match(liveTerms, /slug: "returns-refunds"/);
-  // Legal review is complete (FD-CM-LEGAL-REVIEW-001), so the page must no
-  // longer describe the terms as pending review.
-  assert.doesNotMatch(liveTerms, /pending review|working template|before commercial activation/i);
+  assert.doesNotMatch(liveTerms, /not an offer to sell|no constituyen una oferta de venta/);
+  // FD-CM-LEGAL-REVIEW-001 approved the UAE documents. They do not govern sales
+  // in Mexico, so no active page may link to them or present them as in force;
+  // the Mexico documents are a launch gate (docs/cornermex-mx/MX-LAUNCH-PLAN.md).
   const returns = await read("src/routes/returns.tsx");
-  const liveReturns = returns.slice(
-    returns.indexOf("ONLINE_ORDERING_ENABLED ?"),
-    returns.indexOf(") : ("),
-  );
-  assert.match(liveReturns, /slug: "returns-refunds"/);
+  for (const [name, source] of [
+    ["terms", terms],
+    ["returns", returns],
+  ]) {
+    assert.doesNotMatch(source, /slug: "terms-and-conditions"|slug: "returns-refunds"/, name);
+    assert.doesNotMatch(source, /UAE|Emirat/i, name);
+    assert.match(source, /se publicará[n]?\s+en el/, `${name} states the documents are pending`);
+  }
 });
 
 test("the ordering flag defaults to closed outside a Vite build", async () => {
@@ -202,10 +203,11 @@ test("/delivery makes no unsupported absolute guarantee", async () => {
 
 test("/delivery keeps availability qualified and hides COD thresholds", async () => {
   const delivery = await read("src/routes/delivery.tsx");
-  assert.match(delivery, /can differ between emirates and order types/i);
-  // Internal COD eligibility numbers must never surface as a public promise.
-  assert.doesNotMatch(delivery, /cash on delivery/i);
-  assert.doesNotMatch(delivery, /\bAED\s?\d/);
+  assert.match(delivery, /La cobertura se confirma para cada dirección/i);
+  // Internal payment eligibility and amounts must never surface as a public promise.
+  assert.doesNotMatch(delivery, /cash on delivery|contra entrega/i);
+  assert.doesNotMatch(delivery, /\bAED\b|\$\s?\d/);
+  assert.doesNotMatch(delivery, /emirat/i);
 });
 
 test("/delivery heading outline is sequential (no skipped levels)", async () => {

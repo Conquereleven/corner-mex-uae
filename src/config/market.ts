@@ -123,7 +123,8 @@ export const AE_MARKET: MarketConfig = Object.freeze({
   address: Object.freeze({ model: "ae-emirate" }),
   tax: Object.freeze({ priceModel: "ADDED", label: "VAT" }),
   legal: Object.freeze({
-    sellerEntity: "RodMor TradeCo LLC",
+    // The UAE entity is recorded once, in src/lib/business-identity.ts.
+    sellerEntity: null,
     taxId: null,
     taxIdLabel: "TRN",
     fiscalAddress: null,

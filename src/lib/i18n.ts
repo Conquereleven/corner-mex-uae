@@ -1,6 +1,8 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
+import { ACTIVE_MARKET } from "../config/market.ts";
+
 const en = {
   nav: {
     shop: "Shop",
@@ -13,10 +15,10 @@ const en = {
     signup: "Get started",
   },
   hero: {
-    eyebrow: "Mexican pantry · UAE",
-    title: "Discover the pantry of Mexico,",
-    titleAccent: "curated for the UAE.",
-    sub: "Explore chiles, salsas, masa and snacks. Signed-in customers can place cash-on-delivery orders; current availability is verified at checkout and business quotes are reviewed manually.",
+    eyebrow: "Mexican pantry · Mexico",
+    title: "The Mexican pantry,",
+    titleAccent: "by the piece or by the case.",
+    sub: "Explore chiles, salsas, masa and snacks. Buy as a guest or with an account; price and availability are confirmed at checkout and business quotes are reviewed by a person.",
     ctaShop: "Browse the catalogue",
     ctaB2B: "Request a manual quote",
   },
@@ -30,14 +32,14 @@ const en = {
     pantry: "Pantry staples",
   },
   features: {
-    title: "Built for the UAE's mexican kitchen",
+    title: "Built for home kitchens and businesses",
     a: {
       title: "Catalogue discovery",
-      body: "Explore product information without an account, then sign in to place a cash-on-delivery order.",
+      body: "Explore product information and buy without creating an account.",
     },
     b: {
-      title: "AED-first presentation",
-      body: "Amounts are shown in AED and current B2C prices are verified at checkout.",
+      title: "Prices in Mexican pesos",
+      body: "Amounts are shown in MXN and current prices are verified at checkout.",
     },
     c: {
       title: "Human-reviewed B2B quotes",
@@ -47,11 +49,11 @@ const en = {
   b2b: {
     eyebrow: "For restaurants, hotels & caterings",
     title: "Stock your kitchen with the real thing.",
-    body: "Tell CornerMex what your business needs. Availability, AED pricing, delivery and terms are confirmed in a human-approved written quote.",
+    body: "Tell CornerMex what your business needs. Availability, pricing, delivery and terms are confirmed in a human-approved written quote.",
     cta: "For business",
   },
   footer: {
-    tagline: "Mexican corner. Emirati table.",
+    tagline: "Your Mexican corner store.",
     rights: "All rights reserved.",
     shop: "Shop",
     company: "Company",
@@ -348,13 +350,13 @@ const en = {
   pages: {
     b2b: {
       meta: {
-        title: "For Business — Wholesale Mexican supply in the UAE | CornerMex",
+        title: "For Business — Wholesale Mexican supply | CornerMex",
         description:
-          "Human-reviewed wholesale quotes for UAE businesses sourcing Mexican pantry products.",
+          "Human-reviewed wholesale quotes for businesses sourcing Mexican pantry products.",
       },
       eyebrow: "For business",
-      title: "A manual quote path for UAE businesses.",
-      lede: "Browse the catalogue, then email your product, volume and destination requirements. CornerMex reviews each enquiry before confirming availability, AED pricing, delivery options or terms.",
+      title: "Wholesale supply, quoted by a person.",
+      lede: "Browse the catalogue, then email your product, volume and destination requirements. CornerMex reviews each enquiry before confirming availability, pricing, delivery options or terms.",
       ctaQuote: "Request a manual quote",
       ctaContact: "Email CornerMex",
       perks: {
@@ -362,7 +364,7 @@ const en = {
           title: "Tailored catalogues",
           body: "Tell us what you need; catalogue suggestions are prepared for review.",
         },
-        emirates: {
+        confirmation: {
           title: "Confirmation before commitment",
           body: "Availability, destination and delivery options are confirmed in writing.",
         },
@@ -374,12 +376,12 @@ const en = {
     },
     about: {
       meta: {
-        title: "About CornerMex — Authentic Mexican pantry in the UAE",
+        title: "About CornerMex — Mexican pantry, retail and wholesale",
         description:
-          "CornerMex is a curated Mexican pantry for the UAE, with cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
+          "CornerMex is a Mexican pantry store for homes and businesses, with guest checkout and human-reviewed business quotes.",
       },
-      title: "A Mexican corner in the Emirates.",
-      lede: "CornerMex is a curated Mexican pantry for the UAE. Signed-in customers can order for cash on delivery, and businesses can request human-approved written quotes.",
+      title: "Your Mexican corner store.",
+      lede: "CornerMex is a Mexican pantry store for homes and businesses. Buy by the piece online, or request a human-approved written quote for volume.",
       ctaShop: "Browse the catalogue",
       ctaB2B: "For business",
     },
@@ -398,10 +400,10 @@ const es = {
     signup: "Empezar",
   },
   hero: {
-    eyebrow: "Despensa mexicana · EAU",
-    title: "Descubre la despensa de México,",
-    titleAccent: "curada para EAU.",
-    sub: "Explora chiles, salsas, masa y snacks. Los clientes con sesión iniciada pueden pedir contra entrega; la disponibilidad se verifica al pagar y las cotizaciones empresariales se revisan manualmente.",
+    eyebrow: "Despensa mexicana · México",
+    title: "La despensa mexicana,",
+    titleAccent: "por pieza o por caja.",
+    sub: "Explora chiles, salsas, masa y botanas. Compra como invitado o con tu cuenta; el precio y la disponibilidad se confirman al finalizar la compra, y las cotizaciones para negocio las revisa una persona.",
     ctaShop: "Ver catálogo",
     ctaB2B: "Solicitar cotización manual",
   },
@@ -415,14 +417,14 @@ const es = {
     pantry: "Despensa",
   },
   features: {
-    title: "Hecho para la cocina mexicana en EAU",
+    title: "Para tu cocina y para tu negocio",
     a: {
       title: "Exploración del catálogo",
-      body: "Consulta información de productos sin crear una cuenta ni realizar un pedido.",
+      body: "Consulta los productos y compra sin necesidad de crear una cuenta.",
     },
     b: {
-      title: "Presentación en AED",
-      body: "Los importes indicativos se muestran en AED y solo se confirman por escrito.",
+      title: "Precios en pesos mexicanos",
+      body: "Los importes se muestran en MXN y el precio vigente se confirma al finalizar la compra.",
     },
     c: {
       title: "Cotizaciones B2B revisadas",
@@ -432,11 +434,11 @@ const es = {
   b2b: {
     eyebrow: "Para restaurantes, hoteles y caterings",
     title: "Surte tu cocina con lo auténtico.",
-    body: "Cuéntanos qué necesita tu negocio. Disponibilidad, precios en AED, entrega y condiciones se confirman en una cotización escrita aprobada por una persona.",
+    body: "Cuéntanos qué necesita tu negocio. Disponibilidad, precios, entrega y condiciones se confirman en una cotización escrita aprobada por una persona.",
     cta: "Para negocios",
   },
   footer: {
-    tagline: "Esquina mexicana. Mesa emiratí.",
+    tagline: "Tu tienda mexicana de la esquina.",
     rights: "Todos los derechos reservados.",
     shop: "Tienda",
     company: "Empresa",
@@ -736,11 +738,11 @@ const es = {
       meta: {
         title: "Para negocios — Cotizaciones mayoristas | CornerMex",
         description:
-          "Cotizaciones mayoristas revisadas por personas para negocios en EAU que buscan productos de despensa mexicana.",
+          "Cotizaciones de mayoreo revisadas por personas para negocios que buscan productos de despensa mexicana.",
       },
       eyebrow: "Para negocios",
-      title: "Una ruta de cotización manual para negocios en EAU.",
-      lede: "Explora el catálogo y envía por correo los productos, volumen y destino. CornerMex revisa cada consulta antes de confirmar disponibilidad, precios en AED, entrega o condiciones.",
+      title: "Abasto por mayoreo, cotizado por una persona.",
+      lede: "Explora el catálogo y envía por correo los productos, volumen y destino. CornerMex revisa cada consulta antes de confirmar disponibilidad, precios, entrega o condiciones.",
       ctaQuote: "Solicitar cotización manual",
       ctaContact: "Escribir a CornerMex",
       perks: {
@@ -748,7 +750,7 @@ const es = {
           title: "Catálogos a medida",
           body: "Cuéntanos qué necesitas; preparamos sugerencias para revisión.",
         },
-        emirates: {
+        confirmation: {
           title: "Confirmación previa",
           body: "Disponibilidad, destino y opciones de entrega se confirman por escrito.",
         },
@@ -760,12 +762,12 @@ const es = {
     },
     about: {
       meta: {
-        title: "Nosotros — CornerMex, despensa mexicana en EAU",
+        title: "Nosotros — CornerMex, despensa mexicana por pieza y por mayoreo",
         description:
-          "CornerMex es una despensa mexicana curada para EAU, con pedidos contra entrega para clientes registrados y cotizaciones para negocios revisadas por personas.",
+          "CornerMex es una tienda de despensa mexicana para el hogar y el negocio, con compra como invitado y cotizaciones para negocio revisadas por personas.",
       },
-      title: "Un rincón mexicano en los Emiratos.",
-      lede: "CornerMex es una despensa mexicana curada para EAU. Los clientes registrados pueden pedir con pago contra entrega y los negocios pueden solicitar cotizaciones escritas aprobadas por una persona.",
+      title: "Tu tienda mexicana de la esquina.",
+      lede: "CornerMex es una tienda de despensa mexicana para el hogar y el negocio. Compra por pieza en línea, o solicita una cotización escrita aprobada por una persona para compras por volumen.",
       ctaShop: "Ver catálogo",
       ctaB2B: "Para negocios",
     },
@@ -1132,7 +1134,7 @@ const ar = {
           title: "كتالوجات مخصصة",
           body: "أخبرنا باحتياجاتك وسنجهز اقتراحات للمراجعة.",
         },
-        emirates: {
+        confirmation: {
           title: "التأكيد قبل الالتزام",
           body: "يُؤكد التوفر والوجهة وخيارات التسليم كتابةً.",
         },
@@ -1156,18 +1158,29 @@ const ar = {
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
     resources: { en: { t: en }, es: { t: es }, ar: { t: ar } },
-    lng: "en", // deterministic for SSR; client switches in LanguageProvider
-    fallbackLng: "en",
+    // Deterministic for SSR: the market's default language. The client may
+    // switch to another language the market offers (LanguageProvider).
+    lng: ACTIVE_MARKET.defaultLanguage,
+    fallbackLng: ACTIVE_MARKET.defaultLanguage,
     defaultNS: "t",
     ns: ["t"],
     interpolation: { escapeValue: false },
   });
 }
 
-export const LANGS = [
-  { code: "en", label: "English", dir: "ltr" as const },
+const ALL_LANGS = [
   { code: "es", label: "Español", dir: "ltr" as const },
+  { code: "en", label: "English", dir: "ltr" as const },
   { code: "ar", label: "العربية", dir: "rtl" as const },
 ];
+
+/**
+ * Languages offered in the storefront: the ones the active market lists, in its
+ * order. The Arabic dictionary is retained for the deferred UAE market and is
+ * not offered in Mexico.
+ */
+export const LANGS = ACTIVE_MARKET.languages.flatMap((code) =>
+  ALL_LANGS.filter((language) => language.code === code),
+);
 
 export default i18n;

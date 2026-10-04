@@ -8,33 +8,33 @@ import { ONLINE_ORDERING_ENABLED } from "@/lib/commerce-mode";
 const POLICIES = [
   {
     to: "/delivery" as const,
-    title: "Delivery",
-    summary: "Emirate-based coverage and how charges are confirmed before you commit.",
+    title: "Envíos",
+    summary: "Cómo se cotiza el envío a tu código postal antes de confirmar.",
   },
   {
     to: "/returns" as const,
-    title: "Returns",
-    summary: "The preview state and how future written terms will apply.",
+    title: "Devoluciones",
+    summary: "Cómo solicitar una devolución o un reembolso.",
   },
   {
     to: "/privacy" as const,
-    title: "Privacy",
-    summary: "What CornerMex processes and how to contact us.",
+    title: "Privacidad",
+    summary: "Qué datos trata CornerMex y cómo contactarnos.",
   },
   {
     to: "/terms" as const,
-    title: "Terms",
-    summary: "The terms for using CornerMex and for website orders.",
+    title: "Términos",
+    summary: "Cómo funciona el sitio y la compra en línea.",
   },
 ];
 
 export const Route = createFileRoute("/legal/")({
   head: () => ({
     meta: [
-      { title: "Policies — CornerMex" },
+      { title: "Políticas — CornerMex" },
       {
         name: "description",
-        content: "Delivery, returns, privacy and terms for CornerMex in the UAE.",
+        content: "Envíos, devoluciones, privacidad y términos de CornerMex.",
       },
       { property: "og:url", content: siteUrl("/legal") },
     ],
@@ -48,15 +48,15 @@ function LegalIndex() {
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-eyebrow">
-          <ShieldCheck className="h-3.5 w-3.5" /> Policies
+          <ShieldCheck className="h-3.5 w-3.5" /> Políticas
         </div>
         <h1 className="mt-3 font-display text-5xl tracking-tight">
-          Clear boundaries before commerce
+          Reglas claras antes de comprar
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
           {ONLINE_ORDERING_ENABLED
-            ? "CornerMex supports catalogue discovery, customer accounts, cash-on-delivery orders for signed-in customers and manual B2B enquiries. Card payments, marketplace participation and automated messaging run only when authorized configuration is enabled."
-            : "CornerMex currently supports catalogue discovery, optional accounts, B2C cart preparation and manual B2B enquiries. Order execution, payments, marketplace participation and automated messaging run only when authorized configuration is enabled."}
+            ? "En CornerMex puedes explorar el catálogo, comprar como invitado o con una cuenta, y solicitar cotizaciones para tu negocio. Estos resúmenes describen cómo funciona el sitio hoy; los documentos legales completos para México se publican aquí antes de abrir la venta al público."
+            : "En CornerMex puedes explorar el catálogo, preparar tu carrito y solicitar cotizaciones para tu negocio. Por el momento no estamos recibiendo pedidos en línea. Los documentos legales completos para México se publican aquí antes de abrir la venta al público."}
         </p>
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {POLICIES.map((policy) => (
@@ -74,7 +74,7 @@ function LegalIndex() {
           ))}
         </div>
         <p className="mt-10 text-sm text-muted-foreground">
-          Legal questions:{" "}
+          Dudas legales:{" "}
           <a className="underline" href={mailto(PUBLIC_CONTACT.legal)}>
             {PUBLIC_CONTACT.legal}
           </a>

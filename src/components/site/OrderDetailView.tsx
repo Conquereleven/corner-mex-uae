@@ -1,3 +1,5 @@
+import { formatMoneyWithCode } from "@/config/market";
+import { formatMxAddressLines, isMxAddressSnapshot } from "@/lib/mx-address";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,8 +31,8 @@ import {
   SellerShipmentPresentation,
 } from "@/components/site/OrderExperienceBehaviorSurfaces";
 
-const AED = (n: number | string) =>
-  `${Number(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
+// Stored amounts are in the active market currency (src/config/market.ts).
+const AED = (n: number | string) => formatMoneyWithCode(n ?? 0);
 
 export type OrderDetailRole = "seller";
 
@@ -219,7 +221,7 @@ export function OrderDetailView({
                   />
                 )}
                 <Row label="Shipping" value={AED(order.shipping_aed)} />
-                <Row label="VAT" value={AED(order.tax_aed)} />
+                {Number(order.tax_aed ?? 0) > 0 && <Row label="Impuestos" value={AED(order.tax_aed)} />}
                 <div className="flex items-center justify-between pt-2 text-base font-semibold">
                   <span>Total</span>
                   <span className="tabular-nums">{AED(order.total_aed)}</span>
@@ -282,11 +284,29 @@ export function OrderDetailView({
             <CardContent className="space-y-1 text-sm">
               <p className="font-medium">{addr.recipient_name ?? "—"}</p>
               {addr.phone && <p className="text-muted-foreground">{addr.phone}</p>}
-              <p className="text-muted-foreground">
-                {[addr.building, addr.street, addr.area, addr.emirate].filter(Boolean).join(", ")}
-              </p>
-              {addr.landmark && (
-                <p className="text-xs text-muted-foreground">Landmark: {addr.landmark}</p>
+              {isMxAddressSnapshot(addr) ? (
+                <>
+                  {formatMxAddressLines(addr).map((line) => (
+                    <p key={line} className="text-muted-foreground">
+                      {line}
+                    </p>
+                  ))}
+                  {addr.references && (
+                    <p className="text-xs text-muted-foreground">Referencias: {addr.references}</p>
+                  )}
+                </>
+              ) : (
+                // Historical order recorded under the deferred UAE address model.
+                <>
+                  <p className="text-muted-foreground">
+                    {[addr.building, addr.street, addr.area, addr.emirate]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                  {addr.landmark && (
+                    <p className="text-xs text-muted-foreground">{addr.landmark}</p>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

@@ -17,7 +17,7 @@ import {
   DesertGlassControl,
   DesertGlassSurface,
 } from "@/components/site/DesertGlass";
-import { sellerOfRecordLine } from "@/lib/business-identity";
+import { marketSellerLine } from "@/lib/business-identity";
 
 const shopSearchSchema = z.object({
   category: fallback(z.string().optional(), undefined),
@@ -151,9 +151,9 @@ function Shop() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
               CornerMex
             </p>
-            <h1 className="mt-1 font-display text-4xl tracking-tight sm:text-5xl">Catalogue</h1>
+            <h1 className="mt-1 font-display text-4xl tracking-tight sm:text-5xl">Catálogo</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Browse authentic Mexican products with AED pricing and current catalogue availability.
+              Productos mexicanos con precio en pesos y disponibilidad vigente.
             </p>
           </div>
           <DesertGlassControl className="relative w-full rounded-full md:w-80">
@@ -386,9 +386,12 @@ function Shop() {
           </div>
         </div>
 
-        <div className="mt-16 border-t border-border pt-8 text-sm text-muted-foreground">
-          {sellerOfRecordLine()}.
-        </div>
+        {/* Rendered only once the Mexico seller entity is known. */}
+        {marketSellerLine() && (
+          <div className="mt-16 border-t border-border pt-8 text-sm text-muted-foreground">
+            {marketSellerLine()}.
+          </div>
+        )}
       </section>
     </SiteLayout>
   );

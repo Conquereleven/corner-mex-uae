@@ -87,19 +87,21 @@ test("email/password login and protected admin boundaries remain present", () =>
   assert.doesNotMatch(`${login}\n${callback}`, /Claim admin|AdminBootstrapCard|adminBootstrap/i);
 });
 
-test("all nine checkout delivery controls have stable ids and names", () => {
+test("all eleven Mexico checkout delivery controls have stable ids and names", () => {
   const ids =
     checkout.match(
-      /id="checkout-(?:recipient-name|phone|emirate|area|street|building|floor-apartment|landmark|notes)"/g,
+      /id="checkout-(?:recipient-name|phone|postal-code|state|municipality|colonia|street|exterior-number|interior-number|references|notes)"/g,
     ) ?? [];
   const names =
     checkout.match(
-      /name="(?:recipient_name|phone|emirate|area|street|building|floor_apt|landmark|notes)"/g,
+      /name="(?:recipient_name|phone|postal_code|state|municipality|colonia|street|exterior_number|interior_number|references|notes)"/g,
     ) ?? [];
-  assert.equal(new Set(ids).size, 9);
-  assert.equal(new Set(names).size, 9);
+  assert.equal(new Set(ids).size, 11);
+  assert.equal(new Set(names).size, 11);
   assert.match(checkout, /htmlFor=\{id\}/);
-  assert.match(checkout, /aria-labelledby="checkout-emirate-label"/);
+  assert.match(checkout, /aria-labelledby="checkout-state-label"/);
+  // No UAE address control survives in the active checkout.
+  assert.doesNotMatch(checkout, /checkout-emirate|checkout-area|checkout-building|checkout-landmark/);
 });
 
 test("checkout layout is bounded without using overflow hiding as the fix", () => {

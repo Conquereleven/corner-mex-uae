@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ACTIVE_MARKET } from "@/config/market";
 import {
   Outlet,
   Link,
@@ -78,29 +79,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CornerMex — Authentic Mexican pantry in the UAE" },
+      { title: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         name: "description",
         content:
-          "Explore a curated Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders and business quotes are reviewed manually.",
+          "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
       },
-      { property: "og:title", content: "CornerMex — Authentic Mexican pantry in the UAE" },
+      { property: "og:title", content: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         property: "og:description",
-        content: "Authentic Mexican chiles, salsas, masa and snacks for the UAE. Cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
+        content: "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
       },
       { property: "og:site_name", content: "CornerMex" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "CornerMex — Authentic Mexican pantry in the UAE" },
+      { name: "twitter:title", content: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         name: "twitter:description",
-        content: "Authentic Mexican chiles, salsas, masa and snacks for the UAE. Cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
+        content: "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
       },
       {
         name: "keywords",
         content:
-          "Mexican groceries Dubai, Mexican food Abu Dhabi, Latin products UAE, Mexican products Sharjah, authentic Mexican products UAE, productos mexicanos Dubai, productos latinos EAU, tortillas UAE, salsa Mexico Dubai",
+          "despensa mexicana, abarrotes en línea, chiles secos, salsas mexicanas, botanas mexicanas, mayoreo de abarrotes, proveedor para restaurantes, Tecámac, Estado de México, CDMX",
       },
     ],
     links: [
@@ -124,9 +125,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "CornerMex",
           url: siteOrigin(),
           description:
-            "Authentic Mexican chiles, salsas, masa and snacks for the UAE. Cash-on-delivery ordering for signed-in customers and human-reviewed business quotes.",
-          currenciesAccepted: "AED",
-          knowsLanguage: ["en", "es", "ar"],
+            "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
+          currenciesAccepted: ACTIVE_MARKET.currency,
+          knowsLanguage: [...ACTIVE_MARKET.languages],
         }),
       },
     ],
@@ -139,7 +140,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang={ACTIVE_MARKET.defaultLanguage}>
       <head>
         <HeadContent />
       </head>

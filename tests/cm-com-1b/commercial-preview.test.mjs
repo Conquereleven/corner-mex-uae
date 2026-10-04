@@ -21,19 +21,16 @@ test("public chrome truthfully presents independent B2C and B2B surfaces", async
   ]);
 
   assert.doesNotMatch(header, /commercial preview/i);
-  for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"]) {
+  // Mexico storefront: the chrome is in Spanish (docs/cornermex-mx/MARKET-CONFIG.md).
+  for (const label of ["Tienda", "Mayoreo", "Cuenta", "Iniciar sesión", "Carrito"]) {
     assert.match(header, new RegExp(label));
   }
   assert.match(header, /to="\/cart"/);
   assert.match(header, /user \? "\/account" : "\/login"/);
-  assert.match(footer, /B2C cart and account access are available/);
-  assert.match(
-    footer,
-    /Checkout and order processing run only\s+when\s+authorized configuration is enabled/,
-  );
-  assert.match(footer, /B2B enquiries can be submitted/);
-  assert.match(footer, /human review/);
-  assert.match(footer, /not an order, payment or\s+confirmed quote/);
+  assert.match(footer, /se confirman\s+antes de que finalices tu pedido/);
+  assert.match(footer, /las revisa una persona/);
+  assert.match(footer, /no es un pedido ni una cotización confirmada/);
+  assert.match(footer, /no crea ningún\s+compromiso comercial/);
   assert.doesNotMatch(footer, /Order confirmed|Payment processed|Quote confirmed/i);
   assert.match(shop, /Product discovery only/);
   assert.doesNotMatch(home, /commercial preview/i);
@@ -109,12 +106,13 @@ test("delivery, returns, privacy and terms are discoverable without unsupported 
   }
   assert.match(shipping, /redirect\(\{ to: "\/delivery" \}\)/);
   const policies = `${delivery}\n${returns}\n${privacy}\n${terms}`;
-  assert.match(policies, /Order execution is not currently enabled/i);
-  assert.match(policies, /does not create an order/i);
+  assert.match(policies, /no estamos recibiendo pedidos en línea/i);
+  assert.match(policies, /no crea un pedido/i);
   assert.doesNotMatch(
     policies,
     /same[- ]day|within one business day|free shipping|guaranteed delivery/i,
   );
+  assert.doesNotMatch(policies, /mismo día|envío gratis|entrega garantizada/i);
 });
 
 test("dual commerce execution fails closed and public sitemaps exclude seller routes", async () => {
@@ -147,7 +145,7 @@ test("dual commerce execution fails closed and public sitemaps exclude seller ro
   assert.match(checkout, /VITE_CORNERMEX_CHECKOUT_ENABLED === "true"/);
   assert.match(checkout, /const canExecute = CHECKOUT_ENABLED &&/);
   assert.match(checkout, /disabled=\{!canExecute \|\| submitting\}/);
-  assert.match(checkout, /no order or\s+payment will be created/i);
+  assert.match(checkout, /no se creará ningún pedido ni se realizará ningún cargo/i);
   assert.match(serverGate, /value = process\.env\.CORNERMEX_CHECKOUT_ENABLED/);
   assert.match(serverGate, /return value === "true"/);
   assert.match(serverGate, /throw new Error\(CHECKOUT_EXECUTION_DISABLED\)/);

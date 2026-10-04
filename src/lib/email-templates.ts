@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET, formatMoneyWithCode } from "../config/market.ts";
 import { CORNERMEX_PALETTE } from "@/config/brand-tokens";
 
 /*
@@ -26,7 +27,7 @@ function layout(title: string, body: string, cta?: { label: string; url: string 
           ${body}
           ${cta ? `<p style="margin:24px 0 0"><a href="${cta.url}" style="background:${PRIMARY};color:${ON_PRIMARY};padding:12px 20px;border-radius:999px;text-decoration:none;display:inline-block">${cta.label}</a></p>` : ""}
         </td></tr>
-        <tr><td style="padding:16px 24px;border-top:1px solid ${BORDER};color:${MUTED};font-size:12px">© ${new Date().getFullYear()} ${SITE} · UAE</td></tr>
+        <tr><td style="padding:16px 24px;border-top:1px solid ${BORDER};color:${MUTED};font-size:12px">© ${new Date().getFullYear()} ${SITE} · ${ACTIVE_MARKET.countryNameLocal}</td></tr>
       </table>
     </td></tr>
   </table>
@@ -38,7 +39,7 @@ function itemsTable(items: { name: string; qty: number; total: number }[]) {
     .map(
       (i) => `<tr>
     <td style="padding:8px 0;border-bottom:1px solid ${BORDER}">${i.name} <span style="color:${MUTED}">× ${i.qty}</span></td>
-    <td style="padding:8px 0;border-bottom:1px solid ${BORDER};text-align:right;font-variant-numeric:tabular-nums">${i.total.toFixed(2)} AED</td>
+    <td style="padding:8px 0;border-bottom:1px solid ${BORDER};text-align:right;font-variant-numeric:tabular-nums">${formatMoneyWithCode(i.total)}</td>
   </tr>`,
     )
     .join("");
@@ -60,7 +61,7 @@ export function tplOrderPlaced(ctx: OrderEmailContext) {
       "Thanks for your order!",
       `<p style="margin:0;color:${INK}">We've received order <strong>${ctx.orderNumber}</strong>. We'll notify you when it ships.</p>
        ${itemsTable(ctx.items)}
-       <p style="margin:16px 0 0;font-weight:bold">Total: ${ctx.total.toFixed(2)} AED</p>`,
+       <p style="margin:16px 0 0;font-weight:bold">Total: ${formatMoneyWithCode(ctx.total)}</p>`,
       { label: "View order", url: `${ctx.publicOrigin}/account` },
     ),
   };

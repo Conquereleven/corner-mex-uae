@@ -18,7 +18,7 @@ export type CartItem = {
 
 export const B2C_CART_STORAGE_KEY = "cornermex-cart-v1";
 
-const roundAed = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
 type CartState = {
   items: CartItem[];
@@ -66,11 +66,18 @@ export const useCart = create<CartState>()(
 );
 
 export function cartTotals(items: CartItem[]) {
-  const subtotal = roundAed(items.reduce((a, i) => a + i.unitPrice * i.qty, 0));
+  const subtotal = roundMoney(items.reduce((a, i) => a + i.unitPrice * i.qty, 0));
   const sellers = new Set(items.map((i) => i.sellerId));
-  const tax = roundAed(subtotal * 0.05); // UAE VAT 5%, rounded to fils
-  const totalBeforeShipping = roundAed(subtotal + tax);
-  return { subtotal, shipping: null, tax, totalBeforeShipping, sellerCount: sellers.size };
+  // The cart is an estimate from locally stored prices. It adds no tax: whether
+  // and how tax is itemised is a market decision (src/config/market.ts), and the
+  // authoritative amounts are computed by the server at checkout.
+  return {
+    subtotal,
+    shipping: null,
+    tax: 0,
+    totalBeforeShipping: subtotal,
+    sellerCount: sellers.size,
+  };
 }
 
 export function groupBySeller(items: CartItem[]) {

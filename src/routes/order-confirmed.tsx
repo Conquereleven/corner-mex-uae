@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { getOrderForConfirmation } from "@/lib/payments.functions";
 import { claimGuestOrder, getGuestOrder } from "@/lib/guest-order.functions";
 import { forgetGuestOrderToken, guestOrderToken } from "@/lib/guest-order-token";
-import { deliveryEstimateText } from "@/lib/delivery-sla";
 
 export const Route = createFileRoute("/order-confirmed")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -83,10 +82,10 @@ function Confirmation() {
       const message = caught instanceof Error ? caught.message : "";
       setClaimError(
         message.includes("EMAIL_MISMATCH")
-          ? "This order was placed with a different email address."
+          ? "Este pedido se hizo con otro correo electrónico."
           : message.includes("EMAIL_NOT_VERIFIED")
-            ? "Confirm your email address first, then try again."
-            : "We could not add this order to your account.",
+            ? "Primero confirma tu correo electrónico e inténtalo de nuevo."
+            : "No pudimos agregar este pedido a tu cuenta.",
       );
       setClaimState("error");
     }
@@ -98,37 +97,37 @@ function Confirmation() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-2xl px-4 py-20">
-        <h1 className="font-display text-3xl">Your order</h1>
+        <h1 className="font-display text-3xl">Tu pedido</h1>
         <p className="mt-4">
           {value
             ? value.payment_method === "cod"
-              ? `Order #${orderNumber} received. Payment is due on delivery. ${deliveryEstimateText()}`
+              ? `Recibimos tu pedido #${orderNumber}. Pagas al recibirlo. El tiempo de entrega es el de la opción de envío que elegiste.`
               : value.payment_status === "paid"
-                ? `Payment received for order #${orderNumber}.`
-                : `Order #${orderNumber}: payment ${value.payment_status.replaceAll("_", " ")}.`
+                ? `Recibimos el pago de tu pedido #${orderNumber}.`
+                : `Pedido #${orderNumber}: pago ${value.payment_status.replaceAll("_", " ")}.`
             : !order
-              ? "We could not find that order."
+              ? "No encontramos ese pedido."
               : loading
-                ? "Checking your order…"
+                ? "Consultando tu pedido…"
                 : user
-                  ? "We could not find that order on your account."
-                  : "This order is tracked from the browser that placed it. Open the confirmation link on that device, or contact us with your order number."}
+                  ? "No encontramos ese pedido en tu cuenta."
+                  : "Este pedido se consulta desde el navegador donde se hizo. Abre la confirmación en ese dispositivo, o escríbenos con tu número de pedido."}
         </p>
 
         {isGuestOrder && (
           <div className="mt-8 rounded-2xl border border-border bg-secondary/40 p-6">
             <p className="text-sm leading-6">
-              You ordered as a guest. This device can follow the order status here — no account
-              needed.
+              Compraste como invitado. Desde este dispositivo puedes consultar aquí el estado de tu
+              pedido, sin necesidad de una cuenta.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Want it on every device? Create a CornerMex account with{" "}
-              <span className="font-medium text-foreground">the same email</span> you used at
-              checkout, then reopen this page to add the order to your account.
+              ¿Quieres verlo en todos tus dispositivos? Crea una cuenta CornerMex con{" "}
+              <span className="font-medium text-foreground">el mismo correo</span> que usaste al
+              comprar y vuelve a abrir esta página para agregar el pedido a tu cuenta.
             </p>
             <Link to="/login">
               <Button variant="outline" className="mt-4 rounded-full">
-                Create an account
+                Crear una cuenta
               </Button>
             </Link>
           </div>
@@ -137,14 +136,14 @@ function Confirmation() {
         {claimable && claimState !== "done" && (
           <div className="mt-8 rounded-2xl border border-border bg-secondary/40 p-6">
             <p className="text-sm leading-6">
-              Add this guest order to your account so it appears in your order history.
+              Agrega este pedido a tu cuenta para que aparezca en tu historial.
             </p>
             <Button
               className="mt-4 rounded-full"
               disabled={claimState === "working"}
               onClick={onClaim}
             >
-              {claimState === "working" ? "Adding…" : "Add to my account"}
+              {claimState === "working" ? "Agregando…" : "Agregar a mi cuenta"}
             </Button>
             {claimError && (
               <p role="alert" className="mt-3 text-sm text-destructive">
@@ -156,13 +155,13 @@ function Confirmation() {
 
         {claimState === "done" && (
           <p className="mt-8 text-sm text-muted-foreground">
-            Added to your account. You can find it in your order history.
+            Listo: el pedido ya está en tu cuenta y aparece en tu historial.
           </p>
         )}
 
         {user && (
           <Link to="/account/orders" className="mt-6 inline-block underline">
-            View your orders
+            Ver mis pedidos
           </Link>
         )}
       </section>

@@ -279,13 +279,16 @@ test("checkout renders server money, not cart-local money", async () => {
   const source = stripJsComments(await read("src/routes/checkout.tsx"));
   assert.ok(!source.includes("cartTotals"), "cart totals must not drive checkout money");
   assert.ok(!source.includes("item.unitPrice"), "cart unit price must not be displayed");
-  assert.match(source, /preview\.lines\.map/);
+  // Mexico checkout: lines and subtotal come from the server quote.
+  assert.match(source, /quote\.lines\.map/);
   assert.match(source, /line\.line_total_aed/);
-  assert.match(source, /preview \? `AED \$\{preview\.subtotalAed/);
-  // The preview request carries identities and the emirate only.
-  const previewCall = source.indexOf("loadPreview({");
+  assert.match(source, /quote \? formatMoney\(quote\.subtotal\)/);
+  // The quote request carries identities and the destination only.
+  const previewCall = source.indexOf("loadQuote({");
+  assert.ok(previewCall > 0, "checkout must request a server quote");
   const request = source.slice(previewCall, source.indexOf(").then(", previewCall));
-  assert.match(request, /items: previewItems/);
+  assert.match(request, /items: cartLines/);
+  assert.match(request, /postal_code: form\.postal_code/);
   assert.match(
     source,
     /items\.map\(\(item\) => \(\{ variant_id: item\.variantId, qty: item\.qty \}\)\)/,
@@ -314,10 +317,13 @@ test("checkout execution requires the successful preview for the exact current i
   state = rejectPreview(state, shKey, 2);
   assert.equal(hasCurrentPreview(state, shKey), false, "error must not execute");
 
+  // The Mexico checkout applies the same rule to its quote: only the quote for
+  // the exact current cart and destination may be executed, and a response to
+  // an older request is dropped.
   const source = stripJsComments(await read("src/routes/checkout.tsx"));
-  assert.match(source, /hasCurrentPreview\(previewState, currentPreviewKey\)/);
-  assert.match(source, /hasCurrentPreview\(previewState, submitKey\)/);
-  assert.match(source, /submitKey !== currentPreviewKey/);
+  assert.match(source, /quoteState\.status === "ready" && quoteState\.key === quoteKey/);
+  assert.match(source, /if \(quoteRequest\.current !== requestId\) return;/);
+  assert.match(source, /setSelectedToken\(null\);/, "a changed input drops the selected option");
 });
 
 test("a stale preview response cannot replace the latest request", () => {
@@ -375,12 +381,16 @@ test("legal acceptance is required before execution", async () => {
 
 // --- checkout UI ----------------------------------------------------------
 
-test("checkout executes only the CM-COM-3A COD path", async () => {
+test("checkout executes only the canonical Mexico order path", async () => {
   const raw = await read("src/routes/checkout.tsx");
   const source = stripJsComments(raw);
-  assert.match(source, /placeCodOrder/);
-  assert.match(source, /previewCodOrderTotals/);
-  assert.match(source, /getCommercialCheckoutConfig/);
+  assert.match(source, /placeMxOrder/);
+  assert.match(source, /quoteMxShipping/);
+  assert.match(source, /getMxCheckoutConfig/);
+  // The UAE entry points are retired from the active checkout.
+  for (const retired of ["placeCodOrder", "previewCodOrderTotals", "getCommercialCheckoutConfig"]) {
+    assert.ok(!source.includes(retired), `checkout must not call the UAE ${retired}`);
+  }
   for (const forbidden of [
     "placeOrder",
     "createStripeSession",
@@ -393,24 +403,28 @@ test("checkout executes only the CM-COM-3A COD path", async () => {
   ]) {
     assert.ok(!source.includes(forbidden), `checkout must not execute ${forbidden}`);
   }
-  assert.match(source, /codOnly: true/, "only COD may be offered");
+  // Offered methods are whatever the server enables — never a client-side list.
+  assert.match(source, /config\?\.paymentMethods \?\? \[\]/);
+  assert.ok(!source.includes("emirate"), "no UAE address field in the active checkout");
 });
 
 test("checkout sends no money and no unchecked legal acceptance", async () => {
   const source = stripJsComments(await read("src/routes/checkout.tsx"));
   const payload = source.slice(
     source.indexOf("const input = {"),
-    source.indexOf('if (method === "card")'),
+    source.indexOf("const guestEmail = user"),
   );
+  assert.ok(payload.length > 0, "the order payload must be found");
   for (const forbidden of ["price", "subtotal", "shipping_aed", "tax", "total"]) {
     assert.ok(!payload.includes(forbidden), `checkout must not send ${forbidden}`);
   }
-  assert.match(payload, /variant_id/);
-  assert.match(payload, /payment_method: "cod"/);
+  assert.match(payload, /items: cartLines/);
+  // Shipping is an opaque server-signed token, never an amount.
+  assert.match(payload, /shipping_token: selected\.token/);
   // Acceptance starts unchecked and gates the submit button.
   assert.match(source, /useState\(false\)/);
-  assert.match(source, /readyToOrder =[\s\S]{0,220}accepted &&[\s\S]{0,80}hasCurrentPreview/);
-  assert.match(source, /canExecute = CHECKOUT_ENABLED && readyToOrder/);
+  assert.match(source, /readyToOrder =[\s\S]{0,220}accepted &&[\s\S]{0,80}selected !== null/);
+  assert.match(source, /canExecute = CHECKOUT_ENABLED && Boolean\(config\?\.active\) && readyToOrder/);
 });
 
 test("checkout clears the cart only after a real order and guards double submit", async () => {
@@ -424,7 +438,7 @@ test("checkout clears the cart only after a real order and guards double submit"
     /if \([\s\S]{0,100}submitting \|\|[\s\S]{0,100}!canExecute[\s\S]{0,180}\)\s+return;/,
     "double submit must be blocked",
   );
-  const orderIndex = submit.indexOf("await placeCod(");
+  const orderIndex = submit.indexOf("await placeMx(");
   const clearIndex = submit.indexOf("clear();");
   assert.ok(orderIndex > 0 && clearIndex > orderIndex, "the cart may only clear after the order");
   assert.equal(submit.split("clear();").length - 1, 1, "the cart must clear exactly once");

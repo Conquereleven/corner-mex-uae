@@ -11,7 +11,8 @@ test("checkout has no account wall and offers sign-in only as a convenience", as
   const checkout = await read("src/routes/checkout.tsx");
   assert.doesNotMatch(checkout, /COD_ORDER_SIGN_IN_REQUIRED/, "guests must not be blocked");
   assert.doesNotMatch(checkout, /Sign in before an authorized checkout/);
-  assert.match(checkout, /Sign in for faster checkout/, "sign-in stays optional");
+  assert.match(checkout, /Inicia sesión para comprar más rápido/, "sign-in stays optional");
+  assert.match(checkout, /no necesitas una cuenta/);
   // Readiness depends on an identity, not on a session.
   assert.match(checkout, /const identityReady = Boolean\(user\) \|\| guestEmailValid;/);
   assert.match(checkout, /readyToOrder =\s*\n?\s*identityReady/);

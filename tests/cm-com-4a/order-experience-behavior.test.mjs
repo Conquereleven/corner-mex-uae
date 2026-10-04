@@ -46,10 +46,10 @@ test("customer history executes the buyer result path without seller-era fields"
     orderStatus: "confirmed",
     paymentMethod: "COD",
     paymentStatus: "pending",
-    subtotal: "100.00 AED",
-    shipping: "20.00 AED",
-    tax: "6.00 AED",
-    total: "126.00 AED",
+    subtotal: "$100.00 MXN",
+    shipping: "$20.00 MXN",
+    tax: "$6.00 MXN",
+    total: "$126.00 MXN",
   });
 });
 
@@ -75,7 +75,7 @@ test("owned detail succeeds and retains canonical item, status and total behavio
   assert.equal(view.kind, "order");
   assert.equal(view.order.items[0].product_name, "Salsa verde");
   assert.equal(view.order.payment_status, "pending");
-  assert.equal(presentCanonicalCustomerOrder(view.order).total, "126.00 AED");
+  assert.equal(presentCanonicalCustomerOrder(view.order).total, "$126.00 MXN");
 });
 
 test("foreign and absent detail are indistinguishable while query failure is separate", async () => {

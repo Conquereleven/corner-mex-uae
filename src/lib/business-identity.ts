@@ -16,6 +16,8 @@
 // display are typed as optional and left undefined — surfaces must render
 // gracefully without them and must never substitute invented values.
 
+import { ACTIVE_MARKET } from "../config/market.ts";
+
 export type BusinessIdentity = {
   brandName: string;
   legalEntity: string;
@@ -42,6 +44,12 @@ export type BusinessIdentity = {
   trn?: string;
 };
 
+/**
+ * UAE identity (DEFERRED market). Founder-attested for the UAE operation and
+ * retained for historical orders, the Zoho supplier guard and the retired UAE
+ * modules. It is NOT the seller in Mexico and must not be shown on any active
+ * surface — use marketSellerLine() / marketIdentityLine() below.
+ */
 export const BUSINESS_IDENTITY: Readonly<BusinessIdentity> = Object.freeze({
   brandName: "CornerMex",
   legalEntity: "RodMor TradeCo LLC",
@@ -83,4 +91,23 @@ export function sellerOfRecordLine(): string {
 export function businessIdentityLine(): string {
   const b = BUSINESS_IDENTITY;
   return `${b.brandName}, a trading brand of ${b.legalEntity} · ${b.location} · Trade license ${b.tradeLicense}`;
+}
+
+/**
+ * "Vendido por …" for the ACTIVE market, or null while the seller entity for
+ * that market has not been supplied. Callers render nothing for null; they must
+ * never fall back to another market's entity.
+ */
+export function marketSellerLine(): string | null {
+  const { sellerEntity } = ACTIVE_MARKET.legal;
+  if (!sellerEntity) return null;
+  return `Vendido por ${sellerEntity}, bajo la marca ${BUSINESS_IDENTITY.brandName}`;
+}
+
+/** The brand, plus the legal entity and tax id only when they are known. */
+export function marketIdentityLine(): string {
+  const { sellerEntity, taxId, taxIdLabel } = ACTIVE_MARKET.legal;
+  if (!sellerEntity) return BUSINESS_IDENTITY.brandName;
+  const tax = taxId && taxIdLabel ? ` · ${taxIdLabel} ${taxId}` : "";
+  return `${BUSINESS_IDENTITY.brandName}, marca comercial de ${sellerEntity}${tax}`;
 }

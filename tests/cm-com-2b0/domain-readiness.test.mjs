@@ -24,11 +24,14 @@ async function sourceFiles(dir) {
 // Canonical origin authority stays centralized and falls back safely
 // ---------------------------------------------------------------------------
 
-test("the verified Railway origin remains the fallback before any cutover", () => {
-  // No browser origin and no override configured => verified Railway origin.
-  assert.equal(siteOrigin(), RAILWAY_ORIGIN);
-  assert.equal(siteUrl("/"), `${RAILWAY_ORIGIN}/`);
-  assert.equal(siteUrl("/delivery"), `${RAILWAY_ORIGIN}/delivery`);
+// Mexico: the domain is not decided, and no infrastructure host may ever be the
+// fallback for a customer-facing link (docs/cornermex-mx/MIGRATION-AUDIT.md).
+test("no infrastructure host is the fallback origin", () => {
+  // No browser origin and no override configured => a local placeholder that
+  // can never be mistaken for the public site.
+  assert.equal(siteOrigin(), "http://localhost:3000");
+  assert.equal(siteUrl("/delivery"), "http://localhost:3000/delivery");
+  assert.notEqual(siteOrigin(), RAILWAY_ORIGIN);
 });
 
 test("canonical origin authority is centralized in one module", async () => {
@@ -50,14 +53,9 @@ test("a partial source edit cannot activate a custom domain", async () => {
   // file may hardcode an https origin as the canonical site origin.
   const siteUrlSource = await read("src/lib/site-url.ts");
   assert.match(siteUrlSource, /CORNERMEX_PUBLIC_APPLICATION_URL/);
-  assert.match(siteUrlSource, /VERIFIED_PUBLIC_ORIGIN/);
-  // The fallback constant must be the Railway origin, not a speculative domain.
-  assert.match(
-    siteUrlSource,
-    new RegExp(
-      `VERIFIED_PUBLIC_ORIGIN\\s*=\\s*"${RAILWAY_ORIGIN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`,
-    ),
-  );
+  // Neither a Railway host nor a speculative domain may be written into source.
+  assert.doesNotMatch(siteUrlSource, /https:\/\/[a-z0-9.-]+\.[a-z]{2,}/i);
+  assert.ok(!siteUrlSource.includes("railway.app"), "site-url must not name a Railway host");
   assert.ok(!siteUrlSource.includes(UNOWNED_DOMAIN), "site-url must not name the unowned domain");
 });
 

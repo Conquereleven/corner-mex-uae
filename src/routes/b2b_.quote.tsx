@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET } from "@/config/market";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -65,7 +66,7 @@ function B2bQuoteRoute() {
           company: fields.businessName,
           email: fields.email,
           phone: fields.phone || null,
-          country_city: fields.emirate,
+          country_city: `${fields.location}, ${ACTIVE_MARKET.countryNameLocal}`,
           contact_role: fields.role || null,
           business_type: fields.businessType,
           products_interest: productsInterest,

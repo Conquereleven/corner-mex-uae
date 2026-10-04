@@ -56,26 +56,26 @@ export function TrustCard({
 export function TrustBar({ className, context }: { className?: string; context: "b2c" | "b2b" }) {
   return (
     <nav
-      aria-label="Delivery, returns and support information"
+      aria-label="Información de envíos, devoluciones y soporte"
       className={cn(
         "flex flex-wrap gap-x-6 gap-y-2 border-t border-border/60 pt-4 text-sm text-muted-foreground",
         className,
       )}
     >
       <Link to="/delivery" className="inline-flex items-center gap-1.5 hover:text-foreground">
-        <Truck className="h-3.5 w-3.5" aria-hidden="true" /> Delivery in the UAE
+        <Truck className="h-3.5 w-3.5" aria-hidden="true" /> Envíos
       </Link>
       <Link to="/returns" className="inline-flex items-center gap-1.5 hover:text-foreground">
-        <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Returns
+        <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Devoluciones
       </Link>
       <Link to="/contact" className="inline-flex items-center gap-1.5 hover:text-foreground">
         {context === "b2b" ? (
           <>
-            <Mail className="h-3.5 w-3.5" aria-hidden="true" /> B2B support
+            <Mail className="h-3.5 w-3.5" aria-hidden="true" /> Atención a negocios
           </>
         ) : (
           <>
-            <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Contact support
+            <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Contacto
           </>
         )}
       </Link>
@@ -94,15 +94,15 @@ export function PolicyLinkGroup({
   exclude?: TrustDestination;
 }) {
   const links: Array<{ to: TrustDestination; label: string }> = [
-    { to: "/about", label: "About" },
-    { to: "/contact", label: "Contact" },
-    { to: "/delivery", label: "Delivery" },
-    { to: "/returns", label: "Returns" },
-    { to: "/privacy", label: "Privacy" },
-    { to: "/terms", label: "Terms" },
+    { to: "/about", label: "Nosotros" },
+    { to: "/contact", label: "Contacto" },
+    { to: "/delivery", label: "Envíos" },
+    { to: "/returns", label: "Devoluciones" },
+    { to: "/privacy", label: "Privacidad" },
+    { to: "/terms", label: "Términos" },
   ];
   return (
-    <nav aria-label="Company and policy pages" className={cn("text-sm", className)}>
+    <nav aria-label="Empresa y políticas" className={cn("text-sm", className)}>
       <ul className="flex flex-wrap gap-x-5 gap-y-2 text-muted-foreground">
         {links
           .filter((l) => l.to !== exclude)

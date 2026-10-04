@@ -1,3 +1,5 @@
+import { formatMoneyWithCode } from "@/config/market";
+import { formatMxAddressLines, isMxAddressSnapshot } from "@/lib/mx-address";
 import { CustomerInvoice } from "@/components/admin/CustomerInvoice";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -21,7 +23,8 @@ export const Route = createFileRoute("/_authenticated/account/orders/$id")({
   component: CustomerOrderDetail,
 });
 
-const aed = (value: number | string) => `${Number(value).toFixed(2)} AED`;
+// Stored amounts are in the active market currency (src/config/market.ts).
+const aed = (value: number | string) => formatMoneyWithCode(value);
 
 type CustomerOrderItem = {
   id: string;
@@ -170,15 +173,22 @@ export function OrderDetail({ order }: { order: CustomerOrder }) {
           </CardHeader>
           <CardContent className="space-y-1 text-sm text-muted-foreground">
             <p>{address.recipient_name ?? "Recipient not available"}</p>
-            <p>
-              {[address.area, address.emirate].filter(Boolean).join(", ") ||
-                "Delivery area unavailable"}
-            </p>
-            <p>
-              {[address.street, address.building, address.floor_apartment]
-                .filter(Boolean)
-                .join(", ")}
-            </p>
+            {isMxAddressSnapshot(address) ? (
+              formatMxAddressLines(address).map((line) => <p key={line}>{line}</p>)
+            ) : (
+              // Historical order recorded under the deferred UAE address model.
+              <>
+                <p>
+                  {[address.area, address.emirate].filter(Boolean).join(", ") ||
+                    "Delivery area unavailable"}
+                </p>
+                <p>
+                  {[address.street, address.building, address.floor_apartment]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

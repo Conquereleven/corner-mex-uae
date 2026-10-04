@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import i18n from "@/lib/i18n";
+import i18n, { LANGS } from "@/lib/i18n";
+import { ACTIVE_MARKET } from "@/config/market";
 import { useTranslation } from "react-i18next";
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -15,8 +16,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     };
     // After hydration, restore stored preference (or detect browser language)
     const stored = typeof window !== "undefined" ? window.localStorage.getItem("cmx-lang") : null;
-    const initial = stored || (typeof navigator !== "undefined" ? navigator.language.slice(0, 2) : "en");
-    const valid = ["en", "es", "ar"].includes(initial) ? initial : "en";
+    // Only an explicit choice overrides the market default: a customer in Mexico
+    // with an English browser still lands on the Spanish storefront.
+    const fallback = ACTIVE_MARKET.defaultLanguage;
+    const initial = stored || fallback;
+    const valid = LANGS.some((language) => language.code === initial) ? initial : fallback;
     if (valid !== instance.language) {
       instance.changeLanguage(valid);
     } else {

@@ -1,3 +1,4 @@
+import { formatMoney } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -43,12 +44,12 @@ function LoyaltyPage() {
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">Lifetime spend</p>
-                  <p className="mt-1 font-display text-3xl tabular-nums">AED {Number(d.account.lifetime_spend_aed).toLocaleString()}</p>
+                  <p className="mt-1 font-display text-3xl tabular-nums">{formatMoney(d.account.lifetime_spend_aed)}</p>
                 </div>
                 {d.next_tier && (
                   <div className="md:col-span-3">
                     <p className="text-xs text-muted-foreground">
-                      AED {Number(d.next_tier.remaining).toLocaleString()} to <span className="capitalize">{d.next_tier.tier}</span>
+                      {formatMoney(d.next_tier.remaining)} to <span className="capitalize">{d.next_tier.tier}</span>
                     </p>
                     <Progress className="mt-2" value={Math.min(100, 100 - (d.next_tier.remaining / d.next_tier.threshold) * 100)} />
                   </div>
@@ -66,7 +67,7 @@ function LoyaltyPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-xs text-muted-foreground">Spend AED {t.threshold.toLocaleString()}+ lifetime</p>
+                    <p className="text-xs text-muted-foreground">Spend {formatMoney(t.threshold)}+ lifetime</p>
                     <ul className="mt-3 space-y-1 text-xs">
                       {t.perks.map((p: string) => <li key={p}>· {p}</li>)}
                     </ul>

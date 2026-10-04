@@ -1,3 +1,4 @@
+import { MX_STATE_OPTIONS } from "@/lib/mx-address";
 import { ClipboardCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,15 +12,6 @@ import {
   type ManualQuoteRequestFields,
 } from "@/features/b2b-catalog/manual-quote-request";
 
-const EMIRATES = [
-  "Abu Dhabi",
-  "Dubai",
-  "Sharjah",
-  "Ajman",
-  "Umm Al Quwain",
-  "Ras Al Khaimah",
-  "Fujairah",
-];
 
 export function ManualQuoteRequestForm({
   fields,
@@ -108,17 +100,17 @@ export function ManualQuoteRequestForm({
             autoComplete="organization-title"
           />
         </Field>
-        <Field label="Emirate" error={errors.emirate}>
+        <Field label="Estado" error={errors.location}>
           <select
-            value={fields.emirate}
-            onChange={(event) => onChange("emirate", event.target.value)}
-            aria-invalid={Boolean(errors.emirate)}
+            value={fields.location}
+            onChange={(event) => onChange("location", event.target.value)}
+            aria-invalid={Boolean(errors.location)}
             className="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
-            <option value="">Select emirate</option>
-            {EMIRATES.map((emirate) => (
-              <option key={emirate} value={emirate}>
-                {emirate}
+            <option value="">Selecciona un estado</option>
+            {MX_STATE_OPTIONS.map((state) => (
+              <option key={state.code} value={state.name}>
+                {state.name}
               </option>
             ))}
           </select>

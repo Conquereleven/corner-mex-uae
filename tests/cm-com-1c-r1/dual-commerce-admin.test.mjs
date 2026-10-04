@@ -138,11 +138,11 @@ test("payment and confirmation functions independently fail closed", () => {
 });
 
 test("no AED 25 shipping fallback is authoritative", () => {
-  assert.match(cartRoute, /Pending destination check/);
-  // CM-COM-3A replaced the placeholder shipping line with the Founder-approved
-  // per-emirate rate, which the SERVER computes. The browser must still never
-  // derive a shipping amount of its own.
-  assert.match(checkout, /preview \? `AED \$\{preview\.shippingAed/);
+  assert.match(cartRoute, /Se cotiza con tu código postal/);
+  // Mexico: shipping is quoted and signed by the SERVER for the destination
+  // postal code. The browser must still never derive a shipping amount of its
+  // own — it only displays the price of the option the server offered.
+  assert.match(checkout, /formatMoney\(selected\.price\)/);
   assert.doesNotMatch(`${cartStore}\n${orders}`, /shipping\s*=.*25|:\s*25\b|size \* 25/);
   assert.doesNotMatch(checkout, /shipping\s*=\s*\d/);
 });
@@ -191,6 +191,6 @@ test("checkout and B2B quote do not import each other's state or execution", () 
 });
 
 test("navigation clearly preserves Shop, Business, Account or Sign in, and Cart", () => {
-  for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"])
+  for (const label of ["Tienda", "Mayoreo", "Cuenta", "Iniciar sesión", "Carrito"])
     assert.match(header, new RegExp(label));
 });

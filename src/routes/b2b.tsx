@@ -8,9 +8,9 @@ import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 
 export const Route = createFileRoute("/b2b")({
   head: () => {
-    const title = "For Business — Mexican supply for UAE businesses | CornerMex";
+    const title = "Para negocios — Abasto mexicano por mayoreo | CornerMex";
     const description =
-      "Browse the CornerMex catalogue and submit product, volume and destination requirements for a human-reviewed written B2B quote.";
+      "Explora el catálogo de CornerMex y envía tus productos, volúmenes y destino para recibir una cotización por escrito revisada por una persona.";
     return {
       meta: [
         { title },
@@ -33,23 +33,23 @@ function B2B() {
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
         <span className="text-[11px] uppercase tracking-[0.2em] text-eyebrow">
-          For business · UAE
+          Para negocios
         </span>
         <h1 className="mt-4 font-display text-5xl tracking-tight">
-          Mexican supply for UAE businesses.
+          Abasto mexicano para tu negocio.
         </h1>
         <p className="mt-6 text-lg text-muted-foreground">
-          Browse the CornerMex catalogue, then submit your product, volume and destination
-          requirements. Availability, AED pricing, delivery options and commercial terms are
-          confirmed through a human-reviewed written quote before commitment.
+          Explora el catálogo y envíanos tus productos, volúmenes y destino. La disponibilidad, el
+          precio por pieza, caja o volumen, la entrega y las condiciones comerciales se confirman en
+          una cotización por escrito revisada por una persona, antes de cualquier compromiso.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link to="/b2b/catalog">
             <Button size="lg" className="min-h-11 rounded-full">
-              Explore business catalogue <ArrowRight className="ms-2 h-4 w-4" />
+              Ver catálogo para negocios <ArrowRight className="ms-2 h-4 w-4" />
             </Button>
           </Link>
-          <a href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request")}>
+          <a href={mailto(PUBLIC_CONTACT.b2b, "Solicitud de cotización CornerMex")}>
             <Button size="lg" variant="outline" className="min-h-11 rounded-full">
               <Mail className="me-2 h-4 w-4" /> {t("pages.b2b.ctaQuote")}
             </Button>
@@ -59,7 +59,7 @@ function B2B() {
         <div className="mt-16 grid gap-6 sm:grid-cols-3">
           {[
             { icon: ClipboardList, key: "catalogues" as const },
-            { icon: BadgeCheck, key: "emirates" as const },
+            { icon: BadgeCheck, key: "confirmation" as const },
             { icon: Mail, key: "manager" as const },
           ].map(({ icon: Icon, key }) => (
             <div key={key} className="rounded-2xl border border-border p-5">

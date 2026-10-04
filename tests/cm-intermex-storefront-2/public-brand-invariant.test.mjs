@@ -81,15 +81,17 @@ test("CornerMex is the public site identity in document metadata", async () => {
 
 test("public header keeps the simplified navigation contract", async () => {
   const header = await readFile("src/components/site/Header.tsx", "utf8");
-  for (const label of ["Shop", "Wholesale", "About", "Find Us", "Search", "Account", "Cart"]) {
+  for (const label of ["Tienda", "Mayoreo", "Nosotros", "Encuéntranos", "Buscar", "Cuenta", "Carrito"]) {
     assert.ok(header.includes(label), `missing first-level header destination: ${label}`);
   }
   for (const removed of ["NotificationsBell", "Manual quote", ">Home<"])
     assert.ok(!header.includes(removed), `removed first-level control returned: ${removed}`);
   const firstLevelHeader = header.slice(header.indexOf("return ("), header.indexOf("<Sheet>"));
-  for (const nested of ["Currency", "Language"])
+  for (const nested of ["Currency", "Moneda", "Idioma"])
     assert.ok(!firstLevelHeader.includes(nested), `${nested} returned to first-level navigation`);
   assert.doesNotMatch(header, /fixed inset-x-3 bottom-3/, "mobile bottom navigation returned");
-  assert.match(header, /aria-label="Open menu"/);
-  assert.match(header, /aria-label="Mobile menu"/);
+  assert.match(header, /aria-label="Abrir menú"/);
+  assert.match(header, /aria-label="Menú"/);
+  // Mexico is a single-currency market: there is no currency switcher at all.
+  assert.doesNotMatch(header, /useCurrency|CURRENCIES/);
 });
