@@ -55,9 +55,20 @@ test("a browser success redirect has no payment mutation authority", async () =>
   assert.match(route, /refreshMxOrderPayment/);
   assert.doesNotMatch(route, /confirmBnplPayment|createStripeSession|\.update\(/);
   const mx = await read("src/lib/mx-checkout.functions.ts");
-  const refresh = mx.slice(mx.indexOf("export const refreshMxOrderPayment"), mx.indexOf("export const getMxOrderForConfirmation"));
-  assert.match(refresh, /reconcileOrderPayment\(/, "status comes from the provider, not the request");
-  assert.match(refresh, /z\.object\(\{ orderId: z\.string\(\)\.uuid\(\) \}\)\.strict\(\)/, "the request carries an order id and nothing else");
+  const refresh = mx.slice(
+    mx.indexOf("export const refreshMxOrderPayment"),
+    mx.indexOf("export const getMxOrderForConfirmation"),
+  );
+  assert.match(
+    refresh,
+    /reconcileOrderPayment\(/,
+    "status comes from the provider, not the request",
+  );
+  assert.match(
+    refresh,
+    /z\.object\(\{ orderId: z\.string\(\)\.uuid\(\) \}\)\.strict\(\)/,
+    "the request carries an order id and nothing else",
+  );
 });
 
 test("webhook verification uses the raw body and rejects invalid signatures before mutations", async () => {

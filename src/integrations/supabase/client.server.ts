@@ -4,7 +4,7 @@
 // For user-authenticated queries (with RLS), use the auth middleware instead.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
-import { assertMarketDatabase } from '../../config/market-database.ts';
+import { assertMarketDatabase } from "../../config/market-database.ts";
 
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL;
