@@ -30,6 +30,9 @@ test("actual webhook handler reads environment and verifies raw signature before
     "@tanstack/react-router": { createFileRoute: () => (config) => config },
     "@/integrations/supabase/client.server": { supabaseAdmin: database },
     "@/lib/stripe-webhook-verification": { verifyStripeWebhookEvent },
+    // This test exercises the retained UAE handler, so it runs it as a UAE build.
+    // In the Mexico build the route answers 410 (tests/cornermex-mx/uae-deferred.test.mjs).
+    "@/lib/uae-market-gate": { isUaeMarketActive: () => true },
   };
   new Function("exports", "require", compiled)(
     exports,

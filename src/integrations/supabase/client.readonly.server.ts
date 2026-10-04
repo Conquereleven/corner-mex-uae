@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
+import { assertMarketDatabase } from "../../config/market-database.ts";
 import type { Database } from "./types";
 
 function createReadOnlyClient() {
@@ -8,6 +9,9 @@ function createReadOnlyClient() {
   if (!url || !key) {
     throw new Error("CornerMex read-only Supabase configuration is unavailable");
   }
+
+  // Refuse any database but the declared Mexico one (src/config/market-database.ts).
+  assertMarketDatabase(process.env);
 
   return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
