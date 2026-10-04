@@ -32,14 +32,13 @@ export function ManualQuoteRequestForm({
     <section aria-labelledby="request-details-heading" className="mt-10">
       <div>
         <span className="text-[11px] uppercase tracking-[0.18em] text-eyebrow">
-          Request details
+          Datos de la solicitud
         </span>
         <h2 id="request-details-heading" className="mt-1 font-display text-3xl text-foreground">
-          Tell us about your business
+          Cuéntanos de tu negocio
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Review these details before submitting. CornerMex stores the enquiry only after you press
-          Submit enquiry on the next step.
+          Revisa estos datos antes de enviar. CornerMex guarda la solicitud solo después de que la envíes en el siguiente paso.
         </p>
       </div>
 
@@ -48,12 +47,12 @@ export function ManualQuoteRequestForm({
           role="alert"
           className="mt-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm"
         >
-          Complete the highlighted fields before reviewing the request.
+          Completa los campos marcados antes de revisar la solicitud.
         </div>
       )}
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        <Field label="Business name" error={errors.businessName}>
+        <Field label="Nombre del negocio" error={errors.businessName}>
           <Input
             value={fields.businessName}
             onChange={(event) => onChange("businessName", event.target.value)}
@@ -62,7 +61,7 @@ export function ManualQuoteRequestForm({
             autoComplete="organization"
           />
         </Field>
-        <Field label="Business type" error={errors.businessType}>
+        <Field label="Tipo de negocio" error={errors.businessType}>
           <select
             value={fields.businessType}
             onChange={(event) =>
@@ -74,7 +73,7 @@ export function ManualQuoteRequestForm({
             aria-invalid={Boolean(errors.businessType)}
             className="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
-            <option value="">Select business type</option>
+            <option value="">Selecciona el tipo de negocio</option>
             {BUSINESS_TYPES.map((businessType) => (
               <option key={businessType} value={businessType}>
                 {businessType}
@@ -82,7 +81,7 @@ export function ManualQuoteRequestForm({
             ))}
           </select>
         </Field>
-        <Field label="Contact person" error={errors.contactPerson}>
+        <Field label="Persona de contacto" error={errors.contactPerson}>
           <Input
             value={fields.contactPerson}
             onChange={(event) => onChange("contactPerson", event.target.value)}
@@ -91,7 +90,7 @@ export function ManualQuoteRequestForm({
             autoComplete="name"
           />
         </Field>
-        <Field label="Role">
+        <Field label="Puesto">
           <Input
             value={fields.role}
             onChange={(event) => onChange("role", event.target.value)}
@@ -114,7 +113,7 @@ export function ManualQuoteRequestForm({
             ))}
           </select>
         </Field>
-        <Field label="Email" error={errors.email}>
+        <Field label="Correo electrónico" error={errors.email}>
           <Input
             type="email"
             value={fields.email}
@@ -124,7 +123,7 @@ export function ManualQuoteRequestForm({
             autoComplete="email"
           />
         </Field>
-        <Field label="Phone or WhatsApp">
+        <Field label="Teléfono o WhatsApp">
           <Input
             type="tel"
             value={fields.phone}
@@ -133,7 +132,7 @@ export function ManualQuoteRequestForm({
             autoComplete="tel"
           />
         </Field>
-        <Field label="Quantity interest">
+        <Field label="Volumen de interés">
           <select
             value={fields.quantityInterest}
             onChange={(event) =>
@@ -151,12 +150,12 @@ export function ManualQuoteRequestForm({
             ))}
           </select>
         </Field>
-        <Field label="Notes" className="sm:col-span-2">
+        <Field label="Notas" className="sm:col-span-2">
           <Textarea
             value={fields.notes}
             onChange={(event) => onChange("notes", event.target.value)}
             className="min-h-28 resize-y"
-            placeholder="Products, presentation preferences, target volume, or other context"
+            placeholder="Productos, presentaciones, volumen estimado u otro contexto"
           />
         </Field>
       </div>
@@ -169,7 +168,7 @@ export function ManualQuoteRequestForm({
         disabled={selectedCount === 0}
         className="mt-7 min-h-11 w-full rounded-full sm:w-auto"
       >
-        <ClipboardCheck className="me-2 h-4 w-4" /> Review quote request
+        <ClipboardCheck className="me-2 h-4 w-4" /> Revisar solicitud
       </Button>
     </section>
   );

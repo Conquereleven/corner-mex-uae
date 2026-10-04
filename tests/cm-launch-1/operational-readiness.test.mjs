@@ -15,8 +15,8 @@ test("account route is a layout and its index owns the account surface", async (
     read("src/routes/_authenticated/account.index.tsx"),
   ]);
   assert.match(layout, /<Outlet \/>/);
-  assert.doesNotMatch(layout, /My account|Recent orders/);
-  assert.match(index, /My account/);
+  assert.doesNotMatch(layout, /Mi cuenta|Recent orders/);
+  assert.match(index, /Mi cuenta/);
   assert.match(index, /CustomerOrderHistorySurface/);
   assert.match(index, /admin\.data\?\.admin &&[\s\S]*to="\/admin"/);
   assert.match(index, /supabase\.auth\.signOut\(\)/);

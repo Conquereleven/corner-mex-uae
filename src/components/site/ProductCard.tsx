@@ -42,12 +42,12 @@ export function ProductCard({
         )}
         {p.is_bulk && (
           <span className="absolute start-3 bottom-3 rounded-full bg-badge px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-badge-foreground">
-            HORECA
+            Mayoreo
           </span>
         )}
         {onSale && (
           <span className="absolute end-3 top-3 rounded-full bg-ink px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-ivory">
-            Sale
+            Oferta
           </span>
         )}
       </div>

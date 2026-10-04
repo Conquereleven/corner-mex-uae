@@ -14,10 +14,10 @@ export function QuoteSelectionList({
       <div className="flex items-end justify-between border-b border-border pb-4">
         <div>
           <span className="text-[11px] uppercase tracking-[0.18em] text-eyebrow">
-            Your shortlist
+            Tu lista
           </span>
           <h2 id="quote-selection-heading" className="mt-1 font-display text-3xl text-foreground">
-            Selected products
+            Productos seleccionados
           </h2>
         </div>
         <span className="text-sm text-muted-foreground">{products.length} selected</span>
@@ -31,7 +31,7 @@ export function QuoteSelectionList({
                 {product.name}
               </p>
               <p className="mt-1 text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                {product.presentation} · Price on request
+                {product.presentation} · Precio por cotización
               </p>
             </div>
             <Button
@@ -39,7 +39,7 @@ export function QuoteSelectionList({
               variant="ghost"
               size="icon"
               className="min-h-11 min-w-11 shrink-0 rounded-full"
-              aria-label={`Remove ${product.name}`}
+              aria-label={`Quitar ${product.name}`}
               onClick={() => onRemove(product.id)}
             >
               <X className="h-4 w-4" />

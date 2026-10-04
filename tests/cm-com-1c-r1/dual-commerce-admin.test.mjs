@@ -79,10 +79,10 @@ test("no Claim admin or Lovable OAuth control is rendered", () => {
   assert.doesNotMatch(login, /lovableAuth|integrations\/lovable/i);
 });
 
-test("product supports variant selection, quantity, and Add to cart", () => {
+test("product supports variant selection, quantity, and Agregar al carrito", () => {
   assert.match(product, /setVariantId/);
   assert.match(product, /setQuantity/);
-  assert.match(product, /Add to cart/);
+  assert.match(product, /Agregar al carrito/);
 });
 
 test("B2C storage key remains exact", () => {
@@ -165,7 +165,7 @@ test("B2B selection key and approved 15-product mix remain exact", () => {
 
 test("B2B surface has no public numeric prices or automated submission", () => {
   assert.doesNotMatch(b2bSurface, /\bAED\s*\d|unit_price|placeOrder|createServerFn|fetch\s*\(/i);
-  assert.match(b2bSurface, /Price on request/);
+  assert.match(b2bSurface, /Precio por cotización/);
 });
 
 test("boundary manifest uses different storage and gives B2B no execution path", () => {

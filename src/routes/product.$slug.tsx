@@ -50,8 +50,8 @@ function buildStructuredData(product: ProductDetail) {
         ...(product.category?.name && { category: product.category.name }),
         additionalProperty: {
           "@type": "PropertyValue",
-          name: "Commercial status",
-          value: "Availability and price are verified at checkout",
+          name: "Estado comercial",
+          value: "La disponibilidad y el precio se confirman al finalizar la compra",
         },
       },
       {
@@ -60,7 +60,7 @@ function buildStructuredData(product: ProductDetail) {
           {
             "@type": "ListItem",
             position: 1,
-            name: "Home",
+            name: "Inicio",
             item: siteOrigin(),
           },
           {
@@ -207,9 +207,9 @@ function ProductPage() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <nav aria-label="Breadcrumb" className="text-xs text-muted-foreground">
+        <nav aria-label="Ruta de navegación" className="text-xs text-muted-foreground">
           <Link to="/shop" className="hover:text-foreground">
-            Shop
+            Tienda
           </Link>
           {product.category && (
             <>
@@ -237,7 +237,7 @@ function ProductPage() {
                   <button
                     type="button"
                     onClick={goPrev}
-                    aria-label="Previous image"
+                    aria-label="Imagen anterior"
                     className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-background"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -245,7 +245,7 @@ function ProductPage() {
                   <button
                     type="button"
                     onClick={goNext}
-                    aria-label="Next image"
+                    aria-label="Imagen siguiente"
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground shadow-md backdrop-blur transition hover:bg-background"
                   >
                     <ChevronRight className="h-4 w-4" />
@@ -265,7 +265,7 @@ function ProductPage() {
                       key={`${src}-${i}`}
                       type="button"
                       onClick={() => setActiveImg(i)}
-                      aria-label={`Show image ${i + 1}`}
+                      aria-label={`Ver imagen ${i + 1}`}
                       aria-current={active}
                       className={`overflow-hidden rounded-xl border bg-muted transition ${active ? "border-foreground ring-2 ring-foreground/20" : "border-border hover:border-foreground/40"}`}
                     >
@@ -327,7 +327,7 @@ function ProductPage() {
 
             {sellableVariants.length > 1 && (
               <div className="mt-8">
-                <h3 className="text-xs uppercase tracking-widest text-muted-foreground">Format</h3>
+                <h3 className="text-xs uppercase tracking-widest text-muted-foreground">Presentación</h3>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {sellableVariants.map((candidate) => (
                     <button
@@ -348,7 +348,7 @@ function ProductPage() {
                   type="button"
                   onClick={() => setQuantity((value) => Math.max(1, value - 1))}
                   className="min-h-11 px-4 text-muted-foreground hover:text-foreground"
-                  aria-label="Decrease quantity"
+                  aria-label="Disminuir cantidad"
                 >
                   −
                 </button>
@@ -357,7 +357,7 @@ function ProductPage() {
                   type="button"
                   onClick={() => setQuantity((value) => Math.min(500, value + 1))}
                   className="min-h-11 px-4 text-muted-foreground hover:text-foreground"
-                  aria-label="Increase quantity"
+                  aria-label="Aumentar cantidad"
                 >
                   +
                 </button>
@@ -369,18 +369,17 @@ function ProductPage() {
                 disabled={!variant || variant.price_aed <= 0 || !p.seller}
                 onClick={addSelectedVariant}
               >
-                <ShoppingBag className="me-2 h-4 w-4" /> Add to cart
+                <ShoppingBag className="me-2 h-4 w-4" /> Agregar al carrito
               </Button>
             </div>
 
             <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
               <p className="text-sm leading-6 text-muted-foreground">
-                Signed-in customers can place cash-on-delivery orders. Current price, availability
-                and shipping are verified before submission.
+                Compra sin crear una cuenta. El precio vigente, la disponibilidad y el envío se confirman antes de finalizar tu pedido.
               </p>
-              <a href={mailto(PUBLIC_CONTACT.b2b, `CornerMex quote enquiry: ${p.name}`)}>
+              <a href={mailto(PUBLIC_CONTACT.b2b, `Solicitud de cotización CornerMex: ${p.name}`)}>
                 <Button size="lg" className="mt-4 rounded-full">
-                  <Mail className="me-2 h-4 w-4" /> Request manual quote
+                  <Mail className="me-2 h-4 w-4" /> Solicitar cotización
                 </Button>
               </a>
             </div>
@@ -394,7 +393,7 @@ function ProductPage() {
           className="mt-16 max-w-3xl border-t border-border pt-10"
         >
           <h2 id="about-product" className="font-display text-3xl tracking-tight">
-            About this product
+            Acerca de este producto
           </h2>
           <p className="mt-4 text-base leading-7 text-muted-foreground">
             {productCopyToPlainText(product.seo?.long_description || product.description)}
@@ -402,19 +401,19 @@ function ProductPage() {
           <dl className="mt-8 grid gap-4 text-sm sm:grid-cols-3">
             {publicBrand && (
               <div>
-                <dt className="text-muted-foreground">Brand</dt>
+                <dt className="text-muted-foreground">Marca</dt>
                 <dd className="mt-1 font-medium">{publicBrand}</dd>
               </div>
             )}
             {product.category && (
               <div>
-                <dt className="text-muted-foreground">Category</dt>
+                <dt className="text-muted-foreground">Categoría</dt>
                 <dd className="mt-1 font-medium">{product.category.name}</dd>
               </div>
             )}
             {product.origin_region && (
               <div>
-                <dt className="text-muted-foreground">Origin</dt>
+                <dt className="text-muted-foreground">Origen</dt>
                 <dd className="mt-1 font-medium">{product.origin_region}</dd>
               </div>
             )}

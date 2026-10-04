@@ -53,16 +53,16 @@ export function validateManualQuoteRequest(
   products: ReadonlyArray<B2bProduct>,
 ): ManualQuoteRequestErrors {
   const errors: ManualQuoteRequestErrors = {};
-  if (!fields.businessName.trim()) errors.businessName = "Enter the business name.";
-  if (!fields.businessType) errors.businessType = "Select the business type.";
-  if (!fields.contactPerson.trim()) errors.contactPerson = "Enter a contact person.";
+  if (!fields.businessName.trim()) errors.businessName = "Escribe el nombre del negocio.";
+  if (!fields.businessType) errors.businessType = "Selecciona el tipo de negocio.";
+  if (!fields.contactPerson.trim()) errors.contactPerson = "Escribe el nombre de la persona de contacto.";
   if (!fields.email.trim()) {
-    errors.email = "Enter an email address.";
+    errors.email = "Escribe un correo electrónico.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
-    errors.email = "Enter a valid email address.";
+    errors.email = "Escribe un correo electrónico válido.";
   }
   if (!fields.location) errors.location = "Selecciona un estado.";
-  if (products.length === 0) errors.products = "Select at least one Wave 1 product.";
+  if (products.length === 0) errors.products = "Selecciona al menos un producto.";
   return errors;
 }
 
@@ -71,27 +71,27 @@ export function formatManualQuoteRequest(
   products: ReadonlyArray<B2bProduct>,
 ): string {
   const lines = [
-    "CornerMex B2B quote request",
-    "Request only — not an order or confirmed quote",
+    "Solicitud de cotización CornerMex",
+    "Solo es una solicitud: no es un pedido ni una cotización confirmada",
     "",
-    `Business: ${fields.businessName.trim()}`,
-    `Business type: ${fields.businessType || "Not provided"}`,
-    `Contact person: ${fields.contactPerson.trim()}`,
-    `Role: ${fields.role.trim() || "Not provided"}`,
-    `Email: ${fields.email.trim()}`,
-    `Phone / WhatsApp: ${fields.phone.trim() || "Not provided"}`,
+    `Negocio: ${fields.businessName.trim()}`,
+    `Tipo de negocio: ${fields.businessType || "No indicado"}`,
+    `Persona de contacto: ${fields.contactPerson.trim()}`,
+    `Puesto: ${fields.role.trim() || "No indicado"}`,
+    `Correo: ${fields.email.trim()}`,
+    `Teléfono / WhatsApp: ${fields.phone.trim() || "No indicado"}`,
     `Estado: ${fields.location}`,
-    `Quantity interest: ${quantityInterestLabel(fields.quantityInterest)}`,
+    `Volumen de interés: ${quantityInterestLabel(fields.quantityInterest)}`,
     "",
-    "Selected products:",
+    "Productos seleccionados:",
     ...products.map(
       (product, index) =>
         `${index + 1}. ${product.brand ? `${product.brand} ` : ""}${product.name} — ${product.presentation}`,
     ),
     "",
-    `Notes: ${fields.notes.trim() || "None"}`,
+    `Notas: ${fields.notes.trim() || "None"}`,
     "",
-    "Pricing, availability, delivery and commercial terms require human confirmation. This request is not an order.",
+    "Los precios, la disponibilidad, la entrega y las condiciones comerciales requieren confirmación de una persona. Esta solicitud no es un pedido.",
   ];
   return lines.join("\n");
 }
@@ -99,8 +99,8 @@ export function formatManualQuoteRequest(
 export function quantityInterestLabel(value: QuantityInterest): string {
   return {
     SAMPLE: "Sample",
-    SMALL_VOLUME: "Small volume",
-    RECURRING_SUPPLY: "Recurring supply",
-    NOT_SURE: "Not sure",
+    SMALL_VOLUME: "Volumen pequeño",
+    RECURRING_SUPPLY: "Abasto recurrente",
+    NOT_SURE: "Aún no lo sé",
   }[value];
 }

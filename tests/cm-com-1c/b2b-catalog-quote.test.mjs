@@ -86,7 +86,7 @@ test("3. canonical product IDs are unique", () => {
 
 test("4. catalog surface contains no public numeric product price", () => {
   assert.doesNotMatch(SURFACE_SOURCE, /\bAED\s*\d|\b(?:unit|retail|sale)[_-]?price\b/i);
-  assert.match(SURFACE_SOURCE, /Price on request/);
+  assert.match(SURFACE_SOURCE, /Precio por cotización/);
 });
 
 test("5. CornerMex retail pricing is not rendered", () => {
@@ -98,7 +98,7 @@ test("6. sales surface has no cart, checkout, payment, or order controls", () =>
     SURFACE_SOURCE,
     /(?:href|to)=["'][^"']*\/(?:cart|checkout|payment|orders?)(?:[\/"'])/i,
   );
-  assert.doesNotMatch(SURFACE_SOURCE, />\s*(?:Add to cart|Checkout|Pay now|Place order)\s*</i);
+  assert.doesNotMatch(SURFACE_SOURCE, />\s*(?:Agregar al carrito|Checkout|Pay now|Place order)\s*</i);
 });
 
 test("7. commerce and wishlist control APIs are absent", () => {
@@ -135,9 +135,9 @@ test("12. request copy distinguishes prepared and persisted states truthfully", 
     join(ROOT, "src/components/b2b/ManualQuoteRequestPreview.tsx"),
     "utf8",
   );
-  assert.match(preview, /Your request is ready\./);
-  assert.match(preview, /Enquiry received by CornerMex\./);
-  assert.match(preview, /does not\s+create an order/i);
+  assert.match(preview, /Tu solicitud está lista\./);
+  assert.match(preview, /CornerMex recibió tu solicitud\./);
+  assert.match(preview, /no crea un pedido/i);
   assert.doesNotMatch(preview, /order confirmed|quote confirmed|payment confirmed/i);
 });
 

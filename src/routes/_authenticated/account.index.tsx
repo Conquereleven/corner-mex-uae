@@ -24,7 +24,7 @@ type ReviewableItem = {
 };
 
 export const Route = createFileRoute("/_authenticated/account/")({
-  head: () => ({ meta: [{ title: "Account — CornerMex" }] }),
+  head: () => ({ meta: [{ title: "Mi cuenta — CornerMex" }] }),
   component: Account,
 });
 
@@ -50,7 +50,7 @@ function Account() {
       <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-4xl tracking-tight">My account</h1>
+            <h1 className="font-display text-4xl tracking-tight">Mi cuenta</h1>
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
               <span>{account.data?.email}</span>
               {loyalty.data && (
@@ -64,7 +64,7 @@ function Account() {
             {account.data?.seller && (
               <Link to="/seller">
                 <Button variant="outline" className="rounded-full">
-                  Seller dashboard
+                  Panel de vendedor
                 </Button>
               </Link>
             )}
@@ -83,7 +83,7 @@ function Account() {
                 window.location.href = "/";
               }}
             >
-              Sign out
+              Cerrar sesión
             </Button>
           </div>
         </div>
@@ -91,9 +91,9 @@ function Account() {
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           <Card className="md:col-span-2">
             <CardHeader className="flex-row items-center justify-between gap-4">
-              <CardTitle>Recent orders</CardTitle>
+              <CardTitle>Pedidos recientes</CardTitle>
               <Button asChild size="sm" variant="outline" className="rounded-full">
-                <Link to="/account/orders">View all orders</Link>
+                <Link to="/account/orders">Ver todos los pedidos</Link>
               </Button>
             </CardHeader>
             <CardContent>
@@ -117,11 +117,11 @@ function PendingReviewsCard({ items }: { items: ReviewableItem[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pending reviews</CardTitle>
+        <CardTitle>Reseñas pendientes</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <p className="text-sm text-muted-foreground">
-          Share your experience on items you received.
+          Comparte tu experiencia con los productos que recibiste.
         </p>
         <ul className="space-y-2">
           {items.slice(0, 5).map((it) => (
@@ -138,7 +138,7 @@ function PendingReviewsCard({ items }: { items: ReviewableItem[] }) {
               {it.product_slug && (
                 <Link to="/product/$slug" params={{ slug: it.product_slug }}>
                   <Button size="sm" variant="outline" className="rounded-full">
-                    Review
+                    Reseñar
                   </Button>
                 </Link>
               )}
@@ -154,15 +154,14 @@ function BecomeSellerCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Seller onboarding</CardTitle>
+        <CardTitle>Alta de vendedores</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">
-          Seller applications are not active during this launch stage. Existing customers can
-          continue to use B2C ordering and the manual B2B quote flow.
+          Las solicitudes de vendedores no están activas en esta etapa. Puedes seguir comprando en la tienda y solicitando cotizaciones para tu negocio.
         </p>
         <Button className="w-full rounded-full" disabled>
-          Applications coming soon
+          Próximamente
         </Button>
       </CardContent>
     </Card>

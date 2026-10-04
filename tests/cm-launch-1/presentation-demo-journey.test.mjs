@@ -34,7 +34,7 @@ test("Product detail fails closed on non-positive variants and adds CornerMex ca
   assert.match(product, /\{marketSellerLine\(\) \?\? "CornerMex"\}/);
   assert.doesNotMatch(product, /sellerOfRecordLine/);
   assert.match(product, /addToCart/);
-  assert.match(product, /Add to cart/);
+  assert.match(product, /Agregar al carrito/);
 });
 
 test("Cart preserves single-merchant identity and routes cleanly to checkout", async () => {
@@ -78,7 +78,7 @@ test("B2B catalogue flows into the guarded human-reviewed lead pipeline without 
   assert.match(hero, /href="#business-products"/);
   assert.match(grid, /id="business-products"/);
   assert.match(quote, /submitB2bLead/);
-  assert.match(quote, /Human-reviewed B2B pipeline/);
+  assert.match(quote, /Cotización revisada por una persona/);
   assert.match(leads, /submit_b2b_lead_v2/);
 });
 

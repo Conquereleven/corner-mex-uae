@@ -3,7 +3,7 @@ import { categoryAnchor } from "./category-anchor";
 
 export function B2bCategoryNav() {
   return (
-    <nav aria-label="Product categories" className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
+    <nav aria-label="Categorías de productos" className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
         {B2B_CATEGORIES.map((category) => (
           <a

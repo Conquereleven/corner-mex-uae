@@ -19,7 +19,7 @@ import {
 } from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account/orders/$id")({
-  head: () => ({ meta: [{ title: "My order — CornerMex" }] }),
+  head: () => ({ meta: [{ title: "Mi pedido — CornerMex" }] }),
   component: CustomerOrderDetail,
 });
 
@@ -67,7 +67,7 @@ function CustomerOrderDetail() {
       <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <Button asChild variant="ghost" className="mb-5">
           <Link to="/account/orders">
-            <ArrowLeft className="mr-2 h-4 w-4" /> My Orders
+            <ArrowLeft className="mr-2 h-4 w-4" /> Mis pedidos
           </Link>
         </Button>
 
@@ -101,7 +101,7 @@ export function CustomerOrderDetailSurface({
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">{view.message}</p>
           <Button data-testid="customer-detail-retry" variant="outline" onClick={onRetry}>
-            Try again
+            Reintentar
           </Button>
         </CardContent>
       </Card>
@@ -117,7 +117,7 @@ export function OrderDetail({ order }: { order: CustomerOrder }) {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">Order</p>
+          <p className="text-sm text-muted-foreground">Pedido</p>
           <h1 className="font-display text-4xl tracking-tight">{display.orderNumber}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {new Date(order.created_at).toLocaleString()}
@@ -132,7 +132,7 @@ export function OrderDetail({ order }: { order: CustomerOrder }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Package className="h-4 w-4" /> Items
+            <Package className="h-4 w-4" /> Productos
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -142,7 +142,7 @@ export function OrderDetail({ order }: { order: CustomerOrder }) {
                 <div>
                   <p className="font-medium">{item.product_name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {[item.variant_label, `Qty ${item.qty}`].filter(Boolean).join(" · ")}
+                    {[item.variant_label, `Cant. ${item.qty}`].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <p className="tabular-nums">{aed(item.line_total_aed)}</p>
@@ -155,24 +155,24 @@ export function OrderDetail({ order }: { order: CustomerOrder }) {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Totals</CardTitle>
+            <CardTitle>Importes</CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="space-y-2 text-sm">
               <Total label="Subtotal" value={display.subtotal} />
-              <Total label="Shipping" value={display.shipping} />
-              <Total label="Tax" value={display.tax} />
+              <Total label="Envío" value={display.shipping} />
+              <Total label="Impuestos" value={display.tax} />
               <Total label="Total" value={display.total} strong />
-              <Total label="Payment method" value={display.paymentMethod} />
+              <Total label="Forma de pago" value={display.paymentMethod} />
             </dl>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Delivery</CardTitle>
+            <CardTitle>Entrega</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 text-sm text-muted-foreground">
-            <p>{address.recipient_name ?? "Recipient not available"}</p>
+            <p>{address.recipient_name ?? "Destinatario no disponible"}</p>
             {isMxAddressSnapshot(address) ? (
               formatMxAddressLines(address).map((line) => <p key={line}>{line}</p>)
             ) : (
@@ -180,7 +180,7 @@ export function OrderDetail({ order }: { order: CustomerOrder }) {
               <>
                 <p>
                   {[address.area, address.emirate].filter(Boolean).join(", ") ||
-                    "Delivery area unavailable"}
+                    "Zona de entrega no disponible"}
                 </p>
                 <p>
                   {[address.street, address.building, address.floor_apartment]

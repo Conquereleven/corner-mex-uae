@@ -32,7 +32,7 @@ test("shop hides placeholder taxonomy from customer-facing filters", async () =>
   const shop = await read("src/routes/shop.tsx");
 
   assert.match(shop, /\.filter\(\(c\) => c\.slug !== "uncategorized"\)/);
-  assert.match(shop, /aria-label="Product categories"/);
+  assert.match(shop, /aria-label="Categorías de productos"/);
 });
 
 test("shop fails closed on non-positive catalogue prices", async () => {

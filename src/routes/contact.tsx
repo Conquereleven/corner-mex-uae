@@ -28,26 +28,26 @@ export const Route = createFileRoute("/contact")({
 const CHANNELS = [
   {
     icon: Mail,
-    title: "Customer support",
+    title: "Atención a clientes",
     description:
-      "Questions about the catalogue, your cart or account, or an enquiry you have already sent.",
+      "Dudas sobre el catálogo, tu carrito, tu cuenta o una consulta que ya enviaste.",
     email: PUBLIC_CONTACT.complaints,
-    subject: "CornerMex customer enquiry",
+    subject: "Consulta a CornerMex",
   },
   {
     icon: Building2,
-    title: "B2B and wholesale",
+    title: "Mayoreo y negocios",
     description:
-      "Restaurants, retailers and distributors. Quote requests are reviewed and answered manually in writing.",
+      "Restaurantes, tiendas y distribuidores. Las solicitudes de cotización se revisan y se responden por escrito.",
     email: PUBLIC_CONTACT.b2b,
-    subject: "CornerMex B2B enquiry",
+    subject: "Consulta de mayoreo CornerMex",
   },
   {
     icon: ShieldCheck,
-    title: "Privacy and legal",
-    description: "Privacy requests, legal questions and formal correspondence.",
+    title: "Privacidad y legal",
+    description: "Solicitudes de privacidad, dudas legales y correspondencia formal.",
     email: PUBLIC_CONTACT.legal,
-    subject: "CornerMex legal enquiry",
+    subject: "Consulta legal CornerMex",
   },
 ];
 
@@ -56,12 +56,11 @@ function Contact() {
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
-          We read every message
+          Leemos cada mensaje
         </p>
-        <h1 className="mt-3 font-display text-5xl tracking-tight">Contact CornerMex</h1>
+        <h1 className="mt-3 font-display text-5xl tracking-tight">Contacta a CornerMex</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
-          CornerMex is reachable by email. Enquiries are reviewed by a person — sending one does not
-          create an order, a contract or an automated process.
+          Puedes escribirnos por correo. Cada consulta la revisa una persona; enviar una no crea un pedido, un contrato ni un proceso automatizado.
         </p>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -79,7 +78,7 @@ function Contact() {
                 href={mailto(channel.email, channel.subject)}
                 className="mt-4 inline-block text-sm font-medium text-foreground underline underline-offset-4 hover:text-primary"
               >
-                Email {channel.title.toLowerCase()}
+                Correo {channel.title.toLowerCase()}
               </a>
             </div>
           ))}
@@ -91,20 +90,16 @@ function Contact() {
         >
           <p>{marketIdentityLine()}</p>
           <p className="mt-2">
-            Email is currently the confirmed way to contact CornerMex. One shared mailbox handles
-            every enquiry type for now, so each option above uses the same address with a different
-            subject line — please keep the subject so your message is routed correctly.
+            Por ahora el correo es el medio confirmado para contactar a CornerMex. Un mismo buzón atiende todos los tipos de consulta, así que cada opción usa la misma dirección con un asunto distinto: conserva el asunto para que tu mensaje llegue a quien corresponde.
           </p>
           <p className="mt-2">
-            A phone line, street address for visits and published support hours are not yet
-            available. CornerMex does not operate a branded email domain yet, so any address on
-            another domain is not an CornerMex contact channel.
+            Aún no contamos con teléfono, domicilio para visitas ni horario de atención publicados. CornerMex todavía no opera un dominio de correo propio, así que una dirección en otro dominio no es un canal de contacto de CornerMex.
           </p>
         </div>
 
         <div className="mt-10">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            More information
+            Más información
           </h2>
           <PolicyLinkGroup className="mt-3" exclude="/contact" />
         </div>

@@ -38,11 +38,11 @@ export const Route = createFileRoute("/shop")({
   validateSearch: zodValidator(shopSearchSchema),
   head: () => ({
     meta: [
-      { title: "Catalog — CornerMex" },
+      { title: "Catálogo — CornerMex" },
       {
         name: "description",
         content:
-          "Browse Mexican chiles, salsas, masa, snacks and pantry staples through the CornerMex catalogue.",
+          "Chiles, salsas, masa, botanas y básicos de despensa mexicana en el catálogo de CornerMex.",
       },
     ],
   }),
@@ -161,16 +161,16 @@ function Shop() {
             <input
               value={qInput}
               onChange={(e) => setQInput(e.target.value)}
-              placeholder="Search products…"
+              placeholder="Buscar productos…"
               className="min-h-11 w-full rounded-full border-0 bg-transparent ps-9 pe-4 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Search products"
+              aria-label="Buscar productos"
             />
           </DesertGlassControl>
         </header>
 
         {categories.length > 0 && (
           <nav
-            aria-label="Product categories"
+            aria-label="Categorías de productos"
             className="mt-5 flex max-w-full gap-2 overflow-x-auto pb-2"
           >
             <button
@@ -183,7 +183,7 @@ function Shop() {
                   !filterState.category ? "border-primary bg-primary text-primary-foreground" : ""
                 }
               >
-                All
+                Todo
               </DesertGlassBadge>
             </button>
             {categories.map((category) => (
@@ -213,8 +213,7 @@ function Shop() {
             className="mt-5 flex flex-col gap-3 rounded-2xl border border-amber-300/60 bg-amber-50 p-4 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between"
           >
             <p>
-              Some catalogue filters are temporarily unavailable. Product results remain separate
-              from this filter error.
+              Algunos filtros no están disponibles por el momento. Los productos se siguen mostrando con normalidad.
             </p>
             <Button
               type="button"
@@ -222,7 +221,7 @@ function Shop() {
               className="shrink-0 rounded-full"
               onClick={() => void retrySupportingData()}
             >
-              Retry filters
+              Reintentar filtros
             </Button>
           </div>
         )}
@@ -250,7 +249,7 @@ function Shop() {
                 <SheetTrigger asChild>
                   <Button variant="outline" size="sm" className="rounded-full gap-2">
                     <SlidersHorizontal className="h-4 w-4" />
-                    Filters
+                    Filtros
                     {(filterState.category ||
                       filterState.brand ||
                       filterState.origin ||
@@ -268,7 +267,7 @@ function Shop() {
                 >
                   <SheetHeader className="mb-4 p-0">
                     <SheetTitle className="text-left font-display text-xl tracking-tight">
-                      Filters
+                      Filtros
                     </SheetTitle>
                   </SheetHeader>
                   <ShopFilters
@@ -289,7 +288,7 @@ function Shop() {
                         setMobileOpen(false);
                       }}
                     >
-                      Clear
+                      Limpiar
                     </Button>
                     <Button
                       className="flex-1 rounded-full"
@@ -303,17 +302,17 @@ function Shop() {
                         }, 220);
                       }}
                     >
-                      Show {resultCount ?? ""} results
+                      Ver {resultCount ?? ""} results
                     </Button>
                   </div>
                 </SheetContent>
               </Sheet>
               <p className="text-xs text-muted-foreground" role="status">
                 {products.isError
-                  ? "Catalogue unavailable"
+                  ? "Catálogo no disponible"
                   : products.isLoading
-                    ? "Loading products"
-                    : `${resultCount} products`}
+                    ? "Cargando productos"
+                    : `${resultCount} productos`}
               </p>
             </div>
 
@@ -323,10 +322,9 @@ function Shop() {
                 role="alert"
                 className="scroll-mt-24 rounded-3xl px-6 py-12 text-center"
               >
-                <p className="font-display text-2xl">The catalogue is temporarily unavailable.</p>
+                <p className="font-display text-2xl">El catálogo no está disponible por el momento.</p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  CornerMex could not load product results. No empty-catalogue conclusion has been
-                  made.
+                  No pudimos cargar los productos. Esto no significa que el catálogo esté vacío.
                 </p>
                 <Button
                   type="button"
@@ -334,18 +332,17 @@ function Shop() {
                   className="mt-4 rounded-full"
                   onClick={() => void products.refetch()}
                 >
-                  Retry catalogue
+                  Reintentar
                 </Button>
               </DesertGlassSurface>
             ) : products.isSuccess && productItems.length === 0 ? (
               <DesertGlassSurface className="mt-16 rounded-3xl px-6 py-12 text-center">
-                <p className="font-display text-2xl">The pantry is being curated</p>
+                <p className="font-display text-2xl">Estamos surtiendo la despensa</p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  No products match this view yet. Adjust the filters or return soon for the next
-                  CornerMex selection.
+                  Ningún producto coincide con esta búsqueda. Ajusta los filtros o vuelve pronto.
                 </p>
                 <Button variant="outline" className="mt-4 rounded-full" onClick={resetAll}>
-                  Clear filters
+                  Limpiar filtros
                 </Button>
               </DesertGlassSurface>
             ) : (
@@ -353,7 +350,7 @@ function Shop() {
                 id="shop-results"
                 aria-busy={products.isLoading}
                 aria-label={
-                  products.isLoading ? "Loading catalogue products" : "Catalogue products"
+                  products.isLoading ? "Cargando productos del catálogo" : "Productos del catálogo"
                 }
                 className="scroll-mt-24 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
               >
@@ -378,7 +375,7 @@ function Shop() {
                     disabled={products.isFetchingNextPage}
                     onClick={() => products.fetchNextPage()}
                   >
-                    {products.isFetchingNextPage ? "Loading…" : "Load more"}
+                    {products.isFetchingNextPage ? "Cargando…" : "Ver más"}
                   </Button>
                 </div>
               </>

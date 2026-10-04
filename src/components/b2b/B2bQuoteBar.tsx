@@ -6,7 +6,7 @@ export function B2bQuoteBar({ selectedCount }: { selectedCount: number }) {
   const label = selectedCount === 1 ? "1 product selected" : `${selectedCount} products selected`;
   return (
     <aside
-      aria-label="Quote request selection"
+      aria-label="Selección para cotización"
       className="desert-glass desert-glass--elevated fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-30 mx-auto flex max-w-xl items-center justify-between gap-3 rounded-2xl p-2.5 pl-4 shadow-2xl md:bottom-[calc(env(safe-area-inset-bottom)+1.5rem)]"
     >
       <div className="flex min-w-0 items-center gap-3">
@@ -16,19 +16,19 @@ export function B2bQuoteBar({ selectedCount }: { selectedCount: number }) {
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{label}</p>
           <p className="hidden text-xs text-muted-foreground sm:block">
-            Saved for this browser session
+            Guardado en esta sesión del navegador
           </p>
         </div>
       </div>
       {selectedCount > 0 ? (
         <Link to="/b2b/quote">
           <Button className="min-h-11 rounded-xl px-4">
-            Continue <ArrowRight className="ms-2 h-4 w-4" />
+            Continuar <ArrowRight className="ms-2 h-4 w-4" />
           </Button>
         </Link>
       ) : (
         <Button disabled className="min-h-11 rounded-xl px-4">
-          Continue <ArrowRight className="ms-2 h-4 w-4" />
+          Continuar <ArrowRight className="ms-2 h-4 w-4" />
         </Button>
       )}
     </aside>

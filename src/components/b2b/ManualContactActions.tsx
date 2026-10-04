@@ -17,22 +17,22 @@ export function ManualContactActions({ preview }: { preview: string }) {
     <div className="mt-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <a
-          href={mailto(PUBLIC_CONTACT.b2b, "CornerMex manual quote request", preview)}
+          href={mailto(PUBLIC_CONTACT.b2b, "Solicitud de cotización CornerMex", preview)}
           className="inline-flex"
         >
           <Button className="min-h-11 w-full rounded-full sm:w-auto">
-            <Mail className="me-2 h-4 w-4" /> Send by email
+            <Mail className="me-2 h-4 w-4" /> Enviar por correo
           </Button>
         </a>
         {whatsAppHref ? (
           <a href={whatsAppHref} className="inline-flex">
             <Button variant="outline" className="min-h-11 w-full rounded-full sm:w-auto">
-              <MessageCircle className="me-2 h-4 w-4" /> Open WhatsApp
+              <MessageCircle className="me-2 h-4 w-4" /> Abrir WhatsApp
             </Button>
           </a>
         ) : (
           <Button disabled variant="outline" className="min-h-11 rounded-full">
-            <MessageCircle className="me-2 h-4 w-4" /> WhatsApp unavailable
+            <MessageCircle className="me-2 h-4 w-4" /> WhatsApp no disponible
           </Button>
         )}
         <Button
@@ -42,16 +42,16 @@ export function ManualContactActions({ preview }: { preview: string }) {
           className="min-h-11 rounded-full"
         >
           {copied ? <Check className="me-2 h-4 w-4" /> : <Copy className="me-2 h-4 w-4" />}
-          {copied ? "Copied" : "Copy request"}
+          {copied ? "Copiada" : "Copiar solicitud"}
         </Button>
       </div>
       {!whatsAppHref && (
         <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-          WhatsApp contact configuration is unavailable. Use email or copy the request instead.
+          El contacto por WhatsApp no está disponible. Usa el correo o copia la solicitud.
         </p>
       )}
       <p role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-accent">
-        {copied ? "Request copied locally — not submitted or sent." : ""}
+        {copied ? "Solicitud copiada. Aún no se ha enviado." : ""}
       </p>
     </div>
   );

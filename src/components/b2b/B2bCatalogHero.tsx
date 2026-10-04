@@ -8,7 +8,7 @@ export function B2bCatalogHero({ selectedCount }: { selectedCount: number }) {
       <div className="relative overflow-hidden rounded-[2rem] border border-border bg-obsidian text-background shadow-2xl shadow-primary/10 sm:rounded-[2.5rem]">
         <img
           src="/brand-kit/master-scenes/restaurant-b2b.jpg"
-          alt="Hospitality team preparing a professional service"
+          alt="Equipo de cocina preparando el servicio"
           width={1800}
           height={1200}
           decoding="async"
@@ -34,7 +34,7 @@ export function B2bCatalogHero({ selectedCount }: { selectedCount: number }) {
                 size="lg"
                 className="min-h-11 rounded-full bg-background text-foreground hover:bg-background/90"
               >
-                Explore products <ArrowDown className="ms-2 h-4 w-4" />
+                Ver productos <ArrowDown className="ms-2 h-4 w-4" />
               </Button>
             </a>
             <Link to="/b2b/quote">
@@ -44,7 +44,7 @@ export function B2bCatalogHero({ selectedCount }: { selectedCount: number }) {
                 className="min-h-11 rounded-full border-background/35 bg-transparent text-background hover:bg-background/10 hover:text-background"
               >
                 <ClipboardList className="me-2 h-4 w-4" />
-                Quote selection · {selectedCount}
+                Tu selección · {selectedCount}
               </Button>
             </Link>
           </div>

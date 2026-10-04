@@ -13,19 +13,19 @@ function mapLoginError(error: { message?: string; code?: string } | null) {
   if (!error) return "";
   const message = (error.message ?? "").toLowerCase();
   if (error.code === "invalid_credentials" || message.includes("invalid login")) {
-    return "Email or password is incorrect.";
+    return "El correo o la contraseña no son correctos.";
   }
   if (error.code === "email_not_confirmed" || message.includes("email not confirmed")) {
-    return "Confirm your email before signing in.";
+    return "Confirma tu correo antes de iniciar sesión.";
   }
-  if (message.includes("rate limit")) return "Too many attempts. Please try again later.";
-  return error.message ?? "Unable to sign in.";
+  if (message.includes("rate limit")) return "Demasiados intentos. Inténtalo más tarde.";
+  return error.message ?? "No pudimos iniciar tu sesión.";
 }
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search) => z.object({ redirect: z.string().optional() }).parse(search),
   head: () => ({
-    meta: [{ title: "Sign in — CornerMex" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Iniciar sesión — CornerMex" }, { name: "robots", content: "noindex" }],
   }),
   component: Login,
 });
@@ -64,7 +64,7 @@ function Login() {
     });
     if (result.error) {
       setGoogleLoading(false);
-      setError("Unable to start Google sign-in. Please try again.");
+      setError("No pudimos abrir el inicio de sesión con Google. Inténtalo de nuevo.");
     }
   }
 
@@ -72,13 +72,13 @@ function Login() {
     <SiteLayout>
       <section className="mx-auto max-w-md px-4 py-20 sm:px-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
-          CornerMex account
+          Cuenta CornerMex
         </p>
-        <h1 className="mt-3 font-display text-4xl tracking-tight">Sign in</h1>
+        <h1 className="mt-3 font-display text-4xl tracking-tight">Iniciar sesión</h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           {ONLINE_ORDERING_ENABLED
-            ? "Sign in with Google or your confirmed CornerMex email and password."
-            : "Use your confirmed CornerMex email and password. Account access does not enable checkout."}
+            ? "Inicia sesión con Google o con tu correo y contraseña de CornerMex."
+            : "Usa tu correo y contraseña de CornerMex."}
         </p>
         <Button
           type="button"
@@ -87,7 +87,7 @@ function Login() {
           className="mt-8 w-full rounded-full"
           onClick={() => void continueWithGoogle()}
         >
-          {googleLoading ? "Opening Google…" : "Continue with Google"}
+          {googleLoading ? "Abriendo Google…" : "Continuar con Google"}
         </Button>
         <div className="my-6 flex items-center gap-3" aria-hidden="true">
           <span className="h-px flex-1 bg-border" />
@@ -96,7 +96,7 @@ function Login() {
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               name="email"
@@ -108,7 +108,7 @@ function Login() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               name="password"
@@ -125,7 +125,7 @@ function Login() {
             </div>
           )}
           <Button type="submit" disabled={loading} className="w-full rounded-full">
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? "Iniciando sesión…" : "Iniciar sesión"}
           </Button>
         </form>
       </section>

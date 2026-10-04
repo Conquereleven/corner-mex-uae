@@ -26,7 +26,7 @@ export function CustomerOrderHistorySurface({
   renderOrderLink?: (id: string) => React.ReactNode;
 }) {
   if (view.kind === "loading") {
-    return <p className="text-sm text-muted-foreground">Loading…</p>;
+    return <p className="text-sm text-muted-foreground">Cargando…</p>;
   }
 
   if (view.kind === "query_failed") {
@@ -34,7 +34,7 @@ export function CustomerOrderHistorySurface({
       <div className="space-y-2" role="alert">
         <p className="text-sm font-medium text-destructive">{view.message}</p>
         <Button data-testid="customer-history-retry" size="sm" variant="outline" onClick={onRetry}>
-          Try again
+          Reintentar
         </Button>
       </div>
     );
@@ -48,7 +48,7 @@ export function CustomerOrderHistorySurface({
           renderShopLink()
         ) : (
           <Link to="/shop" className="underline">
-            Start shopping →
+            Ir a la tienda →
           </Link>
         )}
       </p>
@@ -104,7 +104,7 @@ export function OrderRow({
           ) : (
             <Button asChild size="sm" variant="outline">
               <Link to="/account/orders/$id" params={{ id: order.id }}>
-                View order
+                Ver pedido
               </Link>
             </Button>
           )}
@@ -116,15 +116,15 @@ export function OrderRow({
           <dd>{display.subtotal}</dd>
         </div>
         <div>
-          <dt>Shipping</dt>
+          <dt>Envío</dt>
           <dd>{display.shipping}</dd>
         </div>
         <div>
-          <dt>Tax</dt>
+          <dt>Impuestos</dt>
           <dd>{display.tax}</dd>
         </div>
         <div>
-          <dt>Payment</dt>
+          <dt>Pago</dt>
           <dd>{display.paymentMethod}</dd>
         </div>
       </dl>
