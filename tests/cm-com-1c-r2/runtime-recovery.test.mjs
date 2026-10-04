@@ -42,7 +42,10 @@ test("native AsyncLocalStorage retains context through awaited continuations", a
 });
 
 test("Shop distinguishes a retryable error from a successful empty state", () => {
-  assert.match(shop, /products\.isError[\s\S]*catálogo\s+no\s+está\s+disponible\s+por\s+el\s+momento/i);
+  assert.match(
+    shop,
+    /products\.isError[\s\S]*catálogo\s+no\s+está\s+disponible\s+por\s+el\s+momento/i,
+  );
   assert.match(shop, /onClick=\{\(\) => void products\.refetch\(\)\}/);
   assert.match(shop, /products\.isSuccess && productItems\.length === 0/);
   assert.match(shop, /Estamos\s+surtiendo\s+la\s+despensa/);

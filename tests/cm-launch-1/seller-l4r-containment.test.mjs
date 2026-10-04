@@ -110,7 +110,10 @@ test("L4R keeps route and account UI fail-closed and truthful", async () => {
   const accountRoute = await readFile("src/routes/_authenticated/account.index.tsx", "utf8");
 
   assert.match(sellerRoute, /redirect\(\{ to: "\/account" \}\)/);
-  assert.match(accountRoute, /Las\s+solicitudes\s+de\s+vendedores\s+no\s+están\s+activas\s+en\s+esta\s+etapa/);
+  assert.match(
+    accountRoute,
+    /Las\s+solicitudes\s+de\s+vendedores\s+no\s+están\s+activas\s+en\s+esta\s+etapa/,
+  );
   assert.match(accountRoute, /Próximamente/);
 });
 
