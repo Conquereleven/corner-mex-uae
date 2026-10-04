@@ -2,9 +2,11 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # mx/main is the Mexico integration line. It is isolated from `main`, which
+    # is what the UAE production service deploys (docs/cornermex-mx/BRANCHING.md).
+    branches: [main, mx/main]
   push:
-    branches: [main]
+    branches: [main, mx/main]
 
 permissions:
   contents: read
