@@ -94,7 +94,7 @@ test("Admin journey stays role-gated, presentation-ready and operationally truth
   assert.match(admin, /to: "\/admin\/orders"/);
   assert.match(admin, /to: "\/admin\/leads"/);
   assert.match(overview, /Live first-party order, customer and catalogue metrics/);
-  assert.match(overview, /UAE operations/);
+  assert.match(overview, /Operación \{ACTIVE_MARKET\.countryNameLocal\}/);
   assert.doesNotMatch(overview, /Canonical production model/);
   assert.match(leads, /adminListB2bLeads/);
   assert.match(leads, /Human-owned commercial pipeline/);

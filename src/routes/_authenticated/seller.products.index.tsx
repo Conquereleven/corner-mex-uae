@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -210,7 +211,7 @@ function Products() {
                       {" · "}stock {p.stock}
                     </p>
                   </div>
-                  <div className="hidden tabular-nums sm:block">{p.price_aed.toFixed(2)} AED</div>
+                  <div className="hidden tabular-nums sm:block">{formatMoneyWithCode(p.price_aed)}</div>
                   <Badge
                     variant={
                       p.status === "active"

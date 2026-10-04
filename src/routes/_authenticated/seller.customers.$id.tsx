@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/seller/customers/$id")({
   component: SellerCustomerDetail,
 });
 
-const AED = (n: number) => `${Number(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
+const AED = (n: number | string | null | undefined) => formatMoneyWithCode(n ?? 0);
 
 function copy(v: string) {
   navigator.clipboard.writeText(v).then(() => toast.success("Copied")).catch(() => toast.error("Copy failed"));

@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET } from "@/config/market";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
@@ -146,7 +147,7 @@ export function CsvImporter({ sellerId, sellerLabel }: { sellerId?: string; sell
                     <tr key={i} className="border-t border-border">
                       <td className="p-2 font-mono text-xs">{r.slug}</td>
                       <td className="p-2">{r.name_en}</td>
-                      <td className="p-2 tabular-nums">{r.price_aed} AED</td>
+                      <td className="p-2 tabular-nums">{r.price_aed} {ACTIVE_MARKET.currency}</td>
                       <td className="p-2 tabular-nums">{r.stock}</td>
                       <td className="p-2"><Badge variant="secondary">{r.status}</Badge></td>
                       <td className="p-2 text-muted-foreground">{r.category_slug ?? "—"}</td>

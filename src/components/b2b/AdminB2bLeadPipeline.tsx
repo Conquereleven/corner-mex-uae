@@ -343,7 +343,7 @@ function AdminB2bLeadPipelineEditor({
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1 sm:col-span-2">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              Quantity and AED pricing
+              Quantity and pricing
             </p>
             <Textarea
               rows={4}
@@ -351,11 +351,11 @@ function AdminB2bLeadPipelineEditor({
               onChange={(event) =>
                 setQuote((current) => ({ ...current, items_summary: event.target.value }))
               }
-              placeholder="Human-entered lines only. Example: Product · qty · AED unit price"
+              placeholder="Human-entered lines only. Example: Product · qty · unit price (MXN)"
             />
           </div>
           <InputField
-            label="Delivery fee AED"
+            label="Delivery fee (MXN)"
             value={quote.delivery_fee_aed}
             type="number"
             placeholder="Unconfirmed"
@@ -368,7 +368,7 @@ function AdminB2bLeadPipelineEditor({
             onChange={(value) => setQuote((current) => ({ ...current, valid_until: value }))}
           />
           <InputField
-            label="VAT treatment"
+            label="Tax treatment"
             value={quote.vat_treatment}
             placeholder="Unconfirmed"
             onChange={(value) => setQuote((current) => ({ ...current, vat_treatment: value }))}

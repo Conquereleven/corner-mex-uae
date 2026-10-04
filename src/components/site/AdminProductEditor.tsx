@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET } from "@/config/market";
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -345,7 +346,7 @@ export function AdminProductEditor({
                 </SelectContent>
               </Select>
               <p className="mt-1 text-xs text-muted-foreground">
-                Activation requires at least one active variant with a positive AED price.
+                Activation requires at least one active variant with a positive price.
               </p>
             </div>
             <div>
@@ -400,7 +401,7 @@ export function AdminProductEditor({
                     />
                   </div>
                   <div>
-                    <Label>Price AED</Label>
+                    <Label>Price ({ACTIVE_MARKET.currency})</Label>
                     <Input
                       type="number"
                       step="0.01"

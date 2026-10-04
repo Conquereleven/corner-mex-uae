@@ -1,3 +1,4 @@
+import { formatMoney } from "@/config/market";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -124,7 +125,7 @@ function AdminProducts() {
                       </TableCell>
                       <TableCell>{variants.length}</TableCell>
                       <TableCell>{stock}</TableCell>
-                      <TableCell>{minPrice == null ? "—" : `AED ${minPrice.toFixed(2)}`}</TableCell>
+                      <TableCell>{minPrice == null ? "—" : formatMoney(minPrice)}</TableCell>
                       <TableCell className="text-right">
                         <Button asChild size="sm" variant="outline">
                           <Link to="/admin/products/$id" params={{ id: product.id }}>
