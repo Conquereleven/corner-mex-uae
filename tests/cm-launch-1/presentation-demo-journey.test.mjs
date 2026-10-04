@@ -44,7 +44,10 @@ test("Cart preserves single-merchant identity and routes cleanly to checkout", a
   ]);
   assert.match(cart, /group\.sellerName/);
   assert.match(cart, /to="\/checkout"/);
-  assert.match(cart, /El precio vigente, la disponibilidad y el envío se confirman\s+al finalizar la compra/);
+  assert.match(
+    cart,
+    /El precio vigente, la disponibilidad y el envío se confirman\s+al finalizar la compra/,
+  );
   assert.doesNotMatch(cart, />B2C cart</);
   assert.match(catalog, /slug: "cornermex", name: "CornerMex"/);
 });

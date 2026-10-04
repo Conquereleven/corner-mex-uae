@@ -83,7 +83,11 @@ export type ShippingWebhookEvent = {
 type Json = Record<string, unknown>;
 
 const asText = (value: unknown): string | null =>
-  typeof value === "string" && value !== "" ? value : typeof value === "number" ? String(value) : null;
+  typeof value === "string" && value !== ""
+    ? value
+    : typeof value === "number"
+      ? String(value)
+      : null;
 
 /**
  * Parses an already-verified webhook body. Returns null for a body that is not a

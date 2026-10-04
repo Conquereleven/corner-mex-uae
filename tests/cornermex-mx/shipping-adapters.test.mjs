@@ -15,7 +15,8 @@ import {
   tokenResponse,
 } from "./shipping-fixtures.mjs";
 
-const { createSkydropxPlatformProvider } = await import("../../src/lib/shipping/skydropx-platform.ts");
+const { createSkydropxPlatformProvider } =
+  await import("../../src/lib/shipping/skydropx-platform.ts");
 const providers = await import("../../src/lib/shipping/providers.ts");
 const { ShippingError } = await import("../../src/lib/shipping/types.ts");
 
@@ -56,7 +57,15 @@ for (const id of ["skydropx", "solo_envios"]) {
         status: 201,
         body: quotation([
           rate(),
-          rate({ id: "rate-2", provider_name: "estafeta", provider_display_name: "Estafeta", total: 98.5, days: 4, insurable: false, pickup: false }),
+          rate({
+            id: "rate-2",
+            provider_name: "estafeta",
+            provider_display_name: "Estafeta",
+            total: 98.5,
+            days: 4,
+            insurable: false,
+            pickup: false,
+          }),
           // A carrier that could not price the parcel is not an option.
           rate({ id: "rate-3", success: false, total: null, currency_code: null, days: null }),
         ]),
@@ -115,7 +124,9 @@ for (const id of ["skydropx", "solo_envios"]) {
       area_level2: "Monterrey",
       area_level3: "Monterrey Centro",
     });
-    assert.deepEqual(sent.body.quotation.parcels, [{ length: 30, width: 20, height: 15, weight: 2.4 }]);
+    assert.deepEqual(sent.body.quotation.parcels, [
+      { length: 30, width: 20, height: 15, weight: 2.4 },
+    ]);
     assert.equal(sent.headers.Authorization, "Bearer test-access-token");
   });
 }
@@ -171,12 +182,18 @@ test("a 401 on a call drops the token and retries once with a new one", async ()
   assert.equal(quotes.length, 1);
   assert.equal(transport.count(TOKEN), 2);
   const attempts = transport.calls.filter((call) => call.key === QUOTE);
-  assert.deepEqual(attempts.map((call) => call.headers.Authorization), ["Bearer stale", "Bearer fresh"]);
+  assert.deepEqual(
+    attempts.map((call) => call.headers.Authorization),
+    ["Bearer stale", "Bearer fresh"],
+  );
 });
 
 test("rejected credentials fail as AUTH_FAILED without echoing the response", async () => {
   const { provider } = build("skydropx", {
-    [TOKEN]: () => ({ status: 401, body: { error: "invalid_client", error_description: "client-secret" } }),
+    [TOKEN]: () => ({
+      status: 401,
+      body: { error: "invalid_client", error_description: "client-secret" },
+    }),
   });
   await assert.rejects(provider.authenticate(), (error) => {
     assert.ok(error instanceof ShippingError);
@@ -222,7 +239,10 @@ test("a quotation that never completes fails as QUOTE_INCOMPLETE", async () => {
     {
       [TOKEN]: () => ({ status: 200, body: tokenResponse() }),
       [QUOTE]: () => ({ status: 201, body: quotation([], { is_completed: false }) }),
-      "GET /api/v1/quotations/quotation-1": () => ({ status: 200, body: quotation([], { is_completed: false }) }),
+      "GET /api/v1/quotations/quotation-1": () => ({
+        status: 200,
+        body: quotation([], { is_completed: false }),
+      }),
     },
     { quotePollTimeoutMs: 5_000 },
   );
@@ -307,7 +327,12 @@ test("creating a shipment sends the rate, asks for idempotency and normalises th
   assert.equal(body.rate_id, "rate-1");
   assert.equal(body.unique_shipment, true, "provider-side idempotency must always be requested");
   assert.deepEqual(body.packages, [
-    { package_number: "1", consignment_note: "50181700", package_type: "4G", package_protected: false },
+    {
+      package_number: "1",
+      consignment_note: "50181700",
+      package_type: "4G",
+      package_protected: false,
+    },
   ]);
   assert.equal(body.address_to.street1, "Calle Ejemplo 10");
 });
@@ -336,7 +361,10 @@ test("a label purchase is never retried, and an unknown outcome is AMBIGUOUS_WRI
 test("a definite rejection of a shipment is INVALID_REQUEST, not ambiguous", async () => {
   const { provider } = build("skydropx", {
     [TOKEN]: () => ({ status: 200, body: tokenResponse() }),
-    [SHIP]: () => ({ status: 422, body: { error: "unprocessable_entity", error_description: "Tarifa expirada" } }),
+    [SHIP]: () => ({
+      status: 422,
+      body: { error: "unprocessable_entity", error_description: "Tarifa expirada" },
+    }),
   });
   await assert.rejects(provider.createShipment(shipmentRequest), (error) => {
     assert.equal(error.code, "INVALID_REQUEST");
@@ -356,7 +384,10 @@ test("cancellation reports acceptance, and a refusal is an answer rather than an
   const path = "POST /api/v1/shipments/shipment-1/cancellations";
   const accepted = build("skydropx", {
     [TOKEN]: () => ({ status: 200, body: tokenResponse() }),
-    [path]: () => ({ status: 201, body: { data: { id: "c-1", attributes: { status: "reviewing" } } } }),
+    [path]: () => ({
+      status: 201,
+      body: { data: { id: "c-1", attributes: { status: "reviewing" } } },
+    }),
   });
   const ok = await accepted.provider.cancelShipment("shipment-1", "Pedido cancelado");
   assert.deepEqual([ok.accepted, ok.rawStatus], [true, "reviewing"]);
@@ -377,8 +408,22 @@ test("tracking events are normalised and the raw provider status is preserved", 
       status: 200,
       body: {
         data: [
-          { id: "e1", attributes: { status: "picked_up", date: "2026-10-01T10:00:00-06:00", location: "Tecámac" } },
-          { id: "e2", attributes: { status: "last_mile", date: "2026-10-02T09:00:00-06:00", event_description: "En ruta" } },
+          {
+            id: "e1",
+            attributes: {
+              status: "picked_up",
+              date: "2026-10-01T10:00:00-06:00",
+              location: "Tecámac",
+            },
+          },
+          {
+            id: "e2",
+            attributes: {
+              status: "last_mile",
+              date: "2026-10-02T09:00:00-06:00",
+              event_description: "En ruta",
+            },
+          },
           { id: "e3", attributes: { status: "something_new", date: "2026-10-01T12:00:00-06:00" } },
         ],
       },
@@ -387,7 +432,10 @@ test("tracking events are normalised and the raw provider status is preserved", 
   const tracking = await provider.getTracking("794874381730", "fedex");
   assert.equal(tracking.status, "OUT_FOR_DELIVERY");
   assert.equal(tracking.rawStatus, "last_mile");
-  assert.deepEqual(tracking.events.map((event) => event.rawStatus), ["picked_up", "last_mile", "something_new"]);
+  assert.deepEqual(
+    tracking.events.map((event) => event.rawStatus),
+    ["picked_up", "last_mile", "something_new"],
+  );
   assert.equal(transport.calls.at(-1).search, "?tracking_number=794874381730&carrier_name=fedex");
 });
 
@@ -396,7 +444,9 @@ test("label URLs come from the shipment's packages", async () => {
     [TOKEN]: () => ({ status: 200, body: tokenResponse() }),
     "GET /api/v1/shipments/shipment-1": () => ({ status: 200, body: shipment() }),
   });
-  assert.deepEqual(await provider.getLabel("shipment-1"), ["https://labels.example.test/794874381730.pdf"]);
+  assert.deepEqual(await provider.getLabel("shipment-1"), [
+    "https://labels.example.test/794874381730.pdf",
+  ]);
 });
 
 test("provider configuration defaults to sandbox and reports missing names, never values", () => {
@@ -416,11 +466,20 @@ test("provider configuration defaults to sandbox and reports missing names, neve
   const enabled = { ...env, SOLO_ENVIOS_ENABLED: "true" };
   const health = providers.providerConfigHealth(solo, enabled);
   assert.deepEqual([health.state, health.environment], ["SANDBOX", "sandbox"]);
-  assert.equal(providers.resolveProviderConfig(solo, enabled).config.baseUrl, "https://sb-app.soloenvios.com");
-  assert.doesNotMatch(JSON.stringify(providers.shippingConfigHealth(enabled)), /secret-value|id-value/);
+  assert.equal(
+    providers.resolveProviderConfig(solo, enabled).config.baseUrl,
+    "https://sb-app.soloenvios.com",
+  );
+  assert.doesNotMatch(
+    JSON.stringify(providers.shippingConfigHealth(enabled)),
+    /secret-value|id-value/,
+  );
 
   // Production credentials are never reported CONNECTED or LIVE from config alone.
-  const production = providers.providerConfigHealth(solo, { ...enabled, SOLO_ENVIOS_ENVIRONMENT: "production" });
+  const production = providers.providerConfigHealth(solo, {
+    ...enabled,
+    SOLO_ENVIOS_ENVIRONMENT: "production",
+  });
   assert.equal(production.state, "NOT_CONFIGURED");
   assert.deepEqual(production.missing, ["PRODUCTION_VERIFICATION"]);
   assert.equal(

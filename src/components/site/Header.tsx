@@ -95,9 +95,7 @@ export function Header() {
               >
                 <SheetHeader className="text-left">
                   <BrandLogo surface="onIvory" className="h-12 w-28" />
-                  <SheetTitle>
-                    Explora CornerMex
-                  </SheetTitle>
+                  <SheetTitle>Explora CornerMex</SheetTitle>
                   <SheetDescription className="text-muted-foreground">
                     Despensa mexicana por pieza y por mayoreo.
                   </SheetDescription>
@@ -130,7 +128,6 @@ export function Header() {
                       </Button>
                     ))}
                   </div>
-
                 </div>
               </SheetContent>
             </Sheet>

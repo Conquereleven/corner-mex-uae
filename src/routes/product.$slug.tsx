@@ -91,8 +91,7 @@ export const Route = createFileRoute("/product/$slug")({
     const product = loaderData;
     const canonical = productUrl(params.slug);
     const title =
-      product?.seo?.title ||
-      (product ? `${product.name} | CornerMex` : "Producto | CornerMex");
+      product?.seo?.title || (product ? `${product.name} | CornerMex` : "Producto | CornerMex");
     const description = productCopyToPlainText(
       product?.seo?.meta_description ||
         product?.description ||

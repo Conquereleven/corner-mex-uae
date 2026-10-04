@@ -88,7 +88,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         property: "og:description",
-        content: "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
+        content:
+          "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
       },
       { property: "og:site_name", content: "CornerMex" },
       { property: "og:type", content: "website" },
@@ -96,7 +97,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         name: "twitter:description",
-        content: "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
+        content:
+          "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
       },
       {
         name: "keywords",

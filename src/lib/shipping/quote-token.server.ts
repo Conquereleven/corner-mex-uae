@@ -102,7 +102,8 @@ export function verifyQuoteToken(
   if (typeof quote.price !== "number" || !Number.isFinite(quote.price) || quote.price < 0) {
     return invalid;
   }
-  if (!(Date.parse(quote.expiresAt) > nowMs)) return { ok: false, reason: "SHIPPING_QUOTE_EXPIRED" };
+  if (!(Date.parse(quote.expiresAt) > nowMs))
+    return { ok: false, reason: "SHIPPING_QUOTE_EXPIRED" };
   if (payload.postalCode !== binding.postalCode) {
     return { ok: false, reason: "SHIPPING_QUOTE_DESTINATION_CHANGED" };
   }

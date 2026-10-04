@@ -39,7 +39,9 @@ export const MX_CHECKOUT_DISABLED = "MX_CHECKOUT_DISABLED";
 export const MX_ORDER_VARIANT_UNAVAILABLE = "MX_ORDER_VARIANT_UNAVAILABLE";
 
 const Items = z
-  .array(z.object({ variant_id: z.string().uuid(), qty: z.number().int().min(1).max(500) }).strict())
+  .array(
+    z.object({ variant_id: z.string().uuid(), qty: z.number().int().min(1).max(500) }).strict(),
+  )
   .min(1)
   .max(50);
 
@@ -48,7 +50,9 @@ const Items = z
 const QuoteDestination = z
   .object({
     postal_code: z.string().regex(/^\d{5}$/),
-    state: z.enum(Object.keys(MX_STATES) as [keyof typeof MX_STATES, ...(keyof typeof MX_STATES)[]]),
+    state: z.enum(
+      Object.keys(MX_STATES) as [keyof typeof MX_STATES, ...(keyof typeof MX_STATES)[]],
+    ),
     municipality: z.string().trim().min(2).max(120),
     colonia: z.string().trim().min(2).max(120),
   })
@@ -195,13 +199,19 @@ export const quoteMxShipping = createServerFn({ method: "POST" })
       available: true,
       lines,
       subtotal,
-      options: quotes.map((quote) => toOption(quote, signQuote(quote, binding, config.quoteSecret))),
+      options: quotes.map((quote) =>
+        toOption(quote, signQuote(quote, binding, config.quoteSecret)),
+      ),
       taxRate: config.addedTaxRate,
       parcelDataComplete: parcel.complete,
     };
   });
 
-const LegalAcceptance = z.object({ terms: z.boolean(), privacy: z.boolean(), returns: z.boolean() });
+const LegalAcceptance = z.object({
+  terms: z.boolean(),
+  privacy: z.boolean(),
+  returns: z.boolean(),
+});
 
 export const PlaceMxOrderInput = z.object({
   // Idempotency key for this checkout attempt; the database fingerprints the
@@ -331,11 +341,7 @@ export const placeMxOrder = createServerFn({ method: "POST" })
       total_aed: number;
     };
     // Totals are the database's. computeMxTotals only normalises rounding.
-    const totals = computeMxTotals(
-      Number(payload.subtotal_aed),
-      Number(payload.shipping_aed),
-      0,
-    );
+    const totals = computeMxTotals(Number(payload.subtotal_aed), Number(payload.shipping_aed), 0);
     return {
       ok: true,
       order_id: payload.order_id,

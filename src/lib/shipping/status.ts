@@ -42,8 +42,7 @@ const WORKFLOW: Readonly<Record<string, ShipmentStatus>> = Object.freeze({
   error: "EXCEPTION",
 });
 
-const key = (raw: unknown): string =>
-  typeof raw === "string" ? raw.trim().toLowerCase() : "";
+const key = (raw: unknown): string => (typeof raw === "string" ? raw.trim().toLowerCase() : "");
 
 /** Maps a package tracking status. Null when the provider value is unknown. */
 export function mapTrackingStatus(raw: unknown): ShipmentStatus | null {

@@ -12,7 +12,6 @@ import {
   type ManualQuoteRequestFields,
 } from "@/features/b2b-catalog/manual-quote-request";
 
-
 export function ManualQuoteRequestForm({
   fields,
   errors,

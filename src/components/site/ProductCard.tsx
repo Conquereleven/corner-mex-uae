@@ -58,9 +58,7 @@ export function ProductCard({
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         <div className="mt-auto flex items-end justify-between pt-3">
           <span className="font-display text-lg font-semibold text-foreground">
-            <span className={onSale ? "text-sale" : "text-price"}>
-              {cur.format(p.price_aed)}
-            </span>
+            <span className={onSale ? "text-sale" : "text-price"}>{cur.format(p.price_aed)}</span>
             {onSale && p.compare_at_price_aed != null && (
               <span className="ms-2 text-sm font-normal text-muted-foreground line-through">
                 {cur.format(p.compare_at_price_aed)}

@@ -424,7 +424,10 @@ test("checkout sends no money and no unchecked legal acceptance", async () => {
   // Acceptance starts unchecked and gates the submit button.
   assert.match(source, /useState\(false\)/);
   assert.match(source, /readyToOrder =[\s\S]{0,220}accepted &&[\s\S]{0,80}selected !== null/);
-  assert.match(source, /canExecute = CHECKOUT_ENABLED && Boolean\(config\?\.active\) && readyToOrder/);
+  assert.match(
+    source,
+    /canExecute = CHECKOUT_ENABLED && Boolean\(config\?\.active\) && readyToOrder/,
+  );
 });
 
 test("checkout clears the cart only after a real order and guards double submit", async () => {

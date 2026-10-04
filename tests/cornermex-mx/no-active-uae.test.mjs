@@ -78,7 +78,10 @@ test("the English and Spanish dictionaries carry no UAE copy", async () => {
 
 test("the active checkout has no emirate, no UAE payment copy and no UAE config", async () => {
   const checkout = await readFile("src/routes/checkout.tsx", "utf8");
-  assert.doesNotMatch(checkout, /emirate|EmirateCode|commercial-config|payment-methods|delivery-sla/i);
+  assert.doesNotMatch(
+    checkout,
+    /emirate|EmirateCode|commercial-config|payment-methods|delivery-sla/i,
+  );
   assert.doesNotMatch(checkout, /cod-order\.functions|card-checkout/);
   assert.match(checkout, /from "@\/lib\/mx-checkout\.functions"/);
   assert.match(checkout, /MX_STATE_OPTIONS/);

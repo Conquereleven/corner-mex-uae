@@ -36,7 +36,10 @@ test("the UAE market is retained but deferred, never active", () => {
   assert.equal(market.AE_MARKET.status, "DEFERRED");
   assert.notEqual(market.ACTIVE_MARKET, market.AE_MARKET);
   const active = Object.values(market.MARKETS).filter((entry) => entry.status === "ACTIVE");
-  assert.deepEqual(active.map((entry) => entry.code), ["MX"]);
+  assert.deepEqual(
+    active.map((entry) => entry.code),
+    ["MX"],
+  );
 });
 
 test("money is formatted as Mexican pesos in es-MX", () => {

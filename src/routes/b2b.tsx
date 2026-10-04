@@ -32,9 +32,7 @@ function B2B() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
-        <span className="text-[11px] uppercase tracking-[0.2em] text-eyebrow">
-          Para negocios
-        </span>
+        <span className="text-[11px] uppercase tracking-[0.2em] text-eyebrow">Para negocios</span>
         <h1 className="mt-4 font-display text-5xl tracking-tight">
           Abasto mexicano para tu negocio.
         </h1>

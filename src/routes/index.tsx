@@ -17,7 +17,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         property: "og:description",
-        content: "Despensa mexicana por pieza y cotizaciones para negocio revisadas por una persona.",
+        content:
+          "Despensa mexicana por pieza y cotizaciones para negocio revisadas por una persona.",
       },
       { property: "og:url", content: siteUrl("/") },
     ],
@@ -59,8 +60,8 @@ function Hero() {
             {ACTIVE_BRAND.verbal.primary}
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Chiles, salsas, masa y botanas de siempre. Compra por pieza para tu casa o por caja
-            para tu negocio.
+            Chiles, salsas, masa y botanas de siempre. Compra por pieza para tu casa o por caja para
+            tu negocio.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/shop">
@@ -148,9 +149,7 @@ function Features() {
       <div className="grid gap-8 md:grid-cols-3">
         <div className="rounded-3xl border border-border bg-sand p-7">
           <ShoppingBag className="h-6 w-6 text-primary" aria-hidden="true" />
-          <h2 className="mt-6 font-display text-3xl tracking-tight text-foreground">
-            Ofertas
-          </h2>
+          <h2 className="mt-6 font-display text-3xl tracking-tight text-foreground">Ofertas</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             Descubre favoritos a precio especial y básicos de despensa del catálogo CornerMex.
           </p>
@@ -205,8 +204,8 @@ function B2BBlock() {
           </div>
           <div>
             <p className="text-base leading-relaxed text-ivory/85">
-              Cuéntanos qué necesitas y nuestro equipo revisará por escrito disponibilidad, volúmenes
-              y entrega.
+              Cuéntanos qué necesitas y nuestro equipo revisará por escrito disponibilidad,
+              volúmenes y entrega.
             </p>
             <Link to="/b2b" className="mt-6 inline-block">
               <Button size="lg" className="rounded-full">

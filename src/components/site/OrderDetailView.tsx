@@ -221,7 +221,9 @@ export function OrderDetailView({
                   />
                 )}
                 <Row label="Shipping" value={AED(order.shipping_aed)} />
-                {Number(order.tax_aed ?? 0) > 0 && <Row label="Impuestos" value={AED(order.tax_aed)} />}
+                {Number(order.tax_aed ?? 0) > 0 && (
+                  <Row label="Impuestos" value={AED(order.tax_aed)} />
+                )}
                 <div className="flex items-center justify-between pt-2 text-base font-semibold">
                   <span>Total</span>
                   <span className="tabular-nums">{AED(order.total_aed)}</span>

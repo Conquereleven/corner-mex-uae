@@ -1,0 +1,88 @@
+# Catalogue migration
+
+**Status:** classification done (read-only). No product was changed, deactivated
+or deleted.
+
+## Source
+
+Canonical database `wlrfknmrhowldygmvtvn`, read 2026-10-04 through the anonymous
+publishable key: **195 products, 204 variants, all `active`.**
+
+Every row was ingested from the UAE supplier's public storefront
+(`scripts/cm-com-3a/ingest-intermex-catalog.mjs`), under the rule "CornerMex
+price = the supplier's current price, in AED". So for the whole catalogue:
+
+- the **price is in AED** and is the UAE retail price, not a Mexican price;
+- the **supplier is the UAE supplier**;
+- the `brand` column holds the storefront's vendor label (`My Store`,
+  `Intermex UAE`), not the product's brand.
+
+## Result
+
+| Class | Products | Meaning |
+| --- | ---: | --- |
+| `KEEP` | 0 | Nothing can be kept as-is: every product needs a Mexican supplier and price |
+| `RESOURCE` | 102 | Keep the product, replace the supplier |
+| `REVIEW` | 56 | Needs a commercial decision |
+| `REMOVE_FROM_ACTIVE_MX` | 25 | Not appropriate for the Mexico launch |
+| `INTERMEX_PRIVATE` | 12 | Intermex private label / own production — must not be sold |
+
+Full per-product report, with the rule and reason for every row:
+`catalog/catalog-classification.csv`. Input snapshot: `catalog/catalog-snapshot.json`.
+Totals: `catalog/catalog-classification-summary.json`.
+
+### Rules (first match wins)
+
+| Rule | Class | Count | Evidence |
+| --- | --- | ---: | --- |
+| `intermex-named` | INTERMEX_PRIVATE | 8 | Product name carries "Intermex" |
+| `intermex-own-production` | INTERMEX_PRIVATE | 2 | Unbranded tortilla/chip line under an Intermex slug |
+| `unbranded-tortilla-line` | INTERMEX_PRIVATE | 2 | Unbranded tortilla / chips from the supplier's storefront (**inferred**) |
+| `non-mexican-uae-brand` | REMOVE | 10 | Fit Panda, Hungry Guru, Inzi — the UAE supplier's local assortment |
+| `souvenir-lifestyle` | REMOVE | 15 | Sombreros, bandanas, T-shirts, piñata kits, gift baskets |
+| `cold-chain` | REVIEW | 3 | Chilled / frozen: parcel shipping has no cold chain |
+| `kitchenware` | REVIEW | 3 | Tortilla press, molcajete, mat |
+| `assembled-by-supplier` | REVIEW | 4 | Candy bags, sampler packs assembled by the supplier |
+| `legacy-intermex-slug` | REVIEW | 1 | Branded product whose slug still says Intermex |
+| `export-market-brand` | REVIEW | 7 | El Mexicano, Clamato 1.89 L, Cholula — export presentations |
+| `small-producer` | REVIEW | 38 | La Conspiración, La Meridana, Xatze, El Fresno, Nopal Foods, Naturelo, Omalli, Mayamel, Pepe Crunch |
+| `national-brand` | RESOURCE | 96 | La Costeña, Valentina, El Yucateco, Maseca, Jarritos, Tajín, De la Rosa, Marinela, Sabritas lines, Doña María, Herdez, Maggi… |
+| `generic-pantry` | RESOURCE | 6 | Unbranded pantry staples available from local wholesale |
+
+The rules are in `scripts/cornermex-mx/classify-catalog.mjs`, where each one
+states the evidence it relies on. Re-run:
+
+```bash
+SUPABASE_URL=https://wlrfknmrhowldygmvtvn.supabase.co SUPABASE_PUBLISHABLE_KEY=<publishable key> node scripts/cornermex-mx/classify-catalog.mjs
+```
+
+The local `.env` points at the obsolete Supabase project; pass the canonical URL
+explicitly as above.
+
+## Data gaps that affect Mexico
+
+| Gap | Variants |
+| --- | ---: |
+| Price is AED | 204 of 204 |
+| No weight | 124 of 204 |
+| No dimensions (the schema has no columns for them) | 204 of 204 |
+| Price is zero | 1 (`la-costena-guacamole-salsa`) |
+
+Shipping quotes still work without this data: the parcel is estimated and the
+quote is flagged `parcelDataComplete: false` (`SHIPPING.md`).
+
+## What must happen before anything is sold in Mexico
+
+1. **Decide the database.** Recommended: a new Supabase project for Mexico, so
+   AED prices and UAE orders can never be read as pesos. The alternative —
+   re-pricing in place — needs every sellable variant re-priced in one
+   controlled change.
+2. **Founder review of the 56 `REVIEW` rows** and confirmation of the 12
+   `INTERMEX_PRIVATE` rows (two are inferred).
+3. **Real catalogue load:** for each `RESOURCE` product, a local supplier,
+   supplier cost, MXN retail price, presentation, weight and dimensions.
+4. Products that are not re-sourced stay `inactive` — not deleted — so order
+   history keeps resolving.
+
+Nothing here is applied automatically. Deactivation and re-pricing are an
+explicit, reviewed step.

@@ -81,7 +81,15 @@ test("CornerMex is the public site identity in document metadata", async () => {
 
 test("public header keeps the simplified navigation contract", async () => {
   const header = await readFile("src/components/site/Header.tsx", "utf8");
-  for (const label of ["Tienda", "Mayoreo", "Nosotros", "Encuéntranos", "Buscar", "Cuenta", "Carrito"]) {
+  for (const label of [
+    "Tienda",
+    "Mayoreo",
+    "Nosotros",
+    "Encuéntranos",
+    "Buscar",
+    "Cuenta",
+    "Carrito",
+  ]) {
     assert.ok(header.includes(label), `missing first-level header destination: ${label}`);
   }
   for (const removed of ["NotificationsBell", "Manual quote", ">Home<"])

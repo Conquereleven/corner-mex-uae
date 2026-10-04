@@ -322,7 +322,10 @@ test("robots.txt references no retired origin and keeps private surfaces disallo
   // The serving host is no longer asserted here: the route derives it.
 
   // The disallow list is built from an array, so assert membership there.
-  const disallow = text.slice(text.indexOf("const DISALLOW"), text.indexOf("];", text.indexOf("const DISALLOW")));
+  const disallow = text.slice(
+    text.indexOf("const DISALLOW"),
+    text.indexOf("];", text.indexOf("const DISALLOW")),
+  );
   for (const path of ["/admin", "/account", "/checkout", "/cart", "/login", "/seller"]) {
     assert.ok(disallow.includes(`"${path}"`), `robots must disallow ${path}`);
   }

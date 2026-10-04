@@ -14,12 +14,7 @@
 // deployment offers no shipping at all rather than an invented rate.
 
 import { MX_STATES, type MxStateCode } from "../mx-address.ts";
-import type {
-  FulfillmentMode,
-  NormalizedQuote,
-  QuoteAddress,
-  ShipmentAddress,
-} from "./types.ts";
+import type { FulfillmentMode, NormalizedQuote, QuoteAddress, ShipmentAddress } from "./types.ts";
 
 export type FulfillmentLocation = {
   id: string;

@@ -101,7 +101,10 @@ test("all eleven Mexico checkout delivery controls have stable ids and names", (
   assert.match(checkout, /htmlFor=\{id\}/);
   assert.match(checkout, /aria-labelledby="checkout-state-label"/);
   // No UAE address control survives in the active checkout.
-  assert.doesNotMatch(checkout, /checkout-emirate|checkout-area|checkout-building|checkout-landmark/);
+  assert.doesNotMatch(
+    checkout,
+    /checkout-emirate|checkout-area|checkout-building|checkout-landmark/,
+  );
 });
 
 test("checkout layout is bounded without using overflow hiding as the fix", () => {

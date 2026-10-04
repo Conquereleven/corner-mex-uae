@@ -8,7 +8,9 @@ import { formatMoney } from "@/config/market";
 import { cartTotals, groupBySeller, useCart } from "@/lib/cart";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Carrito — CornerMex" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Carrito — CornerMex" }, { name: "robots", content: "noindex" }],
+  }),
   component: Cart,
 });
 

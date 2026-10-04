@@ -35,9 +35,36 @@ const quote = (overrides = {}) => ({
 });
 
 const express = quote();
-const economy = quote({ carrier: "estafeta", carrierName: "Estafeta", service: "Terrestre", serviceCode: "ground", price: 95, estimatedDaysMin: 5, estimatedDaysMax: 5, providerRateId: "r2" });
-const balanced = quote({ carrier: "dhl", carrierName: "DHL", service: "Económico", serviceCode: "eco", price: 110, estimatedDaysMin: 2, estimatedDaysMax: 2, providerRateId: "r3" });
-const unknownEta = quote({ carrier: "local", carrierName: "Local", service: "Sin estimado", serviceCode: "x", price: 60, estimatedDaysMin: null, estimatedDaysMax: null, providerRateId: "r4" });
+const economy = quote({
+  carrier: "estafeta",
+  carrierName: "Estafeta",
+  service: "Terrestre",
+  serviceCode: "ground",
+  price: 95,
+  estimatedDaysMin: 5,
+  estimatedDaysMax: 5,
+  providerRateId: "r2",
+});
+const balanced = quote({
+  carrier: "dhl",
+  carrierName: "DHL",
+  service: "Económico",
+  serviceCode: "eco",
+  price: 110,
+  estimatedDaysMin: 2,
+  estimatedDaysMax: 2,
+  providerRateId: "r3",
+});
+const unknownEta = quote({
+  carrier: "local",
+  carrierName: "Local",
+  service: "Sin estimado",
+  serviceCode: "x",
+  price: 60,
+  estimatedDaysMin: null,
+  estimatedDaysMax: null,
+  providerRateId: "r4",
+});
 
 const provider = (id, result) => ({
   id,
@@ -51,8 +78,14 @@ test("CHEAPEST and FASTEST rank differently and both keep the delivery metadata"
   const all = [express, economy, balanced];
   const cheapest = engine.rankQuotes(all, "CHEAPEST");
   const fastest = engine.rankQuotes(all, "FASTEST");
-  assert.deepEqual(cheapest.map((q) => q.carrier), ["estafeta", "dhl", "fedex"]);
-  assert.deepEqual(fastest.map((q) => q.carrier), ["fedex", "dhl", "estafeta"]);
+  assert.deepEqual(
+    cheapest.map((q) => q.carrier),
+    ["estafeta", "dhl", "fedex"],
+  );
+  assert.deepEqual(
+    fastest.map((q) => q.carrier),
+    ["fedex", "dhl", "estafeta"],
+  );
   // Ranking reorders; it never strips the SLA from an option.
   for (const ranked of [...cheapest, ...fastest]) {
     assert.equal(typeof ranked.estimatedDaysMax, "number");
@@ -81,21 +114,32 @@ test("the same carrier service from two aggregators is offered once, at the lowe
 test("expired quotes and quotes in another currency are not offered", () => {
   const expired = quote({ expiresAt: new Date(NOW - 1).toISOString(), providerRateId: "old" });
   const dollars = quote({ currency: "USD", providerRateId: "usd" });
-  assert.deepEqual(engine.usableQuotes([express, expired, dollars], "MXN", NOW).map((q) => q.providerRateId), ["r"]);
+  assert.deepEqual(
+    engine.usableQuotes([express, expired, dollars], "MXN", NOW).map((q) => q.providerRateId),
+    ["r"],
+  );
 });
 
 test("rate shopping merges both providers and survives one of them failing", async () => {
   const outcome = await engine.shopRates(
     [
       provider("skydropx", [express, economy]),
-      provider("solo_envios", new ShippingError("TIMEOUT", "provider did not respond", { provider: "solo_envios" })),
+      provider(
+        "solo_envios",
+        new ShippingError("TIMEOUT", "provider did not respond", { provider: "solo_envios" }),
+      ),
     ],
     { origin: {}, destination: {}, parcels: [] },
     { policy: "CHEAPEST", currency: "MXN", now: () => NOW },
   );
-  assert.deepEqual(outcome.quotes.map((q) => q.carrier), ["estafeta", "fedex"]);
+  assert.deepEqual(
+    outcome.quotes.map((q) => q.carrier),
+    ["estafeta", "fedex"],
+  );
   assert.equal(outcome.recommended.carrier, "estafeta");
-  assert.deepEqual(outcome.failures, [{ provider: "solo_envios", code: "TIMEOUT", message: "provider did not respond" }]);
+  assert.deepEqual(outcome.failures, [
+    { provider: "solo_envios", code: "TIMEOUT", message: "provider did not respond" },
+  ]);
 });
 
 test("when every provider fails there are no quotes and no invented price", async () => {
@@ -112,53 +156,124 @@ test("when every provider fails there are no quotes and no invented price", asyn
 test("manual rules: a local prefix beats the national catch-all for the same mode", () => {
   const rules = fulfillment.parseManualShippingRules(
     JSON.stringify([
-      { id: "local", label: "Entrega local Tecámac", mode: "LOCAL_DELIVERY", postalPrefixes: ["557"], price: 49, daysMin: 0, daysMax: 1, freeFromSubtotal: 600 },
-      { id: "nacional", label: "Envío nacional", mode: "PARCEL_SHIPPING", postalPrefixes: ["*"], price: 149, daysMin: 3, daysMax: 6 },
+      {
+        id: "local",
+        label: "Entrega local Tecámac",
+        mode: "LOCAL_DELIVERY",
+        postalPrefixes: ["557"],
+        price: 49,
+        daysMin: 0,
+        daysMax: 1,
+        freeFromSubtotal: 600,
+      },
+      {
+        id: "nacional",
+        label: "Envío nacional",
+        mode: "PARCEL_SHIPPING",
+        postalPrefixes: ["*"],
+        price: 149,
+        daysMin: 3,
+        daysMax: 6,
+      },
     ]),
   );
-  const local = fulfillment.manualQuotes(rules, { postalCode: "55764", subtotal: 300, currency: "MXN", totalWeightKg: 1 }, NOW);
-  assert.deepEqual(local.map((q) => [q.serviceCode, q.price, q.fulfillmentMode]), [
-    ["local", 49, "LOCAL_DELIVERY"],
-    ["nacional", 149, "PARCEL_SHIPPING"],
-  ]);
+  const local = fulfillment.manualQuotes(
+    rules,
+    { postalCode: "55764", subtotal: 300, currency: "MXN", totalWeightKg: 1 },
+    NOW,
+  );
+  assert.deepEqual(
+    local.map((q) => [q.serviceCode, q.price, q.fulfillmentMode]),
+    [
+      ["local", 49, "LOCAL_DELIVERY"],
+      ["nacional", 149, "PARCEL_SHIPPING"],
+    ],
+  );
   assert.equal(local[0].provider, "manual");
   assert.equal(local[0].deliveryEstimate, "0–1 día hábil");
 
-  const far = fulfillment.manualQuotes(rules, { postalCode: "64000", subtotal: 300, currency: "MXN", totalWeightKg: 1 }, NOW);
-  assert.deepEqual(far.map((q) => q.serviceCode), ["nacional"]);
+  const far = fulfillment.manualQuotes(
+    rules,
+    { postalCode: "64000", subtotal: 300, currency: "MXN", totalWeightKg: 1 },
+    NOW,
+  );
+  assert.deepEqual(
+    far.map((q) => q.serviceCode),
+    ["nacional"],
+  );
 
-  const free = fulfillment.manualQuotes(rules, { postalCode: "55764", subtotal: 600, currency: "MXN", totalWeightKg: 1 }, NOW);
+  const free = fulfillment.manualQuotes(
+    rules,
+    { postalCode: "55764", subtotal: 600, currency: "MXN", totalWeightKg: 1 },
+    NOW,
+  );
   assert.equal(free[0].price, 0);
 });
 
 test("manual rules fail closed on malformed configuration and default to none", () => {
   assert.deepEqual(fulfillment.parseManualShippingRules(undefined), []);
   assert.equal(fulfillment.parseManualShippingRules("{"), null);
-  assert.equal(fulfillment.parseManualShippingRules('[{"id":"x","label":"x","mode":"PARCEL_SHIPPING","postalPrefixes":["*"],"price":-1,"daysMin":1,"daysMax":2}]'), null);
-  assert.equal(fulfillment.parseManualShippingRules('[{"id":"x","label":"x","mode":"DRONE","postalPrefixes":["*"],"price":1,"daysMin":1,"daysMax":2}]'), null);
-  assert.equal(fulfillment.parseManualShippingRules('[{"id":"x","label":"x","mode":"PARCEL_SHIPPING","postalPrefixes":["*"],"price":1.005,"daysMin":1,"daysMax":2}]'), null);
+  assert.equal(
+    fulfillment.parseManualShippingRules(
+      '[{"id":"x","label":"x","mode":"PARCEL_SHIPPING","postalPrefixes":["*"],"price":-1,"daysMin":1,"daysMax":2}]',
+    ),
+    null,
+  );
+  assert.equal(
+    fulfillment.parseManualShippingRules(
+      '[{"id":"x","label":"x","mode":"DRONE","postalPrefixes":["*"],"price":1,"daysMin":1,"daysMax":2}]',
+    ),
+    null,
+  );
+  assert.equal(
+    fulfillment.parseManualShippingRules(
+      '[{"id":"x","label":"x","mode":"PARCEL_SHIPPING","postalPrefixes":["*"],"price":1.005,"daysMin":1,"daysMax":2}]',
+    ),
+    null,
+  );
 });
 
 test("the origin address is configuration and is never assumed", () => {
-  assert.deepEqual(fulfillment.parseFulfillmentOrigin(undefined), { location: null, problems: ["origin_not_configured"] });
-  const partial = fulfillment.parseFulfillmentOrigin(JSON.stringify({ name: "Almacén", state: "MEX", postal_code: "55740" }));
+  assert.deepEqual(fulfillment.parseFulfillmentOrigin(undefined), {
+    location: null,
+    problems: ["origin_not_configured"],
+  });
+  const partial = fulfillment.parseFulfillmentOrigin(
+    JSON.stringify({ name: "Almacén", state: "MEX", postal_code: "55740" }),
+  );
   assert.equal(partial.location, null);
   assert.ok(partial.problems.includes("origin.street"));
   assert.ok(partial.problems.includes("origin.phone"));
 
   const complete = fulfillment.parseFulfillmentOrigin(
-    JSON.stringify({ name: "Almacén CornerMex", company: "CornerMex", phone: "5512345678", email: "envios@example.test", street: "Calle Ejemplo 10", colonia: "Centro", municipality: "Tecámac", state: "mex", postal_code: "55740" }),
+    JSON.stringify({
+      name: "Almacén CornerMex",
+      company: "CornerMex",
+      phone: "5512345678",
+      email: "envios@example.test",
+      street: "Calle Ejemplo 10",
+      colonia: "Centro",
+      municipality: "Tecámac",
+      state: "mex",
+      postal_code: "55740",
+    }),
   );
   assert.deepEqual(complete.problems, []);
   assert.equal(complete.location.name, "CornerMex MX - Tecámac");
   assert.equal(complete.location.address.state, "Estado de México");
   assert.deepEqual(fulfillment.quoteAddressOf(complete.location.address), {
-    country: "MX", postalCode: "55740", state: "Estado de México", municipality: "Tecámac", colonia: "Centro",
+    country: "MX",
+    postalCode: "55740",
+    state: "Estado de México",
+    municipality: "Tecámac",
+    colonia: "Centro",
   });
 });
 
 test("parcel estimation flags assumed data instead of blocking the order", () => {
-  const measured = parcel.estimateParcels([{ sku: "A", qty: 2, weightGrams: 450, lengthCm: 10, widthCm: 10, heightCm: 10 }]);
+  const measured = parcel.estimateParcels([
+    { sku: "A", qty: 2, weightGrams: 450, lengthCm: 10, widthCm: 10, heightCm: 10 },
+  ]);
   assert.equal(measured.complete, true);
   assert.equal(measured.parcels.length, 1);
   assert.equal(measured.parcels[0].weightKg, 1.1);
@@ -188,7 +303,12 @@ const items = [
 test("a signed shipping selection verifies and carries the server's price", () => {
   const token = tokens.signQuote(express, { postalCode: "64000", items }, SECRET);
   // The cart fingerprint does not depend on item order.
-  const result = tokens.verifyQuoteToken(token, { postalCode: "64000", items: [...items].reverse() }, SECRET, NOW);
+  const result = tokens.verifyQuoteToken(
+    token,
+    { postalCode: "64000", items: [...items].reverse() },
+    SECRET,
+    NOW,
+  );
   assert.equal(result.ok, true);
   assert.equal(result.quote.price, 200);
 });
@@ -200,7 +320,10 @@ test("amount tampering is rejected: a forged or edited selection never verifies"
   payload.quote.price = 1;
   const forged = `${Buffer.from(JSON.stringify(payload)).toString("base64url")}.${signature}`;
   const binding = { postalCode: "64000", items };
-  assert.deepEqual(tokens.verifyQuoteToken(forged, binding, SECRET, NOW), { ok: false, reason: "SHIPPING_QUOTE_INVALID" });
+  assert.deepEqual(tokens.verifyQuoteToken(forged, binding, SECRET, NOW), {
+    ok: false,
+    reason: "SHIPPING_QUOTE_INVALID",
+  });
   assert.equal(tokens.verifyQuoteToken("not-a-token", binding, SECRET, NOW).ok, false);
   assert.equal(tokens.verifyQuoteToken(token, binding, "x".repeat(40), NOW).ok, false);
 });
@@ -208,14 +331,26 @@ test("amount tampering is rejected: a forged or edited selection never verifies"
 test("a selection is refused once expired, or when the destination or cart changed", () => {
   const token = tokens.signQuote(express, { postalCode: "64000", items }, SECRET);
   const reason = (binding, at = NOW) => tokens.verifyQuoteToken(token, binding, SECRET, at).reason;
-  assert.equal(reason({ postalCode: "64000", items }, NOW + 2 * 3600_000), "SHIPPING_QUOTE_EXPIRED");
+  assert.equal(
+    reason({ postalCode: "64000", items }, NOW + 2 * 3600_000),
+    "SHIPPING_QUOTE_EXPIRED",
+  );
   assert.equal(reason({ postalCode: "55764", items }), "SHIPPING_QUOTE_DESTINATION_CHANGED");
-  assert.equal(reason({ postalCode: "64000", items: [{ ...items[0], qty: 9 }, items[1]] }), "SHIPPING_QUOTE_CART_CHANGED");
+  assert.equal(
+    reason({ postalCode: "64000", items: [{ ...items[0], qty: 9 }, items[1]] }),
+    "SHIPPING_QUOTE_CART_CHANGED",
+  );
 });
 
 test("signing refuses to run without a real secret", () => {
-  assert.throws(() => tokens.signQuote(express, { postalCode: "64000", items }, "short"), /QUOTE_SIGNING_SECRET_NOT_CONFIGURED/);
-  assert.throws(() => tokens.verifyQuoteToken("a.b", { postalCode: "64000", items }, undefined), /QUOTE_SIGNING_SECRET_NOT_CONFIGURED/);
+  assert.throws(
+    () => tokens.signQuote(express, { postalCode: "64000", items }, "short"),
+    /QUOTE_SIGNING_SECRET_NOT_CONFIGURED/,
+  );
+  assert.throws(
+    () => tokens.verifyQuoteToken("a.b", { postalCode: "64000", items }, undefined),
+    /QUOTE_SIGNING_SECRET_NOT_CONFIGURED/,
+  );
 });
 
 const body = JSON.stringify({
@@ -230,7 +365,9 @@ const body = JSON.stringify({
       returned_status: null,
       returned: false,
     },
-    relationships: { shipment: { data: { id: "93774c22-8275-4757-9963-71b79b2e8db7", type: "shipments" } } },
+    relationships: {
+      shipment: { data: { id: "93774c22-8275-4757-9963-71b79b2e8db7", type: "shipments" } },
+    },
   },
 });
 
@@ -239,17 +376,23 @@ test("webhooks verify with HMAC-SHA512 over the raw body, lowercase hex", () => 
   assert.match(header, /^HMAC [0-9a-f]{128}$/);
   assert.deepEqual(webhook.verifyShippingWebhook(body, header, "hook-secret"), { ok: true });
   // Any change to the bytes — even re-serialising the same JSON — breaks it.
-  assert.equal(webhook.verifyShippingWebhook(JSON.stringify(JSON.parse(body), null, 1), header, "hook-secret").ok, false);
+  assert.equal(
+    webhook.verifyShippingWebhook(JSON.stringify(JSON.parse(body), null, 1), header, "hook-secret")
+      .ok,
+    false,
+  );
   assert.equal(webhook.verifyShippingWebhook(body, header, "other-secret").ok, false);
 });
 
 test("unsigned, bearer-only and unconfigured webhooks are refused", () => {
-  const reason = (header, secret = "hook-secret") => webhook.verifyShippingWebhook(body, header, secret).reason;
+  const reason = (header, secret = "hook-secret") =>
+    webhook.verifyShippingWebhook(body, header, secret).reason;
   assert.equal(reason(null), "signature_missing");
   assert.equal(reason("Bearer some-static-token"), "signature_scheme_unsupported");
   assert.equal(reason("HMAC abcd"), "signature_mismatch");
   assert.equal(
-    webhook.verifyShippingWebhook(body, webhook.signShippingWebhook(body, "hook-secret"), undefined).reason,
+    webhook.verifyShippingWebhook(body, webhook.signShippingWebhook(body, "hook-secret"), undefined)
+      .reason,
     "webhook_secret_not_configured",
   );
 });
@@ -257,7 +400,13 @@ test("unsigned, bearer-only and unconfigured webhooks are refused", () => {
 test("a webhook is parsed into a normalised event that keeps the raw status", () => {
   const event = webhook.parseShippingWebhook("skydropx", body);
   assert.deepEqual(
-    { id: event.externalEventId, status: event.status, raw: event.rawStatus, shipment: event.providerShipmentId, tracking: event.trackingNumber },
+    {
+      id: event.externalEventId,
+      status: event.status,
+      raw: event.rawStatus,
+      shipment: event.providerShipmentId,
+      tracking: event.trackingNumber,
+    },
     {
       id: "packages:6172eb82-7b0b-4852-9954-b1ac1c20e4f8:delivered",
       status: "DELIVERED",
@@ -269,7 +418,10 @@ test("a webhook is parsed into a normalised event that keeps the raw status", ()
   assert.match(event.payloadHash, /^[0-9a-f]{64}$/);
   assert.equal(webhook.parseShippingWebhook("skydropx", "not json"), null);
   assert.equal(webhook.parseShippingWebhook("skydropx", "{}"), null);
-  const unknown = webhook.parseShippingWebhook("solo_envios", body.replace("delivered", "teleported"));
+  const unknown = webhook.parseShippingWebhook(
+    "solo_envios",
+    body.replace("delivered", "teleported"),
+  );
   assert.deepEqual([unknown.status, unknown.rawStatus], [null, "teleported"]);
 });
 
@@ -285,7 +437,10 @@ function memoryWebhookLedger() {
       return true;
     },
     async complete(provider, id, processingStatus, processedAt) {
-      Object.assign(rows.get(`${provider}|${id}`), { processing_status: processingStatus, processed_at: processedAt });
+      Object.assign(rows.get(`${provider}|${id}`), {
+        processing_status: processingStatus,
+        processed_at: processedAt,
+      });
     },
   };
 }
@@ -304,7 +459,14 @@ test("a duplicate webhook is processed exactly once", async () => {
   assert.equal(applied, 1);
 
   const row = [...ledger.rows.values()][0];
-  assert.deepEqual(Object.keys(row).sort(), ["external_event_id", "payload_hash", "processed_at", "processing_status", "provider", "received_at"]);
+  assert.deepEqual(Object.keys(row).sort(), [
+    "external_event_id",
+    "payload_hash",
+    "processed_at",
+    "processing_status",
+    "provider",
+    "received_at",
+  ]);
   assert.equal(row.processing_status, "processed");
   assert.ok(row.processed_at);
 });
@@ -317,7 +479,10 @@ test("a webhook whose processing failed is retried on redelivery, then never aga
     attempts += 1;
     if (attempts === 1) throw new Error("database unavailable");
   };
-  await assert.rejects(webhook.processShippingWebhookOnce(ledger, event, flaky), /database unavailable/);
+  await assert.rejects(
+    webhook.processShippingWebhookOnce(ledger, event, flaky),
+    /database unavailable/,
+  );
   assert.equal([...ledger.rows.values()][0].processing_status, "failed");
   assert.equal(await webhook.processShippingWebhookOnce(ledger, event, flaky), "processed");
   assert.equal(await webhook.processShippingWebhookOnce(ledger, event, flaky), "duplicate");
@@ -354,15 +519,32 @@ function memoryLabelLedger() {
   };
 }
 
-const request = { orderReference: "CM-1001", providerRateId: "rate-1", origin: {}, destination: {}, parcels: [] };
-const bought = { provider: "skydropx", providerShipmentId: "shipment-1", status: "LABEL_CREATED", packages: [], replayed: false };
+const request = {
+  orderReference: "CM-1001",
+  providerRateId: "rate-1",
+  origin: {},
+  destination: {},
+  parcels: [],
+};
+const bought = {
+  provider: "skydropx",
+  providerShipmentId: "shipment-1",
+  status: "LABEL_CREATED",
+  packages: [],
+  replayed: false,
+};
 const PAID = { kind: "PAID" };
 
 test("no label is bought before payment is confirmed", async () => {
   let calls = 0;
-  const carrier = { id: "skydropx", createShipment: async () => (calls += 1, bought) };
+  const carrier = { id: "skydropx", createShipment: async () => ((calls += 1), bought) };
   await assert.rejects(
-    labels.purchaseLabelOnce({ provider: carrier, ledger: memoryLabelLedger(), request, payment: null }),
+    labels.purchaseLabelOnce({
+      provider: carrier,
+      ledger: memoryLabelLedger(),
+      request,
+      payment: null,
+    }),
     /LABEL_PURCHASE_REQUIRES_CONFIRMED_PAYMENT/,
   );
   assert.equal(calls, 0);
@@ -370,12 +552,27 @@ test("no label is bought before payment is confirmed", async () => {
 
 test("a label is bought once: a second attempt for the same order does not buy again", async () => {
   let calls = 0;
-  const carrier = { id: "skydropx", createShipment: async () => (calls += 1, bought) };
+  const carrier = { id: "skydropx", createShipment: async () => ((calls += 1), bought) };
   const ledger = memoryLabelLedger();
-  const first = await labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID });
-  const second = await labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID });
+  const first = await labels.purchaseLabelOnce({
+    provider: carrier,
+    ledger,
+    request,
+    payment: PAID,
+  });
+  const second = await labels.purchaseLabelOnce({
+    provider: carrier,
+    ledger,
+    request,
+    payment: PAID,
+  });
   // Even with a different rate, the order already has its label.
-  const third = await labels.purchaseLabelOnce({ provider: carrier, ledger, request: { ...request, providerRateId: "rate-9" }, payment: PAID });
+  const third = await labels.purchaseLabelOnce({
+    provider: carrier,
+    ledger,
+    request: { ...request, providerRateId: "rate-9" },
+    payment: PAID,
+  });
   assert.equal(first.outcome, "PURCHASED");
   assert.deepEqual(second, { outcome: "ALREADY_PURCHASED", providerShipmentId: "shipment-1" });
   assert.deepEqual(third, { outcome: "ALREADY_PURCHASED", providerShipmentId: "shipment-1" });
@@ -409,25 +606,42 @@ test("an ambiguous creation timeout is looked up, not bought again", async () =>
     createShipment: async (input) => {
       seenRates.push(input.providerRateId);
       attempt += 1;
-      if (attempt === 1) throw new ShippingError("AMBIGUOUS_WRITE", "no response to a label purchase", { provider: "solo_envios" });
+      if (attempt === 1)
+        throw new ShippingError("AMBIGUOUS_WRITE", "no response to a label purchase", {
+          provider: "solo_envios",
+        });
       // The provider's idempotent replay returns the ORIGINAL shipment.
       return { ...bought, provider: "solo_envios", replayed: true };
     },
   };
   const ledger = memoryLabelLedger();
 
-  const first = await labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID });
+  const first = await labels.purchaseLabelOnce({
+    provider: carrier,
+    ledger,
+    request,
+    payment: PAID,
+  });
   assert.equal(first.outcome, "AMBIGUOUS");
   assert.equal(ledger.rows.get("CM-1001").state, "AMBIGUOUS");
 
   // A naive retry does not reach the provider at all.
-  const retry = await labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID });
+  const retry = await labels.purchaseLabelOnce({
+    provider: carrier,
+    ledger,
+    request,
+    payment: PAID,
+  });
   assert.equal(retry.outcome, "AMBIGUOUS");
   assert.equal(attempt, 1);
 
   // Reconciling with a different rate would buy a second label — refused.
   await assert.rejects(
-    labels.reconcileAmbiguousLabel({ provider: carrier, ledger, request: { ...request, providerRateId: "rate-2" } }),
+    labels.reconcileAmbiguousLabel({
+      provider: carrier,
+      ledger,
+      request: { ...request, providerRateId: "rate-2" },
+    }),
     /LABEL_RECONCILE_RATE_MISMATCH/,
   );
   assert.equal(attempt, 1);
@@ -443,11 +657,17 @@ test("a known shipment id is reconciled by lookup, without any create call", asy
   let creates = 0;
   const carrier = {
     id: "skydropx",
-    createShipment: async () => (creates += 1, bought),
+    createShipment: async () => ((creates += 1), bought),
     getShipment: async (id) => ({ ...bought, providerShipmentId: id }),
   };
   const ledger = memoryLabelLedger();
-  await ledger.reserve({ orderReference: "CM-1001", provider: "skydropx", providerRateId: "rate-1", state: "AMBIGUOUS", providerShipmentId: "shipment-7" });
+  await ledger.reserve({
+    orderReference: "CM-1001",
+    provider: "skydropx",
+    providerRateId: "rate-1",
+    state: "AMBIGUOUS",
+    providerShipmentId: "shipment-7",
+  });
   const resolved = await labels.reconcileAmbiguousLabel({ provider: carrier, ledger, request });
   assert.equal(resolved.shipment.providerShipmentId, "shipment-7");
   assert.equal(creates, 0);
@@ -459,11 +679,17 @@ test("a definite rejection records FAILED and is not silently retried", async ()
     id: "skydropx",
     createShipment: async () => {
       calls += 1;
-      throw new ShippingError("INVALID_REQUEST", "Tarifa expirada", { provider: "skydropx", status: 422 });
+      throw new ShippingError("INVALID_REQUEST", "Tarifa expirada", {
+        provider: "skydropx",
+        status: 422,
+      });
     },
   };
   const ledger = memoryLabelLedger();
-  await assert.rejects(labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID }), /Tarifa expirada/);
+  await assert.rejects(
+    labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID }),
+    /Tarifa expirada/,
+  );
   assert.equal(ledger.rows.get("CM-1001").state, "FAILED");
   await labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID });
   assert.equal(calls, 1);

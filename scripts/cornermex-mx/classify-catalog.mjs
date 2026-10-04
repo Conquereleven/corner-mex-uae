@@ -43,7 +43,8 @@ export const RULES = [
     // source storefront sells as its own production.
     test: (p) =>
       /intermex/i.test(p.slug) && /tortilla|tostada|chips|chorizo/i.test(`${p.slug} ${p.name}`),
-    reason: "Unbranded tortilla/tostada/chip/chorizo line listed under an Intermex slug: supplier's own production.",
+    reason:
+      "Unbranded tortilla/tostada/chip/chorizo line listed under an Intermex slug: supplier's own production.",
   },
   {
     id: "unbranded-tortilla-line",
@@ -54,49 +55,57 @@ export const RULES = [
     test: (p) =>
       /^(corn|flour) tortilla|^tortilla chips|^golden tostadas|^tostadas/i.test(p.name) &&
       !/maseca|naturelo|omalli|inzi/i.test(p.name),
-    reason: "Unbranded tortilla / tostada / tortilla-chip line from the supplier's own storefront: treated as supplier production (inferred from the absence of any other brand).",
+    reason:
+      "Unbranded tortilla / tostada / tortilla-chip line from the supplier's own storefront: treated as supplier production (inferred from the absence of any other brand).",
   },
   {
     id: "non-mexican-uae-brand",
     cls: "REMOVE_FROM_ACTIVE_MX",
     test: (p) => /fit ?panda|hung(a)?ry guru|inzi|no[, ]+guilt/i.test(`${p.slug} ${p.name}`),
-    reason: "Brand from the UAE supplier's local assortment, not a Mexican pantry product; only present because of UAE sourcing.",
+    reason:
+      "Brand from the UAE supplier's local assortment, not a Mexican pantry product; only present because of UAE sourcing.",
   },
   {
     id: "souvenir-lifestyle",
     cls: "REMOVE_FROM_ACTIVE_MX",
     test: (p) => p.category === "gifts-lifestyle",
-    reason: "Souvenir / gift item aimed at the expatriate market; no role in a Mexico pantry and distribution assortment.",
+    reason:
+      "Souvenir / gift item aimed at the expatriate market; no role in a Mexico pantry and distribution assortment.",
   },
   {
     id: "cold-chain",
     cls: "REVIEW",
     test: (p) => p.category === "chilled-frozen",
-    reason: "Chilled or frozen: needs a cold chain that parcel shipping does not provide. Local-delivery-only decision required.",
+    reason:
+      "Chilled or frozen: needs a cold chain that parcel shipping does not provide. Local-delivery-only decision required.",
   },
   {
     id: "kitchenware",
     cls: "REVIEW",
     test: (p) => p.category === "kitchen-tableware",
-    reason: "Kitchenware: widely available in Mexico; decide whether it belongs in a pantry/distribution assortment.",
+    reason:
+      "Kitchenware: widely available in Mexico; decide whether it belongs in a pantry/distribution assortment.",
   },
   {
     id: "assembled-by-supplier",
     cls: "REVIEW",
     test: (p) => /candy bag|sampler|gift basket|basket|pack of \d+/i.test(p.name),
-    reason: "Bundle or assortment assembled by the previous supplier; would have to be re-created as a CornerMex bundle.",
+    reason:
+      "Bundle or assortment assembled by the previous supplier; would have to be re-created as a CornerMex bundle.",
   },
   {
     id: "legacy-intermex-slug",
     cls: "REVIEW",
     test: (p) => /intermex/i.test(p.slug),
-    reason: "Branded product whose slug still carries the Intermex name; re-source and re-slug before it can be listed.",
+    reason:
+      "Branded product whose slug still carries the Intermex name; re-source and re-slug before it can be listed.",
   },
   {
     id: "export-market-brand",
     cls: "REVIEW",
     test: (p) => /el mexicano|clamato|cholula/i.test(p.name),
-    reason: "Brand or pack size made for the export market; confirm the equivalent domestic presentation exists.",
+    reason:
+      "Brand or pack size made for the export market; confirm the equivalent domestic presentation exists.",
   },
   {
     id: "small-producer",
@@ -105,7 +114,8 @@ export const RULES = [
       /la conspiraci[oó]n|la conspiration|la[- ]meridana|xatze|el[- ]fresno|nopal[- ]foods|nopal[- ]tenochtitlan|naturelo|omalli|mayamel|b[- ]sweet|pepe cru/i.test(
         `${p.slug} ${p.name}`,
       ),
-    reason: "Small or export-oriented producer: domestic availability and a local supplier are unconfirmed.",
+    reason:
+      "Small or export-oriented producer: domestic availability and a local supplier are unconfirmed.",
   },
   {
     id: "national-brand",
@@ -114,16 +124,23 @@ export const RULES = [
       /la coste[nñ]a|costena|costen\b|valentina|el yucateco|yucateco|maseca|jarritos|taj[ií]n|de la rosa|marinela|lucas|pulparindo|do[nñ]a mar[ií]a|herdez|maggi|abuelita|ruffles|fritos|rancheritos|churritos|chicharron|la sierra|coronado|pel[oó]n|vero\b|montes|maizena|clemente jacques|valle verde|maruchan|macromick|mccormick|el chilerito|tama-?roca|payaso|gansito|azteca/i.test(
         `${p.slug} ${p.name}`,
       ),
-    reason: "National Mexican brand sold through ordinary domestic distribution: keep the product, replace the UAE supplier with a local one.",
+    reason:
+      "National Mexican brand sold through ordinary domestic distribution: keep the product, replace the UAE supplier with a local one.",
   },
   {
     id: "generic-pantry",
     cls: "RESOURCE",
     test: (p) =>
-      ["pantry-staples", "chiles-spices", "salsas-moles", "tortillas-masa", "snacks-sweets", "drinks"].includes(
-        p.category,
-      ),
-    reason: "Generic Mexican pantry item with no brand recorded: commonly available from local wholesale; re-source and confirm the presentation.",
+      [
+        "pantry-staples",
+        "chiles-spices",
+        "salsas-moles",
+        "tortillas-masa",
+        "snacks-sweets",
+        "drinks",
+      ].includes(p.category),
+    reason:
+      "Generic Mexican pantry item with no brand recorded: commonly available from local wholesale; re-source and confirm the presentation.",
   },
 ];
 
@@ -148,7 +165,8 @@ export function toProducts(rows) {
       sku: row.sku,
       format: row.format,
       price: Number(row.price),
-      weightGrams: row.weightGrams === null || row.weightGrams === "" ? null : Number(row.weightGrams),
+      weightGrams:
+        row.weightGrams === null || row.weightGrams === "" ? null : Number(row.weightGrams),
       stock: Number(row.stock),
     });
     products.set(row.slug, product);
@@ -223,17 +241,30 @@ const csv = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
 function selfTest() {
   const sample = (slug, name, category) => ({ slug, name, category, vendor: "", variants: [] });
   const expect = [
-    [sample("intermex-corn-tortilla", "Corn Tortilla 6inch, Intermex 500gm", "tortillas-masa"), "INTERMEX_PRIVATE"],
-    [sample("intermex-flour-tortillas", "Flour Tortilla 500g", "tortillas-masa"), "INTERMEX_PRIVATE"],
-    [sample("fit-panda-x", "FIT PANDA Flamin Hot Instant Noodles", "pantry-staples"), "REMOVE_FROM_ACTIVE_MX"],
-    [sample("viva-mexico-t-shirt", "Viva México T-shirt!", "gifts-lifestyle"), "REMOVE_FROM_ACTIVE_MX"],
+    [
+      sample("intermex-corn-tortilla", "Corn Tortilla 6inch, Intermex 500gm", "tortillas-masa"),
+      "INTERMEX_PRIVATE",
+    ],
+    [
+      sample("intermex-flour-tortillas", "Flour Tortilla 500g", "tortillas-masa"),
+      "INTERMEX_PRIVATE",
+    ],
+    [
+      sample("fit-panda-x", "FIT PANDA Flamin Hot Instant Noodles", "pantry-staples"),
+      "REMOVE_FROM_ACTIVE_MX",
+    ],
+    [
+      sample("viva-mexico-t-shirt", "Viva México T-shirt!", "gifts-lifestyle"),
+      "REMOVE_FROM_ACTIVE_MX",
+    ],
     [sample("valentina-x", "Valentina Salsa Picante", "salsas-moles"), "RESOURCE"],
     [sample("la-meridana-x", "Red Habanero Hot Sauce, La Meridana", "salsas-moles"), "REVIEW"],
     [sample("iced-popsicles", "Iced Popsicles 6 Pack", "chilled-frozen"), "REVIEW"],
   ];
   for (const [product, cls] of expect) {
     const got = classify(product).classification;
-    if (got !== cls) throw new Error(`rule self-test failed: ${product.slug} → ${got}, expected ${cls}`);
+    if (got !== cls)
+      throw new Error(`rule self-test failed: ${product.slug} → ${got}, expected ${cls}`);
   }
 }
 
@@ -258,7 +289,17 @@ async function main() {
     path.join(OUT_DIR, "catalog-snapshot.json"),
     `${JSON.stringify({ source: snapshot.source, rows: snapshot.rows }, null, 1)}\n`,
   );
-  const header = ["slug", "name", "category", "variants", "skus", "classification", "rule", "flags", "reason"];
+  const header = [
+    "slug",
+    "name",
+    "category",
+    "variants",
+    "skus",
+    "classification",
+    "rule",
+    "flags",
+    "reason",
+  ];
   const lines = classified.map((product) =>
     [
       product.slug,
