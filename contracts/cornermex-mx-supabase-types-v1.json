@@ -7,12 +7,23 @@
   "generationMethod": "supabase_mcp_generate_typescript_types_read_only",
   "generatedAt": "2026-10-05T06:12:00.000Z",
   "typesFile": "src/integrations/supabase/types.mx.ts",
-  "typesSha256": "b55d281db7fcf4dc5bc61775fc3a1ee6e6dce9383cb8f44bdfc1ec7f98b28dd7",
+  "typesSha256": "ed5172fac997762983950063616b5871877bad4543397651c7afa42e8ebce0dc",
   "bootstrap": {
     "sourceCommit": "ad0b2e7fa41d6afbc374301b9636969430b51283",
     "migrationFilesApplied": 26,
-    "platformMigrations": ["cm_mx_0_platform_prelude", "cm_mx_2_bootstrap_finalize"],
-    "auditTable": "cm_mx_bootstrap.applied"
+    "platformMigrations": [
+      "cm_mx_0_platform_prelude",
+      "cm_mx_2_bootstrap_finalize"
+    ],
+    "auditTable": "cm_mx_bootstrap.applied",
+    "laterMigrations": [
+      {
+        "name": "cm_mx_2_launch_import",
+        "file": "supabase/mx/migrations/20261005120000_cm_mx_2_launch_import.sql",
+        "sourceCommit": "dab4f615eda339b39ce2f1a0d1044fe9571bea78",
+        "sha256": "5681f39dbd5939d271f5d3e5d3a1a7632f5dc64aa4020c2ab046a6d51fa85ed4"
+      }
+    ]
   },
   "publicTables": [
     "addresses",
@@ -69,6 +80,7 @@
     "cm_mx_claim_webhook_event_v1",
     "cm_mx_complete_webhook_event_v1",
     "cm_mx_create_order_v1",
+    "cm_mx_import_launch_sku_v1",
     "cm_mx_launch_assortment_v1",
     "cm_mx_order_payment_attempt_v1",
     "cm_mx_payment_attempt_v1",
@@ -101,5 +113,8 @@
     "liveBehaviouralChecksPassed": "14/14 (rolled back)",
     "rowsOfProductsOrdersUsers": 0
   },
-  "notes": "The frozen UAE artefact src/integrations/supabase/types.ts and contracts/canonical-supabase-schema-fingerprint-v1.json describe the deleted UAE project and are kept as history; the application's Supabase clients are typed from this file."
+  "notes": "The frozen UAE artefact src/integrations/supabase/types.ts and contracts/canonical-supabase-schema-fingerprint-v1.json describe the deleted UAE project and are kept as history; the application's Supabase clients are typed from this file.",
+  "handEdits": [
+    "cm_mx_import_launch_sku_v1 was added by hand in the generator's format after migration cm_mx_2_launch_import; the next full regeneration replaces this file and must reproduce it."
+  ]
 }

@@ -1304,6 +1304,7 @@ export type Database = {
         }
         Returns: Json
       }
+      cm_mx_import_launch_sku_v1: { Args: { p_sku: Json }; Returns: Json }
       cm_mx_launch_assortment_v1: {
         Args: never
         Returns: {
