@@ -115,7 +115,7 @@ loader for it exists, and a test fails if one is added.
    report `marketDatabase.ok: true`.
 
 The same sequence runs in CI and locally against a disposable PostgreSQL:
-`npm run test:cornermex-mx:sql` (50 assertions).
+`npm run test:cornermex-mx:sql` (56 assertions).
 
 ## Guards against the wrong database
 
