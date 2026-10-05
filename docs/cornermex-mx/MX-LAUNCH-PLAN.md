@@ -14,6 +14,15 @@ Branch `feat/cornermex-mx` → PR #83 → base `mx/main`. Isolated from `main`
 | Push the branch, open a PR, do not merge to `main` | PR #83 against `mx/main` |
 | Launch assortment of 50–75 SKUs, not 195 | Launch gate built; nothing copied (`CATALOG-MIGRATION.md`) |
 
+## Infrastructure (2026-10-05)
+
+| | State |
+| --- | --- |
+| Railway project `CornerMex MX`, service `corner-mex-mx` | **Created.** Separate from the UAE project. Checkout, real payments and real shipping purchase off; every provider disabled |
+| Mexico Supabase project | **Blocked at one step.** Creation is free but the organisation's free plan allows two active projects and both are used. See `DATABASE-BOOTSTRAP.md`, "Founder action" |
+| PR #83 → `mx/main` | Ready for review. Merging is left to the Founder: an automated merge was refused by a review safeguard |
+| CI on PR #83 | `type-and-runtime` and `schema-authority` pass. `contract-and-migration` and `merged-tree-verification` fail on `PROGRAM_STATE_EVIDENCE_STALE`, a UAE governance evidence file that expired on 2026-09-19 and fails PR #81 the same way |
+
 ## Sprint status
 
 | Sprint | Scope | Status |
@@ -44,9 +53,9 @@ Checkout stays inert until every row is true. Rows 1–6 are enforced in code
 
 | # | Gate | Owner | State |
 | --- | --- | --- | --- |
-| 1 | Deployment declares `CORNERMEX_MARKET=MX` and its Mexico Supabase project | Engineering | Not deployed |
+| 1 | Deployment declares `CORNERMEX_MARKET=MX` and its Mexico Supabase project | Engineering | Market declared; project pending |
 | 2 | Checkout execution flag on | Founder | Off |
-| 3 | Quote-signing secret set | Engineering | Not set |
+| 3 | Quote-signing secret set | Engineering | **Set** on the Mexico service |
 | 4 | A shipping source: carrier credentials + origin address, or manual rules with real prices | Founder | None |
 | 5 | A payment provider enabled and configured | Founder | None |
 | 6 | Mexico legal documents published (enforced in production) | Founder + counsel | Not written |
@@ -76,8 +85,10 @@ provider.
 
 ## Founder actions
 
-1. **Create the Mexico Supabase project** and send back its project ref
-   (`DATABASE-BOOTSTRAP.md`, "Founder action").
+1. **Free one Supabase project slot** — pause `cornerops-ai` or upgrade the
+   organisation (`DATABASE-BOOTSTRAP.md`, "Founder action"). The project is then
+   created and bootstrapped without further input.
+1b. **Merge PR #83** into `mx/main`.
 2. **Open provider accounts and create credentials:**
    - Mercado Pago developer application → test Access Token and Public Key, and
      the webhook secret.
@@ -85,11 +96,13 @@ provider.
    - Solo Envíos → sandbox API credentials (Integraciones → API); complete account
      verification.
    - Clip → identity-verified account and online-store credentials.
-3. **Create a Railway project/service for Mexico** deploying `mx/main` (or say so
-   and it can be prepared from here once the Supabase project exists).
-4. **Supply the ship-from address** of the Tecámac stock point.
-5. **Choose the 50–75 launch SKUs** from the classification, with supplier, cost
-   and retail price for each.
+3. ~~Create a Railway project/service for Mexico~~ — done.
+4. **Supply the ship-from address** of the Tecámac stock point: contact name,
+   10-digit phone, email, street, exterior number, interior number (if any),
+   colonia, municipio, state, postal code, and a short reference (optional).
+5. **Fill in the launch sheet** (`LAUNCH-CATALOG.md`): keep 50–75 rows of
+   `catalog/launch-assortment-candidates.csv` and complete supplier, cost,
+   prices, weight, dimensions, stock, case pack, MOQ and lead time.
 6. **Legal and tax:** seller entity, RFC, tax treatment, legal documents.
 7. **Close PR #81 and PR #82** as superseded when convenient.
 
@@ -101,14 +114,17 @@ repository.
 | Integration | Variables |
 | --- | --- |
 | Mexico Supabase | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `CORNERMEX_MX_SUPABASE_PROJECT_REF` |
-| Mercado Pago | `MERCADO_PAGO_ACCESS_TOKEN` (`TEST-…`), `MERCADO_PAGO_WEBHOOK_SECRET`; Public Key for the card Brick |
-| Clip | `CLIP_API_KEY`, `CLIP_API_SECRET`, `CLIP_WEBHOOK_SECRET` (generate, ≥ 32 chars) |
+| Mercado Pago | `MERCADO_PAGO_ACCESS_TOKEN` (`TEST-…`), `MERCADO_PAGO_PUBLIC_KEY` (`TEST-…`), `MERCADO_PAGO_WEBHOOK_SECRET` |
+| Clip | `CLIP_API_KEY`, `CLIP_API_SECRET` (`CLIP_WEBHOOK_SECRET` is already generated and set) |
 | Skydropx | `SKYDROPX_CLIENT_ID`, `SKYDROPX_CLIENT_SECRET` |
 | Solo Envíos | `SOLO_ENVIOS_CLIENT_ID`, `SOLO_ENVIOS_CLIENT_SECRET` |
-| CornerMex | `CORNERMEX_QUOTE_SIGNING_SECRET` (generate, ≥ 32 chars) |
+| CornerMex | `CORNERMEX_QUOTE_SIGNING_SECRET` — already generated and set |
 
-Credential search: the local `.env` holds only Supabase variables, for the
-obsolete UAE project. No Mexico credential exists anywhere reachable.
+Credential search (names only, values never read): the local `.env`, the shell
+environment, and every Railway service in both projects. No Mercado Pago, Clip,
+Skydropx or Solo Envíos credential exists anywhere reachable. There is no
+authenticated provider tooling available from here, so account creation and
+credential generation need the Founder.
 
 ## Next
 
@@ -116,7 +132,6 @@ obsolete UAE project. No Mexico credential exists anywhere reachable.
    to a Mexico service with checkout off.
 2. With sandbox credentials: run each adapter against its sandbox, correct
    whatever real responses differ on, and move it to `SANDBOX`.
-3. Mercado Pago card Brick in the checkout.
 4. MX-3: wire label purchase after confirmed payment, shipping webhooks, tracking
    on the order page.
 5. MX-4: admin screens for the launch assortment and suppliers; B2B price tiers.
