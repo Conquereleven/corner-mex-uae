@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCheck } from "lucide-react";
 import { listMyNotifications, markRead, markAllRead } from "@/lib/notifications.functions";
 import { getNotificationsQueryState } from "@/lib/notifications-query-state";
+import { ACTIVE_MARKET } from "@/config/market";
 
 export const Route = createFileRoute("/_authenticated/account/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — CornerMex" }] }),
+  head: () => ({ meta: [{ title: "Notificaciones — CornerMex" }] }),
   component: NotificationsPage,
 });
 
@@ -47,13 +48,15 @@ function NotificationsPage() {
       <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl tracking-tight">Notifications</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Your order and shipment activity.</p>
+            <h1 className="font-display text-3xl tracking-tight">Notificaciones</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              La actividad de tus pedidos y envíos.
+            </p>
           </div>
           <div className="flex gap-2">
             <Link to="/account">
               <Button variant="outline" className="rounded-full">
-                ← Account
+                ← Mi cuenta
               </Button>
             </Link>
             <Button
@@ -61,32 +64,34 @@ function NotificationsPage() {
               onClick={() => mAll.mutate()}
               disabled={mAll.isPending || !hasUnread}
             >
-              <CheckCheck className="me-2 h-4 w-4" /> Mark all read
+              <CheckCheck className="me-2 h-4 w-4" /> Marcar todo como leído
             </Button>
           </div>
         </div>
 
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>History</CardTitle>
+            <CardTitle>Historial</CardTitle>
           </CardHeader>
           <CardContent>
             {view.status === "loading" ? (
-              <p className="text-sm text-muted-foreground">Loading…</p>
+              <p className="text-sm text-muted-foreground">Cargando…</p>
             ) : view.status === "error" ? (
               <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-                <p className="text-sm text-muted-foreground">Unable to load notifications.</p>
+                <p className="text-sm text-muted-foreground">
+                  No pudimos cargar tus notificaciones.
+                </p>
                 <Button
                   className="mt-3"
                   variant="outline"
                   onClick={() => void list.refetch()}
                   disabled={list.isFetching}
                 >
-                  {list.isFetching ? "Retrying…" : "Retry"}
+                  {list.isFetching ? "Reintentando…" : "Reintentar"}
                 </Button>
               </div>
             ) : view.status === "empty" ? (
-              <p className="text-sm text-muted-foreground">No notifications yet.</p>
+              <p className="text-sm text-muted-foreground">Aún no tienes notificaciones.</p>
             ) : (
               <ul className="divide-y divide-border">
                 {view.notifications.map((n: any) => (
@@ -100,24 +105,24 @@ function NotificationsPage() {
                         <Badge variant="outline" className="text-[10px]">
                           {n.kind.replace(/_/g, " ")}
                         </Badge>
-                        {!n.read_at && <Badge className="text-[10px]">New</Badge>}
+                        {!n.read_at && <Badge className="text-[10px]">Nueva</Badge>}
                       </div>
                       {n.body && <p className="mt-1 text-xs text-muted-foreground">{n.body}</p>}
                       <p className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground">
-                        {new Date(n.created_at).toLocaleString()}
+                        {new Date(n.created_at).toLocaleString(ACTIVE_MARKET.locale)}
                       </p>
                     </div>
                     <div className="flex flex-shrink-0 gap-1">
                       {n.link && (
                         <Link to={n.link}>
                           <Button size="sm" variant="ghost">
-                            Open
+                            Abrir
                           </Button>
                         </Link>
                       )}
                       {!n.read_at && (
                         <Button size="sm" variant="outline" onClick={() => mRead.mutate(n.id)}>
-                          Mark read
+                          Marcar como leída
                         </Button>
                       )}
                     </div>

@@ -11,10 +11,7 @@
   "bootstrap": {
     "sourceCommit": "ad0b2e7fa41d6afbc374301b9636969430b51283",
     "migrationFilesApplied": 26,
-    "platformMigrations": [
-      "cm_mx_0_platform_prelude",
-      "cm_mx_2_bootstrap_finalize"
-    ],
+    "platformMigrations": ["cm_mx_0_platform_prelude", "cm_mx_2_bootstrap_finalize"],
     "auditTable": "cm_mx_bootstrap.applied",
     "laterMigrations": [
       {
