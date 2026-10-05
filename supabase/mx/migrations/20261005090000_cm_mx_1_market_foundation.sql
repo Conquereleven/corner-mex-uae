@@ -779,6 +779,74 @@ begin
   return v_rows = 1;
 end $$;
 
+-- Applies a carrier status to the order's shipment. The application has already
+-- authenticated the event and mapped the provider status; this function makes
+-- the change monotonic (a late or replayed event never moves a shipment
+-- backwards or out of a terminal state) and records every event, mapped or not.
+create function public.cm_mx_apply_shipment_event_v1(
+  p_provider text,
+  p_provider_shipment_id text,
+  p_status text,
+  p_raw_status text,
+  p_tracking_number text,
+  p_tracking_url text,
+  p_label_url text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_shipment commerce_private.shipments%rowtype;
+  v_rank constant jsonb := '{"QUOTE_CREATED":0,"LABEL_PENDING":1,"LABEL_CREATED":2,"READY_FOR_PICKUP":3,
+    "IN_TRANSIT":4,"OUT_FOR_DELIVERY":5,"EXCEPTION":5,"DELIVERED":9,"RETURNED":9,"CANCELLED":9}'::jsonb;
+  v_next text;
+begin
+  if p_status is not null and not (v_rank ? p_status) then
+    raise exception 'MX_SHIPMENT_STATUS_INVALID';
+  end if;
+  select * into v_shipment from commerce_private.shipments
+  where provider = p_provider and provider_shipment_id = p_provider_shipment_id for update;
+  if not found then
+    return jsonb_build_object('applied', false, 'reason', 'UNKNOWN_SHIPMENT');
+  end if;
+
+  insert into commerce_private.shipment_events (shipment_id, status, raw_status, occurred_at)
+  values (v_shipment.id, p_status, p_raw_status, now());
+
+  v_next := v_shipment.status;
+  if p_status is not null and p_status <> v_shipment.status
+     and v_shipment.status not in ('DELIVERED', 'RETURNED', 'CANCELLED') then
+    if v_shipment.status = 'EXCEPTION' or p_status = 'EXCEPTION'
+       or (v_rank->>p_status)::int >= (v_rank->>v_shipment.status)::int then
+      v_next := p_status;
+    end if;
+  end if;
+
+  update commerce_private.shipments
+  set status = v_next,
+      raw_status = coalesce(p_raw_status, raw_status),
+      master_tracking_number = coalesce(p_tracking_number, master_tracking_number),
+      tracking_url = coalesce(p_tracking_url, tracking_url),
+      label_url = coalesce(nullif(p_label_url, ''), label_url)
+  where id = v_shipment.id;
+
+  -- The order follows its shipment forward, never backward.
+  if v_next = 'DELIVERED' then
+    update public.orders set status = 'delivered', updated_at = now()
+    where id = v_shipment.order_id and status in ('confirmed', 'processing', 'shipped');
+  elsif v_next in ('IN_TRANSIT', 'OUT_FOR_DELIVERY') then
+    update public.orders set status = 'shipped', updated_at = now()
+    where id = v_shipment.order_id and status in ('confirmed', 'processing');
+  end if;
+
+  return jsonb_build_object(
+    'applied', true, 'order_id', v_shipment.order_id,
+    'status', v_next, 'changed', v_next <> v_shipment.status
+  );
+end $$;
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Access: private tables are reachable only through the functions above, and
 -- the functions only by the service role.
@@ -812,7 +880,7 @@ begin
       'cm_mx_claim_webhook_event_v1', 'cm_mx_complete_webhook_event_v1', 'cm_mx_create_order_v1',
       'cm_mx_start_payment_attempt_v1', 'cm_mx_bind_payment_attempt_v1', 'cm_mx_payment_attempt_v1',
       'cm_mx_order_payment_attempt_v1',
-      'cm_mx_apply_payment_state_v1', 'cm_mx_reserve_label_v1'
+      'cm_mx_apply_payment_state_v1', 'cm_mx_reserve_label_v1', 'cm_mx_apply_shipment_event_v1'
     )
   loop
     execute format('revoke all on function %s from public, anon, authenticated', f);

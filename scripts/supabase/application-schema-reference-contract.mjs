@@ -17,8 +17,8 @@ const COMBINED_COUNTS = Object.freeze({
   lovable_live_only: 19,
   // +2: the guest order tracking/claim RPCs land with
   // 20260919115000_cm2_guest_checkout_schema.sql (not yet applied to DB2).
-  // +9: the cm_mx_* functions owned by supabase/mx/migrations (CornerMex MX).
-  requires_future_migration: 41,
+  // +10: the cm_mx_* functions owned by supabase/mx/migrations (CornerMex MX).
+  requires_future_migration: 42,
 });
 
 export function expandApplicationSchemaReferenceContract(base, extensions) {
@@ -148,7 +148,7 @@ export function validateApplicationSchemaReferenceContract(contract) {
   }
 
   const isCombined = identities.has("function:admin_import_product_row_v1");
-  const expectedCount = isCombined ? 80 : 44;
+  const expectedCount = isCombined ? 81 : 44;
   const expectedCounts = isCombined ? COMBINED_COUNTS : BASE_COUNTS;
   if (contract.references.length !== expectedCount) errors.push("reference count mismatch");
   for (const [classification, expected] of Object.entries(expectedCounts)) {

@@ -326,3 +326,132 @@ test("the Public Key is published only for the matching environment", async () =
     null,
   );
 });
+
+// ── Shipping webhooks ──────────────────────────────────────────────────────
+
+const shipping = await import("../../src/lib/mx-shipping-webhooks.server.ts");
+const carrierHook = await import("../../src/lib/shipping/webhook.server.ts");
+
+function shippingDatabase() {
+  const calls = [];
+  const events = new Map();
+  return {
+    calls,
+    async rpc(name, args = {}) {
+      calls.push({ name, args });
+      if (name === "cm_market_identity_v1")
+        return { data: { market: "MX", currency: "MXN" }, error: null };
+      if (name === "cm_mx_claim_webhook_event_v1") {
+        const key = `${args.p_provider}|${args.p_external_event_id}`;
+        if (events.has(key) && events.get(key) !== "failed") return { data: false, error: null };
+        events.set(key, "processing");
+        return { data: true, error: null };
+      }
+      if (name === "cm_mx_complete_webhook_event_v1") {
+        events.set(`${args.p_provider}|${args.p_external_event_id}`, args.p_status);
+        return { data: null, error: null };
+      }
+      if (name === "cm_mx_apply_shipment_event_v1") return { data: { applied: true }, error: null };
+      throw new Error(`unexpected rpc ${name}`);
+    },
+  };
+}
+
+const packageEvent = (status = "in_transit") =>
+  JSON.stringify({
+    data: {
+      id: "6172eb82-7b0b-4852-9954-b1ac1c20e4f8",
+      type: "packages",
+      attributes: {
+        status,
+        tracking_number: "794874381730",
+        tracking_url_provider: "https://carrier.example.test/t",
+        label_url: "",
+      },
+      relationships: {
+        shipment: { data: { id: "93774c22-8275-4757-9963-71b79b2e8db7", type: "shipments" } },
+      },
+    },
+  });
+
+test("a signed carrier event updates the shipment once; a duplicate does nothing", async () => {
+  const db = shippingDatabase();
+  const rawBody = packageEvent();
+  const input = {
+    db,
+    provider: "skydropx",
+    rawBody,
+    signature: carrierHook.signShippingWebhook(rawBody, "carrier-secret"),
+    secret: "carrier-secret",
+  };
+  assert.deepEqual(await shipping.handleShippingWebhook(input), { status: 200, body: "processed" });
+  const applied = db.calls.filter((call) => call.name === "cm_mx_apply_shipment_event_v1");
+  assert.deepEqual(applied[0].args, {
+    p_provider: "skydropx",
+    p_provider_shipment_id: "93774c22-8275-4757-9963-71b79b2e8db7",
+    p_status: "IN_TRANSIT",
+    p_raw_status: "in_transit",
+    p_tracking_number: "794874381730",
+    p_tracking_url: "https://carrier.example.test/t",
+    p_label_url: null,
+  });
+  // The carrier re-delivers twice, five minutes apart.
+  assert.deepEqual(await shipping.handleShippingWebhook(input), { status: 200, body: "duplicate" });
+  assert.equal(db.calls.filter((call) => call.name === "cm_mx_apply_shipment_event_v1").length, 1);
+});
+
+test("unsigned, wrongly signed and unconfigured carrier events are refused and leave no trace", async () => {
+  const rawBody = packageEvent("delivered");
+  for (const [signature, secret] of [
+    [null, "carrier-secret"],
+    ["Bearer static-token", "carrier-secret"],
+    [carrierHook.signShippingWebhook(rawBody, "attacker"), "carrier-secret"],
+    [carrierHook.signShippingWebhook(rawBody, "carrier-secret"), undefined],
+  ]) {
+    const db = shippingDatabase();
+    const result = await shipping.handleShippingWebhook({
+      db,
+      provider: "solo_envios",
+      rawBody,
+      signature,
+      secret,
+    });
+    assert.equal(result.status, 401);
+    assert.equal(db.calls.length, 0);
+  }
+  assert.equal(shipping.shippingWebhookSecret("skydropx", {}), undefined);
+  assert.equal(
+    shipping.shippingWebhookSecret("solo_envios", { SOLO_ENVIOS_WEBHOOK_SECRET: " s " }),
+    "s",
+  );
+});
+
+test("an unknown carrier status is recorded raw and never guessed", async () => {
+  const db = shippingDatabase();
+  const rawBody = packageEvent("teleported");
+  await shipping.handleShippingWebhook({
+    db,
+    provider: "skydropx",
+    rawBody,
+    signature: carrierHook.signShippingWebhook(rawBody, "s"),
+    secret: "s",
+  });
+  const applied = db.calls.find((call) => call.name === "cm_mx_apply_shipment_event_v1");
+  assert.deepEqual([applied.args.p_status, applied.args.p_raw_status], [null, "teleported"]);
+});
+
+test("order and quotation notifications on the same endpoint are acknowledged and ignored", async () => {
+  const db = shippingDatabase();
+  const rawBody = JSON.stringify({
+    data: { id: "1f92595c", type: "orders", attributes: { status: "sent" } },
+  });
+  const result = await shipping.handleShippingWebhook({
+    db,
+    provider: "skydropx",
+    rawBody,
+    signature: carrierHook.signShippingWebhook(rawBody, "s"),
+    secret: "s",
+  });
+  assert.deepEqual(result, { status: 200, body: "ignored" });
+  assert.equal(db.calls.length, 0);
+});

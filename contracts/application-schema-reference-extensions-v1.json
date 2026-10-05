@@ -331,14 +331,14 @@
     {
       "kind": "function",
       "name": "cm_mx_claim_webhook_event_v1",
-      "files": ["src/lib/mx-payments.server.ts"],
+      "files": ["src/lib/mx-payments.server.ts", "src/lib/mx-shipping-webhooks.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
     {
       "kind": "function",
       "name": "cm_mx_complete_webhook_event_v1",
-      "files": ["src/lib/mx-payments.server.ts"],
+      "files": ["src/lib/mx-payments.server.ts", "src/lib/mx-shipping-webhooks.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     },
@@ -367,6 +367,13 @@
       "kind": "function",
       "name": "cm_mx_start_payment_attempt_v1",
       "files": ["src/lib/mx-checkout.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_apply_shipment_event_v1",
+      "files": ["src/lib/mx-shipping-webhooks.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }

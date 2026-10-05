@@ -166,7 +166,7 @@ test("no AED catalog seed: the Mexico bootstrap ships no prices, products or ord
     for (const insert of inserts) {
       assert.match(
         insert,
-        /commerce_private\.(market_identity|variant_launch_profiles|mx_payment_attempts|integration_webhook_events|shipments)/i,
+        /commerce_private\.(market_identity|variant_launch_profiles|mx_payment_attempts|integration_webhook_events|shipments|shipment_events)/i,
         `${name}: unexpected seed ${insert}`,
       );
     }

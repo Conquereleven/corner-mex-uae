@@ -436,6 +436,51 @@ check(
     db.query(`select stock from public.product_variants where id='${V1}'`) === "18",
 );
 
+// ── Shipment tracking ────────────────────────────────────────────────────────
+db.query(
+  `update commerce_private.shipments set provider_shipment_id = 'SHIP-1', reservation_state = 'PURCHASED', status = 'LABEL_CREATED' where order_id = '${created.order_id}'`,
+);
+const track = (status, raw = status?.toLowerCase() ?? "unknown") =>
+  JSON.parse(
+    db.query(
+      `select public.cm_mx_apply_shipment_event_v1('skydropx', 'SHIP-1', ${status ? `'${status}'` : "null"}, '${raw}', '794874381730', 'https://carrier.example.invalid/t', null)`,
+    ),
+  );
+check(
+  "a carrier event moves the shipment forward and marks the order shipped",
+  track("IN_TRANSIT").status === "IN_TRANSIT" &&
+    db.query(`select status from public.orders where id='${created.order_id}'`) === "shipped",
+);
+check(
+  "a late event never moves a shipment backwards",
+  track("LABEL_CREATED").status === "IN_TRANSIT",
+);
+check(
+  "an unrecognised provider status is recorded raw and changes nothing",
+  track(null, "teleported").status === "IN_TRANSIT" &&
+    db.query(
+      `select count(*) from commerce_private.shipment_events where raw_status = 'teleported' and status is null`,
+    ) === "1",
+);
+check(
+  "delivery is terminal and delivers the order",
+  track("DELIVERED").status === "DELIVERED" &&
+    track("IN_TRANSIT").status === "DELIVERED" &&
+    db.query(`select status from public.orders where id='${created.order_id}'`) === "delivered",
+);
+check(
+  "an event for a shipment CornerMex never created is ignored",
+  JSON.parse(
+    db.query(
+      `select public.cm_mx_apply_shipment_event_v1('skydropx', 'SHIP-UNKNOWN', 'DELIVERED', 'delivered', null, null, null)`,
+    ),
+  ).reason === "UNKNOWN_SHIPMENT",
+);
+check(
+  "every carrier event is kept, mapped or not",
+  db.query(`select count(*) from commerce_private.shipment_events`) === "5",
+);
+
 // ── Webhook ledger ───────────────────────────────────────────────────────────
 const claim = (id) =>
   `select public.cm_mx_claim_webhook_event_v1('mercado_pago', '${id}', 'hash', '{"action":"order.processed"}'::jsonb)`;

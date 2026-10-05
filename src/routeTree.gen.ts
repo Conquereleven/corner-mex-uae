@@ -95,6 +95,8 @@ import { Route as AuthenticatedAdminLeadsIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminCustomersIndexRouteImport } from './routes/_authenticated/admin.customers.index'
 import { Route as AuthenticatedAccountOrdersIndexRouteImport } from './routes/_authenticated/account.orders.index'
 import { Route as CheckoutBnplProviderOrderIdRouteImport } from './routes/checkout.bnpl.$provider.$orderId'
+import { Route as ApiPublicHooksSoloEnviosRouteImport } from './routes/api/public/hooks/solo-envios'
+import { Route as ApiPublicHooksSkydropxRouteImport } from './routes/api/public/hooks/skydropx'
 import { Route as ApiPublicHooksRefreshRatesRouteImport } from './routes/api/public/hooks/refresh-rates'
 import { Route as ApiPublicHooksPoIntakeRouteImport } from './routes/api/public/hooks/po-intake'
 import { Route as ApiPublicHooksMercadoPagoRouteImport } from './routes/api/public/hooks/mercado-pago'
@@ -590,6 +592,17 @@ const CheckoutBnplProviderOrderIdRoute =
     path: '/bnpl/$provider/$orderId',
     getParentRoute: () => CheckoutRoute,
   } as any)
+const ApiPublicHooksSoloEnviosRoute =
+  ApiPublicHooksSoloEnviosRouteImport.update({
+    id: '/api/public/hooks/solo-envios',
+    path: '/api/public/hooks/solo-envios',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSkydropxRoute = ApiPublicHooksSkydropxRouteImport.update({
+  id: '/api/public/hooks/skydropx',
+  path: '/api/public/hooks/skydropx',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksRefreshRatesRoute =
   ApiPublicHooksRefreshRatesRouteImport.update({
     id: '/api/public/hooks/refresh-rates',
@@ -799,6 +812,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/mercado-pago': typeof ApiPublicHooksMercadoPagoRoute
   '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
+  '/api/public/hooks/skydropx': typeof ApiPublicHooksSkydropxRoute
+  '/api/public/hooks/solo-envios': typeof ApiPublicHooksSoloEnviosRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/account/orders/': typeof AuthenticatedAccountOrdersIndexRoute
   '/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
@@ -895,6 +910,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/mercado-pago': typeof ApiPublicHooksMercadoPagoRoute
   '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
+  '/api/public/hooks/skydropx': typeof ApiPublicHooksSkydropxRoute
+  '/api/public/hooks/solo-envios': typeof ApiPublicHooksSoloEnviosRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/account/orders': typeof AuthenticatedAccountOrdersIndexRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersIndexRoute
@@ -1003,6 +1020,8 @@ export interface FileRoutesById {
   '/api/public/hooks/mercado-pago': typeof ApiPublicHooksMercadoPagoRoute
   '/api/public/hooks/po-intake': typeof ApiPublicHooksPoIntakeRoute
   '/api/public/hooks/refresh-rates': typeof ApiPublicHooksRefreshRatesRoute
+  '/api/public/hooks/skydropx': typeof ApiPublicHooksSkydropxRoute
+  '/api/public/hooks/solo-envios': typeof ApiPublicHooksSoloEnviosRoute
   '/checkout/bnpl/$provider/$orderId': typeof CheckoutBnplProviderOrderIdRoute
   '/_authenticated/account/orders/': typeof AuthenticatedAccountOrdersIndexRoute
   '/_authenticated/admin/customers/': typeof AuthenticatedAdminCustomersIndexRoute
@@ -1111,6 +1130,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercado-pago'
     | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
+    | '/api/public/hooks/skydropx'
+    | '/api/public/hooks/solo-envios'
     | '/checkout/bnpl/$provider/$orderId'
     | '/account/orders/'
     | '/admin/customers/'
@@ -1207,6 +1228,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercado-pago'
     | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
+    | '/api/public/hooks/skydropx'
+    | '/api/public/hooks/solo-envios'
     | '/checkout/bnpl/$provider/$orderId'
     | '/account/orders'
     | '/admin/customers'
@@ -1314,6 +1337,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mercado-pago'
     | '/api/public/hooks/po-intake'
     | '/api/public/hooks/refresh-rates'
+    | '/api/public/hooks/skydropx'
+    | '/api/public/hooks/solo-envios'
     | '/checkout/bnpl/$provider/$orderId'
     | '/_authenticated/account/orders/'
     | '/_authenticated/admin/customers/'
@@ -1363,6 +1388,8 @@ export interface RootRouteChildren {
   ApiPublicHooksMercadoPagoRoute: typeof ApiPublicHooksMercadoPagoRoute
   ApiPublicHooksPoIntakeRoute: typeof ApiPublicHooksPoIntakeRoute
   ApiPublicHooksRefreshRatesRoute: typeof ApiPublicHooksRefreshRatesRoute
+  ApiPublicHooksSkydropxRoute: typeof ApiPublicHooksSkydropxRoute
+  ApiPublicHooksSoloEnviosRoute: typeof ApiPublicHooksSoloEnviosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1969,6 +1996,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutBnplProviderOrderIdRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/api/public/hooks/solo-envios': {
+      id: '/api/public/hooks/solo-envios'
+      path: '/api/public/hooks/solo-envios'
+      fullPath: '/api/public/hooks/solo-envios'
+      preLoaderRoute: typeof ApiPublicHooksSoloEnviosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/skydropx': {
+      id: '/api/public/hooks/skydropx'
+      path: '/api/public/hooks/skydropx'
+      fullPath: '/api/public/hooks/skydropx'
+      preLoaderRoute: typeof ApiPublicHooksSkydropxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/refresh-rates': {
       id: '/api/public/hooks/refresh-rates'
       path: '/api/public/hooks/refresh-rates'
@@ -2436,6 +2477,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksMercadoPagoRoute: ApiPublicHooksMercadoPagoRoute,
   ApiPublicHooksPoIntakeRoute: ApiPublicHooksPoIntakeRoute,
   ApiPublicHooksRefreshRatesRoute: ApiPublicHooksRefreshRatesRoute,
+  ApiPublicHooksSkydropxRoute: ApiPublicHooksSkydropxRoute,
+  ApiPublicHooksSoloEnviosRoute: ApiPublicHooksSoloEnviosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
