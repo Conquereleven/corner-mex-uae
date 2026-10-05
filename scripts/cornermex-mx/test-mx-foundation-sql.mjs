@@ -502,6 +502,127 @@ check(
 );
 
 // ── Access ───────────────────────────────────────────────────────────────────
+// ── Launch assortment import ─────────────────────────────────────────────────
+const importSku = (payload) =>
+  JSON.parse(
+    db.query(
+      `select public.cm_mx_import_launch_sku_v1('${JSON.stringify(payload).replaceAll("'", "''")}'::jsonb)`,
+    ),
+  );
+const bare = importSku({ sku: "MX-IMP-001", name: "Salsa de prueba 370 ml" });
+check(
+  "an imported SKU with no commercial data is a DRAFT that reports every gap",
+  bare.created === true &&
+    bare.launch_status === "DRAFT" &&
+    bare.gaps.join(",") ===
+      "retail_price,weight,dimensions,b2b_price,inventory_record,case_pack,minimum_order_quantity,preferred_supplier",
+  JSON.stringify(bare),
+);
+check(
+  "an imported SKU is not sellable",
+  db.query(
+    `select v.is_active::text || ',' || p.status from public.product_variants v join public.products p on p.id = v.product_id where v.sku = 'MX-IMP-001'`,
+  ) === "false,inactive",
+);
+const full = importSku({
+  sku: "MX-IMP-001",
+  name: "Salsa de prueba 370 ml",
+  brand: "Marca de prueba",
+  retail_price: 42.5,
+  b2b_price: 36,
+  weight_g: 420,
+  length_cm: 6,
+  width_cm: 6,
+  height_cm: 20,
+  stock: 24,
+  case_pack: 12,
+  moq: 12,
+  suppliers: [
+    {
+      supplier: "Proveedor Uno",
+      supplier_sku: "P1-370",
+      cost: 21.4,
+      lead_time_days: 2,
+      preferred: true,
+    },
+    { supplier: "Proveedor Dos", cost: 22.1 },
+  ],
+});
+check(
+  "a complete import closes every gap without changing the launch status",
+  full.created === false && full.launch_status === "DRAFT" && full.gaps.length === 0,
+  JSON.stringify(full),
+);
+check(
+  "the import writes one preferred supplier, both sources and a stock ledger entry",
+  db.query(`select
+      (select count(*) from commerce_private.variant_suppliers where variant_id = '${full.variant_id}') || ',' ||
+      (select count(*) from commerce_private.variant_suppliers where variant_id = '${full.variant_id}' and is_preferred) || ',' ||
+      (select quantity_on_hand from public.inventory where variant_id = '${full.variant_id}') || ',' ||
+      (select sum(quantity_delta) from public.inventory_movements where variant_id = '${full.variant_id}' and reference_type = 'launch_import')`) ===
+    "2,1,24,24",
+);
+const again = importSku({ sku: "MX-IMP-001", name: "Salsa de prueba 370 ml", stock: 24 });
+check(
+  "a re-import is idempotent and an absent field keeps the stored value",
+  again.gaps.length === 0 &&
+    db.query(`select price_aed::text || ',' || (select count(*) from public.inventory_movements where variant_id = '${full.variant_id}')
+      from public.product_variants where id = '${full.variant_id}'`) === "42.50,1",
+);
+importSku({
+  sku: "MX-IMP-001",
+  name: "Salsa de prueba 370 ml",
+  suppliers: [{ supplier: "proveedor dos", cost: 20.9, preferred: true }],
+});
+check(
+  "naming a new preferred supplier moves the preference and reuses the supplier by name",
+  db.query(`select s.name || ',' || (select count(*) from commerce_private.suppliers where lower(name) like 'proveedor%')
+      from commerce_private.variant_suppliers vs join commerce_private.suppliers s on s.id = vs.supplier_id
+      where vs.variant_id = '${full.variant_id}' and vs.is_preferred`) === "Proveedor Dos,2",
+);
+expectError(
+  "a preferred supplier without a lead time keeps the SKU out of the launch",
+  `select public.cm_mx_set_launch_status_v1('${full.variant_id}', 'ACTIVE')`,
+  "MX_LAUNCH_NOT_READY: supplier_lead_time",
+);
+importSku({
+  sku: "MX-IMP-001",
+  name: "Salsa de prueba 370 ml",
+  suppliers: [{ supplier: "Proveedor Dos", cost: 20.9, lead_time_days: 3, preferred: true }],
+});
+db.query(`select public.cm_mx_set_launch_status_v1('${full.variant_id}', 'ACTIVE')`);
+check(
+  "only the launch status function makes an imported SKU sellable",
+  db.query(`select is_active from public.product_variants where id = '${full.variant_id}'`) === "t",
+);
+db.query(
+  `update public.inventory set quantity_reserved = 5 where variant_id = '${full.variant_id}'`,
+);
+expectError(
+  "an import cannot take stock below what orders have reserved",
+  `select public.cm_mx_import_launch_sku_v1('{"sku":"MX-IMP-001","name":"Salsa de prueba 370 ml","stock":3}'::jsonb)`,
+  "MX_IMPORT_STOCK_BELOW_RESERVED",
+);
+db.query(
+  `update public.inventory set quantity_reserved = 0 where variant_id = '${full.variant_id}'`,
+);
+expectError(
+  "an import refuses two preferred suppliers for one SKU",
+  `select public.cm_mx_import_launch_sku_v1('{"sku":"MX-IMP-002","name":"Otra","suppliers":[{"supplier":"A uno","cost":1,"preferred":true},{"supplier":"B dos","cost":1,"preferred":true}]}'::jsonb)`,
+  "MX_IMPORT_MULTIPLE_PREFERRED_SUPPLIERS",
+);
+expectError(
+  "an import refuses a non-positive price",
+  `select public.cm_mx_import_launch_sku_v1('{"sku":"MX-IMP-003","name":"Otra","retail_price":0}'::jsonb)`,
+  "MX_IMPORT_PRICE_INVALID",
+);
+check(
+  "a refused import leaves nothing behind",
+  db.query(
+    `select count(*) from public.product_variants where sku in ('MX-IMP-002','MX-IMP-003')`,
+  ) === "0",
+);
+
 check(
   "no Mexico function is executable by anon or authenticated",
   db.query(`select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace

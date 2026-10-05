@@ -1,14 +1,19 @@
-// CornerMex MX — launch assortment tooling (reads and writes files only).
+// CornerMex MX — launch assortment tooling.
 //
 //   template    write the empty launch template and the candidate sheet
 //   preview     validate a filled-in sheet and print the import preview
+//   apply       import a sheet that passes the preview into the Mexico database
 //
-// Nothing here talks to a database. The preview is the gate an import must pass
-// before it is allowed to run (docs/cornermex-mx/LAUNCH-CATALOG.md).
+// template and preview read and write files only. apply is the one command that
+// talks to a database: it refuses any project but the declared Mexico one, asks
+// the database for its MX/MXN identity first, and writes nothing without
+// --confirm. Every SKU arrives as DRAFT; none becomes sellable here
+// (docs/cornermex-mx/LAUNCH-CATALOG.md).
 //
 // Usage:
 //   npm run catalog:launch:mx -- template
 //   npm run catalog:launch:mx -- preview docs/cornermex-mx/catalog/launch-assortment.csv
+//   npm run catalog:launch:mx -- apply docs/cornermex-mx/catalog/launch-assortment.csv [--confirm]
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -17,7 +22,12 @@ import {
   LAUNCH_COLUMNS,
   previewLaunchCatalog,
   toCsv,
+  toImportPayload,
 } from "../../src/lib/launch-catalog.ts";
+import {
+  evaluateMarketDatabase,
+  isExpectedMarketIdentity,
+} from "../../src/config/market-database.ts";
 
 const DIR = "docs/cornermex-mx/catalog";
 
@@ -166,10 +176,78 @@ function preview(file) {
   process.exit(result.ok ? 0 : 1);
 }
 
-const [command, file] = process.argv.slice(2);
+async function apply(file, confirmed) {
+  const result = previewLaunchCatalog(readFileSync(file, "utf8"));
+  if (!result.ok) {
+    console.error(
+      `Refused: the sheet has ${result.errors.length} error(s). Run "preview" and fix them first.`,
+    );
+    process.exit(1);
+  }
+  // The same guard the application uses: declared Mexico project, never a
+  // foreign one. Reasons name variables, never values.
+  const database = evaluateMarketDatabase(process.env);
+  if (!database.ok) {
+    console.error(`Refused: ${database.reasons.join(", ")}`);
+    process.exit(1);
+  }
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    console.error("Refused: SUPABASE_SERVICE_ROLE_KEY is not set in this environment.");
+    process.exit(1);
+  }
+  const rpc = async (name, body) => {
+    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/${name}`, {
+      method: "POST",
+      headers: { apikey: key, authorization: `Bearer ${key}`, "content-type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(20_000),
+    });
+    const text = await response.text();
+    if (!response.ok) throw new Error(`${name} ${response.status}: ${text.slice(0, 300)}`);
+    return text ? JSON.parse(text) : null;
+  };
+  if (!isExpectedMarketIdentity(await rpc("cm_market_identity_v1", {}))) {
+    console.error("Refused: the database did not identify itself as Mexico / MXN.");
+    process.exit(1);
+  }
+
+  console.log(`Launch assortment import: ${file}`);
+  console.log(`  project ${database.projectRef} · ${result.skus.length} SKU(s)`);
+  if (!confirmed) {
+    console.log("  dry run — nothing was written. Re-run with --confirm to import.");
+    return;
+  }
+  const report = [];
+  let failed = 0;
+  for (const sku of result.skus) {
+    try {
+      const outcome = await rpc("cm_mx_import_launch_sku_v1", { p_sku: toImportPayload(sku) });
+      report.push(outcome);
+      console.log(
+        `  ${outcome.created ? "created" : "updated"} ${sku.sku} — ${outcome.launch_status}` +
+          (outcome.gaps.length > 0 ? ` — missing: ${outcome.gaps.join(", ")}` : " — complete"),
+      );
+    } catch (error) {
+      failed += 1;
+      report.push({ sku: sku.sku, error: String(error.message ?? error) });
+      console.log(`  FAILED ${sku.sku} — ${error.message ?? error}`);
+    }
+  }
+  const out = `${file}.import.json`;
+  writeFileSync(out, `${JSON.stringify(report, null, 2)}\n`);
+  console.log(`\n${result.skus.length - failed} imported, ${failed} failed. Report: ${out}`);
+  console.log("No SKU was made sellable. Launch status is changed separately, per SKU.");
+  process.exit(failed > 0 ? 1 : 0);
+}
+
+const [command, file, ...flags] = process.argv.slice(2);
 if (command === "template") writeTemplate();
 else if (command === "preview" && file) preview(file);
+else if (command === "apply" && file) await apply(file, flags.includes("--confirm"));
 else {
-  console.error("usage: launch-catalog.mjs template | preview <file.csv>");
+  console.error(
+    "usage: launch-catalog.mjs template | preview <file.csv> | apply <file.csv> [--confirm]",
+  );
   process.exit(2);
 }

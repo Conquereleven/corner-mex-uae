@@ -542,6 +542,38 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
 }
 
 /** Quotes a value for CSV output when it needs it. */
+/**
+ * The argument of `public.cm_mx_import_launch_sku_v1` for one previewed SKU.
+ * Unknown values are omitted, never defaulted: the database leaves them unknown
+ * and reports them as launch gaps.
+ */
+export function toImportPayload(sku: LaunchSku): Record<string, unknown> {
+  const payload: Record<string, unknown> = { sku: sku.sku, name: sku.name };
+  const optional: Array<[string, string | number | null]> = [
+    ["brand", sku.brand],
+    ["retail_price", sku.retailPriceMxn],
+    ["b2b_price", sku.b2bPriceMxn],
+    ["weight_g", sku.weightG],
+    ["length_cm", sku.lengthCm],
+    ["width_cm", sku.widthCm],
+    ["height_cm", sku.heightCm],
+    ["stock", sku.stock],
+    ["case_pack", sku.casePack],
+    ["moq", sku.moq],
+  ];
+  for (const [key, value] of optional) if (value !== null) payload[key] = value;
+  if (sku.suppliers.length > 0) {
+    payload.suppliers = sku.suppliers.map((supplier) => ({
+      supplier: supplier.supplier,
+      ...(supplier.supplierSku !== null ? { supplier_sku: supplier.supplierSku } : {}),
+      cost: supplier.costMxn,
+      ...(supplier.leadTimeDays !== null ? { lead_time_days: supplier.leadTimeDays } : {}),
+      preferred: supplier.preferred,
+    }));
+  }
+  return payload;
+}
+
 export function csvCell(value: string | number | null | undefined): string {
   const text = value === null || value === undefined ? "" : String(value);
   return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;

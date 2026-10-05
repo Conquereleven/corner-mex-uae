@@ -101,7 +101,7 @@ field labels in the seller area, which is inactive (`sellerAuthEnabled: false`).
 | --- | --- | --- |
 | Tests | 812: 804 pass / 4 fail / 4 skipped | **936: 928 pass / 4 fail / 4 skipped** (+124 Mexico tests) |
 | `tsc --noEmit` | 299 errors | **299 errors** (no new) |
-| Mexico SQL contract | — | **56 assertions pass** on a clean bootstrap |
+| Mexico SQL contract | — | **68 assertions pass** on a clean bootstrap |
 | `lint:changed` | fails | **passes** |
 
 The 4 failures are the same four, by name, that fail on `main`. 35 existing guard

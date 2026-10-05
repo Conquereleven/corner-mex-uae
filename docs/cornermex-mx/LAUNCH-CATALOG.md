@@ -11,7 +11,7 @@ trustworthy about a product's identity.
 | `catalog/launch-assortment-template.csv` | The empty template (header only) |
 | `catalog/launch-assortment-candidates.csv` | 102 candidates from the `RESOURCE` classification, pre-filled only with trustworthy data |
 | `src/lib/launch-catalog.ts` | Validation rules and the import preview |
-| `scripts/cornermex-mx/launch-catalog.mjs` | `template` and `preview` commands |
+| `scripts/cornermex-mx/launch-catalog.mjs` | `template`, `preview` and `apply` commands |
 
 ```bash
 npm run catalog:launch:mx -- preview docs/cornermex-mx/catalog/launch-assortment.csv
@@ -107,9 +107,44 @@ Warnings do not block: `PRICE_BELOW_COST`, `B2B_ABOVE_RETAIL`, `B2B_BELOW_COST`,
 3. Save as `catalog/launch-assortment.csv` and run the preview until it reports
    no errors and the launch range as `inside`.
 
+## Importing the sheet
+
+```bash
+npm run catalog:launch:mx -- apply docs/cornermex-mx/catalog/launch-assortment.csv            # dry run
+npm run catalog:launch:mx -- apply docs/cornermex-mx/catalog/launch-assortment.csv --confirm  # writes
+```
+
+`apply` runs the preview again and refuses a sheet with any error. It then
+refuses any database but the declared Mexico project, asks the database for its
+MX/MXN identity, and — only with `--confirm` — calls
+`public.cm_mx_import_launch_sku_v1` once per SKU
+(`supabase/mx/migrations/20261005120000_cm_mx_2_launch_import.sql`).
+
+What one call does, atomically and idempotently on the SKU:
+
+- creates the product (Spanish name, brand), its variant and a `DRAFT` launch
+  profile — or updates them if the SKU exists;
+- stores retail and B2B price, weight, dimensions, case pack and MOQ;
+- sets stock on hand and records the change in the inventory ledger; refuses a
+  count below what orders have reserved;
+- creates suppliers by name, links them with cost and lead time, and keeps
+  exactly one preferred.
+
+What it never does:
+
+- **make a SKU sellable.** Every SKU arrives `DRAFT` and inactive. `READY` and
+  `ACTIVE` are set per SKU through `cm_mx_set_launch_status_v1`, which refuses
+  while any gap remains;
+- **fill in a blank.** A value missing from the sheet is stored as unknown and
+  returned as a gap; on a re-import a blank leaves the stored value alone;
+- **remove a supplier** that a later sheet no longer lists.
+
+It needs `SUPABASE_URL`, `CORNERMEX_MARKET=MX`,
+`CORNERMEX_MX_SUPABASE_PROJECT_REF` and `SUPABASE_SERVICE_ROLE_KEY` in the
+environment of the machine that runs it. The key is never printed. A report is
+written next to the sheet as `<file>.import.json`.
+
 ## Not built yet
 
-The write step. Once the Mexico database exists, the import takes a preview with
-no errors and creates products, variants, inventory, launch profiles and
-supplier rows, then asks the database to set each SKU's status. It is not
-written yet because there is no Mexico database to run it against.
+An admin screen for the launch assortment and for moving SKUs between statuses.
+Until it exists, status changes are made through the database function.

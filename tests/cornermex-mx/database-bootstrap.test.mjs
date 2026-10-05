@@ -155,7 +155,10 @@ test("no AED catalog seed: the Mexico bootstrap ships no prices, products or ord
   const files = (await readdir(dir)).filter((name) => name.endsWith(".sql"));
   assert.ok(files.length >= 1);
   for (const name of files) {
-    const sql = (await readFile(`${dir}/${name}`, "utf8")).replace(/--.*$/gm, "");
+    const whole = (await readFile(`${dir}/${name}`, "utf8")).replace(/--.*$/gm, "");
+    // A seed is a statement the migration itself runs. What a function does when
+    // it is later called with real data is not a seed, so bodies are set aside.
+    const sql = whole.replace(/\bas \$\$[\s\S]*?\$\$;/g, "as $$ $$;");
     assert.doesNotMatch(
       sql,
       /insert\s+into\s+public\.(products|product_variants|product_translations|product_images|orders|order_items|inventory)\b/i,
@@ -171,9 +174,12 @@ test("no AED catalog seed: the Mexico bootstrap ships no prices, products or ord
         `${name}: unexpected seed ${insert}`,
       );
     }
-    assert.match(sql, /MX_BOOTSTRAP_REFUSES_NON_EMPTY_DATABASE/);
-    assert.match(sql, /MX_BOOTSTRAP_REFUSES_EXISTING_CATALOGUE/);
+    assert.doesNotMatch(whole, /'AED'|'aed'/, `${name} must not carry an AED value`);
   }
+  // The foundation refuses a database that is already in use.
+  const foundation = await readFile(`${dir}/${files.sort()[0]}`, "utf8");
+  assert.match(foundation, /MX_BOOTSTRAP_REFUSES_NON_EMPTY_DATABASE/);
+  assert.match(foundation, /MX_BOOTSTRAP_REFUSES_EXISTING_CATALOGUE/);
   // Mexico migrations live apart from the canonical ones, so the canonical
   // replay — which the UAE database shares — never picks them up.
   const canonical = await readdir("supabase/migrations");

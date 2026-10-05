@@ -147,7 +147,7 @@ functions), and twelve admin/B2B `SECURITY DEFINER` functions executable by
 signed-in users (each checks the caller's role inside).
 
 The same sequence runs in CI and locally against a disposable PostgreSQL:
-`npm run test:cornermex-mx:sql` (56 assertions).
+`npm run test:cornermex-mx:sql` (68 assertions).
 
 ## Still to do in the Supabase dashboard
 

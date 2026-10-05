@@ -322,3 +322,74 @@ test("the candidate sheet invents nothing: no supplier, cost, price, stock or di
   assert.doesNotMatch(text, /AED|Intermex/i);
   assert.equal(preview.summary.byStatus.READY + preview.summary.byStatus.ACTIVE, 0);
 });
+
+test("the import payload carries what the sheet states and omits what it does not", () => {
+  const header = catalog.LAUNCH_COLUMNS.join(",");
+  const preview = catalog.previewLaunchCatalog(
+    [
+      header,
+      "MX-A-1,Salsa uno,Marca,Proveedor Uno,P1,21.40,42.50,36,420,6,6,20,24,12,12,2,yes",
+      "MX-B-1,Salsa dos,,,,,,,,,,,,,,,",
+    ].join("\n"),
+  );
+  assert.equal(preview.ok, true, JSON.stringify(preview.errors));
+  const [full, bare] = preview.skus.map(catalog.toImportPayload);
+  assert.deepEqual(full, {
+    sku: "MX-A-1",
+    name: "Salsa uno",
+    brand: "Marca",
+    retail_price: 42.5,
+    b2b_price: 36,
+    weight_g: 420,
+    length_cm: 6,
+    width_cm: 6,
+    height_cm: 20,
+    stock: 24,
+    case_pack: 12,
+    moq: 12,
+    suppliers: [
+      {
+        supplier: "Proveedor Uno",
+        supplier_sku: "P1",
+        cost: 21.4,
+        lead_time_days: 2,
+        preferred: true,
+      },
+    ],
+  });
+  // Nothing is defaulted: an unknown value is absent, and the database reports it as a gap.
+  assert.deepEqual(bare, { sku: "MX-B-1", name: "Salsa dos" });
+});
+
+test("the apply command is fenced: preview first, Mexico database only, dry run by default", async () => {
+  const cli = await readFile("scripts/cornermex-mx/launch-catalog.mjs", "utf8");
+  const applyAt = cli.indexOf("async function apply(");
+  const body = cli.slice(applyAt);
+  const order = [
+    "previewLaunchCatalog(",
+    "evaluateMarketDatabase(process.env)",
+    "isExpectedMarketIdentity(",
+    "if (!confirmed)",
+    "cm_mx_import_launch_sku_v1",
+  ].map((needle) => body.indexOf(needle));
+  assert.ok(
+    order.every((index) => index >= 0),
+    JSON.stringify(order),
+  );
+  assert.deepEqual(
+    [...order].sort((a, b) => a - b),
+    order,
+    "guards run before any write",
+  );
+  // It never changes a launch status and never prints a credential.
+  assert.doesNotMatch(cli, /cm_mx_set_launch_status_v1/);
+  assert.doesNotMatch(cli, /console\.(log|error)\([^)]*\bkey\b/);
+  const migration = (
+    await readFile("supabase/mx/migrations/20261005120000_cm_mx_2_launch_import.sql", "utf8")
+  ).replace(/--.*$/gm, "");
+  assert.doesNotMatch(migration, /set_launch_status|is_active\s*=\s*true|'ACTIVE'/);
+  assert.match(
+    migration,
+    /revoke all on function public\.cm_mx_import_launch_sku_v1\(jsonb\) from public, anon, authenticated/,
+  );
+});
