@@ -3,9 +3,21 @@
 **Status:** `DEFERRED`. Kept in the repository as history; inactive in the
 Mexico customer experience.
 
-Nothing was deleted. Removing these modules would break historical order
-display, applied-migration contracts and their own tests, for no customer
-benefit.
+No code was deleted. Removing these modules would break applied-migration
+contracts and their own tests, for no customer benefit.
+
+**The UAE Supabase instance no longer exists.** The Founder deleted project
+`wlrfknmrhowldygmvtvn` on 2026-10-04. What "UAE history" means from then on:
+
+| Preserved (in Git) | Gone |
+| --- | --- |
+| Code, migrations, contracts, tests, evidence documents, the catalogue snapshot in `catalog/catalog-snapshot.json` | The running database: its two delivered orders, customers, live catalogue rows and audit tables |
+
+Nothing in the Mexico runtime, migrations, validation or tooling reads from the
+UAE database, and nothing may be made to. The contracts and validators that name
+`wlrfknmrhowldygmvtvn` (`contracts/canonical-supabase-schema-fingerprint-v1.json`
+and its relatives) are a governance record of that project and are kept
+unchanged; they validate committed files, not a live database.
 
 ## Retained, not reachable from any active customer surface
 
@@ -39,11 +51,11 @@ zones by emirate, settings).
 `CORNERMEX_CHECKOUT_ENABLED` and `VITE_CORNERMEX_CHECKOUT_ENABLED` are `false`
 on the Railway service `corner-mex-uae`. Verified after the redeploy:
 `/api/ready` → `checkoutEnabled: false`, commit `f90134b` unchanged, service
-healthy. The storefront still serves the catalogue; it takes no order.
+healthy.
 
-Nothing was deleted: the two historical UAE orders, the database, the
-migrations, the audit history and the code are intact. Setting both variables
-back to `true` reverses it.
+Since the database was deleted, that service can no longer load a catalogue and
+could not take an order even with checkout switched back on. Stopping or
+removing the UAE Railway service is a Founder decision and has not been done.
 
 ## Second lock, in code
 
@@ -59,6 +71,8 @@ to run even if checkout is switched on:
 
 ## Historical records
 
-Two delivered UAE orders exist in the canonical database. Order views detect
-the address model: a snapshot tagged `address_model: "mx-1"` renders as a Mexican
-address, anything else renders in its original UAE shape.
+The two delivered UAE orders lived in the deleted database and are not
+recoverable from this repository. Order views still detect the address model —
+a snapshot tagged `address_model: "mx-1"` renders as a Mexican address, anything
+else in its original UAE shape — which now only matters for tests and for a
+future UAE relaunch.

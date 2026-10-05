@@ -91,8 +91,9 @@ field labels in the seller area, which is inactive (`sellerAuthEnabled: false`).
   UAE supplier's public storefront with **AED prices**. Rendering those numbers
   as pesos would be wrong by roughly a factor of five. See `CATALOG-MIGRATION.md`.
 - `.env` in this clone points at the **obsolete** Supabase project
-  (`ywyiejqnbyzjfatojvkh`); the canonical one is `wlrfknmrhowldygmvtvn`. Any
-  local tooling must be pointed at the canonical project explicitly.
+  (`ywyiejqnbyzjfatojvkh`). The UAE canonical project (`wlrfknmrhowldygmvtvn`)
+  was deleted by the Founder on 2026-10-04; the Mexico project is
+  `bdknutgpbflenzefussq`. Both UAE refs are refused by the application.
 
 ## 6. Baseline and delta
 

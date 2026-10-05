@@ -20,7 +20,8 @@ main      f90134b   ← UAE production. Railway service corner-mex-uae deploys t
   `mx/main`).
 - **Mexico gets its own hosting and database** — a new Railway project/service
   that deploys `mx/main`, and a new Supabase project (`DATABASE-BOOTSTRAP.md`).
-  The application refuses to run against the UAE database.
+  The application refuses to run against any database but the declared Mexico
+  project.
 - PR #81 and PR #82 stay open as reference until the Founder closes them as
   superseded. They are not merged into `main`.
 
@@ -31,7 +32,8 @@ main      f90134b   ← UAE production. Railway service corner-mex-uae deploys t
 | Railway project | `CornerMex MX` — `1ad78bd2-d7ff-4807-9c1c-aa3fca67d06a` |
 | Service | `corner-mex-mx` — `e1752106-eb13-4be6-9077-d8142b725fd7` |
 | Environment | `production` — `2329cb54-8ad4-454e-81e3-8af03014a725` |
-| Source | `mx/main` |
+| Source | `feat/cornermex-mx` until PR #83 is merged, then `mx/main` |
+| Database | Supabase `cornermex-mx` — `bdknutgpbflenzefussq` |
 
 Initial configuration: `CORNERMEX_MARKET=MX`, `CORNERMEX_APPLICATION_ENV=staging`,
 checkout off (server and build flag), real payment execution off, real shipping
@@ -39,9 +41,13 @@ purchase off, every provider disabled, cash on delivery off. The quote-signing
 secret and the Clip webhook secret were generated on the machine and piped
 straight into Railway; they were never displayed or written to disk.
 
-Not set yet, because they do not exist: the Mexico Supabase variables and the
-public URL. Until they are, the service answers `/api/health` but refuses the
-database (`/api/ready` → `target: "refused"`), which is the intended behaviour.
+Database attached on 2026-10-05: `SUPABASE_URL`, `VITE_SUPABASE_URL`, the
+publishable key (server and build) and `CORNERMEX_MX_SUPABASE_PROJECT_REF`.
+`SUPABASE_SERVICE_ROLE_KEY` is **not** set: the tooling used for this work can
+read a project's publishable key but not its secret key, and the secret was not
+fetched any other way. Catalogue reads and `/api/ready` work without it; server
+writes (orders, payments, admin) need it. It is one copy-paste for the Founder,
+dashboard to dashboard (`MX-LAUNCH-PLAN.md`).
 
 It is a separate Railway project from `CornerMex UAE`; the UAE service was not
 reused or modified.
@@ -54,9 +60,10 @@ That is a later, deliberate step: repoint the default branch, archive `main` as
 
 ## UAE production today
 
-On 2026-10-05 the UAE checkout was switched off:
+The UAE Supabase project was deleted by the Founder on 2026-10-04, so the UAE
+service has no database behind it (`DEFERRED-UAE.md`). Before that, on
+2026-10-05 the UAE checkout was switched off:
 `CORNERMEX_CHECKOUT_ENABLED=false` and `VITE_CORNERMEX_CHECKOUT_ENABLED=false`
 on the `corner-mex-uae` service. Verified after redeploy: `/api/ready` →
-`checkoutEnabled: false`, same commit `f90134b`, service healthy. Orders,
-database, migrations and code are untouched. To reverse it, set both variables
-back to `true`.
+`checkoutEnabled: false`, same commit `f90134b`, service healthy. Code and
+migrations are untouched.

@@ -1,14 +1,16 @@
 # CornerMex MX — launch plan
 
 Branch `feat/cornermex-mx` → PR #83 → base `mx/main`. Isolated from `main`
-(UAE production). Not merged, not deployed. See `BRANCHING.md`.
+(UAE production). Not merged. Deployed to the Mexico staging service with
+checkout off. See `BRANCHING.md`.
 
 ## Founder decisions (2026-10-05)
 
 | Decision | Applied |
 | --- | --- |
 | No further UAE ecommerce | UAE checkout switched off in production; UAE entry points inert in Mexico builds (`DEFERRED-UAE.md`) |
-| New Supabase project for Mexico | Bootstrap plan, schema and guards built; project creation is a Founder action (`DATABASE-BOOTSTRAP.md`) |
+| New Supabase project for Mexico | `cornermex-mx` (`bdknutgpbflenzefussq`) created, bootstrapped and verified (`DATABASE-BOOTSTRAP.md`) |
+| UAE Supabase project deleted (2026-10-04) | Nothing depends on it; its ref stays on the deny-list and CornerOps was added (`DEFERRED-UAE.md`) |
 | Cash on delivery off; never national | Off by default; when enabled, local delivery only (`PAYMENTS.md`) |
 | Launch payments: Mercado Pago, Clip | Both adapters built to `SCAFFOLDED` |
 | Push the branch, open a PR, do not merge to `main` | PR #83 against `mx/main` |
@@ -19,7 +21,8 @@ Branch `feat/cornermex-mx` → PR #83 → base `mx/main`. Isolated from `main`
 | | State |
 | --- | --- |
 | Railway project `CornerMex MX`, service `corner-mex-mx` | **Created.** Separate from the UAE project. Checkout, real payments and real shipping purchase off; every provider disabled |
-| Mexico Supabase project | **Blocked at one step.** Creation is free but the organisation's free plan allows two active projects and both are used. See `DATABASE-BOOTSTRAP.md`, "Founder action" |
+| Mexico Supabase project | **Created and bootstrapped.** 26 hash-verified migrations, identity MX/MXN, RLS verified, 14/14 behavioural checks, six categories seeded, no other data |
+| Database ↔ Railway | URL, publishable key and declared project ref set. The secret (service-role) key is a Founder copy-paste |
 | PR #83 → `mx/main` | Ready for review. Merging is left to the Founder: an automated merge was refused by a review safeguard |
 | CI on PR #83 | `type-and-runtime` and `schema-authority` pass. `contract-and-migration` and `merged-tree-verification` fail on `PROGRAM_STATE_EVIDENCE_STALE`, a UAE governance evidence file that expired on 2026-09-19 and fails PR #81 the same way |
 
@@ -30,7 +33,7 @@ Branch `feat/cornermex-mx` → PR #83 → base `mx/main`. Isolated from `main`
 | MX-0 | Audit, market config, UAE out of the storefront, address model, catalogue classification | **Done** |
 | MX-1 | Shipping provider layer, Skydropx and Solo Envíos adapters, quote engine | **Done to `SCAFFOLDED`** |
 | MX-2 | Payment provider layer, Mercado Pago, Clip, state machine, Mexico schema, database isolation | **Done to `SCAFFOLDED`** |
-| MX-3 | Run it for real: sandbox calls, label purchase after payment, tracking, shipping webhooks | Blocked on credentials and the Mexico database |
+| MX-3 | Run it for real: sandbox calls, label purchase after payment, tracking, shipping webhooks | Blocked on provider credentials only |
 | MX-4 | B2B price tiers, procurement and launch-assortment admin screens, remaining back-office labels | `PLANNED` (schema built) |
 | MX-5 | Production credentials, real catalogue, controlled launch | `PLANNED` |
 
@@ -53,13 +56,13 @@ Checkout stays inert until every row is true. Rows 1–6 are enforced in code
 
 | # | Gate | Owner | State |
 | --- | --- | --- | --- |
-| 1 | Deployment declares `CORNERMEX_MARKET=MX` and its Mexico Supabase project | Engineering | Market declared; project pending |
+| 1 | Deployment declares `CORNERMEX_MARKET=MX` and its Mexico Supabase project | Engineering | **Done** |
 | 2 | Checkout execution flag on | Founder | Off |
 | 3 | Quote-signing secret set | Engineering | **Set** on the Mexico service |
 | 4 | A shipping source: carrier credentials + origin address, or manual rules with real prices | Founder | None |
 | 5 | A payment provider enabled and configured | Founder | None |
 | 6 | Mexico legal documents published (enforced in production) | Founder + counsel | Not written |
-| 7 | Mexico Supabase project created and bootstrapped | Founder + engineering | Not created |
+| 7 | Mexico Supabase project created and bootstrapped | Founder + engineering | **Done**; service-role key and auth settings pending |
 | 8 | Seller entity, RFC, fiscal address | Founder + accountant | Unknown |
 | 9 | Tax treatment of catalogue prices; CFDI flow and invoicing provider | Accountant | Undetermined |
 | 10 | Launch assortment: 50–75 SKUs `ACTIVE` with supplier, cost, price, weight, dimensions | Founder | Not started |
@@ -85,10 +88,14 @@ provider.
 
 ## Founder actions
 
-1. **Free one Supabase project slot** — pause `cornerops-ai` or upgrade the
-   organisation (`DATABASE-BOOTSTRAP.md`, "Founder action"). The project is then
-   created and bootstrapped without further input.
-1b. **Merge PR #83** into `mx/main`.
+1. **Copy the Mexico secret key into Railway.** Supabase → project
+   `cornermex-mx` → Project Settings → API Keys → *Secret keys* → copy. Railway →
+   project `CornerMex MX` → service `corner-mex-mx` → Variables → new variable
+   `SUPABASE_SERVICE_ROLE_KEY` → paste → Deploy. Never paste it into chat or a
+   file.
+1a. **Supabase auth settings** for `cornermex-mx`: Site URL and redirect
+   allow-list, Google provider, a media bucket (`DATABASE-BOOTSTRAP.md`).
+1b. **Merge PR #83** into `mx/main` (base must stay `mx/main`).
 2. **Open provider accounts and create credentials:**
    - Mercado Pago developer application → test Access Token and Public Key, and
      the webhook secret.
@@ -128,8 +135,8 @@ credential generation need the Founder.
 
 ## Next
 
-1. With the Supabase project: bootstrap it, regenerate types, deploy `mx/main`
-   to a Mexico service with checkout off.
+1. After PR #83 is merged: repoint the Railway service from
+   `feat/cornermex-mx` to `mx/main` and verify the deployment.
 2. With sandbox credentials: run each adapter against its sandbox, correct
    whatever real responses differ on, and move it to `SANDBOX`.
 4. MX-3: wire label purchase after confirmed payment, shipping webhooks, tracking

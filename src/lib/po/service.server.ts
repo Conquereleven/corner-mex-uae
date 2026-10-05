@@ -1,4 +1,4 @@
-import type { Json } from "@/integrations/supabase/types";
+import type { Json } from "@/integrations/supabase/types.mx";
 import { randomUUID } from "node:crypto";
 import { IntakeSchema } from "./intake-schema.ts";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";

@@ -1,5 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
-import type { Database } from "./types";
+import type { Database } from "./types.mx";
 import { assertBrowserDatabase } from "@/config/market-database";
 
 function createSupabaseClient() {

@@ -66,7 +66,7 @@ test("checkout never runs against a UAE database, however complete the rest is",
     SUPABASE_URL: "https://wlrfknmrhowldygmvtvn.supabase.co",
   });
   assert.equal(evaluation.ready, false);
-  assert.ok(evaluation.reasons.includes("market_database:SUPABASE_URL_points_at_a_uae_database"));
+  assert.ok(evaluation.reasons.includes("market_database:SUPABASE_URL_points_at_a_non_mexico_database"));
 });
 
 test("the UAE's cash-on-delivery configuration enables nothing in Mexico", () => {

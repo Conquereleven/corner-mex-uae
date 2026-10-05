@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { getCookies, setCookie, setResponseHeader } from "@tanstack/react-start/server";
-import type { Database } from "./types";
+import type { Database } from "./types.mx";
 
 export function createSupabaseSsrClient() {
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;

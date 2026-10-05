@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 import { assertMarketDatabase } from "../../config/market-database.ts";
-import type { Database } from "./types";
+import type { Database } from "./types.mx";
 
 function createReadOnlyClient() {
   const url = process.env.SUPABASE_URL;

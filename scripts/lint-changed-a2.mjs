@@ -11,7 +11,8 @@ const files = names
     (file) =>
       /\.(?:js|mjs|cjs|ts|tsx)$/.test(file) &&
       file !== "src/routeTree.gen.ts" &&
-      file !== "src/integrations/supabase/types.ts",
+      file !== "src/integrations/supabase/types.ts" &&
+      file !== "src/integrations/supabase/types.mx.ts",
   );
 
 function lint(file, content) {

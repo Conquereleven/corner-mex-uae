@@ -53,13 +53,13 @@ test("wrong Supabase project fails closed: both UAE databases are refused by nam
       SUPABASE_URL: `https://${ref}.supabase.co`,
     });
     assert.equal(server.ok, false);
-    assert.ok(server.reasons.includes("SUPABASE_URL_points_at_a_uae_database"), ref);
+    assert.ok(server.reasons.includes("SUPABASE_URL_points_at_a_non_mexico_database"), ref);
 
     const browser = guard.evaluateMarketDatabase({
       ...good,
       VITE_SUPABASE_URL: `https://${ref}.supabase.co`,
     });
-    assert.ok(browser.reasons.includes("VITE_SUPABASE_URL_points_at_a_uae_database"), ref);
+    assert.ok(browser.reasons.includes("VITE_SUPABASE_URL_points_at_a_non_mexico_database"), ref);
 
     // Declaring the UAE project as "the Mexico project" does not get around it.
     const declared = guard.evaluateMarketDatabase({
@@ -69,7 +69,7 @@ test("wrong Supabase project fails closed: both UAE databases are refused by nam
       VITE_SUPABASE_URL: `https://${ref}.supabase.co`,
     });
     assert.ok(
-      declared.reasons.includes("CORNERMEX_MX_SUPABASE_PROJECT_REF_names_a_uae_database"),
+      declared.reasons.includes("CORNERMEX_MX_SUPABASE_PROJECT_REF_names_a_non_mexico_database"),
       ref,
     );
     assert.throws(
@@ -78,6 +78,7 @@ test("wrong Supabase project fails closed: both UAE databases are refused by nam
     );
   }
   assert.deepEqual(Object.keys(guard.NON_MX_SUPABASE_PROJECTS).sort(), [
+    "nhxpujypqxbjiqqddxqt",
     "wlrfknmrhowldygmvtvn",
     "ywyiejqnbyzjfatojvkh",
   ]);
@@ -146,7 +147,7 @@ test("readiness is refused, without touching the network, when the database is w
   assert.equal(response.status, 503);
   const body = await response.json();
   assert.deepEqual([body.status, body.target, body.market.code], ["degraded", "refused", "MX"]);
-  assert.ok(body.marketDatabase.reasons.includes("SUPABASE_URL_points_at_a_uae_database"));
+  assert.ok(body.marketDatabase.reasons.includes("SUPABASE_URL_points_at_a_non_mexico_database"));
 });
 
 test("no AED catalog seed: the Mexico bootstrap ships no prices, products or orders", async () => {
@@ -236,4 +237,65 @@ test("the UAE market is deferred: its order and payment entry points are inert i
   ]) {
     assert.ok((await readFile(file, "utf8")).length > 0, file);
   }
+});
+
+test("the Mexico types are the pinned output of the Mexico project", async () => {
+  const { createHash } = await import("node:crypto");
+  const contract = JSON.parse(
+    await readFile("contracts/cornermex-mx-supabase-types-v1.json", "utf8"),
+  );
+  const types = await readFile(contract.typesFile, "utf8");
+  assert.equal(createHash("sha256").update(types).digest("hex"), contract.typesSha256);
+  assert.equal(contract.market, "MX");
+  assert.equal(contract.currency, "MXN");
+  assert.ok(!(contract.projectRef in guard.NON_MX_SUPABASE_PROJECTS));
+  assert.equal(contract.publicTables.length, 22);
+  for (const name of [
+    "cm_market_identity_v1",
+    "cm_mx_create_order_v1",
+    "cm_mx_apply_payment_state_v1",
+    "cm_mx_reserve_label_v1",
+  ]) {
+    assert.ok(contract.generatedTypeFunctions.includes(name), name);
+    assert.match(types, new RegExp(`^      ${name}: `, "m"));
+  }
+  // Every Supabase client is typed from the Mexico project, none from the
+  // frozen UAE artefact.
+  for (const file of [
+    "client.ts",
+    "client.server.ts",
+    "client.readonly.server.ts",
+    "client.ssr.server.ts",
+    "auth-middleware.ts",
+    "optional-auth-middleware.ts",
+  ]) {
+    const source = await readFile(`src/integrations/supabase/${file}`, "utf8");
+    assert.match(source, /import type \{ Database \} from ['"]\.\/types\.mx['"]/, file);
+  }
+});
+
+test("the bootstrap that built the Mexico database is recorded and self-limiting", async () => {
+  const prelude = await readFile("supabase/mx/bootstrap/00_platform_prelude.sql", "utf8");
+  const finalize = await readFile("supabase/mx/bootstrap/02_finalize.sql", "utf8");
+  assert.match(prelude, /BOOTSTRAP_HASH_MISMATCH/);
+  assert.match(prelude, /revoke all on schema cm_mx_bootstrap from public, anon, authenticated/);
+  assert.match(finalize, /drop function if exists cm_mx_bootstrap\.apply_file/);
+  assert.match(finalize, /force row level security/);
+  // Reference data only: no price, product or customer is seeded.
+  assert.doesNotMatch(finalize, /insert into public\.(?!categories)/);
+  assert.doesNotMatch(finalize, /_aed|product_variants|public\.orders|auth\.users/i);
+});
+
+test("CornerOps is refused exactly like a UAE project", () => {
+  const cornerOps = "nhxpujypqxbjiqqddxqt";
+  assert.throws(
+    () => guard.assertBrowserDatabase(`https://${cornerOps}.supabase.co`),
+    /CM_MARKET_DATABASE_MISMATCH/,
+  );
+  const evaluation = guard.evaluateMarketDatabase({
+    CORNERMEX_MARKET: "MX",
+    CORNERMEX_MX_SUPABASE_PROJECT_REF: cornerOps,
+    SUPABASE_URL: `https://${cornerOps}.supabase.co`,
+  });
+  assert.equal(evaluation.ok, false);
 });

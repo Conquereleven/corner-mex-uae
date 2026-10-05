@@ -1,5 +1,5 @@
 import type { CanonicalPaymentStatus } from "./payment-state";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database } from "@/integrations/supabase/types.mx";
 /** Additive repository contract only; not a claim that production has these columns. */
 type Tables = Database["public"]["Tables"];
 export type OperationalDatabase = Omit<Database, "public"> & {

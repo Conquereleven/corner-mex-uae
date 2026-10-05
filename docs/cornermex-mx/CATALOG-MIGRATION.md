@@ -5,8 +5,11 @@ or deleted.
 
 ## Source
 
-Canonical database `wlrfknmrhowldygmvtvn`, read 2026-10-04 through the anonymous
-publishable key: **195 products, 204 variants, all `active`.**
+The UAE canonical database, read on 2026-10-04 through the anonymous
+publishable key shortly before the Founder deleted that project: **195 products,
+204 variants, all `active`.** The read is preserved as
+`catalog/catalog-snapshot.json`, which is now the only source — the database
+cannot be read again.
 
 Every row was ingested from the UAE supplier's public storefront
 (`scripts/cm-com-3a/ingest-intermex-catalog.mjs`), under the rule "CornerMex
@@ -53,11 +56,11 @@ The rules are in `scripts/cornermex-mx/classify-catalog.mjs`, where each one
 states the evidence it relies on. Re-run:
 
 ```bash
-SUPABASE_URL=https://wlrfknmrhowldygmvtvn.supabase.co SUPABASE_PUBLISHABLE_KEY=<publishable key> node scripts/cornermex-mx/classify-catalog.mjs
+node scripts/cornermex-mx/classify-catalog.mjs --input docs/cornermex-mx/catalog/catalog-snapshot.json
 ```
 
-The local `.env` points at the obsolete Supabase project; pass the canonical URL
-explicitly as above.
+The classifier runs from the snapshot; there is no live UAE database to point
+it at.
 
 ## Data gaps that affect Mexico
 
