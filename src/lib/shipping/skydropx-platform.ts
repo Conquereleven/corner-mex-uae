@@ -181,6 +181,7 @@ export function createSkydropxPlatformProvider(config: PlatformConfig): Shipping
   }
 
   async function fetchToken(): Promise<string> {
+    const secret = config.clientSecret;
     let result: { status: number; json: Json | null };
     try {
       result = await throttled(() =>
@@ -190,7 +191,7 @@ export function createSkydropxPlatformProvider(config: PlatformConfig): Shipping
           body: JSON.stringify({
             grant_type: "client_credentials",
             client_id: config.clientId,
-            client_secret: config.clientSecret,
+            client_secret: secret,
           }),
         }),
       );

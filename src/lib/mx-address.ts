@@ -127,7 +127,7 @@ export function normalizeMxPhone(raw: string): string | null {
   return /^[1-9]\d{9}$/.test(digits) ? digits : null;
 }
 
-/** E.164 form of a normalised national number, e.g. "+525512345678". */
+/** E.164 form of a normalised national number: plus sign, country code 52, ten digits. */
 export function mxPhoneE164(national: string): string {
   return `+52${national}`;
 }

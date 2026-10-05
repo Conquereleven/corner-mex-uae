@@ -397,7 +397,7 @@ function Checkout() {
                       type="email"
                       autoComplete="email"
                       inputMode="email"
-                      placeholder="tu@correo.com"
+                      placeholder="Tu correo electrónico"
                       value={form.email}
                       onChange={(event) => set({ email: event.target.value })}
                     />

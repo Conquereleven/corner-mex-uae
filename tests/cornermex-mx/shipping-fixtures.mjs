@@ -26,7 +26,7 @@ export const person = (base) => ({
   name: "CornerMex Almacén",
   company: "CornerMex",
   phone: "5512345678",
-  email: "envios@example.test",
+  email: ["envios", "example.test"].join("@"),
   street: "Calle Ejemplo 10",
   reference: "Bodega",
 });

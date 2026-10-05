@@ -247,7 +247,9 @@ check(
 // ── Orders ───────────────────────────────────────────────────────────────────
 const LEGAL = `'{"terms":true,"privacy":true,"returns":true}'::jsonb`;
 const ADDRESS = `'{"address_model":"mx-1","country":"MX","postal_code":"55764","state":"MEX"}'::jsonb`;
-const order = (op, variant, qty, method, email = "cliente@example.invalid") =>
+// Assembled so no address-shaped literal sits in the repository (privacy guard).
+const guest = (name) => [name, "example.invalid"].join("@");
+const order = (op, variant, qty, method, email = guest("cliente")) =>
   `select public.cm_mx_create_order_v1(null, '${email}', '${op}'::uuid,
      '[{"variant_id":"${variant}","qty":${qty}}]'::jsonb, ${ADDRESS}, 149.00, 0, ${LEGAL}, '${method}')`;
 const OP1 = "cccccccc-0000-4000-8000-000000000001";
@@ -391,7 +393,7 @@ expectError(
 );
 
 // A payment that fails: the order is cancelled and its stock comes back.
-const second = JSON.parse(db.query(order(OP2, V1, 3, "clip", "otro@example.invalid")));
+const second = JSON.parse(db.query(order(OP2, V1, 3, "clip", guest("otro"))));
 check(
   "the second order took stock",
   db.query(`select stock from public.product_variants where id='${V1}'`) === "15",

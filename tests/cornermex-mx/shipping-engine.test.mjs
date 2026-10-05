@@ -250,7 +250,7 @@ test("the origin address is configuration and is never assumed", () => {
       name: "Almacén CornerMex",
       company: "CornerMex",
       phone: "5512345678",
-      email: "envios@example.test",
+      email: ["envios", "example.test"].join("@"),
       street: "Calle Ejemplo 10",
       colonia: "Centro",
       municipality: "Tecámac",

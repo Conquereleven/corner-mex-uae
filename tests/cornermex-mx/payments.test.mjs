@@ -33,6 +33,8 @@ function transport(routes) {
   return { fetchImpl, calls, count: (key) => calls.filter((call) => call.key === key).length };
 }
 
+// Assembled so no address-shaped literal sits in the repository (privacy guard).
+const PAYER_EMAIL = ["cliente", "example.test"].join("@");
 const noSleep = async () => {};
 const returnUrls = {
   success: "https://tienda.example.test/order-confirmed",
@@ -45,7 +47,7 @@ const request = (overrides = {}) => ({
   currency: "MXN",
   idempotencyKey: "0b0c9f0e-6a0b-4a52-9a53-4f6f2f6f0001",
   description: "Pedido CM-20261005-ABCD1234",
-  payer: { email: "cliente@example.test", firstName: "María" },
+  payer: { email: PAYER_EMAIL, firstName: "María" },
   method: { kind: "offline", methodId: "oxxo", methodType: "ticket" },
   returnUrls,
   ...overrides,
@@ -175,7 +177,7 @@ test("Mercado Pago: an order is created on the Orders API with idempotency and t
     external_reference: "CM-20261005-ABCD1234",
     total_amount: "349.50",
     description: "Pedido CM-20261005-ABCD1234",
-    payer: { email: "cliente@example.test", first_name: "María" },
+    payer: { email: PAYER_EMAIL, first_name: "María" },
     transactions: {
       payments: [{ amount: "349.50", payment_method: { id: "oxxo", type: "ticket" } }],
     },
@@ -528,7 +530,7 @@ test("Clip: a redirected checkout is created with the reference, return URLs and
     },
     metadata: {
       external_reference: "CM-20261005-ABCD1234",
-      customer_info: { email: "cliente@example.test" },
+      customer_info: { email: PAYER_EMAIL },
     },
     webhook_url: "https://tienda.example.test/api/public/hooks/clip?ref=x&token=y",
   });

@@ -82,7 +82,7 @@ rejectMatch(
 const product = "src/routes/product.$slug.tsx";
 requireMatch(product, /setVariantId/, "variant selection is required");
 requireMatch(product, /setQuantity/, "quantity controls are required");
-requireMatch(product, /Add to cart/, "Add to cart is required");
+requireMatch(product, /Agregar al carrito/, "Add to cart is required");
 rejectMatch(
   product,
   /Only \{?\w+|left in stock|guaranteed delivery/i,
@@ -96,7 +96,7 @@ rejectMatch(cart, /shipping\s*=.*25|\*\s*25/, "hard-coded AED 25 shipping is for
 const cartRoute = "src/routes/cart.tsx";
 requireMatch(cartRoute, /setQty/, "cart quantity updates are required");
 requireMatch(cartRoute, /remove/, "cart removal is required");
-requireMatch(cartRoute, /Pending destination check/, "shipping must remain pending");
+requireMatch(cartRoute, /Se cotiza con tu código postal/, "shipping must remain pending");
 
 const checkout = "src/routes/checkout.tsx";
 requireMatch(checkout, /VITE_CORNERMEX_CHECKOUT_ENABLED === "true"/, "client gate must be exact");
