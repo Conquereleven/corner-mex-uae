@@ -23,7 +23,7 @@ test("L5R public B2B intake is real, idempotent, guarded and server mediated", a
   assert.match(server, /submit_b2b_lead_v2/);
   assert.match(server, /getB2bIntakeAbuseKey/);
   assert.doesNotMatch(server, /sendExternalEmail|isExternalEmailEnabled/);
-  assert.match(quote, /Submit enquiry to CornerMex|submitB2bLead/);
+  assert.match(quote, /Enviar solicitud a CornerMex|submitB2bLead/);
   assert.match(quote, /idempotency_key: submissionKey/);
   assert.match(migration, /b2b_leads_idempotency_key_uidx/);
   assert.match(migration, /drop policy if exists b2b_leads_public_intake/);
@@ -195,9 +195,9 @@ test("L5R B2B customer copy remains non-transactional and human approved", async
     read("src/features/b2b-catalog/manual-quote-request.ts"),
   ]);
 
-  assert.match(quote, /human|Human-reviewed/i);
-  assert.match(preview, /does not\s+create an order/i);
-  assert.match(leadPage, /A request is not an order/);
-  assert.match(formatter, /not an order/i);
+  assert.match(quote, /revisa(da)? (por )?una persona/i);
+  assert.match(preview, /no\s+crea\s+un\s+pedido/i);
+  assert.match(leadPage, /Una\s+solicitud\s+no\s+es\s+un\s+pedido/);
+  assert.match(formatter, /no es un pedido/i);
   assert.doesNotMatch(preview, /order confirmed|quote confirmed/i);
 });

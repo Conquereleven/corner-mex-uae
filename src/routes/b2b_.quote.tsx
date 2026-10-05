@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET } from "@/config/market";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -26,11 +27,11 @@ import { siteUrl } from "@/lib/site-url";
 export const Route = createFileRoute("/b2b_/quote")({
   head: () => ({
     meta: [
-      { title: "Request a B2B quote — CornerMex" },
+      { title: "Solicitar cotización para negocio — CornerMex" },
       {
         name: "description",
         content:
-          "Build and submit a B2B enquiry for human-reviewed CornerMex pricing, availability and commercial terms.",
+          "Arma y envía una solicitud para recibir precios, disponibilidad y condiciones comerciales revisados por una persona.",
       },
     ],
     links: [{ rel: "canonical", href: siteUrl("/b2b/quote") }],
@@ -52,7 +53,7 @@ function B2bQuoteRoute() {
 
   const submit = useMutation({
     mutationFn: async () => {
-      if (!submissionKey) throw new Error("Prepare the request before submitting.");
+      if (!submissionKey) throw new Error("Prepara la solicitud antes de enviarla.");
       const productsInterest = products
         .map(
           (product) =>
@@ -65,7 +66,7 @@ function B2bQuoteRoute() {
           company: fields.businessName,
           email: fields.email,
           phone: fields.phone || null,
-          country_city: fields.emirate,
+          country_city: `${fields.location}, ${ACTIVE_MARKET.countryNameLocal}`,
           contact_role: fields.role || null,
           business_type: fields.businessType,
           products_interest: productsInterest,
@@ -111,27 +112,27 @@ function B2bQuoteRoute() {
 
   let submitError: string | undefined;
   if (submit.error instanceof Error) submitError = submit.error.message;
-  else if (submit.error) submitError = "Could not submit enquiry.";
+  else if (submit.error) submitError = "No pudimos enviar la solicitud.";
 
   return (
     <SiteLayout>
       <main className="mx-auto max-w-5xl px-4 pb-32 pt-10 sm:px-6 sm:pt-14 lg:px-8">
         <Link to="/b2b/catalog" className="inline-block">
           <Button variant="ghost" className="min-h-11 rounded-full px-3">
-            <ArrowLeft className="me-2 h-4 w-4" /> Back to catalogue
+            <ArrowLeft className="me-2 h-4 w-4" /> Volver al catálogo
           </Button>
         </Link>
         <div className="mt-6 max-w-3xl">
           <span className="text-[11px] uppercase tracking-[0.2em] text-eyebrow">
-            Human-reviewed B2B pipeline
+            Cotización revisada por una persona
           </span>
           <h1 className="mt-3 font-display text-5xl leading-none tracking-tight text-foreground sm:text-6xl">
-            Request commercial terms.
+            Solicita condiciones comerciales.
           </h1>
           <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Build your shortlist, review the enquiry, then submit it directly to CornerMex. A team
-            member reviews every request before any pricing, availability, delivery or commercial
-            commitment is made.
+            Arma tu lista, revisa la solicitud y envíala a CornerMex. Una persona de nuestro equipo
+            revisa cada solicitud antes de confirmar precios, disponibilidad, entrega o cualquier
+            compromiso comercial.
           </p>
         </div>
 

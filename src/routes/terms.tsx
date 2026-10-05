@@ -1,16 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PolicyLinkGroup } from "@/components/site/Trust";
-import { businessIdentityLine, sellerOfRecordLine } from "@/lib/business-identity";
+import { ACTIVE_MARKET } from "@/config/market";
+import { marketIdentityLine, marketSellerLine } from "@/lib/business-identity";
 import { ONLINE_ORDERING_ENABLED } from "@/lib/commerce-mode";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/terms")({
   head: () => {
-    const title = "Terms — CornerMex";
+    const title = "Términos — CornerMex";
     const description =
-      "The current terms of using the CornerMex website: catalogue discovery, optional accounts and carts, and manually approved business quotes.";
+      "Cómo funciona hoy el sitio de CornerMex: catálogo, carrito, compra en línea y cotizaciones para negocio aprobadas por una persona.";
     return {
       meta: [
         { title },
@@ -24,77 +25,50 @@ export const Route = createFileRoute("/terms")({
 });
 
 function Terms() {
+  // Shown only once the Mexico seller entity has been supplied; never guessed.
+  const seller = marketSellerLine();
   return (
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
-          Plain-language summary
+          Resumen en lenguaje claro
         </p>
-        <h1 className="mt-3 font-display text-5xl tracking-tight">Website terms</h1>
+        <h1 className="mt-3 font-display text-5xl tracking-tight">Términos del sitio</h1>
         <div className="mt-8 space-y-5 text-base leading-7 text-muted-foreground">
-          <p>This website is operated in the UAE. {businessIdentityLine()}.</p>
+          <p>
+            Este sitio opera en {ACTIVE_MARKET.countryNameLocal}. {marketIdentityLine()}.
+          </p>
+          {seller && <p>{seller}.</p>}
+          <p>
+            Los precios se muestran en pesos mexicanos ({ACTIVE_MARKET.currency}). El importe que
+            pagas —tus productos y el envío a tu código postal— lo calcula nuestro servidor y lo ves
+            antes de confirmar tu pedido.
+          </p>
           {ONLINE_ORDERING_ENABLED ? (
-            <>
-              <p>{sellerOfRecordLine()}.</p>
-              <p>
-                Prices are shown in AED. The amount you pay — your items, delivery for your emirate
-                and VAT — is calculated by our server and shown at checkout before you confirm your
-                order.
-              </p>
-              <p>
-                Signed-in customers can place cash-on-delivery orders. Orders are governed by the{" "}
-                <Link
-                  to="/legal/$slug"
-                  params={{ slug: "terms-and-conditions" }}
-                  className="underline underline-offset-4"
-                >
-                  Terms &amp; Conditions
-                </Link>{" "}
-                and the{" "}
-                <Link
-                  to="/legal/$slug"
-                  params={{ slug: "returns-refunds" }}
-                  className="underline underline-offset-4"
-                >
-                  Returns &amp; Refunds Policy
-                </Link>
-                . A manual enquiry does not create a contract. Business transactions require a
-                separate human-approved written quote containing the applicable commercial terms.
-              </p>
-              <p>
-                The full documents are maintained in the{" "}
-                <Link to="/legal" className="underline underline-offset-4">
-                  legal centre
-                </Link>
-                .
-              </p>
-            </>
+            <p>
+              Puedes comprar como invitado o con una cuenta. No se registra ningún pedido hasta que
+              lo confirmas. Una solicitud de cotización no crea un contrato: las operaciones de
+              negocio requieren una cotización por escrito, aprobada por una persona, con sus
+              condiciones comerciales.
+            </p>
           ) : (
-            <>
-              <p>
-                Catalogue descriptions and AED amounts are presented for product discovery. They do
-                not confirm live stock, final pricing, taxes, delivery, discounts or availability
-                and are not an offer to sell. Final commercial terms are always confirmed in the
-                applicable flow before you commit.
-              </p>
-              <p>
-                Creating an account and preparing a B2C cart are available. Order execution, payment
-                collection and automated ordering run only when the corresponding authorized
-                configuration is enabled; while disabled, no order or payment is processed. A manual
-                enquiry does not create a contract. Business transactions require a separate
-                human-approved written quote containing the applicable commercial terms.
-              </p>
-              <p>
-                The full terms are maintained in the{" "}
-                <Link to="/legal" className="underline underline-offset-4">
-                  legal centre
-                </Link>
-                .
-              </p>
-            </>
+            <p>
+              Por el momento no estamos recibiendo pedidos en línea. Las descripciones y los
+              importes del catálogo sirven para conocer los productos; no confirman existencias,
+              precio final ni envío, y no constituyen una oferta de venta. Una solicitud de
+              cotización no crea un contrato.
+            </p>
           )}
           <p>
-            Questions:{" "}
+            Los Términos y condiciones completos para {ACTIVE_MARKET.countryNameLocal} se publicarán
+            en el{" "}
+            <Link to="/legal" className="underline underline-offset-4">
+              centro legal
+            </Link>{" "}
+            antes de abrir la venta al público.
+          </p>
+          <p>
+            Dudas:{" "}
             <a className="underline underline-offset-4" href={mailto(PUBLIC_CONTACT.legal)}>
               {PUBLIC_CONTACT.legal}
             </a>
@@ -103,7 +77,7 @@ function Terms() {
         </div>
         <div className="mt-12">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            More information
+            Más información
           </h2>
           <PolicyLinkGroup className="mt-3" exclude="/terms" />
         </div>

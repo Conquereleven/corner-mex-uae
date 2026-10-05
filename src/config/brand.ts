@@ -67,9 +67,10 @@ export const CORNERMEX_BRAND: BrandConfig = {
   id: "cornermex",
   displayName: "CornerMex",
   verbal: {
-    // Previously published CornerMex copy (site meta before 2026-08-28).
-    primary: "Authentic Mexican pantry in the UAE",
-    secondary: "Authentic Mexican chiles, salsas, masa and snacks — sourced for the UAE.",
+    // Mexico market copy (docs/cornermex-mx/MARKET-CONFIG.md). Descriptive only:
+    // no claim about coverage, delivery time or price.
+    primary: "Tu despensa mexicana",
+    secondary: "Chiles, salsas, masa y botanas mexicanas — por pieza o por mayoreo.",
   },
   colors: {
     arenaBeige: CORNERMEX_PALETTE.arenaBeige.hex,

@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -17,8 +18,7 @@ export const Route = createFileRoute("/_authenticated/admin/catalog-analytics")(
 
 const PCT = (n: number) => `${(n * 100).toFixed(1)}%`;
 const N = (n: number) => (n ?? 0).toLocaleString("en-US");
-const AED = (n: number) =>
-  `AED ${(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const AED = (n: number | string | null | undefined) => formatMoneyWithCode(n ?? 0);
 
 const STAGE_LABEL: Record<string, string> = {
   card_impression: "Impressions",

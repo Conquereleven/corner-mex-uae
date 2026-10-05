@@ -102,6 +102,8 @@ test("actual checkout handler recovers a created session after response loss usi
     "@/lib/operational-payments": {},
     "@/lib/payment-state": {},
     "@/lib/checkout-execution.server": { assertCheckoutExecutionEnabled() {} },
+    // Exercises the retained UAE Stripe handler, so it runs it as a UAE build.
+    "@/lib/uae-market-gate": { assertUaeMarketActive() {} },
   };
   const compiled = ts.transpileModule(readFileSync("src/lib/payments.functions.ts", "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },

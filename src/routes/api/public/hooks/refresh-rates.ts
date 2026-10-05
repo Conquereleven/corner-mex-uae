@@ -11,7 +11,9 @@ export const Route = createFileRoute("/api/public/hooks/refresh-rates")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const quotes = ["USD", "EUR", "MXN", "SAR", "GBP"];
         try {
-          const r = await fetch(`https://api.exchangerate.host/latest?base=AED&symbols=${quotes.join(",")}`);
+          const r = await fetch(
+            `https://api.exchangerate.host/latest?base=AED&symbols=${quotes.join(",")}`,
+          );
           if (!r.ok) throw new Error(`Fetch failed ${r.status}`);
           const j: any = await r.json();
           const rates: Record<string, number> = j.rates ?? {};
@@ -20,7 +22,9 @@ export const Route = createFileRoute("/api/public/hooks/refresh-rates")({
             .filter((q) => typeof rates[q] === "number")
             .map((q) => ({ base: "AED", quote: q, rate: rates[q], fetched_at: now }));
           if (rows.length) {
-            const { error } = await supabaseAdmin.from("currency_rates").upsert(rows, { onConflict: "base,quote" });
+            const { error } = await supabaseAdmin
+              .from("currency_rates")
+              .upsert(rows, { onConflict: "base,quote" });
             if (error) throw new Error(error.message);
           }
           return Response.json({ ok: true, updated: rows.length });

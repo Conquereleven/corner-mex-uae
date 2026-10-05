@@ -42,16 +42,19 @@ test("native AsyncLocalStorage retains context through awaited continuations", a
 });
 
 test("Shop distinguishes a retryable error from a successful empty state", () => {
-  assert.match(shop, /products\.isError[\s\S]*catalogue is temporarily unavailable/i);
+  assert.match(
+    shop,
+    /products\.isError[\s\S]*catálogo\s+no\s+está\s+disponible\s+por\s+el\s+momento/i,
+  );
   assert.match(shop, /onClick=\{\(\) => void products\.refetch\(\)\}/);
   assert.match(shop, /products\.isSuccess && productItems\.length === 0/);
-  assert.match(shop, /The pantry is being curated/);
+  assert.match(shop, /Estamos\s+surtiendo\s+la\s+despensa/);
 });
 
 test("category and facet failures do not become zero-product claims", () => {
   assert.match(shop, /const supportingDataError = cats\.isError \|\| facets\.isError/);
-  assert.match(shop, /Retry filters/);
-  assert.match(shop, /Product results remain separate\s+from this filter error/);
+  assert.match(shop, /Reintentar filtros/);
+  assert.match(shop, /Los\s+productos\s+se\s+siguen\s+mostrando\s+con\s+normalidad/);
 });
 
 test("Google sign-in uses direct Supabase OAuth and an internal callback", () => {
@@ -87,19 +90,24 @@ test("email/password login and protected admin boundaries remain present", () =>
   assert.doesNotMatch(`${login}\n${callback}`, /Claim admin|AdminBootstrapCard|adminBootstrap/i);
 });
 
-test("all nine checkout delivery controls have stable ids and names", () => {
+test("all eleven Mexico checkout delivery controls have stable ids and names", () => {
   const ids =
     checkout.match(
-      /id="checkout-(?:recipient-name|phone|emirate|area|street|building|floor-apartment|landmark|notes)"/g,
+      /id="checkout-(?:recipient-name|phone|postal-code|state|municipality|colonia|street|exterior-number|interior-number|references|notes)"/g,
     ) ?? [];
   const names =
     checkout.match(
-      /name="(?:recipient_name|phone|emirate|area|street|building|floor_apt|landmark|notes)"/g,
+      /name="(?:recipient_name|phone|postal_code|state|municipality|colonia|street|exterior_number|interior_number|references|notes)"/g,
     ) ?? [];
-  assert.equal(new Set(ids).size, 9);
-  assert.equal(new Set(names).size, 9);
+  assert.equal(new Set(ids).size, 11);
+  assert.equal(new Set(names).size, 11);
   assert.match(checkout, /htmlFor=\{id\}/);
-  assert.match(checkout, /aria-labelledby="checkout-emirate-label"/);
+  assert.match(checkout, /aria-labelledby="checkout-state-label"/);
+  // No UAE address control survives in the active checkout.
+  assert.doesNotMatch(
+    checkout,
+    /checkout-emirate|checkout-area|checkout-building|checkout-landmark/,
+  );
 });
 
 test("checkout layout is bounded without using overflow hiding as the fix", () => {
@@ -116,10 +124,16 @@ test("checkout order and payment execution remain fail closed", () => {
 
 test("B2B copy stays local while canonical enquiry submission remains non-transactional", () => {
   assert.match(b2bActions, /role="status" aria-live="polite"/);
-  assert.match(b2bActions, /copied locally — not submitted or sent/i);
-  assert.match(previewFormatter, /Request only — not an order or confirmed quote/);
-  assert.match(b2bPreview, /Submitting stores this enquiry in the CornerMex B2B pipeline/);
-  assert.match(b2bPreview, /does not\s+create an order/i);
+  assert.match(b2bActions, /Solicitud copiada\. Aún no se ha enviado/i);
+  assert.match(
+    previewFormatter,
+    /Solo es una solicitud: no\s+es\s+un\s+pedido\s+ni\s+una\s+cotización\s+confirmada/,
+  );
+  assert.match(
+    b2bPreview,
+    /la\s+solicitud\s+queda\s+registrada\s+para\s+que\s+una\s+persona\s+de\s+CornerMex\s+la\s+revise/,
+  );
+  assert.match(b2bPreview, /no\s+crea\s+un\s+pedido/i);
   assert.doesNotMatch(b2bPreview, /order confirmed|quote confirmed|payment confirmed/i);
 });
 

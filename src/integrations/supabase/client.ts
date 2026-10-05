@@ -1,5 +1,6 @@
 import { createBrowserClient } from "@supabase/ssr";
-import type { Database } from "./types";
+import type { Database } from "./types.mx";
+import { assertBrowserDatabase } from "@/config/market-database";
 
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
@@ -17,6 +18,9 @@ function createSupabaseClient() {
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
+
+  // CornerMex MX: a bundle built against a UAE project must not run.
+  assertBrowserDatabase(SUPABASE_URL);
 
   return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {

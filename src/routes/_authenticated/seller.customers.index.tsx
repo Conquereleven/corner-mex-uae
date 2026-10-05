@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -24,8 +25,7 @@ export const Route = createFileRoute("/_authenticated/seller/customers/")({
   component: SellerCustomers,
 });
 
-const AED = (n: number) =>
-  `${Number(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
+const AED = (n: number | string | null | undefined) => formatMoneyWithCode(n ?? 0);
 
 type CustomerRow = {
   id: string;

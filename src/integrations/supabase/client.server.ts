@@ -3,7 +3,8 @@
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import type { Database } from './types.mx';
+import { assertMarketDatabase } from "../../config/market-database.ts";
 
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -18,6 +19,10 @@ function createSupabaseAdminClient() {
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
+
+  // CornerMex MX: refuse to connect to anything but the declared Mexico
+  // database. Throws CM_MARKET_DATABASE_MISMATCH (src/config/market-database.ts).
+  assertMarketDatabase(process.env);
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: {

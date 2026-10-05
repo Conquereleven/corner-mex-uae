@@ -6,7 +6,7 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "orders",
-      "files": ["src/lib/inventory-intelligence.functions.ts"]
+      "files": ["src/lib/inventory-intelligence.functions.ts", "src/lib/mx-checkout.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
@@ -16,7 +16,7 @@
     {
       "kind": "table_or_storage_bucket",
       "name": "product_variants",
-      "files": ["src/lib/inventory-intelligence.functions.ts"]
+      "files": ["src/lib/inventory-intelligence.functions.ts", "src/lib/mx-checkout.functions.ts"]
     },
     {
       "kind": "table_or_storage_bucket",
@@ -304,6 +304,76 @@
       "kind": "function",
       "name": "cm_guest_order_by_token_v1",
       "files": ["src/lib/guest-order.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_market_identity_v1",
+      "files": ["src/lib/mx-payments.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_apply_payment_state_v1",
+      "files": ["src/lib/mx-payments.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_bind_payment_attempt_v1",
+      "files": ["src/lib/mx-checkout.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_claim_webhook_event_v1",
+      "files": ["src/lib/mx-payments.server.ts", "src/lib/mx-shipping-webhooks.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_complete_webhook_event_v1",
+      "files": ["src/lib/mx-payments.server.ts", "src/lib/mx-shipping-webhooks.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_create_order_v1",
+      "files": ["src/lib/mx-checkout.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_order_payment_attempt_v1",
+      "files": ["src/lib/mx-payments.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_payment_attempt_v1",
+      "files": ["src/lib/mx-payments.server.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_start_payment_attempt_v1",
+      "files": ["src/lib/mx-checkout.functions.ts"],
+      "classification": "requires_future_migration",
+      "rationale": "owned_by_unapplied_canonical_migration"
+    },
+    {
+      "kind": "function",
+      "name": "cm_mx_apply_shipment_event_v1",
+      "files": ["src/lib/mx-shipping-webhooks.server.ts"],
       "classification": "requires_future_migration",
       "rationale": "owned_by_unapplied_canonical_migration"
     }

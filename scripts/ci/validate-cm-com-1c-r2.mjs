@@ -27,7 +27,7 @@ rejectMatch(
 const shop = "src/routes/shop.tsx";
 requireMatch(
   shop,
-  /products\.isError[\s\S]*catalogue is temporarily unavailable/i,
+  /products\.isError[\s\S]*catálogo no está disponible por el momento/i,
   "Shop error state missing",
 );
 requireMatch(shop, /products\.refetch\(\)/, "product Retry must refetch");
@@ -67,12 +67,14 @@ const checkout = "src/routes/checkout.tsx";
 for (const field of [
   "recipient-name",
   "phone",
-  "emirate",
-  "area",
+  "postal-code",
+  "state",
+  "municipality",
+  "colonia",
   "street",
-  "building",
-  "floor-apartment",
-  "landmark",
+  "exterior-number",
+  "interior-number",
+  "references",
   "notes",
 ]) {
   requireMatch(checkout, new RegExp(`id="checkout-${field}"`), `${field} needs a stable id`);
@@ -80,12 +82,14 @@ for (const field of [
 for (const name of [
   "recipient_name",
   "phone",
-  "emirate",
-  "area",
+  "postal_code",
+  "state",
+  "municipality",
+  "colonia",
   "street",
-  "building",
-  "floor_apt",
-  "landmark",
+  "exterior_number",
+  "interior_number",
+  "references",
   "notes",
 ]) {
   requireMatch(checkout, new RegExp(`name="${name}"`), `${name} needs a form name`);
@@ -93,7 +97,7 @@ for (const name of [
 requireMatch(checkout, /htmlFor=\{id\}/, "delivery labels must target their controls");
 requireMatch(
   checkout,
-  /aria-labelledby="checkout-emirate-label"/,
+  /aria-labelledby="checkout-state-label"/,
   "custom Select needs an accessible label",
 );
 requireMatch(checkout, /grid min-w-0 max-w-full/, "checkout grid needs a bounded mobile width");
@@ -107,7 +111,7 @@ const b2bActions = "src/components/b2b/ManualContactActions.tsx";
 requireMatch(b2bActions, /role="status" aria-live="polite"/, "copy feedback must be announced");
 requireMatch(
   b2bActions,
-  /copied locally — not submitted or sent/i,
+  /Solicitud copiada\. Aún no se ha enviado/i,
   "copy feedback must remain truthful",
 );
 const b2bNav = "src/components/b2b/B2bCategoryNav.tsx";

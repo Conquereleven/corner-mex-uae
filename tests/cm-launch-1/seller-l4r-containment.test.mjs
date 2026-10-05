@@ -110,8 +110,11 @@ test("L4R keeps route and account UI fail-closed and truthful", async () => {
   const accountRoute = await readFile("src/routes/_authenticated/account.index.tsx", "utf8");
 
   assert.match(sellerRoute, /redirect\(\{ to: "\/account" \}\)/);
-  assert.match(accountRoute, /Seller applications are not active during this launch stage/);
-  assert.match(accountRoute, /Applications coming soon/);
+  assert.match(
+    accountRoute,
+    /Las\s+solicitudes\s+de\s+vendedores\s+no\s+están\s+activas\s+en\s+esta\s+etapa/,
+  );
+  assert.match(accountRoute, /Próximamente/);
 });
 
 test("L4R preserves explicit shipment seller fail-closed handlers as defense in depth", async () => {

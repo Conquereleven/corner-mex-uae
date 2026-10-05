@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin/performance")({
   component: AdminPerformance,
 });
 
-const AED = (n: number) => `${(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} AED`;
+const AED = (n: number | string | null | undefined) => formatMoneyWithCode(n ?? 0);
 const N = (n: number) => (n ?? 0).toLocaleString("en-US");
 const PCT = (n: number) => `${(n * 100).toFixed(1)}%`;
 

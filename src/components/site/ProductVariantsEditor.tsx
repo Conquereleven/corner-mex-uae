@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET } from "@/config/market";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
@@ -83,7 +84,7 @@ export function ProductVariantsEditor({
             <div className="grid gap-3 md:grid-cols-6">
               <div className="md:col-span-2"><Label className="text-xs">Format</Label>
                 <Input value={v.format_label ?? ""} onChange={(e) => update(i, { format_label: e.target.value })} placeholder="500 g" /></div>
-              <div><Label className="text-xs">Price AED</Label>
+              <div><Label className="text-xs">Price ({ACTIVE_MARKET.currency})</Label>
                 <Input type="number" step="0.01" min={0} value={v.price_aed} onChange={(e) => update(i, { price_aed: Number(e.target.value) })} /></div>
               <div><Label className="text-xs">Compare</Label>
                 <Input type="number" step="0.01" min={0} value={v.compare_at_price_aed ?? 0} onChange={(e) => update(i, { compare_at_price_aed: Number(e.target.value) })} /></div>

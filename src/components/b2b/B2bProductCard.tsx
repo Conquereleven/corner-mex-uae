@@ -26,10 +26,10 @@ export function B2bProductCard({
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-center justify-between gap-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">
           <span>{product.presentation}</span>
-          <span>Price on request</span>
+          <span>Precio por cotización</span>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          Availability confirmed at quotation.
+          La disponibilidad se confirma en la cotización.
         </p>
         <Button
           type="button"
@@ -39,7 +39,7 @@ export function B2bProductCard({
           className="mt-5 min-h-11 w-full rounded-full"
         >
           {selected ? <Check className="me-2 h-4 w-4" /> : <Plus className="me-2 h-4 w-4" />}
-          {selected ? "Added to quote request" : "Add to quote request"}
+          {selected ? "Agregado a la solicitud" : "Agregar a la solicitud"}
         </Button>
       </div>
     </article>

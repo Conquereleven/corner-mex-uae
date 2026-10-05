@@ -65,7 +65,7 @@ export function NotificationsBell({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+        <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative">
           <Bell className="h-4 w-4" />
           {unread > 0 && (
             <span className="absolute -end-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
@@ -76,7 +76,7 @@ export function NotificationsBell({
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(360px,calc(100vw-1rem))] p-0">
         <div className="flex items-center justify-between border-b border-border p-3">
-          <p className="text-sm font-medium">Notifications</p>
+          <p className="text-sm font-medium">Notificaciones</p>
           <Button
             variant="ghost"
             size="sm"
@@ -84,15 +84,15 @@ export function NotificationsBell({
             disabled={!unread || mAll.isPending}
             onClick={() => mAll.mutate()}
           >
-            <CheckCheck className="me-1 h-3.5 w-3.5" /> Mark all read
+            <CheckCheck className="me-1 h-3.5 w-3.5" /> Marcar todo como leído
           </Button>
         </div>
         <ScrollArea className="max-h-[420px]">
           {view.status === "loading" ? (
-            <p className="p-4 text-sm text-muted-foreground">Loading…</p>
+            <p className="p-4 text-sm text-muted-foreground">Cargando…</p>
           ) : view.status === "error" ? (
             <div className="p-4 text-center">
-              <p className="text-sm text-muted-foreground">Unable to load notifications.</p>
+              <p className="text-sm text-muted-foreground">No pudimos cargar tus notificaciones.</p>
               <Button
                 className="mt-2"
                 size="sm"
@@ -100,11 +100,11 @@ export function NotificationsBell({
                 onClick={retry}
                 disabled={list.isFetching || count.isFetching}
               >
-                {list.isFetching || count.isFetching ? "Retrying…" : "Retry"}
+                {list.isFetching || count.isFetching ? "Reintentando…" : "Reintentar"}
               </Button>
             </div>
           ) : view.status === "empty" ? (
-            <p className="p-4 text-sm text-muted-foreground">No notifications yet.</p>
+            <p className="p-4 text-sm text-muted-foreground">Aún no tienes notificaciones.</p>
           ) : (
             <ul className="divide-y divide-border">
               {view.notifications.map((n: any) => {
@@ -140,7 +140,7 @@ export function NotificationsBell({
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => mRead.mutate(n.id)}
-                        aria-label="Mark read"
+                        aria-label="Marcar como leída"
                       >
                         <Check className="h-3.5 w-3.5" />
                       </Button>
@@ -153,7 +153,7 @@ export function NotificationsBell({
         </ScrollArea>
         <div className="border-t border-border p-2 text-center">
           <Link to={accountHref} className="text-xs text-muted-foreground hover:text-foreground">
-            View all
+            Ver todas
           </Link>
         </div>
       </PopoverContent>

@@ -3,29 +3,29 @@ import { Button } from "@/components/ui/button";
 
 export function AccountNavigation({ includeHome = true }: { includeHome?: boolean }) {
   return (
-    <nav aria-label="Account" className="flex flex-wrap gap-2" data-testid="account-navigation">
+    <nav aria-label="Cuenta" className="flex flex-wrap gap-2" data-testid="account-navigation">
       {includeHome && (
         <Button asChild variant="outline" className="rounded-full">
           <Link to="/account">Account</Link>
         </Button>
       )}
       <Button asChild variant="outline" className="rounded-full">
-        <Link to="/account/orders">My Orders</Link>
+        <Link to="/account/orders">Mis pedidos</Link>
       </Button>
       <Button asChild variant="outline" className="rounded-full">
-        <Link to="/account/b2b-portal">B2B portal</Link>
+        <Link to="/account/b2b-portal">Portal de negocios</Link>
       </Button>
       <Button asChild variant="outline" className="rounded-full">
-        <Link to="/account/notifications">Notifications</Link>
+        <Link to="/account/notifications">Notificaciones</Link>
       </Button>
       <Button asChild variant="outline" className="rounded-full">
-        <Link to="/account/wishlist">Wishlist</Link>
+        <Link to="/account/wishlist">Favoritos</Link>
       </Button>
       <Button asChild variant="outline" className="rounded-full">
-        <Link to="/account/loyalty">Loyalty</Link>
+        <Link to="/account/loyalty">Recompensas</Link>
       </Button>
       <Button asChild variant="outline" className="rounded-full">
-        <Link to="/account/returns">Returns</Link>
+        <Link to="/account/returns">Devoluciones</Link>
       </Button>
     </nav>
   );

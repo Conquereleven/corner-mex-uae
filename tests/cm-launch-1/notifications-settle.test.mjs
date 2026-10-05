@@ -85,8 +85,8 @@ test("a rejected request settles as a recoverable error", async () => {
   });
 
   assert.deepEqual(settled, { status: "error" });
-  assert.match(routeSource, /Unable to load notifications\./);
-  assert.match(routeSource, /"Retry"/);
+  assert.match(routeSource, /No pudimos cargar tus notificaciones\./);
+  assert.match(routeSource, /"Reintentar"/);
 });
 
 test("retry performs a real refetch and can settle to the empty state", async () => {
@@ -131,7 +131,7 @@ test("bell count semantics preserve zero, one and 9+ presentation", () => {
 
 test("bell failures settle without implicit retry storms and retry both queries", () => {
   assert.match(bellSource, /retry: false/g);
-  assert.match(bellSource, /Unable to load notifications\./);
+  assert.match(bellSource, /No pudimos cargar tus notificaciones\./);
   assert.match(bellSource, /Promise\.all\(\[list\.refetch\(\), count\.refetch\(\)\]\)/);
   assert.match(bellSource, /refetchInterval: 60_000/g);
 });

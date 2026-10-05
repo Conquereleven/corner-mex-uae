@@ -1,3 +1,4 @@
+import { formatMoney } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -69,7 +70,7 @@ function ReturnsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary">{r.status}</Badge>
-                        {r.refund_aed != null && <span className="text-sm tabular-nums">AED {Number(r.refund_aed).toFixed(2)}</span>}
+                        {r.refund_aed != null && <span className="text-sm tabular-nums">{formatMoney(r.refund_aed)}</span>}
                         {r.status === "requested" && (
                           <Button size="sm" variant="ghost" onClick={() => mCancel.mutate(r.id)}>Cancel</Button>
                         )}
@@ -94,7 +95,7 @@ function ReturnsPage() {
                   <li key={it.id} className="flex items-center justify-between py-2">
                     <div className="text-sm">
                       <p>{it.product_name}{it.variant_label && <span className="text-muted-foreground"> — {it.variant_label}</span>}</p>
-                      <p className="text-xs text-muted-foreground">Order {it.order_number} · {it.qty} × AED {Number(it.unit_price_aed).toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">Order {it.order_number} · {it.qty} × {formatMoney(it.unit_price_aed)}</p>
                     </div>
                     <ReturnDialog item={it} />
                   </li>

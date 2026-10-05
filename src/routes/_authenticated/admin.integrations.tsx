@@ -102,7 +102,7 @@ function IntegrationControlCenter() {
             <p className="font-medium">Live activation blocked</p>
             <p className="mt-1 text-muted-foreground">
               {state.activation.reasons.join(" · ")}. Product evidence, organization/data center,
-              VAT mapping, credentials and a separate exact-head authorization are required.
+              Tax mapping, credentials and a separate exact-head authorization are required.
             </p>
           </CardContent>
         </Card>

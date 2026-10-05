@@ -8,7 +8,8 @@ test("presentation journey connects Home to Shop and For Business", async () => 
   const home = await read("src/routes/index.tsx");
   assert.match(home, /to="\/shop"/);
   assert.match(home, /to="\/b2b"/);
-  assert.match(home, /Signed-in customers can place cash-on-delivery orders/);
+  assert.match(home, /Compra en línea sin crear una cuenta/);
+  assert.doesNotMatch(home, /UAE|Middle East|Emirat/i);
 });
 
 test("Shop presents canonical sellable catalogue only", async () => {
@@ -17,7 +18,9 @@ test("Shop presents canonical sellable catalogue only", async () => {
   assert.match(shop, /listCategories/);
   assert.match(shop, /Number\.isFinite\(p\.price_aed\) && p\.price_aed > 0/);
   assert.match(shop, /c\.slug !== "uncategorized"/);
-  assert.match(shop, /\{sellerOfRecordLine\(\)\}/);
+  // The seller line is the active market's, and is omitted until it is known.
+  assert.match(shop, /marketSellerLine\(\) && \(/);
+  assert.doesNotMatch(shop, /sellerOfRecordLine/);
 });
 
 test("Product detail fails closed on non-positive variants and adds CornerMex cart items", async () => {
@@ -28,9 +31,10 @@ test("Product detail fails closed on non-positive variants and adds CornerMex ca
     product,
     /if \(!product \|\| !hasPublicSellableVariant\(product\)\) throw notFound\(\)/,
   );
-  assert.match(product, /\{sellerOfRecordLine\(\)\}/);
+  assert.match(product, /\{marketSellerLine\(\) \?\? "CornerMex"\}/);
+  assert.doesNotMatch(product, /sellerOfRecordLine/);
   assert.match(product, /addToCart/);
-  assert.match(product, /Add to cart/);
+  assert.match(product, /Agregar al carrito/);
 });
 
 test("Cart preserves single-merchant identity and routes cleanly to checkout", async () => {
@@ -40,20 +44,23 @@ test("Cart preserves single-merchant identity and routes cleanly to checkout", a
   ]);
   assert.match(cart, /group\.sellerName/);
   assert.match(cart, /to="\/checkout"/);
-  assert.match(cart, /Current price, availability and shipping are verified at\s+checkout/);
+  assert.match(
+    cart,
+    /El\s+precio\s+vigente,\s+la\s+disponibilidad\s+y\s+el\s+envío\s+se\s+confirman\s+al\s+finalizar\s+la\s+compra/,
+  );
   assert.doesNotMatch(cart, />B2C cart</);
   assert.match(catalog, /slug: "cornermex", name: "CornerMex"/);
 });
 
-test("Checkout remains COD-only, signed-in and server-priced", async () => {
+test("Checkout is server-priced and offers only the payment methods the server enables", async () => {
   const checkout = await read("src/routes/checkout.tsx");
   assert.match(checkout, /VITE_CORNERMEX_CHECKOUT_ENABLED === "true"/);
   assert.match(checkout, /Boolean\(user\)/);
-  assert.match(checkout, /previewCodOrderTotals/);
-  assert.match(checkout, /hasCurrentPreview/);
-  assert.match(checkout, /payment_method: "cod"/);
-  assert.match(checkout, /codOnly: true/);
-  assert.match(checkout, /getCardCheckoutCapability/);
+  assert.match(checkout, /quoteMxShipping/);
+  assert.match(checkout, /placeMxOrder/);
+  // Methods come from the server configuration; none is hardcoded as available.
+  assert.match(checkout, /config\?\.paymentOptions \?\? \[\]/);
+  assert.doesNotMatch(checkout, /codOnly|getCardCheckoutCapability|initiateCardCheckout/);
   assert.doesNotMatch(checkout, /createPaymentSession|stripe\.checkout|paymentIntent/);
 });
 
@@ -67,11 +74,11 @@ test("B2B catalogue flows into the guarded human-reviewed lead pipeline without 
   ]);
   const publicB2bCopy = `${catalogRoute}\n${hero}`;
   assert.doesNotMatch(publicB2bCopy, /Wave 1|Founder-approved/i);
-  assert.match(hero, /CornerMex · Business catalogue/);
+  assert.match(hero, /CornerMex · Catálogo para negocios/);
   assert.match(hero, /href="#business-products"/);
   assert.match(grid, /id="business-products"/);
   assert.match(quote, /submitB2bLead/);
-  assert.match(quote, /Human-reviewed B2B pipeline/);
+  assert.match(quote, /Cotización revisada por una persona/);
   assert.match(leads, /submit_b2b_lead_v2/);
 });
 
@@ -87,7 +94,7 @@ test("Admin journey stays role-gated, presentation-ready and operationally truth
   assert.match(admin, /to: "\/admin\/orders"/);
   assert.match(admin, /to: "\/admin\/leads"/);
   assert.match(overview, /Live first-party order, customer and catalogue metrics/);
-  assert.match(overview, /UAE operations/);
+  assert.match(overview, /Operación \{ACTIVE_MARKET\.countryNameLocal\}/);
   assert.doesNotMatch(overview, /Canonical production model/);
   assert.match(leads, /adminListB2bLeads/);
   assert.match(leads, /Human-owned commercial pipeline/);

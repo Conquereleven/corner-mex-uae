@@ -10,7 +10,7 @@
 // guest order.
 import { createMiddleware } from "@tanstack/start-client-core";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "./types";
+import type { Database } from "./types.mx";
 
 export const optionalSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next, context }) => {

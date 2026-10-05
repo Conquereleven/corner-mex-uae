@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -16,7 +17,8 @@ import {
 } from "@/lib/order-lifecycle";
 import { reconcilePaymentState, type CanonicalPaymentStatus } from "@/lib/payment-state";
 
-const aed = (value: number | string) => `${Number(value ?? 0).toFixed(2)} AED`;
+// Stored amounts are in the active market currency (src/config/market.ts).
+const aed = (value: number | string) => formatMoneyWithCode(value ?? 0);
 
 export type AdminOrderLifecycleData = {
   order: {

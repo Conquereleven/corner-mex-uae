@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { getCommerceSafetyStatus, validateCommerceEnvironment } from "../../config/commerce-env.ts";
+import { ACTIVE_MARKET } from "../../config/market.ts";
+import { evaluateMarketDatabase } from "../../config/market-database.ts";
 import { applicationServiceName } from "../../lib/service-identity.ts";
 
 const READINESS_TIMEOUT_MS = 4_000;
@@ -37,6 +39,24 @@ export async function getReadinessResponse(
     );
   }
 
+  // A deployment pointed at the wrong database is never "ready", whatever the
+  // database answers. Reasons name variables, never values.
+  const market = { code: ACTIVE_MARKET.code, currency: ACTIVE_MARKET.currency };
+  const marketDatabase = evaluateMarketDatabase(environment);
+  if (!marketDatabase.ok) {
+    return Response.json(
+      {
+        status: "degraded",
+        service: applicationServiceName(environment),
+        target: "refused",
+        market,
+        marketDatabase: { ok: false, reasons: marketDatabase.reasons },
+        capabilities,
+      },
+      { status: 503, headers: { "cache-control": "no-store" } },
+    );
+  }
+
   try {
     const ready = await checkSupabaseReadiness(
       environment.SUPABASE_URL!,
@@ -48,6 +68,8 @@ export async function getReadinessResponse(
         status: ready ? "ready" : "degraded",
         service: applicationServiceName(environment),
         target: ready ? "reachable" : "unavailable",
+        market,
+        marketDatabase: { ok: true, reasons: [] },
         capabilities,
       },
       { status: ready ? 200 : 503, headers: { "cache-control": "no-store" } },

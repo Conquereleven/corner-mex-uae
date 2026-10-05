@@ -9,7 +9,7 @@ import { getMyOrders } from "@/lib/account.functions";
 import { getCustomerOrderHistoryView } from "@/lib/order-experience-contract";
 
 export const Route = createFileRoute("/_authenticated/account/orders/")({
-  head: () => ({ meta: [{ title: "My Orders — CornerMex" }] }),
+  head: () => ({ meta: [{ title: "Mis pedidos — CornerMex" }] }),
   component: MyOrdersPage,
 });
 
@@ -30,10 +30,11 @@ function MyOrdersPage() {
       <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Account</p>
-            <h1 className="font-display text-4xl tracking-tight">My Orders</h1>
+            <p className="text-sm text-muted-foreground">Cuenta</p>
+            <h1 className="font-display text-4xl tracking-tight">Mis pedidos</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Review your CornerMex order history, payment status, totals, and order details.
+              Consulta tu historial de pedidos, el estado de pago, los importes y el detalle de cada
+              pedido.
             </p>
           </div>
           <AccountNavigation />
@@ -41,7 +42,7 @@ function MyOrdersPage() {
 
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Order history</CardTitle>
+            <CardTitle>Historial de pedidos</CardTitle>
           </CardHeader>
           <CardContent>
             <CustomerOrderHistorySurface view={view} onRetry={() => orders.refetch()} />

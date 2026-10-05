@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET, formatMoney } from "@/config/market";
 import { useEffect, useState } from "react";
 import { Flame, X } from "lucide-react";
 import {
@@ -85,7 +86,7 @@ export function ShopFilters({
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-lg tracking-tight">Filters</h2>
+          <h2 className="font-display text-lg tracking-tight">Filtros</h2>
           {typeof resultCount === "number" && (
             <p className="text-xs text-muted-foreground">{resultCount} products</p>
           )}
@@ -95,7 +96,7 @@ export function ShopFilters({
             onClick={reset}
             className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
-            Clear all
+            Limpiar todo
           </button>
         )}
       </div>
@@ -107,10 +108,10 @@ export function ShopFilters({
         defaultValue={["category", "price", "availability", "sort"]}
         className="space-y-1"
       >
-        <Section value="category" title="Category">
+        <Section value="category" title="Categoría">
           <div className="space-y-1.5">
             <FilterRadio
-              label="All categories"
+              label="Todas las categorías"
               checked={!state.category}
               onSelect={() => update({ category: undefined })}
             />
@@ -125,13 +126,13 @@ export function ShopFilters({
           </div>
         </Section>
 
-        <Section value="price" title="Price (AED)">
+        <Section value="price" title={`Precio (${ACTIVE_MARKET.currency})`}>
           <div className="grid grid-cols-2 gap-2">
             <Input
               type="number"
               inputMode="numeric"
               min={0}
-              placeholder="Min"
+              placeholder="Mín."
               value={minStr}
               onChange={(e) => setMinStr(e.target.value)}
               className="h-9"
@@ -140,7 +141,7 @@ export function ShopFilters({
               type="number"
               inputMode="numeric"
               min={0}
-              placeholder="Max"
+              placeholder="Máx."
               value={maxStr}
               onChange={(e) => setMaxStr(e.target.value)}
               className="h-9"
@@ -148,11 +149,11 @@ export function ShopFilters({
           </div>
         </Section>
 
-        <Section value="format" title="Format">
+        <Section value="format" title="Presentación">
           <div className="space-y-2">
             <CheckRow
               id="bulk"
-              label="HORECA / Bulk"
+              label="Mayoreo / Restaurantes"
               checked={!!state.bulk}
               onChange={(v) => update({ bulk: v || undefined })}
             />
@@ -160,10 +161,10 @@ export function ShopFilters({
         </Section>
 
         {publicBrands.length > 0 && (
-          <Section value="brand" title="Brand">
+          <Section value="brand" title="Marca">
             <ScrollList>
               <FilterRadio
-                label="All brands"
+                label="Todas las marcas"
                 checked={!publicProductBrand(state.brand)}
                 onSelect={() => update({ brand: undefined })}
               />
@@ -180,10 +181,10 @@ export function ShopFilters({
         )}
 
         {origins.length > 0 && (
-          <Section value="origin" title="Country of origin">
+          <Section value="origin" title="País de origen">
             <ScrollList>
               <FilterRadio
-                label="All origins"
+                label="Todos los orígenes"
                 checked={!state.origin}
                 onSelect={() => update({ origin: undefined })}
               />
@@ -199,10 +200,10 @@ export function ShopFilters({
           </Section>
         )}
 
-        <Section value="spice" title="Spice level">
+        <Section value="spice" title="Nivel de picante">
           <div className="grid grid-cols-5 gap-1.5">
             <SpiceChip
-              label="Any"
+              label="Cualquiera"
               active={state.spice == null}
               onClick={() => update({ spice: undefined })}
             />
@@ -223,13 +224,13 @@ export function ShopFilters({
           </div>
         </Section>
 
-        <Section value="sort" title="Sort by">
+        <Section value="sort" title="Ordenar por">
           <div className="space-y-1.5">
             {[
-              { v: "newest", l: "Newest" },
-              { v: "price_asc", l: "Price: low to high" },
-              { v: "price_desc", l: "Price: high to low" },
-              { v: "most_viewed", l: "Most viewed" },
+              { v: "newest", l: "Más recientes" },
+              { v: "price_asc", l: "Precio: de menor a mayor" },
+              { v: "price_desc", l: "Precio: de mayor a menor" },
+              { v: "most_viewed", l: "Más vistos" },
             ].map((o) => (
               <FilterRadio
                 key={o.v}
@@ -244,7 +245,7 @@ export function ShopFilters({
 
       {hasFilters && (
         <Button variant="outline" className="w-full rounded-full" onClick={reset}>
-          Clear all filters
+          Limpiar todos los filtros
         </Button>
       )}
     </div>
@@ -356,13 +357,13 @@ function ActiveChips({
   if (state.origin)
     chips.push({ label: state.origin, clear: () => update({ origin: undefined }) });
   if (state.priceMin != null)
-    chips.push({ label: `Min AED ${state.priceMin}`, clear: () => update({ priceMin: undefined }) });
+    chips.push({ label: `Mín. ${formatMoney(state.priceMin)}`, clear: () => update({ priceMin: undefined }) });
   if (state.priceMax != null)
-    chips.push({ label: `Max AED ${state.priceMax}`, clear: () => update({ priceMax: undefined }) });
+    chips.push({ label: `Máx. ${formatMoney(state.priceMax)}`, clear: () => update({ priceMax: undefined }) });
   if (state.bulk)
-    chips.push({ label: "HORECA / Bulk", clear: () => update({ bulk: undefined }) });
+    chips.push({ label: "Mayoreo / Restaurantes", clear: () => update({ bulk: undefined }) });
   if (state.spice != null)
-    chips.push({ label: `Spice ${state.spice}`, clear: () => update({ spice: undefined }) });
+    chips.push({ label: `Picante ${state.spice}`, clear: () => update({ spice: undefined }) });
   if (chips.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1.5">

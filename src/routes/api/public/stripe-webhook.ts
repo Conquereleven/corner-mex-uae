@@ -1,3 +1,4 @@
+import { isUaeMarketActive } from "@/lib/uae-market-gate";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { providerMode, stripeKeyMatchesMode } from "@/lib/operational-payments";
@@ -27,6 +28,8 @@ export const Route = createFileRoute("/api/public/stripe-webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Stripe served the deferred UAE market only.
+        if (!isUaeMarketActive()) return new Response("Gone", { status: 410 });
         const signature = request.headers.get("stripe-signature");
         const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
         if (!signature || !webhookSecret) return new Response("Invalid webhook", { status: 400 });

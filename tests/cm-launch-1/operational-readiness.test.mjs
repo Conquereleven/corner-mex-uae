@@ -15,8 +15,8 @@ test("account route is a layout and its index owns the account surface", async (
     read("src/routes/_authenticated/account.index.tsx"),
   ]);
   assert.match(layout, /<Outlet \/>/);
-  assert.doesNotMatch(layout, /My account|Recent orders/);
-  assert.match(index, /My account/);
+  assert.doesNotMatch(layout, /Mi cuenta|Recent orders/);
+  assert.match(index, /Mi cuenta/);
   assert.match(index, /CustomerOrderHistorySurface/);
   assert.match(index, /admin\.data\?\.admin &&[\s\S]*to="\/admin"/);
   assert.match(index, /supabase\.auth\.signOut\(\)/);
@@ -88,7 +88,7 @@ test("catalog HTML is rendered as readable plain text", () => {
   assert.equal(productCopyToPlainText("Keep &#99999999; literal"), "Keep &#99999999; literal");
 });
 
-test("cart VAT and total use one coherent fils rounding policy", () => {
+test("the cart estimate rounds to centavos and adds no tax of its own", () => {
   const totals = cartTotals([
     {
       productId: "product",
@@ -107,7 +107,8 @@ test("cart VAT and total use one coherent fils rounding policy", () => {
   ]);
   assert.deepEqual(
     { subtotal: totals.subtotal, tax: totals.tax, total: totals.totalBeforeShipping },
-    { subtotal: 25.5, tax: 1.28, total: 26.78 },
+    // Tax presentation is a market decision; the cart never invents a rate.
+    { subtotal: 25.5, tax: 0, total: 25.5 },
   );
 });
 
@@ -131,7 +132,7 @@ test("pending lifecycle migration removes all service-role table writes", async 
 test("mobile and tablet use one compact top-header menu until the desktop breakpoint", async () => {
   const header = await read("src/components/site/Header.tsx");
   assert.match(header, /font-semibold lg:flex/);
-  assert.match(header, /aria-label="Open menu"/);
+  assert.match(header, /aria-label="Abrir menú"/);
   assert.match(header, /className="ms-1 lg:hidden"/);
   assert.doesNotMatch(header, /fixed inset-x-3 bottom-3/);
 });

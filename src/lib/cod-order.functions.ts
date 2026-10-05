@@ -8,6 +8,7 @@
 // delivery address. Prices, subtotal, shipping, tax and the total are computed
 // server-side; any amount supplied by the client is ignored.
 
+import { assertUaeMarketActive } from "@/lib/uae-market-gate";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
@@ -106,6 +107,9 @@ export const placeCodOrder = createServerFn({ method: "POST" })
   .middleware([optionalSupabaseAuth])
   .inputValidator((input: z.input<typeof PlaceCodOrderInput>) => PlaceCodOrderInput.parse(input))
   .handler(async ({ data, context }): Promise<PlaceCodOrderResult> => {
+    // The UAE market is deferred: this entry point executes only in a UAE build.
+    assertUaeMarketActive();
+
     // 1. Execution gate + complete commercial configuration, or refuse.
     const evaluation = evaluateCommercialConfig();
     if (!evaluation.ready || !evaluation.config) {
@@ -213,6 +217,7 @@ export const placeCodOrder = createServerFn({ method: "POST" })
 export const previewCodOrderTotals = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof PreviewInput>) => PreviewInput.parse(input))
   .handler(async ({ data }) => {
+    assertUaeMarketActive();
     const evaluation = evaluateCommercialConfig();
     if (!evaluation.ready || !evaluation.config) {
       return { available: false as const, reasons: evaluation.reasons };

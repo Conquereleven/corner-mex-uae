@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/seller/")({
   component: SellerOverview,
 });
 
-const AED = (n: number) => `${(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
+const AED = (n: number | string | null | undefined) => formatMoneyWithCode(n ?? 0);
 const N = (n: number) => (n ?? 0).toLocaleString("en-US");
 
 function SellerOverview() {

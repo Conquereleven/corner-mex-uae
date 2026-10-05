@@ -2,16 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MapPin, PackageCheck, Scale } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PolicyLinkGroup, TrustCard } from "@/components/site/Trust";
+import { ACTIVE_MARKET } from "@/config/market";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { siteUrl } from "@/lib/site-url";
 import { ONLINE_ORDERING_ENABLED } from "@/lib/commerce-mode";
-import { deliveryEstimateText } from "@/lib/delivery-sla";
 
 export const Route = createFileRoute("/delivery")({
   head: () => {
-    const title = "Delivery in the UAE — CornerMex";
+    const title = `Envíos en ${ACTIVE_MARKET.countryNameLocal} — CornerMex`;
     const description =
-      "How CornerMex handles delivery across the United Arab Emirates: emirate-based coverage, transparent charges confirmed before you commit, and no hidden promises.";
+      "Cómo funcionan los envíos de CornerMex: el costo y el tiempo de entrega se calculan para tu código postal y los ves antes de confirmar tu pedido.";
     return {
       meta: [
         { title },
@@ -26,29 +26,20 @@ export const Route = createFileRoute("/delivery")({
   component: Delivery,
 });
 
-const EMIRATES = [
-  "Abu Dhabi",
-  "Dubai",
-  "Sharjah",
-  "Ajman",
-  "Umm Al Quwain",
-  "Ras Al Khaimah",
-  "Fujairah",
-];
-
 function Delivery() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
-          Transparent by design
+          Claro desde el principio
         </p>
-        <h1 className="mt-3 font-display text-5xl tracking-tight">Delivery in the UAE</h1>
+        <h1 className="mt-3 font-display text-5xl tracking-tight">
+          Envíos en {ACTIVE_MARKET.countryNameLocal}
+        </h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
-          CornerMex is built for the United Arab Emirates. Delivery is organised by emirate, and any
-          charge or timeframe that applies to you is intended to be confirmed in your specific flow
-          — at checkout for retail, or in a written quote for business orders — before you commit to
-          anything.
+          El costo y el tiempo de entrega dependen de tu código postal y de lo que lleva tu pedido.
+          Los calculamos al capturar tu dirección y los ves antes de confirmar: en el proceso de
+          compra para pedidos de menudeo, o en una cotización por escrito para pedidos de negocio.
         </p>
 
         <div
@@ -58,111 +49,82 @@ function Delivery() {
           {ONLINE_ORDERING_ENABLED ? (
             <>
               <p className="font-medium text-foreground">
-                Cash-on-delivery ordering is open to signed-in customers.
+                Puedes comprar en línea sin necesidad de crear una cuenta.
               </p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                The delivery charge for your emirate is calculated by our server and shown at
-                checkout before you confirm; nothing is ordered until you confirm.{" "}
-                {deliveryEstimateText()} Business enquiries continue to be handled manually in
-                writing.
+                Las opciones de envío para tu código postal se muestran al finalizar la compra, cada
+                una con su costo y su tiempo estimado. No se registra ningún pedido hasta que
+                confirmas.
               </p>
             </>
           ) : (
             <>
               <p className="font-medium text-foreground">
-                Online order and delivery execution are not currently enabled on this website.
+                Por el momento no estamos recibiendo pedidos en línea.
               </p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                No delivery can be booked or dispatched through this site today, and no delivery
-                area, charge or timeframe shown anywhere on this site should be treated as
-                confirmed. This page describes how delivery is intended to work once ordering is
-                activated. Business enquiries continue to be handled manually in writing.
+                Hoy no es posible contratar ni despachar un envío desde este sitio. Esta página
+                describe cómo funcionarán los envíos cuando se abran los pedidos. Las solicitudes de
+                negocio se atienden por escrito.
               </p>
             </>
           )}
         </div>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-3">
-          <TrustCard icon={MapPin} title="Emirate-based coverage" headingLevel={2}>
-            Delivery is organised around the seven emirates. Whether a specific destination can be
-            served is confirmed for that order rather than promised in advance here.
+          <TrustCard icon={MapPin} title="Cotizado para tu código postal" headingLevel={2}>
+            La cobertura se confirma para cada dirección. No prometemos de antemano llegar a un
+            destino que la paquetería no cubre.
           </TrustCard>
-          <TrustCard icon={Scale} title="Charges shown before you commit" headingLevel={2}>
-            Any delivery charge that applies is intended to be shown in your checkout or written
-            quote before you commit, so you can decide with the amount in front of you.
+          <TrustCard icon={Scale} title="El costo antes de confirmar" headingLevel={2}>
+            Ves el costo de cada opción de envío antes de confirmar tu pedido, para decidir con el
+            importe a la vista.
           </TrustCard>
-          <TrustCard icon={PackageCheck} title="No silent promises" headingLevel={2}>
-            We do not advertise delivery times, waived-charge thresholds or express service unless
-            they are confirmed for your order.
+          <TrustCard icon={PackageCheck} title="Sin promesas en el aire" headingLevel={2}>
+            Solo mostramos tiempos de entrega que la paquetería confirma para tu pedido.
           </TrustCard>
         </div>
 
-        <section className="mt-14 max-w-3xl" aria-labelledby="delivery-emirates">
-          <h2 id="delivery-emirates" className="font-display text-3xl tracking-tight">
-            The seven emirates
-          </h2>
-          <p className="mt-3 text-base leading-7 text-muted-foreground">
-            Destinations are recorded at emirate level:
-          </p>
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {EMIRATES.map((name) => (
-              <li
-                key={name}
-                className="rounded-full border border-border bg-card px-4 py-1.5 text-sm text-foreground"
-              >
-                {name}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Listing an emirate here is not a guarantee of service. Coverage, charges and timing for
-            a specific address are confirmed in the checkout or quote flow for that order. Delivery
-            and payment options can differ between emirates and order types, and the options that
-            actually apply are the ones presented in your own flow.
-          </p>
-        </section>
-
         <section className="mt-14 max-w-3xl" aria-labelledby="delivery-how">
           <h2 id="delivery-how" className="font-display text-3xl tracking-tight">
-            How it works
+            Cómo funciona
           </h2>
           <ol className="mt-5 space-y-4 text-base leading-7 text-muted-foreground">
             <li>
-              <span className="font-medium text-foreground">1. Prepare your cart or quote.</span>{" "}
-              Browse the{" "}
+              <span className="font-medium text-foreground">1. Arma tu carrito.</span> Explora el{" "}
               <Link to="/shop" className="underline underline-offset-4">
-                catalogue
+                catálogo
               </Link>{" "}
-              for retail, or the{" "}
+              para menudeo, o la{" "}
               <Link to="/b2b" className="underline underline-offset-4">
-                B2B section
+                sección para negocios
               </Link>{" "}
-              for wholesale.
+              si compras por volumen.
             </li>
             <li>
-              <span className="font-medium text-foreground">2. Provide your destination.</span> Your
-              emirate determines what delivery options apply.
+              <span className="font-medium text-foreground">2. Captura tu dirección.</span> Con tu
+              código postal, estado, municipio y colonia cotizamos las opciones de envío
+              disponibles.
             </li>
             <li>
-              <span className="font-medium text-foreground">3. Review before committing.</span> The
-              applicable delivery arrangement and charge are intended to be presented in that flow,
-              and nothing is final until you see and accept it. While ordering is disabled, this
-              step is not available on the website.
+              <span className="font-medium text-foreground">3. Elige y confirma.</span> Escoges la
+              opción que prefieras —por precio o por rapidez— y nada es definitivo hasta que la ves
+              y la aceptas.
             </li>
           </ol>
         </section>
 
         <div className="mt-14 max-w-3xl rounded-2xl border border-border bg-secondary/40 p-6 text-sm leading-6 text-muted-foreground">
-          Delivery questions for a business order can be sent to{" "}
+          Las dudas sobre el envío de un pedido de negocio se pueden enviar a{" "}
           <a className="underline underline-offset-4" href={mailto(PUBLIC_CONTACT.b2b)}>
             {PUBLIC_CONTACT.b2b}
           </a>
-          . Sending a question does not create an order.
+          . Enviar una pregunta no crea un pedido.
         </div>
 
         <div className="mt-10">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            More information
+            Más información
           </h2>
           <PolicyLinkGroup className="mt-3" exclude="/delivery" />
         </div>

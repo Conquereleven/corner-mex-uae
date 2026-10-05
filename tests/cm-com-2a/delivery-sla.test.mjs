@@ -32,22 +32,17 @@ test("the estimate is worded as an estimate, never a guarantee, and omits expres
   assert.doesNotMatch(text, /guarantee|express|same[- ]day/i);
 });
 
-test("checkout, order confirmation and the delivery page show the estimate", async () => {
+// The 2–5 business day window above is the UAE Terms' promise (deferred market).
+// In Mexico the estimate is per shipping option and comes from the carrier
+// quote, so no active surface may show the UAE window.
+test("no active surface shows the UAE delivery window", async () => {
   for (const path of [
     "src/routes/checkout.tsx",
     "src/routes/order-confirmed.tsx",
     "src/routes/delivery.tsx",
   ]) {
-    assert.match(await readFile(path, "utf8"), /deliveryEstimateText\(\)/, path);
+    assert.doesNotMatch(await readFile(path, "utf8"), /deliveryEstimateText|delivery-sla/, path);
   }
-  const delivery = await readFile("src/routes/delivery.tsx", "utf8");
-  const live = delivery.slice(
-    delivery.indexOf("ONLINE_ORDERING_ENABLED ?"),
-    delivery.indexOf(") : ("),
-  );
-  assert.match(
-    live,
-    /deliveryEstimateText\(\)/,
-    "the delivery page shows it only when ordering is open",
-  );
+  const checkout = await readFile("src/routes/checkout.tsx", "utf8");
+  assert.match(checkout, /option\.deliveryEstimate/, "the estimate is the selected option's own");
 });

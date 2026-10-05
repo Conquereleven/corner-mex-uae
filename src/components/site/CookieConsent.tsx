@@ -2,8 +2,22 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { acceptAll, readPreferences, rejectNonEssential, writePreferences, DEFAULT_PREFS, type CookiePreferences } from "@/lib/cookie-consent";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  acceptAll,
+  readPreferences,
+  rejectNonEssential,
+  writePreferences,
+  DEFAULT_PREFS,
+  type CookiePreferences,
+} from "@/lib/cookie-consent";
 import { Cookie } from "lucide-react";
 
 export function CookieConsent() {
@@ -41,16 +55,47 @@ export function CookieConsent() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <Cookie className="hidden h-5 w-5 shrink-0 text-muted-foreground sm:block" />
               <div className="flex-1 text-sm">
-                <p className="font-medium text-foreground">We value your privacy</p>
+                <p className="font-medium text-foreground">Tu privacidad nos importa</p>
                 <p className="mt-1 text-muted-foreground">
-                  We use necessary cookies to run CornerMex. With your consent we also use analytics, marketing and functional cookies to improve your experience. Read our{" "}
-                  <Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="underline">Cookie Policy</Link>.
+                  Usamos las cookies necesarias para que CornerMex funcione. Con tu consentimiento
+                  también usamos cookies de analítica, mercadotecnia y funcionales para mejorar tu
+                  experiencia. Consulta nuestra{" "}
+                  <Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="underline">
+                    política de privacidad
+                  </Link>
+                  .
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                <Button size="sm" variant="ghost" onClick={() => { rejectNonEssential(); setHasChoice(true); }}>Reject non-essential</Button>
-                <Button size="sm" variant="outline" onClick={() => { setDraft(readPreferences() ?? DEFAULT_PREFS); setOpenModal(true); }}>Manage preferences</Button>
-                <Button size="sm" onClick={() => { acceptAll(); setHasChoice(true); }}>Accept all</Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    rejectNonEssential();
+                    setHasChoice(true);
+                  }}
+                >
+                  Rechazar las no esenciales
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setDraft(readPreferences() ?? DEFAULT_PREFS);
+                    setOpenModal(true);
+                  }}
+                >
+                  Elegir preferencias
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    acceptAll();
+                    setHasChoice(true);
+                  }}
+                >
+                  Aceptar todas
+                </Button>
               </div>
             </div>
           </div>
@@ -60,29 +105,69 @@ export function CookieConsent() {
       <Dialog open={openModal} onOpenChange={setOpenModal}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Cookie preferences</DialogTitle>
+            <DialogTitle>Preferencias de cookies</DialogTitle>
             <DialogDescription>
-              Choose which categories of cookies you allow. Necessary cookies are always on. You can change this at any time.
+              Elige qué categorías de cookies permites. Las necesarias siempre están activas. Puedes
+              cambiarlo cuando quieras.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <Row title="Strictly necessary" desc="Authentication, cart, security and fraud prevention. Always active.">
+            <Row
+              title="Estrictamente necesarias"
+              desc="Inicio de sesión, carrito, seguridad y prevención de fraude. Siempre activas."
+            >
               <Switch checked disabled />
             </Row>
-            <Row title="Analytics" desc="Help us understand how the site is used so we can improve it.">
-              <Switch checked={draft.analytics} onCheckedChange={(v) => setDraft({ ...draft, analytics: v })} />
+            <Row
+              title="Analítica"
+              desc="Nos ayudan a entender cómo se usa el sitio para mejorarlo."
+            >
+              <Switch
+                checked={draft.analytics}
+                onCheckedChange={(v) => setDraft({ ...draft, analytics: v })}
+              />
             </Row>
-            <Row title="Marketing" desc="Measure and personalise marketing across our channels.">
-              <Switch checked={draft.marketing} onCheckedChange={(v) => setDraft({ ...draft, marketing: v })} />
+            <Row
+              title="Mercadotecnia"
+              desc="Miden y personalizan la comunicación en nuestros canales."
+            >
+              <Switch
+                checked={draft.marketing}
+                onCheckedChange={(v) => setDraft({ ...draft, marketing: v })}
+              />
             </Row>
-            <Row title="Functional" desc="Remember non-essential preferences such as language and filters.">
-              <Switch checked={draft.functional} onCheckedChange={(v) => setDraft({ ...draft, functional: v })} />
+            <Row
+              title="Funcionales"
+              desc="Recuerdan preferencias no esenciales, como el idioma y los filtros."
+            >
+              <Switch
+                checked={draft.functional}
+                onCheckedChange={(v) => setDraft({ ...draft, functional: v })}
+              />
             </Row>
           </div>
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="ghost" onClick={() => { rejectNonEssential(); setHasChoice(true); setOpenModal(false); }}>Reject non-essential</Button>
-            <Button variant="outline" onClick={() => { acceptAll(); setHasChoice(true); setOpenModal(false); }}>Accept all</Button>
-            <Button onClick={() => persist(draft)}>Save preferences</Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                rejectNonEssential();
+                setHasChoice(true);
+                setOpenModal(false);
+              }}
+            >
+              Rechazar las no esenciales
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                acceptAll();
+                setHasChoice(true);
+                setOpenModal(false);
+              }}
+            >
+              Aceptar todas
+            </Button>
+            <Button onClick={() => persist(draft)}>Guardar preferencias</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -90,7 +175,15 @@ export function CookieConsent() {
   );
 }
 
-function Row({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
+function Row({
+  title,
+  desc,
+  children,
+}: {
+  title: string;
+  desc: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start justify-between gap-4 rounded-lg border border-border/60 p-3">
       <div>

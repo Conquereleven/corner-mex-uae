@@ -79,10 +79,10 @@ test("no Claim admin or Lovable OAuth control is rendered", () => {
   assert.doesNotMatch(login, /lovableAuth|integrations\/lovable/i);
 });
 
-test("product supports variant selection, quantity, and Add to cart", () => {
+test("product supports variant selection, quantity, and Agregar al carrito", () => {
   assert.match(product, /setVariantId/);
   assert.match(product, /setQuantity/);
-  assert.match(product, /Add to cart/);
+  assert.match(product, /Agregar al carrito/);
 });
 
 test("B2C storage key remains exact", () => {
@@ -138,11 +138,11 @@ test("payment and confirmation functions independently fail closed", () => {
 });
 
 test("no AED 25 shipping fallback is authoritative", () => {
-  assert.match(cartRoute, /Pending destination check/);
-  // CM-COM-3A replaced the placeholder shipping line with the Founder-approved
-  // per-emirate rate, which the SERVER computes. The browser must still never
-  // derive a shipping amount of its own.
-  assert.match(checkout, /preview \? `AED \$\{preview\.shippingAed/);
+  assert.match(cartRoute, /Se cotiza con tu código postal/);
+  // Mexico: shipping is quoted and signed by the SERVER for the destination
+  // postal code. The browser must still never derive a shipping amount of its
+  // own — it only displays the price of the option the server offered.
+  assert.match(checkout, /formatMoney\(selected\.price\)/);
   assert.doesNotMatch(`${cartStore}\n${orders}`, /shipping\s*=.*25|:\s*25\b|size \* 25/);
   assert.doesNotMatch(checkout, /shipping\s*=\s*\d/);
 });
@@ -165,7 +165,7 @@ test("B2B selection key and approved 15-product mix remain exact", () => {
 
 test("B2B surface has no public numeric prices or automated submission", () => {
   assert.doesNotMatch(b2bSurface, /\bAED\s*\d|unit_price|placeOrder|createServerFn|fetch\s*\(/i);
-  assert.match(b2bSurface, /Price on request/);
+  assert.match(b2bSurface, /Precio por cotización/);
 });
 
 test("boundary manifest uses different storage and gives B2B no execution path", () => {
@@ -191,6 +191,6 @@ test("checkout and B2B quote do not import each other's state or execution", () 
 });
 
 test("navigation clearly preserves Shop, Business, Account or Sign in, and Cart", () => {
-  for (const label of ["Shop", "Business", "Account", "Sign in", "Cart"])
+  for (const label of ["Tienda", "Mayoreo", "Cuenta", "Iniciar sesión", "Carrito"])
     assert.match(header, new RegExp(label));
 });

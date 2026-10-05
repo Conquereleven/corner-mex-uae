@@ -13,23 +13,26 @@ test("public presentation surfaces use current operating language", async () => 
     read("src/routes/about.tsx"),
   ]);
 
-  assert.match(header, /aria-label="CornerMex home"/);
-  assert.match(header, />\s*Shop\s*</);
-  assert.match(header, />\s*Wholesale\s*</);
-  assert.match(home, /CornerMex · Authentic Mexican pantry in the UAE/);
+  assert.match(header, /aria-label="CornerMex, inicio"/);
+  assert.match(header, />\s*Tienda\s*</);
+  assert.match(header, />\s*Mayoreo\s*</);
+  assert.match(home, /CornerMex · Despensa mexicana/);
   // The hero headline comes from the CornerMex brand voice, not from the
   // Intermex Brand Book line this previously asserted.
   assert.match(home, /\{ACTIVE_BRAND\.verbal\.primary\}/);
   assert.match(shop, />\s*CornerMex\s*</);
-  assert.match(b2b, />\s*For business · UAE\s*</);
-  assert.match(about, /CornerMex combines a curated Mexican pantry catalogue/);
+  assert.match(b2b, />\s*Para negocios\s*</);
+  assert.match(about, /CornerMex reúne un catálogo de despensa mexicana/);
+  for (const [name, source] of Object.entries({ header, home, shop, b2b, about })) {
+    assert.doesNotMatch(source, /\bUAE\b|Emirat|Dubai|\bAED\b/, `${name} still names the UAE`);
+  }
 });
 
 test("shop hides placeholder taxonomy from customer-facing filters", async () => {
   const shop = await read("src/routes/shop.tsx");
 
   assert.match(shop, /\.filter\(\(c\) => c\.slug !== "uncategorized"\)/);
-  assert.match(shop, /aria-label="Product categories"/);
+  assert.match(shop, /aria-label="Categorías de productos"/);
 });
 
 test("shop fails closed on non-positive catalogue prices", async () => {
@@ -49,7 +52,7 @@ test("presentation journey keeps commerce and B2B entry points visible", async (
 
   assert.match(home, /<Link to="\/shop">/);
   assert.match(home, /<Link to="\/b2b">/);
-  assert.match(shop, /\{sellerOfRecordLine\(\)\}/);
+  assert.match(shop, /marketSellerLine\(\)/);
   assert.match(checkout, /createFileRoute\("\/checkout"\)/);
   assert.match(b2b, /createFileRoute\("\/b2b"\)/);
 });

@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -42,7 +43,7 @@ function SellerCommissions() {
   const m = useMutation({
     mutationFn: () => reqFn({ data: amount ? { amount: Number(amount) } : {} }),
     onSuccess: (res: any) => {
-      toast.success(`Payout requested: ${res.amount.toFixed(2)} AED`);
+      toast.success(`Payout requested: ${formatMoneyWithCode(res.amount)}`);
       setOpen(false); setAmount("");
       qc.invalidateQueries({ queryKey: ["seller-commissions"] });
       qc.invalidateQueries({ queryKey: ["seller-payouts"] });

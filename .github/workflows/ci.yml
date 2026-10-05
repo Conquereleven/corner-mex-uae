@@ -2,9 +2,11 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # mx/main is the Mexico integration line. It is isolated from `main`, which
+    # is what the UAE production service deploys (docs/cornermex-mx/BRANCHING.md).
+    branches: [main, mx/main]
   push:
-    branches: [main]
+    branches: [main, mx/main]
 
 permissions:
   contents: read
@@ -74,6 +76,7 @@ jobs:
       - run: npm run validate:a3-2b:readiness
       - run: npm run test:pr9-remediation
       - run: npm run test:cm2
+      - run: npm run test:cornermex-mx
       - run: node --test tests/cm-launch-1/*.test.mjs
       - run: npm run test:cm-b2b-ops-prod-readiness-1
       - run: npm run verify:a3:activation-readiness -- --ci-static
@@ -164,6 +167,7 @@ jobs:
           CM_PAY_POSTGRES_TEST: "1"
       - run: npm run test:cm-com-3a:sql
       - run: npm run test:cm2:sql
+      - run: npm run test:cornermex-mx:sql
       - run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
 
   merged-tree-verification:

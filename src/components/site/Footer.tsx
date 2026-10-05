@@ -2,11 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { businessIdentityLine } from "@/lib/business-identity";
+import { marketIdentityLine } from "@/lib/business-identity";
 import { openCookiePreferences } from "@/lib/cookie-consent";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { BrandLogo } from "@/components/site/BrandLogo";
 import { ACTIVE_BRAND } from "@/config/brand";
+import { ACTIVE_MARKET } from "@/config/market";
 
 type FooterLink =
   | {
@@ -27,35 +28,35 @@ type FooterLink =
 
 const FOOTER_GROUPS: Array<{ heading: string; links: FooterLink[] }> = [
   {
-    heading: "Shop",
+    heading: "Tienda",
     links: [
-      { to: "/shop", label: "Catalogue" },
-      { to: "/b2b/catalog", label: "B2B catalogue" },
-      { to: "/b2b", label: "Business enquiries" },
+      { to: "/shop", label: "Catálogo" },
+      { to: "/b2b/catalog", label: "Catálogo para negocios" },
+      { to: "/b2b", label: "Ventas a negocios" },
     ],
   },
   {
-    heading: "Help",
+    heading: "Ayuda",
     links: [
-      { to: "/contact", label: "Contact" },
-      { to: "/delivery", label: "Delivery in the UAE" },
-      { to: "/returns", label: "Returns & refunds" },
-      { action: "cookies", label: "Cookie preferences" },
+      { to: "/contact", label: "Contacto" },
+      { to: "/delivery", label: "Envíos" },
+      { to: "/returns", label: "Devoluciones y reembolsos" },
+      { action: "cookies", label: "Preferencias de cookies" },
     ],
   },
   {
-    heading: "Company",
+    heading: "Empresa",
     links: [
-      { to: "/about", label: "About CornerMex" },
-      { to: "/contact", label: "Find Us" },
+      { to: "/about", label: "Acerca de CornerMex" },
+      { to: "/contact", label: "Encuéntranos" },
     ],
   },
   {
     heading: "Legal",
     links: [
-      { to: "/privacy", label: "Privacy" },
-      { to: "/terms", label: "Terms" },
-      { to: "/legal", label: "Legal centre" },
+      { to: "/privacy", label: "Privacidad" },
+      { to: "/terms", label: "Términos" },
+      { to: "/legal", label: "Centro legal" },
     ],
   },
 ];
@@ -71,19 +72,18 @@ export function Footer() {
               CornerMex
             </p>
             <h3 className="mt-2 font-display text-2xl tracking-tight">
-              Exploring Mexican pantry supply for the UAE
+              Abasto mexicano para tu casa y tu negocio
             </h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              B2C cart and account access are available. Checkout and order processing run only when
-              authorized configuration is enabled; prices, availability, shipping and payment are
-              confirmed in the applicable flow. B2B enquiries can be submitted to the CornerMex
-              commercial pipeline for human review, but an enquiry is not an order, payment or
-              confirmed quote and creates no commercial commitment.
+              Compra por pieza o por volumen. Los precios, la disponibilidad y el envío se confirman
+              antes de que finalices tu pedido. Las solicitudes de negocio las revisa una persona:
+              una solicitud no es un pedido ni una cotización confirmada, y no crea ningún
+              compromiso comercial.
             </p>
           </div>
           <Link to="/b2b/catalog">
             <Button variant="outline" className="rounded-full">
-              Request B2B terms
+              Solicitar condiciones de mayoreo
             </Button>
           </Link>
         </div>
@@ -96,19 +96,19 @@ export function Footer() {
             {ACTIVE_BRAND.verbal.primary}
           </p>
           <p className="mt-3 max-w-xs text-xs leading-5 text-muted-foreground">
-            AED is the primary display currency. Prices and availability shown in preview are not
-            offers and must be confirmed manually.
+            Precios en pesos mexicanos ({ACTIVE_MARKET.currency}). El precio y la disponibilidad se
+            confirman al finalizar la compra.
           </p>
           <a
-            href={mailto(PUBLIC_CONTACT.complaints, "CornerMex customer enquiry")}
+            href={mailto(PUBLIC_CONTACT.complaints, "Consulta a CornerMex")}
             className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             <Mail className="h-3.5 w-3.5" aria-hidden="true" />
-            Email CornerMex
+            Escríbenos
           </a>
         </div>
         {FOOTER_GROUPS.map((group) => (
-          <nav key={group.heading} aria-label={`${group.heading} links`}>
+          <nav key={group.heading} aria-label={group.heading}>
             <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">
               {group.heading}
             </h4>
@@ -138,7 +138,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-border/60 px-4 py-6 text-center text-xs leading-5 text-muted-foreground">
-        © {new Date().getFullYear()} {businessIdentityLine()} · {t("footer.rights")}
+        © {new Date().getFullYear()} {marketIdentityLine()} · {t("footer.rights")}
       </div>
     </footer>
   );

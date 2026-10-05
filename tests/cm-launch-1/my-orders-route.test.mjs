@@ -12,12 +12,12 @@ test("canonical My Orders index is a first-class authenticated route", async () 
   assert.match(route, /useServerFn\(getMyOrders\)/);
   assert.match(route, /queryKey: \["my-orders"\]/);
   assert.match(route, /CustomerOrderHistorySurface/);
-  assert.match(route, /Order history/);
+  assert.match(route, /Historial de pedidos/);
 });
 
 test("account navigation exposes canonical My Orders beside secondary account surfaces", async () => {
   const nav = await read("src/components/account/AccountNavigation.tsx");
-  assert.match(nav, /to="\/account\/orders"[^>]*>My Orders/);
+  assert.match(nav, /to="\/account\/orders"[^>]*>Mis pedidos/);
   assert.match(nav, /to="\/account\/notifications"/);
   assert.match(nav, /to="\/account\/wishlist"/);
   assert.match(nav, /to="\/account\/loyalty"/);
@@ -30,19 +30,19 @@ test("account overview links to complete order history and shares one presentati
     read("src/components/account/CustomerOrderHistory.tsx"),
   ]);
   assert.match(account, /<AccountNavigation includeHome=\{false\} \/>/);
-  assert.match(account, /to="\/account\/orders">View all orders/);
+  assert.match(account, /to="\/account\/orders">Ver todos los pedidos/);
   assert.match(account, /CustomerOrderHistorySurface view=\{ordersView\}/);
   assert.match(history, /getCustomerOrderHistoryView|CustomerOrderHistoryView/);
   assert.match(history, /presentCanonicalCustomerOrder/);
   assert.match(history, /to="\/account\/orders\/\$id"/);
   assert.match(history, /customer-history-retry/);
-  assert.match(history, /Start shopping/);
+  assert.match(history, /Ir a la tienda/);
 });
 
 test("order detail returns to canonical My Orders instead of account overview", async () => {
   const detail = await read("src/routes/_authenticated/account.orders.$id.tsx");
   assert.match(detail, /to="\/account\/orders"/);
-  assert.match(detail, /> My Orders/);
+  assert.match(detail, /> Mis pedidos/);
   assert.doesNotMatch(detail, /<Link to="\/account">\s*<ArrowLeft[^>]*> My orders/);
 });
 

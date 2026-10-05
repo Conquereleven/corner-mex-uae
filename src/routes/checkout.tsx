@@ -2,6 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import {
+  MercadoPagoCardBrick,
+  type MercadoPagoCardToken,
+} from "@/components/site/MercadoPagoCardBrick";
 import { TrustBar } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,140 +18,106 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { BUSINESS_IDENTITY } from "@/lib/business-identity";
+import { formatMoney, formatMoneyWithCode } from "@/config/market";
 import { useCart } from "@/lib/cart";
-import {
-  getCommercialCheckoutConfig,
-  placeCodOrder,
-  previewCodOrderTotals,
-} from "@/lib/cod-order.functions";
-import {
-  acceptPreview,
-  beginPreview,
-  hasCurrentPreview,
-  previewInputKey,
-  rejectPreview,
-  type PreviewState,
-} from "@/lib/cod-preview";
-import { getAvailablePaymentMethods, type EmirateCode } from "@/lib/payment-methods";
-import { useSession } from "@/lib/use-session";
-import { toast } from "sonner";
-import { getCardCheckoutCapability, initiateCardCheckout } from "@/lib/card-checkout.functions";
+import { clearCodCheckoutOperation, codCheckoutOperation } from "@/lib/checkout-operation";
 import { rememberGuestOrderToken } from "@/lib/guest-order-token";
 import {
-  checkoutOperation,
-  clearCodCheckoutOperation,
-  codCheckoutOperation,
-} from "@/lib/checkout-operation";
-import { deliveryEstimateText } from "@/lib/delivery-sla";
+  MX_STATE_OPTIONS,
+  MxAddress,
+  mxAddressErrorMessage,
+  normalizeMxPhone,
+  stateForPostalCode,
+  type MxStateCode,
+} from "@/lib/mx-address";
+import {
+  getMxCheckoutConfig,
+  placeMxOrder,
+  quoteMxShipping,
+  type MxQuoteResult,
+} from "@/lib/mx-checkout.functions";
+import { useSession } from "@/lib/use-session";
+import { toast } from "sonner";
 
 const CHECKOUT_ENABLED = import.meta.env.VITE_CORNERMEX_CHECKOUT_ENABLED === "true";
-// Fallback list used only until the server configuration resolves; the
-// authoritative supported set comes from getCommercialCheckoutConfig.
-const FALLBACK_EMIRATES: Array<{ code: EmirateCode; name: string }> = [
-  { code: "DU", name: "Dubai" },
-  { code: "AD", name: "Abu Dhabi" },
-  { code: "SH", name: "Sharjah" },
-  { code: "AJ", name: "Ajman" },
-  { code: "UQ", name: "Umm Al Quwain" },
-  { code: "RK", name: "Ras Al Khaimah" },
-  { code: "FU", name: "Fujairah" },
-];
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
-    meta: [{ title: "Checkout — CornerMex" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Finalizar compra — CornerMex" }, { name: "robots", content: "noindex" }],
   }),
   component: Checkout,
 });
 
+type Quote = Extract<MxQuoteResult, { available: true }>;
+
+type QuoteState =
+  | { status: "idle" }
+  | { status: "loading"; key: string }
+  | { status: "ready"; key: string; quote: Quote }
+  | { status: "error"; key: string; reasons: string[] };
+
+const PAYMENT_LABELS: Record<string, { title: string; subtitle: string; action: string }> = {
+  mercado_pago_card: {
+    title: "Tarjeta de crédito o débito · Mercado Pago",
+    subtitle: "Capturas tu tarjeta en el formulario seguro de Mercado Pago.",
+    action: "Pagar",
+  },
+  mercado_pago: {
+    title: "Efectivo en OXXO · Mercado Pago",
+    subtitle: "Te damos una referencia para pagar en cualquier tienda OXXO.",
+    action: "Continuar al pago",
+  },
+  clip: {
+    title: "Tarjeta de crédito o débito · Clip",
+    subtitle: "Pagas con tu tarjeta en la página segura de Clip.",
+    action: "Continuar al pago",
+  },
+  cod: {
+    title: "Pago contra entrega",
+    subtitle: "Solo en entregas locales. Pagas al recibir tu pedido.",
+    action: "Realizar pedido",
+  },
+};
+
+const FULFILLMENT_LABELS: Record<string, string> = {
+  LOCAL_DELIVERY: "Entrega local",
+  PARCEL_SHIPPING: "Paquetería",
+  PICKUP: "Recoger en punto",
+};
+
 function Checkout() {
   const navigate = useNavigate();
-  // Both methods use the canonical atomic inventory/order boundary.
-  const placeCod = useServerFn(placeCodOrder);
-  const placeCard = useServerFn(initiateCardCheckout);
-  const loadCard = useServerFn(getCardCheckoutCapability);
-  const [card, setCard] = useState({ cardAvailable: false, testMode: false });
-  const [method, setMethod] = useState<"cod" | "card">("cod");
-  const submission = useRef(false);
-  useEffect(() => {
-    let active = true;
-    loadCard({}).then(
-      (value) => {
-        if (active) setCard(value);
-      },
-      () => {
-        if (active) setCard({ cardAvailable: false, testMode: false });
-      },
-    );
-    return () => {
-      active = false;
-    };
-  }, [loadCard]);
-  const loadConfig = useServerFn(getCommercialCheckoutConfig);
-  const loadPreview = useServerFn(previewCodOrderTotals);
+  const loadConfig = useServerFn(getMxCheckoutConfig);
+  const loadQuote = useServerFn(quoteMxShipping);
+  const placeMx = useServerFn(placeMxOrder);
   const items = useCart((state) => state.items);
   const clear = useCart((state) => state.clear);
   const { user, loading: sessionLoading } = useSession();
+
+  const submission = useRef(false);
+  const quoteRequest = useRef(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [config, setConfig] = useState<Awaited<ReturnType<typeof loadConfig>> | null>(null);
-  type CheckoutPreview = {
-    lines: Array<{
-      variant_id: string;
-      product_name: string;
-      variant_label: string | null;
-      qty: number;
-      unit_price_aed: number;
-      line_total_aed: number;
-    }>;
-    subtotalAed: number;
-    shippingAed: number;
-    taxAed: number;
-    totalAed: number;
-  };
-  const [previewState, setPreviewState] = useState<PreviewState<CheckoutPreview>>({
-    status: "idle",
-  });
-  const previewRequestId = useRef(0);
+  const [quoteState, setQuoteState] = useState<QuoteState>({ status: "idle" });
+  const [selectedToken, setSelectedToken] = useState<string | null>(null);
+  const [method, setMethod] = useState<string | null>(null);
   const [form, setForm] = useState({
     email: "",
     recipient_name: "",
     phone: "",
-    emirate: "DU" as EmirateCode,
-    area: "",
     street: "",
-    building: "",
-    floor_apt: "",
-    landmark: "",
+    exterior_number: "",
+    interior_number: "",
+    colonia: "",
+    municipality: "",
+    state: "" as MxStateCode | "",
+    postal_code: "",
+    references: "",
     notes: "",
   });
-
-  const previewItems = useMemo(
-    () => items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
-    [items],
-  );
-  const currentPreviewKey = useMemo(
-    () => previewInputKey(previewItems, form.emirate),
-    [form.emirate, previewItems],
-  );
-  const preview =
-    previewState.status === "success" && previewState.key === currentPreviewKey
-      ? previewState.value
-      : null;
-
-  // Keep the existing COD eligibility rules; card is offered separately by server capability.
-  const paymentMethods = useMemo(
-    () =>
-      getAvailablePaymentMethods({
-        // Server subtotal only; cart-local money never drives the offer.
-        subtotal: preview?.subtotalAed ?? 0,
-        emirate: form.emirate,
-        codOnly: true,
-      }),
-    [form.emirate, preview?.subtotalAed],
-  );
+  const set = (patch: Partial<typeof form>) => setForm((current) => ({ ...current, ...patch }));
 
   useEffect(() => {
     let cancelled = false;
@@ -160,52 +130,111 @@ function Checkout() {
     };
   }, [loadConfig]);
 
-  // Trusted preview: every amount shown at checkout is computed by the server
-  // from current database prices. The browser sends only variant ids, the
-  // quantities and the emirate, and recomputes nothing.
+  const cartLines = useMemo(
+    () => items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
+    [items],
+  );
+
+  // Shipping can be priced as soon as the destination is known.
+  const postalCodeState = stateForPostalCode(form.postal_code);
+  const destinationReady =
+    /^\d{5}$/.test(form.postal_code) &&
+    form.state !== "" &&
+    postalCodeState === form.state &&
+    form.municipality.trim().length >= 2 &&
+    form.colonia.trim().length >= 2;
+  const quoteKey = useMemo(
+    () =>
+      destinationReady
+        ? JSON.stringify({
+            items: [...cartLines].sort((a, b) => a.variant_id.localeCompare(b.variant_id)),
+            postal_code: form.postal_code,
+            state: form.state,
+            municipality: form.municipality.trim(),
+            colonia: form.colonia.trim(),
+          })
+        : null,
+    [cartLines, destinationReady, form.colonia, form.municipality, form.postal_code, form.state],
+  );
+
+  // Trusted quote: item prices come from the database and every shipping option
+  // is priced and signed by the server. The browser recomputes nothing.
   useEffect(() => {
-    const requestId = ++previewRequestId.current;
-    if (items.length === 0) {
-      setPreviewState({ status: "idle" });
+    const requestId = ++quoteRequest.current;
+    setSelectedToken(null);
+    if (!quoteKey || cartLines.length === 0) {
+      setQuoteState({ status: "idle" });
       return undefined;
     }
-    // Immediately makes every older preview non-executable. Even before this
-    // effect runs, its old key cannot match currentPreviewKey during render.
-    setPreviewState(beginPreview(currentPreviewKey, requestId));
-    loadPreview({
-      data: {
-        items: previewItems,
-        emirate: form.emirate,
-      },
-    }).then(
-      (result) => {
-        setPreviewState((current) =>
-          result.available
-            ? acceptPreview(current, currentPreviewKey, requestId, {
-                lines: result.lines,
-                subtotalAed: result.subtotalAed,
-                shippingAed: result.shippingAed,
-                taxAed: result.taxAed,
-                totalAed: result.totalAed,
-              })
-            : rejectPreview(current, currentPreviewKey, requestId),
-        );
-      },
-      () => setPreviewState((current) => rejectPreview(current, currentPreviewKey, requestId)),
-    );
-    return undefined;
-  }, [currentPreviewKey, form.emirate, items.length, loadPreview, previewItems]);
+    setQuoteState({ status: "loading", key: quoteKey });
+    // Wait for the customer to stop typing before asking the carriers.
+    const timer = setTimeout(() => {
+      loadQuote({
+        data: {
+          items: cartLines,
+          destination: {
+            postal_code: form.postal_code,
+            state: form.state as MxStateCode,
+            municipality: form.municipality.trim(),
+            colonia: form.colonia.trim(),
+          },
+        },
+      }).then(
+        (result) => {
+          if (quoteRequest.current !== requestId) return;
+          if (result.available) {
+            setQuoteState({ status: "ready", key: quoteKey, quote: result });
+            setSelectedToken(result.options[0]?.token ?? null);
+          } else {
+            setQuoteState({ status: "error", key: quoteKey, reasons: result.reasons });
+          }
+        },
+        () => {
+          if (quoteRequest.current !== requestId) return;
+          setQuoteState({ status: "error", key: quoteKey, reasons: ["MX_ORDER_PREVIEW_FAILED"] });
+        },
+      );
+    }, 500);
+    return () => clearTimeout(timer);
+    // form fields are captured through quoteKey.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quoteKey, cartLines, loadQuote]);
 
-  const emirateOptions = useMemo(() => {
-    const supported = config?.supportedEmirates ?? [];
-    if (supported.length === 0) return FALLBACK_EMIRATES;
-    return supported.map((code) => ({ code, name: config?.emirateNames?.[code] ?? code }));
-  }, [config]);
+  const quote =
+    quoteState.status === "ready" && quoteState.key === quoteKey ? quoteState.quote : null;
+  const selected = quote?.options.find((option) => option.token === selectedToken) ?? null;
+  const tax = quote ? Math.round(quote.subtotal * quote.taxRate * 100) / 100 : 0;
+  // Display only. The order total is recomputed by the database at placement.
+  const total = quote && selected ? quote.subtotal + selected.price + tax : null;
 
-  const requiredFilled =
+  // Methods come from the server configuration; none is hardcoded as available.
+  // Cash on delivery is offered only with a local delivery option.
+  const paymentMethods = useMemo(
+    () =>
+      (config?.paymentOptions ?? [])
+        .filter(
+          (option) => !option.localDeliveryOnly || selected?.fulfillmentMode === "LOCAL_DELIVERY",
+        )
+        // Mercado Pago offers cards (when its Public Key is configured) and cash.
+        .flatMap((option): string[] =>
+          option.id === "mercado_pago" && config?.mercadoPagoPublicKey
+            ? ["mercado_pago_card", "mercado_pago"]
+            : [option.id],
+        ),
+    [config?.paymentOptions, config?.mercadoPagoPublicKey, selected?.fulfillmentMode],
+  );
+  // The only available method is preselected; with several, the customer chooses.
+  useEffect(() => {
+    if (paymentMethods.length === 1) setMethod(paymentMethods[0]);
+    else if (method && !paymentMethods.includes(method as never)) setMethod(null);
+  }, [method, paymentMethods]);
+
+  const addressValid =
     form.recipient_name.trim().length >= 2 &&
-    form.phone.trim().length >= 7 &&
-    form.area.trim().length >= 2;
+    normalizeMxPhone(form.phone) !== null &&
+    form.street.trim().length >= 2 &&
+    form.exterior_number.trim().length >= 1 &&
+    destinationReady;
   // Guest checkout: buying never requires an account. A signed-in customer needs
   // no email field; a guest supplies one so the order has a contact.
   const guestEmailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim());
@@ -213,87 +242,158 @@ function Checkout() {
   const readyToOrder =
     identityReady &&
     items.length > 0 &&
-    requiredFilled &&
+    addressValid &&
     accepted &&
-    hasCurrentPreview(previewState, currentPreviewKey);
-  const canExecute = CHECKOUT_ENABLED && readyToOrder;
+    selected !== null &&
+    method !== null;
+  const canExecute = CHECKOUT_ENABLED && Boolean(config?.active) && readyToOrder;
 
-  async function submit(event: React.FormEvent) {
+  const payingByCard = method === "mercado_pago_card";
+
+  function submit(event: React.FormEvent) {
     event.preventDefault();
+    // With a card, the order is placed by the card form's own button, once
+    // Mercado Pago has returned a token.
+    if (payingByCard) return;
+    void submitOrder(null).catch(() => undefined);
+  }
+
+  /** Places the order. Rejects on failure so the card form can show it. */
+  async function submitOrder(card: MercadoPagoCardToken | null): Promise<void> {
     // Guard against double submission and against executing while disabled.
-    const submitKey = previewInputKey(
-      items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
-      form.emirate,
-    );
-    if (
-      submission.current ||
-      submitting ||
-      !canExecute ||
-      submitKey !== currentPreviewKey ||
-      !hasCurrentPreview(previewState, submitKey)
-    )
-      return;
+    if (submission.current || submitting || !canExecute || !selected || !method) return;
+    const address = MxAddress.safeParse({
+      recipient_name: form.recipient_name,
+      phone: form.phone,
+      street: form.street,
+      exterior_number: form.exterior_number,
+      interior_number: form.interior_number,
+      colonia: form.colonia,
+      municipality: form.municipality,
+      state: form.state,
+      postal_code: form.postal_code,
+      references: form.references,
+      notes: form.notes,
+    });
+    if (!address.success) {
+      const message = mxAddressErrorMessage(address.error.issues[0]?.message ?? "");
+      setError(message);
+      toast.error(message);
+      throw new Error("CHECKOUT_ADDRESS_INVALID");
+    }
     setError(null);
     setSubmitting(true);
     submission.current = true;
     try {
       const input = {
-        // Only identity and quantity are sent. No price, shipping, tax or
-        // total: money is derived entirely on the server.
-        items: items.map((item) => ({ variant_id: item.variantId, qty: item.qty })),
-        payment_method: "cod" as const,
+        // Identity and quantity only. No price, shipping, tax or total: money is
+        // derived on the server, and the shipping option is an opaque signed token.
+        items: cartLines,
+        payment_method: (payingByCard ? "mercado_pago" : method) as "mercado_pago" | "clip" | "cod",
+        ...(card
+          ? {
+              card: {
+                token: card.token,
+                payment_method_id: card.paymentMethodId,
+                installments: card.installments,
+              },
+            }
+          : {}),
         address: {
           recipient_name: form.recipient_name.trim(),
           phone: form.phone.trim(),
-          emirate: form.emirate,
-          area: form.area.trim(),
-          street: form.street || null,
-          building: form.building || null,
-          floor_apartment: form.floor_apt || null,
-          landmark: form.landmark || null,
-          notes: form.notes || null,
+          street: form.street.trim(),
+          exterior_number: form.exterior_number.trim(),
+          interior_number: form.interior_number.trim() || null,
+          colonia: form.colonia.trim(),
+          municipality: form.municipality.trim(),
+          state: form.state as MxStateCode,
+          postal_code: form.postal_code,
+          references: form.references.trim() || null,
+          notes: form.notes.trim() || null,
         },
+        shipping_token: selected.token,
         legal_acceptance: { terms: accepted, privacy: accepted, returns: accepted },
       };
-      if (method === "card") {
-        if (!card.cardAvailable || !user) throw new Error("CARD_CHECKOUT_UNAVAILABLE");
-        const payload = { ...input, payment_method: "card" as const };
-        const operationId = await checkoutOperation(user.id, payload);
-        const result = await placeCard({ data: { ...payload, operationId } });
-        window.location.assign(result.url);
-        return;
-      }
       const guestEmail = user ? null : form.email.trim().toLowerCase();
-      const codInput = guestEmail ? { ...input, guest: { email: guestEmail } } : input;
+      const orderInput = guestEmail
+        ? { ...input, guest: { email: guestEmail } }
+        : { ...input, ...(user?.email ? { payer_email: user.email } : {}) };
       // Idempotency is per identity: a signed-in buyer keys on the user id, a
       // guest on their email, so a retry or a second tab replays the same order.
       const operationKey = user ? user.id : `guest:${guestEmail}`;
-      const operationId = await codCheckoutOperation(operationKey, codInput);
-      const order = await placeCod({ data: { ...codInput, operationId } });
+      const operationId = await codCheckoutOperation(operationKey, orderInput);
+      const order = await placeMx({ data: { ...orderInput, operationId } });
       // Keep the one-time tracking token so the confirmation and tracking views
       // work without an account. It is never put in the URL.
       if (order.guest_token) rememberGuestOrderToken(order.order_id, order.guest_token);
+      if (order.payment?.kind === "retry") {
+        // The payment provider did not answer. The order exists; keeping the
+        // operation and the cart means pressing the button again replays this
+        // exact checkout instead of creating a second order or a second charge.
+        const message =
+          "No pudimos conectar con el servicio de pago. Tu pedido quedó registrado: vuelve a presionar el botón para continuar al pago.";
+        setError(message);
+        toast.error(message);
+        throw new Error("CHECKOUT_PAYMENT_RETRY");
+      }
       // The order exists (created now, or replayed), so the next checkout starts
       // a fresh operation.
       clearCodCheckoutOperation(operationKey);
+      if (
+        order.payment?.kind === "settled" &&
+        (order.payment.state === "FAILED" || order.payment.state === "CANCELLED")
+      ) {
+        // The card was declined: the order was cancelled and its stock returned.
+        // The cart is kept so the customer can try another card or method.
+        const message =
+          "Tu tarjeta fue rechazada y no se realizó ningún cargo. Intenta con otra tarjeta u otra forma de pago.";
+        setError(message);
+        toast.error(message);
+        throw new Error("CHECKOUT_CARD_DECLINED");
+      }
       // Only clear the cart after the order genuinely exists.
       clear();
+      const nextUrl =
+        order.payment?.kind === "redirect"
+          ? order.payment.url
+          : order.payment?.kind === "instructions"
+            ? order.payment.url
+            : null;
+      if (nextUrl) {
+        // Paying happens on the provider's own page. Coming back proves nothing:
+        // the confirmation page re-reads the payment from the provider.
+        window.location.assign(nextUrl);
+        return;
+      }
       await navigate({ to: "/order-confirmed", search: { order: order.order_id } });
     } catch (caught) {
       // Failure keeps the cart and the customer's entered details intact.
-      const message = caught instanceof Error ? caught.message : "Checkout failed.";
-      const safe =
-        method === "card"
-          ? "Your checkout may already be in progress. Retry with the same details, or check your orders before starting another checkout."
-          : message.includes("COD_ORDER_INSUFFICIENT_STOCK")
-            ? "One of your items is no longer available in the requested quantity."
-            : message.includes("COD_ORDER_EMIRATE_UNSUPPORTED")
-              ? "We cannot deliver to the selected emirate yet."
-              : message.includes("COD_ORDER_EXECUTION_DISABLED")
-                ? "Ordering is not currently enabled."
-                : "We could not place your order. Nothing has been charged and your cart is unchanged.";
+      const message = caught instanceof Error ? caught.message : "";
+      // These already told the customer what happened.
+      if (message === "CHECKOUT_PAYMENT_RETRY" || message === "CHECKOUT_CARD_DECLINED") {
+        throw caught;
+      }
+      const safe = message.includes("COD_ORDER_INSUFFICIENT_STOCK")
+        ? "Uno de tus productos ya no está disponible en la cantidad solicitada."
+        : message.includes("SHIPPING_QUOTE_EXPIRED")
+          ? "La opción de envío venció. Elige una opción de envío de nuevo."
+          : message.includes("SHIPPING_QUOTE_")
+            ? "Tu pedido o dirección cambió. Elige una opción de envío de nuevo."
+            : message.includes("MX_CHECKOUT_DISABLED")
+              ? "Por el momento no estamos recibiendo pedidos."
+              : message.includes("MX_ORDER_VARIANT_NOT_ACTIVE")
+                ? "Uno de los productos de tu carrito ya no está a la venta."
+                : message.includes("MX_PAYMENT_PROVIDER_REJECTED")
+                  ? "El servicio de pago no aceptó la operación. No se realizó ningún cargo; elige otra forma de pago o inténtalo de nuevo."
+                  : "No pudimos registrar tu pedido. No se realizó ningún cargo y tu carrito sigue intacto.";
       setError(safe);
       toast.error(safe);
+      if (message.includes("SHIPPING_QUOTE_")) {
+        setSelectedToken(null);
+        setQuoteState({ status: "idle" });
+      }
+      throw caught;
     } finally {
       setSubmitting(false);
       submission.current = false;
@@ -304,27 +404,30 @@ function Checkout() {
     return (
       <SiteLayout>
         <section className="mx-auto max-w-2xl px-4 py-24 text-center">
-          <h1 className="font-display text-4xl tracking-tight">Checkout</h1>
-          <p className="mt-4 text-muted-foreground">Your B2C cart is empty.</p>
+          <h1 className="font-display text-4xl tracking-tight">Finalizar compra</h1>
+          <p className="mt-4 text-muted-foreground">Tu carrito está vacío.</p>
           <Link to="/shop">
-            <Button className="mt-6 rounded-full">Browse shop</Button>
+            <Button className="mt-6 rounded-full">Ver productos</Button>
           </Link>
         </section>
       </SiteLayout>
     );
   }
 
+  const postalMismatch =
+    /^\d{5}$/.test(form.postal_code) && form.state !== "" && postalCodeState !== form.state;
+
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
-          B2C checkout
+          Finalizar compra
         </p>
-        <h1 className="mt-2 font-display text-4xl tracking-tight">Delivery and payment details</h1>
-        {!CHECKOUT_ENABLED && (
+        <h1 className="mt-2 font-display text-4xl tracking-tight">Envío y pago</h1>
+        {(!CHECKOUT_ENABLED || (config && !config.active)) && (
           <div className="mt-6 rounded-2xl border border-amber-300/60 bg-amber-50 p-4 text-sm text-amber-950">
-            Checkout execution is currently disabled. You can review the interface, but no order or
-            payment will be created.
+            Por el momento no estamos recibiendo pedidos en línea. Puedes revisar tu carrito, pero
+            no se creará ningún pedido ni se realizará ningún cargo.
           </div>
         )}
 
@@ -334,156 +437,255 @@ function Checkout() {
         >
           <div className="min-w-0 space-y-8">
             <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
-              <h2 className="font-display text-xl">Delivery address</h2>
+              <h2 className="font-display text-xl">Datos de contacto</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {!user && (
-                  <Field id="checkout-email" label="Email *">
+                  <Field id="checkout-email" label="Correo electrónico *">
                     <Input
                       id="checkout-email"
                       name="email"
                       type="email"
                       autoComplete="email"
                       inputMode="email"
-                      placeholder="you@example.com"
+                      placeholder="Tu correo electrónico"
                       value={form.email}
-                      onChange={(event) => setForm({ ...form, email: event.target.value })}
+                      onChange={(event) => set({ email: event.target.value })}
                     />
                   </Field>
                 )}
-                <Field id="checkout-recipient-name" label="Recipient name *">
+                <Field id="checkout-recipient-name" label="Nombre de quien recibe *">
                   <Input
                     id="checkout-recipient-name"
                     name="recipient_name"
+                    autoComplete="name"
                     value={form.recipient_name}
-                    onChange={(event) => setForm({ ...form, recipient_name: event.target.value })}
+                    onChange={(event) => set({ recipient_name: event.target.value })}
                   />
                 </Field>
-                <Field id="checkout-phone" label="Phone *">
+                <Field id="checkout-phone" label="Teléfono (10 dígitos) *">
                   <Input
                     id="checkout-phone"
                     name="phone"
+                    type="tel"
+                    autoComplete="tel-national"
+                    inputMode="tel"
                     value={form.phone}
-                    onChange={(event) => setForm({ ...form, phone: event.target.value })}
+                    onChange={(event) => set({ phone: event.target.value })}
                   />
                 </Field>
-                <Field id="checkout-emirate" label="Emirate *">
+              </div>
+            </section>
+
+            <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
+              <h2 className="font-display text-xl">Dirección de envío</h2>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <Field id="checkout-postal-code" label="Código postal *">
+                  <Input
+                    id="checkout-postal-code"
+                    name="postal_code"
+                    autoComplete="postal-code"
+                    inputMode="numeric"
+                    maxLength={5}
+                    value={form.postal_code}
+                    onChange={(event) => {
+                      const postal_code = event.target.value.replace(/\D/g, "").slice(0, 5);
+                      // The postal code identifies the state; fill it in.
+                      const detected = stateForPostalCode(postal_code);
+                      set(detected ? { postal_code, state: detected } : { postal_code });
+                    }}
+                  />
+                </Field>
+                <Field id="checkout-state" label="Estado *">
                   <Select
-                    name="emirate"
-                    value={form.emirate}
-                    onValueChange={(value) => setForm({ ...form, emirate: value as EmirateCode })}
+                    name="state"
+                    value={form.state}
+                    onValueChange={(value) => set({ state: value as MxStateCode })}
                   >
-                    <SelectTrigger id="checkout-emirate" aria-labelledby="checkout-emirate-label">
-                      <SelectValue />
+                    <SelectTrigger id="checkout-state" aria-labelledby="checkout-state-label">
+                      <SelectValue placeholder="Selecciona un estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      {emirateOptions.map((emirate) => (
-                        <SelectItem key={emirate.code} value={emirate.code}>
-                          {emirate.name}
+                      {MX_STATE_OPTIONS.map((state) => (
+                        <SelectItem key={state.code} value={state.code}>
+                          {state.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field id="checkout-area" label="Area / neighbourhood *">
+                <Field id="checkout-municipality" label="Municipio o alcaldía *">
                   <Input
-                    id="checkout-area"
-                    name="area"
-                    value={form.area}
-                    onChange={(event) => setForm({ ...form, area: event.target.value })}
+                    id="checkout-municipality"
+                    name="municipality"
+                    autoComplete="address-level2"
+                    value={form.municipality}
+                    onChange={(event) => set({ municipality: event.target.value })}
                   />
                 </Field>
-                <Field id="checkout-street" label="Street">
+                <Field id="checkout-colonia" label="Colonia *">
+                  <Input
+                    id="checkout-colonia"
+                    name="colonia"
+                    autoComplete="address-level3"
+                    value={form.colonia}
+                    onChange={(event) => set({ colonia: event.target.value })}
+                  />
+                </Field>
+                <Field id="checkout-street" label="Calle *">
                   <Input
                     id="checkout-street"
                     name="street"
+                    autoComplete="address-line1"
                     value={form.street}
-                    onChange={(event) => setForm({ ...form, street: event.target.value })}
+                    onChange={(event) => set({ street: event.target.value })}
                   />
                 </Field>
-                <Field id="checkout-building" label="Building">
-                  <Input
-                    id="checkout-building"
-                    name="building"
-                    value={form.building}
-                    onChange={(event) => setForm({ ...form, building: event.target.value })}
-                  />
-                </Field>
-                <Field id="checkout-floor-apartment" label="Floor / apartment">
-                  <Input
-                    id="checkout-floor-apartment"
-                    name="floor_apt"
-                    value={form.floor_apt}
-                    onChange={(event) => setForm({ ...form, floor_apt: event.target.value })}
-                  />
-                </Field>
-                <Field id="checkout-landmark" label="Landmark">
-                  <Input
-                    id="checkout-landmark"
-                    name="landmark"
-                    value={form.landmark}
-                    onChange={(event) => setForm({ ...form, landmark: event.target.value })}
-                  />
-                </Field>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field id="checkout-exterior-number" label="Núm. exterior *">
+                    <Input
+                      id="checkout-exterior-number"
+                      name="exterior_number"
+                      value={form.exterior_number}
+                      onChange={(event) => set({ exterior_number: event.target.value })}
+                    />
+                  </Field>
+                  <Field id="checkout-interior-number" label="Núm. interior">
+                    <Input
+                      id="checkout-interior-number"
+                      name="interior_number"
+                      value={form.interior_number}
+                      onChange={(event) => set({ interior_number: event.target.value })}
+                    />
+                  </Field>
+                </div>
               </div>
-              <div className="mt-4">
-                <Field id="checkout-notes" label="Notes">
+              {postalMismatch && (
+                <p role="alert" className="mt-3 text-xs text-destructive">
+                  {mxAddressErrorMessage("MX_ADDRESS_POSTAL_CODE_STATE_MISMATCH")}
+                </p>
+              )}
+              <div className="mt-4 grid gap-4">
+                <Field id="checkout-references" label="Referencias para encontrar el domicilio">
+                  <Input
+                    id="checkout-references"
+                    name="references"
+                    placeholder="Entre calles, color de la fachada…"
+                    value={form.references}
+                    onChange={(event) => set({ references: event.target.value })}
+                  />
+                </Field>
+                <Field id="checkout-notes" label="Notas del pedido">
                   <Textarea
                     id="checkout-notes"
                     name="notes"
                     rows={3}
                     value={form.notes}
-                    onChange={(event) => setForm({ ...form, notes: event.target.value })}
+                    onChange={(event) => set({ notes: event.target.value })}
                   />
                 </Field>
               </div>
             </section>
 
             <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
-              <h2 className="font-display text-xl">Payment method</h2>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                {card.cardAvailable
-                  ? "Choose cash on delivery or continue to secure card payment."
-                  : "Card payment is currently unavailable. Pay the courier in AED when your order arrives."}
-              </p>
-              <div className="mt-5 grid gap-3">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    checked={method === "cod"}
-                    onChange={() => setMethod("cod")}
-                    disabled={submitting}
-                  />{" "}
-                  Cash on delivery
-                </label>
-                {card.cardAvailable && (
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="payment-method"
-                      checked={method === "card"}
-                      onChange={() => setMethod("card")}
-                      disabled={submitting}
-                    />{" "}
-                    {card.testMode ? "Card — test checkout" : "Card"}
-                  </label>
-                )}
-                {paymentMethods.map((method) => (
-                  <div
-                    key={method.id}
-                    className={`rounded-2xl border p-4 ${method.enabled ? "border-foreground" : "border-border opacity-50"}`}
-                  >
-                    <span className="text-sm font-medium">{method.title}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">
-                      {method.enabled ? method.subtitle : method.unavailableReason}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <h2 className="font-display text-xl">Opciones de envío</h2>
+              {quoteState.status === "idle" && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Completa tu código postal, estado, municipio y colonia para ver las opciones de
+                  envío.
+                </p>
+              )}
+              {quoteState.status === "loading" && (
+                <p className="mt-3 text-sm text-muted-foreground">Cotizando tu envío…</p>
+              )}
+              {quoteState.status === "error" && (
+                <p role="alert" className="mt-3 text-sm text-destructive">
+                  {quoteState.reasons.includes("MX_SHIPPING_UNAVAILABLE")
+                    ? "Por ahora no tenemos envíos a ese código postal."
+                    : quoteState.reasons.includes("MX_ORDER_VARIANT_UNAVAILABLE")
+                      ? "Uno de los productos de tu carrito ya no está disponible."
+                      : "No pudimos cotizar el envío. Inténtalo de nuevo en unos minutos."}
+                </p>
+              )}
+              {quote && (
+                <div className="mt-5 grid gap-3" role="radiogroup" aria-label="Opciones de envío">
+                  {quote.options.map((option) => (
+                    <label
+                      key={option.token}
+                      className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 ${
+                        option.token === selectedToken ? "border-foreground" : "border-border"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="shipping-option"
+                        className="mt-1"
+                        checked={option.token === selectedToken}
+                        onChange={() => setSelectedToken(option.token)}
+                        disabled={submitting}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex justify-between gap-4 text-sm font-medium">
+                          <span className="min-w-0">
+                            {option.carrierName} · {option.service}
+                          </span>
+                          <span className="shrink-0 tabular-nums">
+                            {option.price === 0 ? "Gratis" : formatMoney(option.price)}
+                          </span>
+                        </span>
+                        <span className="mt-1 block text-xs text-muted-foreground">
+                          {FULFILLMENT_LABELS[option.fulfillmentMode] ?? ""}
+                          {option.deliveryEstimate
+                            ? ` · Entrega estimada: ${option.deliveryEstimate}`
+                            : ""}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
-              <h2 className="font-display text-xl">Terms of sale</h2>
+              <h2 className="font-display text-xl">Forma de pago</h2>
+              {paymentMethods.length === 0 ? (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {selected
+                    ? "Aún no hay formas de pago disponibles."
+                    : "Elige una opción de envío para ver las formas de pago."}
+                </p>
+              ) : (
+                <div className="mt-5 grid gap-3" role="radiogroup" aria-label="Forma de pago">
+                  {paymentMethods.map((id) => (
+                    <label
+                      key={id}
+                      className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 ${
+                        method === id ? "border-foreground" : "border-border"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="payment-method"
+                        className="mt-1"
+                        checked={method === id}
+                        onChange={() => setMethod(id)}
+                        disabled={submitting}
+                      />
+                      <span>
+                        <span className="block text-sm font-medium">
+                          {PAYMENT_LABELS[id]?.title ?? id}
+                        </span>
+                        <span className="mt-1 block text-xs text-muted-foreground">
+                          {PAYMENT_LABELS[id]?.subtitle ?? ""}
+                        </span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="min-w-0 rounded-3xl border border-border bg-card p-4 sm:p-6">
+              <h2 className="font-display text-xl">Términos de la compra</h2>
               <label
                 className="mt-4 flex items-start gap-3 text-sm"
                 htmlFor="checkout-legal-accept"
@@ -497,87 +699,78 @@ function Checkout() {
                   className="mt-1 h-4 w-4 shrink-0"
                 />
                 <span className="leading-6 text-muted-foreground">
-                  I accept the{" "}
+                  Acepto los{" "}
                   <Link to="/terms" className="underline">
-                    Terms of Service
+                    Términos y condiciones
                   </Link>
-                  , the{" "}
+                  , el{" "}
                   <Link to="/privacy" className="underline">
-                    Privacy Policy
+                    Aviso de privacidad
                   </Link>{" "}
-                  and the{" "}
+                  y la{" "}
                   <Link to="/returns" className="underline">
-                    Returns Policy
+                    Política de devoluciones
                   </Link>
                   .
                 </span>
               </label>
               <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-                Acceptance is required before an order can be placed and is recorded with the order.
+                La aceptación es necesaria para realizar el pedido y queda registrada con él.
               </p>
             </section>
           </div>
 
           <aside className="h-fit min-w-0 max-w-full rounded-3xl border border-border bg-card p-4 sm:p-6">
-            <h2 className="font-display text-xl">Order summary</h2>
-            {/* Lines come from the server preview, never from cart-local price
+            <h2 className="font-display text-xl">Resumen del pedido</h2>
+            {/* Lines come from the server quote, never from cart-local price
                 state, so a stale or tampered cart price is never shown as the
                 checkout price. */}
             <ul className="mt-4 space-y-2 text-sm">
-              {preview ? (
-                preview.lines.map((line) => (
+              {quote ? (
+                quote.lines.map((line) => (
                   <li key={line.variant_id} className="flex min-w-0 justify-between gap-4">
                     <span className="min-w-0 truncate text-muted-foreground">
                       {line.qty} × {line.product_name}
                       {line.variant_label ? ` (${line.variant_label})` : ""}
                     </span>
-                    <span>AED {line.line_total_aed.toFixed(2)}</span>
+                    <span className="tabular-nums">{formatMoney(line.line_total_aed)}</span>
                   </li>
                 ))
               ) : (
                 <li className="text-muted-foreground">
-                  {previewState.status === "error"
-                    ? "Current prices could not be confirmed. Please try again."
-                    : "Confirming current prices…"}
+                  Los precios se confirman al capturar tu dirección.
                 </li>
               )}
             </ul>
             <dl className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
-                <dd>{preview ? `AED ${preview.subtotalAed.toFixed(2)}` : "—"}</dd>
+                <dd className="tabular-nums">{quote ? formatMoney(quote.subtotal) : "—"}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">{config?.taxLabel ?? "VAT"}</dt>
-                <dd>{preview ? `AED ${preview.taxAed.toFixed(2)}` : "—"}</dd>
+                <dt className="text-muted-foreground">Envío</dt>
+                <dd className="tabular-nums">
+                  {selected ? (selected.price === 0 ? "Gratis" : formatMoney(selected.price)) : "—"}
+                </dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">
-                  Delivery ({config?.emirateNames?.[form.emirate] ?? form.emirate})
-                </dt>
-                <dd>{preview ? `AED ${preview.shippingAed.toFixed(2)}` : "—"}</dd>
-              </div>
-              <p className="text-[11px] leading-5 text-muted-foreground">
-                {deliveryEstimateText()}
-              </p>
+              {config?.taxLabel && quote && (
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{config.taxLabel}</dt>
+                  <dd className="tabular-nums">{formatMoney(tax)}</dd>
+                </div>
+              )}
               <div className="flex justify-between border-t border-border pt-3 font-medium">
                 <dt>Total</dt>
-                {/* Amounts are always the server's, never computed in the browser. */}
-                <dd>
-                  {preview ? `AED ${preview.totalAed.toFixed(2)}` : "Calculated by CornerMex"}
+                <dd className="tabular-nums">
+                  {total !== null ? formatMoneyWithCode(total) : "—"}
                 </dd>
               </div>
             </dl>
-            {config?.vatTrn && (
-              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-                {BUSINESS_IDENTITY.legalEntity} — VAT TRN {config.vatTrn}
-              </p>
-            )}
             {!sessionLoading && !user && (
               <p className="mt-5 text-xs leading-5 text-muted-foreground">
-                You are checking out as a guest — no account needed. Already have one?{" "}
+                Estás comprando como invitado: no necesitas una cuenta. ¿Ya tienes una?{" "}
                 <Link to="/login" className="underline underline-offset-4">
-                  Sign in for faster checkout
+                  Inicia sesión para comprar más rápido
                 </Link>
                 .
               </p>
@@ -590,24 +783,33 @@ function Checkout() {
                 {error}
               </p>
             )}
-            <Button
-              type="submit"
-              size="lg"
-              disabled={!canExecute || submitting}
-              className="mt-6 w-full rounded-full"
-            >
-              {submitting
-                ? "Placing order…"
-                : CHECKOUT_ENABLED
-                  ? method === "card"
-                    ? "Continue to card payment"
-                    : "Place order — cash on delivery"
-                  : "Order execution disabled"}
-            </Button>
-            <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-              No order, inventory change or notification occurs while checkout execution is
-              disabled.
-            </p>
+            {payingByCard ? (
+              canExecute && config?.mercadoPagoPublicKey && total !== null ? (
+                <MercadoPagoCardBrick
+                  publicKey={config.mercadoPagoPublicKey}
+                  amount={total}
+                  payerEmail={user?.email ?? (guestEmailValid ? form.email.trim() : null)}
+                  onToken={(card) =>
+                    canExecute ? submitOrder(card) : Promise.reject(new Error("CHECKOUT_NOT_READY"))
+                  }
+                />
+              ) : (
+                <p className="mt-6 text-sm text-muted-foreground">
+                  Completa tus datos, elige el envío y acepta los términos para capturar tu tarjeta.
+                </p>
+              )
+            ) : (
+              <Button
+                type="submit"
+                size="lg"
+                disabled={!canExecute || submitting}
+                className="mt-6 w-full rounded-full"
+              >
+                {submitting
+                  ? "Registrando tu pedido…"
+                  : (PAYMENT_LABELS[method ?? ""]?.action ?? "Realizar pedido")}
+              </Button>
+            )}
             <TrustBar context="b2c" className="mt-5" />
           </aside>
         </form>

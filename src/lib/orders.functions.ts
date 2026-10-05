@@ -1,3 +1,4 @@
+import { assertUaeMarketActive } from "@/lib/uae-market-gate";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -50,6 +51,8 @@ export const placeOrder = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof Input>) => Input.parse(input))
   .handler(async ({ data, context }) => {
     assertCheckoutExecutionEnabled();
+    // The UAE market is deferred: this legacy order path executes only in a UAE build.
+    assertUaeMarketActive();
     const { userId } = context;
 
     // Load variants + products + sellers with admin to compute trusted prices

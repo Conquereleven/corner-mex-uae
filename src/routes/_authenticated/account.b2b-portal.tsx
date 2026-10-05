@@ -44,7 +44,7 @@ import {
   type B2bPriceStatus,
 } from "@/lib/b2b-portal";
 import { useB2bReorderIntent } from "@/lib/b2b-reorder-intent";
-import { formatMoney } from "@/lib/currency";
+import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 
 export const Route = createFileRoute("/_authenticated/account/b2b-portal")({
   head: () => ({ meta: [{ title: "B2B portal — CornerMex" }] }),
@@ -231,7 +231,7 @@ function B2bPortalPage() {
                   </div>
                 </div>
                 <div className="text-right text-sm">
-                  <p className="font-medium">Account pricing · AED</p>
+                  <p className="font-medium">Account pricing · {BASE_CURRENCY}</p>
                   <p className="text-muted-foreground">
                     Current prices and availability are scoped to this membership.
                   </p>
@@ -756,10 +756,10 @@ function PriceAvailability({
 
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-      <span className="font-semibold">{formatMoney(effectivePriceAed, "AED")}</span>
+      <span className="font-semibold">{formatMoney(effectivePriceAed)}</span>
       {special && (
         <span className="text-xs text-muted-foreground line-through">
-          {formatMoney(catalogPriceAed, "AED")}
+          {formatMoney(catalogPriceAed)}
         </span>
       )}
       {special && <Badge>Special account price</Badge>}

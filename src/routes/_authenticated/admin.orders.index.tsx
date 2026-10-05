@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET, formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -79,7 +80,14 @@ function Orders() {
   }, [q.data, search, statusFilter, tab]);
 
   const exportCsv = () => {
-    const header = ["Order", "Date", "Payment", "Method", "Status", "Total (AED)"];
+    const header = [
+      "Order",
+      "Date",
+      "Payment",
+      "Method",
+      "Status",
+      `Total (${ACTIVE_MARKET.currency})`,
+    ];
     const lines = rows.map((o: any) =>
       [
         o.order_number,
@@ -219,7 +227,7 @@ function Orders() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right font-mono tabular-nums">
-                        {Number(o.total_aed).toFixed(2)} AED
+                        {formatMoneyWithCode(o.total_aed)}
                       </TableCell>
                       <TableCell>
                         <Badge

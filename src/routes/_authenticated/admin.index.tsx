@@ -1,3 +1,4 @@
+import { ACTIVE_MARKET, formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -22,11 +23,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminHome,
 });
 
-const AED = (value: number) =>
-  `${Number(value ?? 0).toLocaleString("en-AE", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} AED`;
+const AED = (value: number | string | null | undefined) => formatMoneyWithCode(value ?? 0);
 const N = (value: number) => Number(value ?? 0).toLocaleString("en-US");
 
 function AdminHome() {
@@ -125,7 +122,7 @@ function AdminHome() {
             Live first-party order, customer and catalogue metrics. Refreshed every 60 seconds.
           </p>
         </div>
-        <Badge variant="outline">UAE operations</Badge>
+        <Badge variant="outline">Operación {ACTIVE_MARKET.countryNameLocal}</Badge>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

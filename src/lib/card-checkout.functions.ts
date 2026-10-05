@@ -1,3 +1,4 @@
+import { assertUaeMarketActive } from "@/lib/uae-market-gate";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -19,6 +20,8 @@ export const initiateCardCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof Input>) => Input.parse(input))
   .handler(async ({ data, context }) => {
+    // The UAE market is deferred: this entry point executes only in a UAE build.
+    assertUaeMarketActive();
     const capability = await readCardCapability();
     const config = evaluateCommercialConfig();
     if (!capability.available || !config.ready) throw new Error("CARD_CHECKOUT_UNAVAILABLE");

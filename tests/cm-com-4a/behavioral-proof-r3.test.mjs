@@ -116,10 +116,10 @@ test("customer history mounts canonical content, empty state, failure state and 
     "confirmed",
     "COD",
     "pending",
-    "100.00 AED",
-    "20.00 AED",
-    "6.00 AED",
-    "126.00 AED",
+    "$100.00 MXN",
+    "$20.00 MXN",
+    "$6.00 MXN",
+    "$126.00 MXN",
   ]) {
     assert.ok(rendered.includes(value), `history must render ${value}`);
   }
@@ -128,7 +128,7 @@ test("customer history mounts canonical content, empty state, failure state and 
   const empty = html(accountModule.CustomerOrderHistorySurface, {
     view: getCustomerOrderHistoryView({ isLoading: false, isError: false, data: [] }),
     onRetry() {},
-    renderShopLink: () => React.createElement("span", null, "Start shopping"),
+    renderShopLink: () => React.createElement("span", null, "Ir a la tienda"),
   });
   assert.match(empty, /You have no orders yet/);
 
@@ -209,11 +209,11 @@ test("customer detail mounts canonical fields and distinct safe retryable failur
     "COD",
     "pending",
     "Salsa verde",
-    "Qty 2",
-    "100.00 AED",
-    "20.00 AED",
-    "6.00 AED",
-    "126.00 AED",
+    "Cant. 2",
+    "$100.00 MXN",
+    "$20.00 MXN",
+    "$6.00 MXN",
+    "$126.00 MXN",
   ]) {
     assert.ok(rendered.includes(value), `detail must render ${value}`);
   }

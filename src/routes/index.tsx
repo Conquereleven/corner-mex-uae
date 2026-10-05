@@ -8,16 +8,17 @@ import { ACTIVE_BRAND } from "@/config/brand";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CornerMex — Mexican food for the Middle East" },
+      { title: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         name: "description",
         content:
-          "Explore the CornerMex Mexican pantry catalogue for the UAE. Signed-in customers can place cash-on-delivery orders; business quotes are reviewed manually.",
+          "Chiles, salsas, masa y botanas mexicanas. Compra en línea sin crear una cuenta, con envío cotizado a tu código postal, o solicita una cotización para tu negocio.",
       },
-      { property: "og:title", content: "CornerMex — Mexican food for the Middle East" },
+      { property: "og:title", content: "CornerMex — Despensa mexicana por pieza y por mayoreo" },
       {
         property: "og:description",
-        content: "Mexican catalogue discovery and human-reviewed B2B quote enquiries for the UAE.",
+        content:
+          "Despensa mexicana por pieza y cotizaciones para negocio revisadas por una persona.",
       },
       { property: "og:url", content: siteUrl("/") },
     ],
@@ -53,19 +54,19 @@ function Hero() {
       <div className="relative mx-auto flex min-h-[27rem] max-w-7xl items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="max-w-2xl rounded-[1.5rem] border border-border bg-card/95 px-6 py-10 text-center shadow-[0_18px_50px_color-mix(in_oklch,var(--cm-palette-black)_28%,transparent)] backdrop-blur-sm sm:px-14 sm:py-12">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-eyebrow">
-            CornerMex · Authentic Mexican pantry in the UAE
+            CornerMex · Despensa mexicana
           </p>
           <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-foreground sm:text-7xl">
             {ACTIVE_BRAND.verbal.primary}
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            We bring traditional Mexican products to the Middle East for everyone looking to
-            experience authentic Mexican culture.
+            Chiles, salsas, masa y botanas de siempre. Compra por pieza para tu casa o por caja para
+            tu negocio.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/shop">
               <Button size="lg" className="group rounded-full">
-                Browse the catalogue
+                Ver el catálogo
                 <ArrowRight className="ms-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
@@ -75,7 +76,7 @@ function Hero() {
                 variant="outline"
                 className="rounded-full border-foreground/25 hover:bg-accent"
               >
-                Wholesale enquiries
+                Ventas por mayoreo
               </Button>
             </Link>
           </div>
@@ -89,13 +90,13 @@ function Categories() {
   // Real canonical category slugs (public.categories), so every tile lands on a
   // populated category. Images come from ACTIVE_BRAND.assets.collections.
   const items = [
-    ["salsas-moles", "Salsas & Moles"],
-    ["snacks-sweets", "Snacks & Sweets"],
-    ["pantry-staples", "Pantry Staples"],
-    ["chiles-spices", "Chiles & Spices"],
-    ["tortillas-masa", "Tortillas & Masa"],
-    ["drinks", "Drinks"],
-    ["gifts-lifestyle", "Gifts & Lifestyle"],
+    ["salsas-moles", "Salsas y moles"],
+    ["snacks-sweets", "Botanas y dulces"],
+    ["pantry-staples", "Despensa"],
+    ["chiles-spices", "Chiles y especias"],
+    ["tortillas-masa", "Tortillas y masa"],
+    ["drinks", "Bebidas"],
+    ["gifts-lifestyle", "Regalos"],
   ] as const;
   return (
     <section className="border-y border-border bg-sand">
@@ -103,17 +104,17 @@ function Categories() {
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-eyebrow">
-              Shop by collection
+              Compra por categoría
             </p>
             <h2 className="mt-2 font-display text-3xl tracking-tight text-foreground sm:text-4xl">
-              Find your favourites
+              Encuentra tus favoritos
             </h2>
           </div>
           <Link
             to="/shop"
             className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-flex items-center gap-1"
           >
-            View all <ArrowRight className="h-3.5 w-3.5" />
+            Ver todo <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
@@ -148,41 +149,39 @@ function Features() {
       <div className="grid gap-8 md:grid-cols-3">
         <div className="rounded-3xl border border-border bg-sand p-7">
           <ShoppingBag className="h-6 w-6 text-primary" aria-hidden="true" />
-          <h2 className="mt-6 font-display text-3xl tracking-tight text-foreground">
-            Special Offers
-          </h2>
+          <h2 className="mt-6 font-display text-3xl tracking-tight text-foreground">Ofertas</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Discover limited-price favourites and pantry essentials from the CornerMex catalogue.
+            Descubre favoritos a precio especial y básicos de despensa del catálogo CornerMex.
           </p>
           <Link
             to="/shop"
             className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-eyebrow"
           >
-            Shop offers <ArrowRight className="h-4 w-4" />
+            Ver ofertas <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <div className="rounded-3xl border border-border bg-ink p-7 text-ivory">
           <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
-          <h2 className="mt-6 font-display text-3xl tracking-tight">Find Us</h2>
+          <h2 className="mt-6 font-display text-3xl tracking-tight">Encuéntranos</h2>
           <p className="mt-3 text-sm leading-6 text-ivory/85">
-            Serving Mexican food lovers, restaurants and retailers across the UAE.
+            Atendemos a hogares, restaurantes, tiendas y distribuidores.
           </p>
           <Link
             to="/contact"
             className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-ivory underline-offset-4 hover:underline"
           >
-            Contact the team <ArrowRight className="h-4 w-4" />
+            Contáctanos <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <div className="rounded-3xl border border-border bg-arena p-7 text-ink">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink/70">
-            Our promise
+            Nuestro compromiso
           </p>
           <h2 className="mt-6 font-display text-3xl tracking-tight">
             {ACTIVE_BRAND.verbal.secondary}
           </h2>
           <p className="mt-3 text-sm leading-6 text-ink/80">
-            Authentic Mexican products, thoughtfully brought to the Middle East.
+            Productos mexicanos de verdad, con precios y entregas claros.
           </p>
         </div>
       </div>
@@ -197,20 +196,20 @@ function B2BBlock() {
         <div className="grid gap-8 md:grid-cols-2 md:items-center">
           <div>
             <span className="text-[11px] uppercase tracking-[0.18em] text-ivory/70">
-              For restaurants, retailers &amp; distributors
+              Para restaurantes, tiendas y distribuidores
             </span>
             <h2 className="mt-4 font-display text-4xl tracking-tight sm:text-5xl">
-              Bring CornerMex to your table.
+              Surte tu negocio con CornerMex.
             </h2>
           </div>
           <div>
             <p className="text-base leading-relaxed text-ivory/85">
-              Tell us what you need and our team will review availability, volumes and delivery in
-              writing.
+              Cuéntanos qué necesitas y nuestro equipo revisará por escrito disponibilidad,
+              volúmenes y entrega.
             </p>
             <Link to="/b2b" className="mt-6 inline-block">
               <Button size="lg" className="rounded-full">
-                Business enquiries <ArrowRight className="ms-2 h-4 w-4" />
+                Ventas a negocios <ArrowRight className="ms-2 h-4 w-4" />
               </Button>
             </Link>
           </div>

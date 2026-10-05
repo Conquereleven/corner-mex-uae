@@ -1,32 +1,18 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { getCurrencyRates } from "@/lib/seller.functions";
-import { convert, formatMoney, getStoredCurrency, setStoredCurrency, type RateMap } from "@/lib/currency";
+import { BASE_CURRENCY, formatMoney } from "@/lib/currency";
 
-export const CURRENCIES = ["AED", "USD", "EUR", "MXN", "SAR", "GBP"] as const;
+/** Currencies offered to the customer. One per market; Mexico sells in MXN. */
+export const CURRENCIES = [BASE_CURRENCY] as const;
 
+/**
+ * Price formatting for storefront components. Amounts are already in the
+ * market currency, so nothing is converted and no rate is fetched.
+ */
 export function useCurrency() {
-  const fn = useServerFn(getCurrencyRates);
-  const q = useQuery({
-    queryKey: ["currency-rates"],
-    queryFn: () => fn({}),
-    staleTime: 60 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
-  const [code, setCode] = useState<string>("AED");
-  useEffect(() => {
-    setCode(getStoredCurrency());
-    const onChange = (e: any) => setCode(e.detail ?? getStoredCurrency());
-    window.addEventListener("cm:currency-change", onChange);
-    return () => window.removeEventListener("cm:currency-change", onChange);
-  }, []);
-  const rates: RateMap = (q.data?.rates ?? { AED: 1 }) as RateMap;
   return {
-    code,
-    setCode: (c: string) => { setStoredCurrency(c); setCode(c); },
-    rates,
-    convert: (aed: number) => convert(aed, code, rates),
-    format: (aed: number) => formatMoney(convert(aed, code, rates), code),
+    code: BASE_CURRENCY,
+    setCode: (_code: string) => undefined,
+    rates: { [BASE_CURRENCY]: 1 } as Record<string, number>,
+    convert: (amount: number) => amount,
+    format: (amount: number) => formatMoney(amount),
   };
 }

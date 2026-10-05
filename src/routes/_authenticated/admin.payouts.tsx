@@ -1,3 +1,4 @@
+import { formatMoneyWithCode } from "@/config/market";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/admin/payouts")({
   component: AdminPayouts,
 });
 
-const AED = (n: number) => `${Number(n ?? 0).toLocaleString("en-AE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED`;
+const AED = (n: number | string | null | undefined) => formatMoneyWithCode(n ?? 0);
 const STATUSES = ["pending", "processing", "paid", "cancelled"] as const;
 const STATUS_TONE: Record<string, string> = {
   pending: "bg-amber-500/15 text-amber-600 border-amber-500/30",

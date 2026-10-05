@@ -37,7 +37,13 @@ test("readiness fails safely when configuration is absent", async () => {
 
 test("readiness reports ready for a bounded successful target check", async () => {
   const response = await getReadinessResponse(
-    { SUPABASE_URL: "https://target.supabase.co", SUPABASE_PUBLISHABLE_KEY: "public-key" },
+    {
+      SUPABASE_URL: "https://mexicoprojectref0001.supabase.co",
+      SUPABASE_PUBLISHABLE_KEY: "public-key",
+      // A deployment is ready only against its declared Mexico database.
+      CORNERMEX_MARKET: "MX",
+      CORNERMEX_MX_SUPABASE_PROJECT_REF: "mexicoprojectref0001",
+    },
     async () => new Response("[]", { status: 200 }),
   );
   assert.equal(response.status, 200);
@@ -53,6 +59,7 @@ test("readiness reports ready for a bounded successful target check", async () =
     externalEmailEnabled: false,
     externalMessagesEnabled: false,
     realPaymentExecutionEnabled: false,
+    realShippingPurchaseEnabled: false,
     automaticImportEnabled: false,
     automaticInventorySyncEnabled: false,
     openClawEnabled: false,

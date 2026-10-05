@@ -42,12 +42,12 @@ export function ProductCard({
         )}
         {p.is_bulk && (
           <span className="absolute start-3 bottom-3 rounded-full bg-badge px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-badge-foreground">
-            HORECA
+            Mayoreo
           </span>
         )}
         {onSale && (
           <span className="absolute end-3 top-3 rounded-full bg-ink px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-ivory">
-            Sale
+            Oferta
           </span>
         )}
       </div>
@@ -58,9 +58,7 @@ export function ProductCard({
         <h3 className="line-clamp-2 text-sm font-medium leading-tight text-foreground">{p.name}</h3>
         <div className="mt-auto flex items-end justify-between pt-3">
           <span className="font-display text-lg font-semibold text-foreground">
-            <span className={onSale ? "text-sale" : "text-price"}>
-              {cur.format(p.price_aed)}
-            </span>
+            <span className={onSale ? "text-sale" : "text-price"}>{cur.format(p.price_aed)}</span>
             {onSale && p.compare_at_price_aed != null && (
               <span className="ms-2 text-sm font-normal text-muted-foreground line-through">
                 {cur.format(p.compare_at_price_aed)}

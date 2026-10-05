@@ -1,15 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PolicyLinkGroup } from "@/components/site/Trust";
+import { ACTIVE_MARKET } from "@/config/market";
 import { openCookiePreferences } from "@/lib/cookie-consent";
 import { mailto, PUBLIC_CONTACT } from "@/lib/public-contact";
 import { siteUrl } from "@/lib/site-url";
 
 export const Route = createFileRoute("/privacy")({
   head: () => {
-    const title = "Privacy — CornerMex";
+    const title = "Privacidad — CornerMex";
     const description =
-      "What the CornerMex website currently processes: browsing, optional accounts, local cart storage, cookie preferences and manual email enquiries.";
+      "Qué datos trata hoy el sitio de CornerMex: navegación, cuentas opcionales, carrito en tu navegador, preferencias de cookies y los datos de tu pedido.";
     return {
       meta: [
         { title },
@@ -27,60 +28,67 @@ function Privacy() {
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-eyebrow">
-          Plain-language summary
+          Resumen en lenguaje claro
         </p>
-        <h1 className="mt-3 font-display text-5xl tracking-tight">Privacy</h1>
+        <h1 className="mt-3 font-display text-5xl tracking-tight">Privacidad</h1>
         <p className="mt-4 text-base leading-7 text-muted-foreground">
-          This page describes what the CornerMex website actually does today. The detailed policy
-          template is maintained in the{" "}
+          Esta página describe lo que el sitio de CornerMex hace hoy con tus datos. El Aviso de
+          privacidad completo para {ACTIVE_MARKET.countryNameLocal} se publicará en el{" "}
           <Link to="/legal" className="underline underline-offset-4">
-            legal centre
+            centro legal
           </Link>{" "}
-          and is completed as the corresponding capability is activated.
+          antes de abrir la venta al público.
         </p>
         <div className="mt-8 space-y-6 text-base leading-7 text-muted-foreground">
           <section aria-labelledby="privacy-browsing">
             <h2 id="privacy-browsing" className="font-display text-2xl text-foreground">
-              Browsing
+              Navegación
             </h2>
             <p className="mt-2">
-              The public catalogue can be browsed without creating an account. Essential technical
-              information needed for security, reliability and your language, currency and cookie
-              preferences may be processed. Non-essential cookies remain subject to your{" "}
+              Puedes explorar el catálogo sin crear una cuenta. Se trata la información técnica
+              indispensable para la seguridad y el funcionamiento del sitio, y para recordar tu
+              idioma y tus preferencias de cookies. Las cookies no esenciales dependen de tus{" "}
               <button
                 type="button"
                 onClick={openCookiePreferences}
                 className="underline underline-offset-4 hover:text-foreground"
               >
-                cookie preferences
+                preferencias de cookies
               </button>
               .
             </p>
           </section>
           <section aria-labelledby="privacy-accounts">
             <h2 id="privacy-accounts" className="font-display text-2xl text-foreground">
-              Accounts and carts
+              Cuentas y carrito
             </h2>
             <p className="mt-2">
-              Creating an account is optional and uses authenticated sign-in; account details are
-              used to operate the account itself. A B2C cart is stored in your own browser until you
-              proceed to checkout. Order execution and payment collection run only when the
-              corresponding authorized configuration is enabled — while disabled, no order, payment
-              or fulfilment processing occurs.
+              Crear una cuenta es opcional; sus datos se usan para operar la propia cuenta. El
+              carrito se guarda en tu navegador hasta que finalizas la compra.
+            </p>
+          </section>
+          <section aria-labelledby="privacy-orders">
+            <h2 id="privacy-orders" className="font-display text-2xl text-foreground">
+              Pedidos
+            </h2>
+            <p className="mt-2">
+              Al hacer un pedido usamos tu nombre, teléfono, correo y dirección para registrarlo,
+              entregarlo y darte seguimiento. Los datos de entrega se comparten con la paquetería
+              que lleva tu pedido, únicamente para ese fin.
             </p>
           </section>
           <section aria-labelledby="privacy-enquiries">
             <h2 id="privacy-enquiries" className="font-display text-2xl text-foreground">
-              Manual enquiries
+              Consultas por correo
             </h2>
             <p className="mt-2">
-              If you email CornerMex, the information you choose to provide is used to review and
-              respond to that enquiry. It is not treated as an order or account registration, and it
-              does not enter any automated marketing process.
+              Si escribes a CornerMex, la información que decidas compartir se usa para revisar y
+              responder esa consulta. No se trata como un pedido ni como un registro de cuenta, y no
+              entra en ningún proceso automatizado de mercadotecnia.
             </p>
           </section>
           <p>
-            Privacy requests:{" "}
+            Solicitudes de privacidad:{" "}
             <a className="underline underline-offset-4" href={mailto(PUBLIC_CONTACT.privacy)}>
               {PUBLIC_CONTACT.privacy}
             </a>
@@ -89,7 +97,7 @@ function Privacy() {
         </div>
         <div className="mt-12">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            More information
+            Más información
           </h2>
           <PolicyLinkGroup className="mt-3" exclude="/privacy" />
         </div>
