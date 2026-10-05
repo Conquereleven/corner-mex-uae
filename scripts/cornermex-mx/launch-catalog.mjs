@@ -54,7 +54,10 @@ const brandOf = (name) => BRANDS.find(([, pattern]) => pattern.test(name))?.[0] 
 
 /** A proposed Mexico SKU derived from the product slug. The founder may change it. */
 function proposeSku(slug, used) {
-  const base = `MX-${slug.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, "")}`.slice(0, 36);
+  const base = `MX-${slug
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")}`.slice(0, 36);
   let sku = base;
   for (let n = 2; used.has(sku); n += 1) sku = `${base.slice(0, 33)}-${n}`;
   used.add(sku);
@@ -141,12 +144,16 @@ function preview(file) {
   );
   if (Object.keys(result.summary.missing).length > 0) {
     console.log("  still missing (SKUs affected):");
-    for (const [field, count] of Object.entries(result.summary.missing).sort((a, b) => b[1] - a[1])) {
+    for (const [field, count] of Object.entries(result.summary.missing).sort(
+      (a, b) => b[1] - a[1],
+    )) {
       console.log(`    ${field}: ${count}`);
     }
   }
   if (result.errors.length > 0) {
-    console.log(`\nErrors (${result.errors.length}) — the import is refused until these are fixed:`);
+    console.log(
+      `\nErrors (${result.errors.length}) — the import is refused until these are fixed:`,
+    );
     for (const issue of result.errors.slice(0, 200)) console.log(line(issue));
   }
   if (result.warnings.length > 0) {

@@ -251,7 +251,8 @@ test("the origin address is configuration and is never assumed", () => {
       company: "CornerMex",
       phone: "5512345678",
       email: ["envios", "example.test"].join("@"),
-      street: "Calle Ejemplo", exterior_number: "10",
+      street: "Calle Ejemplo",
+      exterior_number: "10",
       colonia: "Centro",
       municipality: "Tecámac",
       state: "mex",
@@ -541,7 +542,13 @@ test("no label is bought while real shipping purchase is switched off", async ()
   const ledger = memoryLabelLedger();
   for (const purchaseEnabled of [false, undefined, "true"]) {
     await assert.rejects(
-      labels.purchaseLabelOnce({ provider: carrier, ledger, request, payment: PAID, purchaseEnabled }),
+      labels.purchaseLabelOnce({
+        provider: carrier,
+        ledger,
+        request,
+        payment: PAID,
+        purchaseEnabled,
+      }),
       /LABEL_PURCHASE_DISABLED/,
     );
   }
@@ -553,15 +560,22 @@ test("no label is bought while real shipping purchase is switched off", async ()
   assert.equal(ledger.rows.size, 0, "nothing is even reserved");
   // The switch is exact: only the literal "true" turns it on.
   assert.equal(labels.isRealShippingPurchaseEnabled({}), false);
-  assert.equal(labels.isRealShippingPurchaseEnabled({ CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED: "1" }), false);
-  assert.equal(labels.isRealShippingPurchaseEnabled({ CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED: "true" }), true);
+  assert.equal(
+    labels.isRealShippingPurchaseEnabled({ CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED: "1" }),
+    false,
+  );
+  assert.equal(
+    labels.isRealShippingPurchaseEnabled({ CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED: "true" }),
+    true,
+  );
 });
 
 test("no label is bought before payment is confirmed", async () => {
   let calls = 0;
   const carrier = { id: "skydropx", createShipment: async () => ((calls += 1), bought) };
   await assert.rejects(
-    labels.purchaseLabelOnce({ purchaseEnabled: true,
+    labels.purchaseLabelOnce({
+      purchaseEnabled: true,
       provider: carrier,
       ledger: memoryLabelLedger(),
       request,
@@ -576,20 +590,23 @@ test("a label is bought once: a second attempt for the same order does not buy a
   let calls = 0;
   const carrier = { id: "skydropx", createShipment: async () => ((calls += 1), bought) };
   const ledger = memoryLabelLedger();
-  const first = await labels.purchaseLabelOnce({ purchaseEnabled: true,
+  const first = await labels.purchaseLabelOnce({
+    purchaseEnabled: true,
     provider: carrier,
     ledger,
     request,
     payment: PAID,
   });
-  const second = await labels.purchaseLabelOnce({ purchaseEnabled: true,
+  const second = await labels.purchaseLabelOnce({
+    purchaseEnabled: true,
     provider: carrier,
     ledger,
     request,
     payment: PAID,
   });
   // Even with a different rate, the order already has its label.
-  const third = await labels.purchaseLabelOnce({ purchaseEnabled: true,
+  const third = await labels.purchaseLabelOnce({
+    purchaseEnabled: true,
     provider: carrier,
     ledger,
     request: { ...request, providerRateId: "rate-9" },
@@ -613,8 +630,20 @@ test("concurrent purchases for one order call the provider once", async () => {
   };
   const ledger = memoryLabelLedger();
   const results = await Promise.all([
-    labels.purchaseLabelOnce({ purchaseEnabled: true, provider: carrier, ledger, request, payment: PAID }),
-    labels.purchaseLabelOnce({ purchaseEnabled: true, provider: carrier, ledger, request, payment: PAID }),
+    labels.purchaseLabelOnce({
+      purchaseEnabled: true,
+      provider: carrier,
+      ledger,
+      request,
+      payment: PAID,
+    }),
+    labels.purchaseLabelOnce({
+      purchaseEnabled: true,
+      provider: carrier,
+      ledger,
+      request,
+      payment: PAID,
+    }),
   ]);
   assert.equal(calls, 1);
   assert.deepEqual(results.map((result) => result.outcome).sort(), ["IN_PROGRESS", "PURCHASED"]);
@@ -638,7 +667,8 @@ test("an ambiguous creation timeout is looked up, not bought again", async () =>
   };
   const ledger = memoryLabelLedger();
 
-  const first = await labels.purchaseLabelOnce({ purchaseEnabled: true,
+  const first = await labels.purchaseLabelOnce({
+    purchaseEnabled: true,
     provider: carrier,
     ledger,
     request,
@@ -648,7 +678,8 @@ test("an ambiguous creation timeout is looked up, not bought again", async () =>
   assert.equal(ledger.rows.get("CM-1001").state, "AMBIGUOUS");
 
   // A naive retry does not reach the provider at all.
-  const retry = await labels.purchaseLabelOnce({ purchaseEnabled: true,
+  const retry = await labels.purchaseLabelOnce({
+    purchaseEnabled: true,
     provider: carrier,
     ledger,
     request,
@@ -659,7 +690,8 @@ test("an ambiguous creation timeout is looked up, not bought again", async () =>
 
   // Reconciling with a different rate would buy a second label — refused.
   await assert.rejects(
-    labels.reconcileAmbiguousLabel({ purchaseEnabled: true,
+    labels.reconcileAmbiguousLabel({
+      purchaseEnabled: true,
       provider: carrier,
       ledger,
       request: { ...request, providerRateId: "rate-2" },
@@ -668,7 +700,12 @@ test("an ambiguous creation timeout is looked up, not bought again", async () =>
   );
   assert.equal(attempt, 1);
 
-  const resolved = await labels.reconcileAmbiguousLabel({ purchaseEnabled: true, provider: carrier, ledger, request });
+  const resolved = await labels.reconcileAmbiguousLabel({
+    purchaseEnabled: true,
+    provider: carrier,
+    ledger,
+    request,
+  });
   assert.equal(resolved.outcome, "PURCHASED");
   assert.equal(resolved.shipment.replayed, true);
   assert.deepEqual(seenRates, ["rate-1", "rate-1"], "the same rate is replayed, never a new one");
@@ -690,7 +727,12 @@ test("a known shipment id is reconciled by lookup, without any create call", asy
     state: "AMBIGUOUS",
     providerShipmentId: "shipment-7",
   });
-  const resolved = await labels.reconcileAmbiguousLabel({ purchaseEnabled: true, provider: carrier, ledger, request });
+  const resolved = await labels.reconcileAmbiguousLabel({
+    purchaseEnabled: true,
+    provider: carrier,
+    ledger,
+    request,
+  });
   assert.equal(resolved.shipment.providerShipmentId, "shipment-7");
   assert.equal(creates, 0);
 });
@@ -709,10 +751,22 @@ test("a definite rejection records FAILED and is not silently retried", async ()
   };
   const ledger = memoryLabelLedger();
   await assert.rejects(
-    labels.purchaseLabelOnce({ purchaseEnabled: true, provider: carrier, ledger, request, payment: PAID }),
+    labels.purchaseLabelOnce({
+      purchaseEnabled: true,
+      provider: carrier,
+      ledger,
+      request,
+      payment: PAID,
+    }),
     /Tarifa expirada/,
   );
   assert.equal(ledger.rows.get("CM-1001").state, "FAILED");
-  await labels.purchaseLabelOnce({ purchaseEnabled: true, provider: carrier, ledger, request, payment: PAID });
+  await labels.purchaseLabelOnce({
+    purchaseEnabled: true,
+    provider: carrier,
+    ledger,
+    request,
+    payment: PAID,
+  });
   assert.equal(calls, 1);
 });

@@ -238,6 +238,17 @@ export const PlaceMxOrderInput = z.object({
   /** The signed option returned by quoteMxShipping. */
   shipping_token: z.string().min(20).max(4000),
   payment_method: z.enum(["mercado_pago", "clip", "cod"]),
+  // A single-use token minted in the browser by Mercado Pago's own SDK. Card
+  // number, expiry and security code never reach this server. Without it,
+  // Mercado Pago is asked for its cash method.
+  card: z
+    .object({
+      token: z.string().regex(/^[A-Za-z0-9_-]{16,128}$/),
+      payment_method_id: z.string().regex(/^[a-z0-9_]{2,24}$/),
+      installments: z.number().int().min(1).max(24),
+    })
+    .strict()
+    .optional(),
   /** Contact email for a signed-in customer's payment receipt. */
   payer_email: z.string().trim().toLowerCase().email().max(320).optional(),
   legal_acceptance: LegalAcceptance,
@@ -245,6 +256,8 @@ export const PlaceMxOrderInput = z.object({
 
 /** What the customer must do next to pay. Null for cash on delivery. */
 export type MxPaymentStep =
+  /** A card payment the provider has already answered. */
+  | { kind: "settled"; state: string }
   | { kind: "redirect"; url: string }
   | { kind: "instructions"; url: string | null; reference: string | null }
   /** The provider did not answer. The order exists; repeating the checkout is safe. */
@@ -442,7 +455,17 @@ export const placeMxOrder = createServerFn({ method: "POST" })
             idempotencyKey: data.operationId,
             description: `Pedido ${payload.order_number} · CornerMex`,
             payer: { email: payerEmail as string, firstName: data.address.recipient_name },
-            method: provider.id === "mercado_pago" ? MERCADO_PAGO_METHOD : { kind: "redirect" },
+            method:
+              provider.id !== "mercado_pago"
+                ? { kind: "redirect" }
+                : data.card
+                  ? {
+                      kind: "card_token",
+                      token: data.card.token,
+                      methodId: data.card.payment_method_id,
+                      installments: data.card.installments,
+                    }
+                  : MERCADO_PAGO_METHOD,
             returnUrls: { success: returnUrl, failure: returnUrl, pending: returnUrl },
             ...(provider.id === "clip"
               ? {
@@ -470,6 +493,21 @@ export const placeMxOrder = createServerFn({ method: "POST" })
         p_redirect_url: payment.redirectUrl,
       });
       if (bindError) throw new Error("MX_PAYMENT_FAILED");
+    }
+
+    // A card payment is answered at once. It is applied the same way as any
+    // other: the payment is re-read from the provider and checked against the
+    // order before the database records it. A declined card cancels the order
+    // and returns its stock.
+    if (data.card && provider.id === "mercado_pago") {
+      const outcome = await reconcileOrderPayment(db, payload.order_id, () => provider);
+      const state =
+        outcome.outcome === "CHANGED"
+          ? outcome.change.to
+          : outcome.outcome === "UNCHANGED"
+            ? outcome.state
+            : "PENDING";
+      return { ...base, payment: { kind: "settled", state } };
     }
     return { ...base, payment: paymentStep(payment) };
   });

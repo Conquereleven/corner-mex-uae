@@ -2,6 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import {
+  MercadoPagoCardBrick,
+  type MercadoPagoCardToken,
+} from "@/components/site/MercadoPagoCardBrick";
 import { TrustBar } from "@/components/site/Trust";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,8 +57,13 @@ type QuoteState =
   | { status: "error"; key: string; reasons: string[] };
 
 const PAYMENT_LABELS: Record<string, { title: string; subtitle: string; action: string }> = {
+  mercado_pago_card: {
+    title: "Tarjeta de crédito o débito · Mercado Pago",
+    subtitle: "Capturas tu tarjeta en el formulario seguro de Mercado Pago.",
+    action: "Pagar",
+  },
   mercado_pago: {
-    title: "Mercado Pago · Efectivo en OXXO",
+    title: "Efectivo en OXXO · Mercado Pago",
     subtitle: "Te damos una referencia para pagar en cualquier tienda OXXO.",
     action: "Continuar al pago",
   },
@@ -206,8 +215,13 @@ function Checkout() {
         .filter(
           (option) => !option.localDeliveryOnly || selected?.fulfillmentMode === "LOCAL_DELIVERY",
         )
-        .map((option) => option.id),
-    [config?.paymentOptions, selected?.fulfillmentMode],
+        // Mercado Pago offers cards (when its Public Key is configured) and cash.
+        .flatMap((option): string[] =>
+          option.id === "mercado_pago" && config?.mercadoPagoPublicKey
+            ? ["mercado_pago_card", "mercado_pago"]
+            : [option.id],
+        ),
+    [config?.paymentOptions, config?.mercadoPagoPublicKey, selected?.fulfillmentMode],
   );
   // The only available method is preselected; with several, the customer chooses.
   useEffect(() => {
@@ -234,8 +248,18 @@ function Checkout() {
     method !== null;
   const canExecute = CHECKOUT_ENABLED && Boolean(config?.active) && readyToOrder;
 
-  async function submit(event: React.FormEvent) {
+  const payingByCard = method === "mercado_pago_card";
+
+  function submit(event: React.FormEvent) {
     event.preventDefault();
+    // With a card, the order is placed by the card form's own button, once
+    // Mercado Pago has returned a token.
+    if (payingByCard) return;
+    void submitOrder(null).catch(() => undefined);
+  }
+
+  /** Places the order. Rejects on failure so the card form can show it. */
+  async function submitOrder(card: MercadoPagoCardToken | null): Promise<void> {
     // Guard against double submission and against executing while disabled.
     if (submission.current || submitting || !canExecute || !selected || !method) return;
     const address = MxAddress.safeParse({
@@ -255,7 +279,7 @@ function Checkout() {
       const message = mxAddressErrorMessage(address.error.issues[0]?.message ?? "");
       setError(message);
       toast.error(message);
-      return;
+      throw new Error("CHECKOUT_ADDRESS_INVALID");
     }
     setError(null);
     setSubmitting(true);
@@ -265,7 +289,16 @@ function Checkout() {
         // Identity and quantity only. No price, shipping, tax or total: money is
         // derived on the server, and the shipping option is an opaque signed token.
         items: cartLines,
-        payment_method: method as "mercado_pago" | "clip" | "cod",
+        payment_method: (payingByCard ? "mercado_pago" : method) as "mercado_pago" | "clip" | "cod",
+        ...(card
+          ? {
+              card: {
+                token: card.token,
+                payment_method_id: card.paymentMethodId,
+                installments: card.installments,
+              },
+            }
+          : {}),
         address: {
           recipient_name: form.recipient_name.trim(),
           phone: form.phone.trim(),
@@ -302,11 +335,23 @@ function Checkout() {
           "No pudimos conectar con el servicio de pago. Tu pedido quedó registrado: vuelve a presionar el botón para continuar al pago.";
         setError(message);
         toast.error(message);
-        return;
+        throw new Error("CHECKOUT_PAYMENT_RETRY");
       }
       // The order exists (created now, or replayed), so the next checkout starts
       // a fresh operation.
       clearCodCheckoutOperation(operationKey);
+      if (
+        order.payment?.kind === "settled" &&
+        (order.payment.state === "FAILED" || order.payment.state === "CANCELLED")
+      ) {
+        // The card was declined: the order was cancelled and its stock returned.
+        // The cart is kept so the customer can try another card or method.
+        const message =
+          "Tu tarjeta fue rechazada y no se realizó ningún cargo. Intenta con otra tarjeta u otra forma de pago.";
+        setError(message);
+        toast.error(message);
+        throw new Error("CHECKOUT_CARD_DECLINED");
+      }
       // Only clear the cart after the order genuinely exists.
       clear();
       const nextUrl =
@@ -325,6 +370,10 @@ function Checkout() {
     } catch (caught) {
       // Failure keeps the cart and the customer's entered details intact.
       const message = caught instanceof Error ? caught.message : "";
+      // These already told the customer what happened.
+      if (message === "CHECKOUT_PAYMENT_RETRY" || message === "CHECKOUT_CARD_DECLINED") {
+        throw caught;
+      }
       const safe = message.includes("COD_ORDER_INSUFFICIENT_STOCK")
         ? "Uno de tus productos ya no está disponible en la cantidad solicitada."
         : message.includes("SHIPPING_QUOTE_EXPIRED")
@@ -344,6 +393,7 @@ function Checkout() {
         setSelectedToken(null);
         setQuoteState({ status: "idle" });
       }
+      throw caught;
     } finally {
       setSubmitting(false);
       submission.current = false;
@@ -733,16 +783,33 @@ function Checkout() {
                 {error}
               </p>
             )}
-            <Button
-              type="submit"
-              size="lg"
-              disabled={!canExecute || submitting}
-              className="mt-6 w-full rounded-full"
-            >
-              {submitting
-                ? "Registrando tu pedido…"
-                : (PAYMENT_LABELS[method ?? ""]?.action ?? "Realizar pedido")}
-            </Button>
+            {payingByCard ? (
+              canExecute && config?.mercadoPagoPublicKey && total !== null ? (
+                <MercadoPagoCardBrick
+                  publicKey={config.mercadoPagoPublicKey}
+                  amount={total}
+                  payerEmail={user?.email ?? (guestEmailValid ? form.email.trim() : null)}
+                  onToken={(card) =>
+                    canExecute ? submitOrder(card) : Promise.reject(new Error("CHECKOUT_NOT_READY"))
+                  }
+                />
+              ) : (
+                <p className="mt-6 text-sm text-muted-foreground">
+                  Completa tus datos, elige el envío y acepta los términos para capturar tu tarjeta.
+                </p>
+              )
+            ) : (
+              <Button
+                type="submit"
+                size="lg"
+                disabled={!canExecute || submitting}
+                className="mt-6 w-full rounded-full"
+              >
+                {submitting
+                  ? "Registrando tu pedido…"
+                  : (PAYMENT_LABELS[method ?? ""]?.action ?? "Realizar pedido")}
+              </Button>
+            )}
             <TrustBar context="b2c" className="mt-5" />
           </aside>
         </form>

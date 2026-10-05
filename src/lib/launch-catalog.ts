@@ -100,7 +100,7 @@ export function parseCsv(text: string): string[][] {
   let field = "";
   let row: string[] = [];
   let quoted = false;
-  const source = text.replace(/^﻿/, "");
+  const source = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   for (let index = 0; index < source.length; index += 1) {
     const char = source[index];
     if (quoted) {
@@ -173,7 +173,13 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
   };
 
   if (table.length === 0) {
-    errors.push({ line: 1, sku: null, column: null, code: "FILE_EMPTY", message: "The file has no rows." });
+    errors.push({
+      line: 1,
+      sku: null,
+      column: null,
+      code: "FILE_EMPTY",
+      message: "The file has no rows.",
+    });
     return empty;
   }
 
@@ -192,7 +198,9 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
   for (const name of header) {
     if (!(LAUNCH_COLUMNS as readonly string[]).includes(name)) {
       // A price in another currency must not slip in under another column name.
-      const code = /aed|usd|price|cost|precio|costo/.test(name) ? "COLUMN_NOT_MXN" : "COLUMN_UNKNOWN";
+      const code = /aed|usd|price|cost|precio|costo/.test(name)
+        ? "COLUMN_NOT_MXN"
+        : "COLUMN_UNKNOWN";
       errors.push({
         line: 1,
         sku: null,
@@ -203,7 +211,13 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
     }
   }
   if (new Set(header).size !== header.length) {
-    errors.push({ line: 1, sku: null, column: null, code: "COLUMN_DUPLICATED", message: "A column appears twice." });
+    errors.push({
+      line: 1,
+      sku: null,
+      column: null,
+      code: "COLUMN_DUPLICATED",
+      message: "A column appears twice.",
+    });
   }
   if (errors.length > 0) return empty;
 
@@ -228,22 +242,35 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
       return;
     }
     if (!/^[A-Z0-9][A-Z0-9._-]{2,39}$/.test(sku)) {
-      issue("sku", "SKU_INVALID", "A SKU is 3–40 characters: capital letters, digits, dot, dash or underscore.");
+      issue(
+        "sku",
+        "SKU_INVALID",
+        "A SKU is 3–40 characters: capital letters, digits, dot, dash or underscore.",
+      );
       return;
     }
     if (!cells.name) issue("name", "NAME_REQUIRED", "The product needs a name.");
-    else if (cells.name.length > 160) issue("name", "NAME_TOO_LONG", "The name is longer than 160 characters.");
+    else if (cells.name.length > 160)
+      issue("name", "NAME_TOO_LONG", "The name is longer than 160 characters.");
 
     const money = (column: LaunchColumn): number | null => {
       const value = cells[column];
       if (value === "") return null;
       // Amounts are plain MXN numbers: no symbol, no code, no thousands separator.
       if (/[a-z$€]/i.test(value)) {
-        issue(column, "MONEY_NOT_PLAIN_MXN", `"${value}" must be a plain amount in MXN, without a symbol or currency code.`);
+        issue(
+          column,
+          "MONEY_NOT_PLAIN_MXN",
+          `"${value}" must be a plain amount in MXN, without a symbol or currency code.`,
+        );
         return null;
       }
       if (!MONEY.test(value)) {
-        issue(column, "MONEY_INVALID", `"${value}" is not a valid amount (up to two decimals, no separators).`);
+        issue(
+          column,
+          "MONEY_INVALID",
+          `"${value}" is not a valid amount (up to two decimals, no separators).`,
+        );
         return null;
       }
       return Number(value);
@@ -252,7 +279,11 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
       const value = cells[column];
       if (value === "") return null;
       if (!INTEGER.test(value) || Number(value) < min || Number(value) > max) {
-        issue(column, "INTEGER_INVALID", `"${value}" must be a whole number between ${min} and ${max}.`);
+        issue(
+          column,
+          "INTEGER_INVALID",
+          `"${value}" must be a whole number between ${min} and ${max}.`,
+        );
         return null;
       }
       return Number(value);
@@ -261,7 +292,11 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
       const value = cells[column];
       if (value === "") return null;
       if (!DECIMAL.test(value) || Number(value) <= 0 || Number(value) > LIMITS.maxDimensionCm) {
-        issue(column, "DIMENSION_INVALID", `"${value}" must be a length in cm between 0 and ${LIMITS.maxDimensionCm}.`);
+        issue(
+          column,
+          "DIMENSION_INVALID",
+          `"${value}" must be a length in cm between 0 and ${LIMITS.maxDimensionCm}.`,
+        );
         return null;
       }
       return Number(value);
@@ -280,7 +315,11 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
     const leadTime = integer("lead_time_days", 0, LIMITS.maxLeadTimeDays);
     const preferred = truthy(cells.preferred_supplier);
     if (preferred === null) {
-      issue("preferred_supplier", "BOOLEAN_INVALID", `"${cells.preferred_supplier}" must be yes or no.`);
+      issue(
+        "preferred_supplier",
+        "BOOLEAN_INVALID",
+        `"${cells.preferred_supplier}" must be yes or no.`,
+      );
     }
 
     // Counted on what was typed, so an invalid value is reported once, not twice.
@@ -288,23 +327,50 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
       (value) => value !== "",
     ).length;
     if (dimensions > 0 && dimensions < 3) {
-      issue("length_cm", "DIMENSIONS_INCOMPLETE", "Give all three of length, width and height, or none.");
+      issue(
+        "length_cm",
+        "DIMENSIONS_INCOMPLETE",
+        "Give all three of length, width and height, or none.",
+      );
     }
-    if (retail !== null && retail <= 0) issue("retail_price_mxn", "PRICE_NOT_POSITIVE", "The retail price must be above zero.");
+    if (retail !== null && retail <= 0)
+      issue("retail_price_mxn", "PRICE_NOT_POSITIVE", "The retail price must be above zero.");
     if (cost !== null && retail !== null && retail <= cost) {
-      issue("retail_price_mxn", "PRICE_BELOW_COST", "The retail price is not above the cost.", warnings);
+      issue(
+        "retail_price_mxn",
+        "PRICE_BELOW_COST",
+        "The retail price is not above the cost.",
+        warnings,
+      );
     }
     if (b2b !== null && retail !== null && b2b > retail) {
-      issue("b2b_price_mxn", "B2B_ABOVE_RETAIL", "The B2B price is above the retail price.", warnings);
+      issue(
+        "b2b_price_mxn",
+        "B2B_ABOVE_RETAIL",
+        "The B2B price is above the retail price.",
+        warnings,
+      );
     }
     if (b2b !== null && cost !== null && b2b <= cost) {
       issue("b2b_price_mxn", "B2B_BELOW_COST", "The B2B price is not above the cost.", warnings);
     }
     if (moq !== null && casePack !== null && moq % casePack !== 0) {
-      issue("moq", "MOQ_NOT_CASE_MULTIPLE", "The minimum order quantity is not a multiple of the case pack.", warnings);
+      issue(
+        "moq",
+        "MOQ_NOT_CASE_MULTIPLE",
+        "The minimum order quantity is not a multiple of the case pack.",
+        warnings,
+      );
     }
-    if (cells.supplier === "" && (cost !== null || cells.supplier_sku !== "" || preferred === true)) {
-      issue("supplier", "SUPPLIER_REQUIRED", "Supplier cost, SKU or preference was given without a supplier name.");
+    if (
+      cells.supplier === "" &&
+      (cost !== null || cells.supplier_sku !== "" || preferred === true)
+    ) {
+      issue(
+        "supplier",
+        "SUPPLIER_REQUIRED",
+        "Supplier cost, SKU or preference was given without a supplier name.",
+      );
     }
     if (cells.supplier !== "" && cost === null && cells.cost_mxn === "") {
       issue("cost_mxn", "COST_REQUIRED", "A supplier needs a cost.");
@@ -312,19 +378,47 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
 
     // Product-level values must agree on every row of the same SKU: a second
     // supplier row repeats the SKU, it does not redefine the product.
-    const signature = JSON.stringify([cells.name, cells.brand, retail, b2b, weight, length, width, height, stock, casePack, moq]);
+    const signature = JSON.stringify([
+      cells.name,
+      cells.brand,
+      retail,
+      b2b,
+      weight,
+      length,
+      width,
+      height,
+      stock,
+      casePack,
+      moq,
+    ]);
     const existing = bySku.get(sku.toUpperCase());
     if (existing) {
       if (productSignature.get(sku.toUpperCase()) !== signature) {
-        issue("sku", "SKU_CONFLICT", `SKU ${sku} is repeated with different product data (first seen on line ${existing.lines[0]}).`);
+        issue(
+          "sku",
+          "SKU_CONFLICT",
+          `SKU ${sku} is repeated with different product data (first seen on line ${existing.lines[0]}).`,
+        );
         return;
       }
       if (cells.supplier === "") {
-        issue("sku", "SKU_DUPLICATED", `SKU ${sku} is duplicated (first seen on line ${existing.lines[0]}).`);
+        issue(
+          "sku",
+          "SKU_DUPLICATED",
+          `SKU ${sku} is duplicated (first seen on line ${existing.lines[0]}).`,
+        );
         return;
       }
-      if (existing.suppliers.some((entry) => entry.supplier.toLowerCase() === cells.supplier.toLowerCase())) {
-        issue("supplier", "SUPPLIER_DUPLICATED", `Supplier "${cells.supplier}" is listed twice for SKU ${sku}.`);
+      if (
+        existing.suppliers.some(
+          (entry) => entry.supplier.toLowerCase() === cells.supplier.toLowerCase(),
+        )
+      ) {
+        issue(
+          "supplier",
+          "SUPPLIER_DUPLICATED",
+          `Supplier "${cells.supplier}" is listed twice for SKU ${sku}.`,
+        );
         return;
       }
       existing.lines.push(line);
@@ -395,7 +489,8 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
     if (sku.retailPriceMxn === null) missing.push("retail_price_mxn");
     if (sku.b2bPriceMxn === null) missing.push("b2b_price_mxn");
     if (sku.weightG === null) missing.push("weight_g");
-    if (sku.lengthCm === null || sku.widthCm === null || sku.heightCm === null) missing.push("dimensions");
+    if (sku.lengthCm === null || sku.widthCm === null || sku.heightCm === null)
+      missing.push("dimensions");
     if (sku.stock === null) missing.push("stock");
     if (sku.casePack === null) missing.push("case_pack");
     if (sku.moq === null) missing.push("moq");
@@ -408,7 +503,8 @@ export function previewLaunchCatalog(csv: string): LaunchPreview {
     const broken = sku.lines.some((line) => failedLines.has(line));
     if (broken) sku.eligibleStatus = "DRAFT";
     else if (missing.length === 0) sku.eligibleStatus = (sku.stock ?? 0) > 0 ? "ACTIVE" : "READY";
-    else if (sku.suppliers.length > 0 || sku.retailPriceMxn !== null) sku.eligibleStatus = "SOURCING";
+    else if (sku.suppliers.length > 0 || sku.retailPriceMxn !== null)
+      sku.eligibleStatus = "SOURCING";
     else sku.eligibleStatus = "DRAFT";
 
     byStatus[sku.eligibleStatus] += 1;

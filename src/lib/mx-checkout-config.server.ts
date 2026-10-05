@@ -48,6 +48,20 @@ export type MxPaymentOption = {
   localDeliveryOnly: boolean;
 };
 
+/**
+ * Mercado Pago's Public Key. It is public by design — it identifies the
+ * application to Mercado Pago's browser SDK and can do nothing on its own — but
+ * it must belong to the same environment as the server's Access Token.
+ */
+export function mercadoPagoPublicKey(environment: Environment = process.env): string | null {
+  const key = (environment.MERCADO_PAGO_PUBLIC_KEY ?? "").trim();
+  if (!key) return null;
+  const sandbox = (environment.MERCADO_PAGO_ENVIRONMENT ?? "sandbox").trim() !== "production";
+  // A production key in a sandbox deployment (or the reverse) is refused.
+  if (sandbox !== key.startsWith("TEST-")) return null;
+  return key;
+}
+
 export type MxCheckoutConfig = {
   origin: FulfillmentLocation | null;
   manualRules: ManualShippingRule[];
@@ -154,6 +168,8 @@ export function getPublicMxCheckoutConfig(environment: Environment = process.env
   reasons: string[];
   market: { country: string; currency: string; locale: string };
   paymentOptions: MxPaymentOption[];
+  /** Present only when Mercado Pago is offered and card payments can be taken. */
+  mercadoPagoPublicKey: string | null;
   taxLabel: string | null;
 } {
   const evaluation = evaluateMxCheckout(environment);
@@ -166,6 +182,10 @@ export function getPublicMxCheckoutConfig(environment: Environment = process.env
       locale: ACTIVE_MARKET.locale,
     },
     paymentOptions: evaluation.ready ? evaluation.config.paymentOptions : [],
+    mercadoPagoPublicKey:
+      evaluation.ready && evaluation.config.paymentOptions.some((o) => o.id === "mercado_pago")
+        ? mercadoPagoPublicKey(environment)
+        : null,
     taxLabel: evaluation.ready ? taxLineLabel(evaluation.config.addedTaxRate) : null,
   };
 }

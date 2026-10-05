@@ -232,3 +232,97 @@ test("the order function never passes an amount to the payment attempt, and buys
   );
   assert.doesNotMatch(schema, /price|subtotal|total|tax|amount|discount/i);
 });
+
+// ── Browser card payments (Mercado Pago Card Payment Brick) ────────────────
+
+test("card data never passes through CornerMex: only a single-use token is accepted", async () => {
+  const source = await readFile("src/lib/mx-checkout.functions.ts", "utf8");
+  const schema = source.slice(
+    source.indexOf("export const PlaceMxOrderInput"),
+    source.indexOf("export type MxPaymentStep"),
+  );
+  // The card object is strict and holds a token, a method id and installments.
+  const card = schema.slice(schema.indexOf("card: z"), schema.indexOf("legal_acceptance"));
+  assert.match(card, /token: z\.string\(\)\.regex\(/);
+  assert.match(card, /payment_method_id: z\.string\(\)\.regex\(/);
+  assert.match(card, /installments: z\.number\(\)\.int\(\)/);
+  assert.match(
+    card,
+    /\.strict\(\)\s*\.optional\(\)/,
+    "no other field can ride along with the token",
+  );
+  // Checked on the code, not on the comment that explains the rule.
+  assert.doesNotMatch(
+    schema.replace(/\/\/.*$/gm, ""),
+    /card_number|cardNumber|cvv|cvc|security_code|expiration|expiry/i,
+  );
+
+  const brick = await readFile("src/components/site/MercadoPagoCardBrick.tsx", "utf8");
+  // The form is Mercado Pago's own; this component renders no card input.
+  assert.match(brick, /https:\/\/sdk\.mercadopago\.com\/js\/v2/);
+  assert.doesNotMatch(brick, /<input|<Input/);
+  assert.doesNotMatch(
+    brick.replace(/\/\/.*$/gm, ""),
+    /card_number|cardNumber|cvv|cvc|security_code/i,
+  );
+  // The Access Token is server-side only and never referenced by browser code.
+  for (const file of ["src/components/site/MercadoPagoCardBrick.tsx", "src/routes/checkout.tsx"]) {
+    assert.doesNotMatch(
+      await readFile(file, "utf8"),
+      /ACCESS_TOKEN|WEBHOOK_SECRET|API_SECRET|SERVICE_ROLE/,
+      file,
+    );
+  }
+});
+
+test("a card payment is applied by re-reading the provider, and a decline keeps the cart", async () => {
+  const source = await readFile("src/lib/mx-checkout.functions.ts", "utf8");
+  const settle = source.slice(
+    source.indexOf("if (data.card && provider.id"),
+    source.indexOf("return { ...base, payment: paymentStep(payment) };"),
+  );
+  assert.match(
+    settle,
+    /reconcileOrderPayment\(db, payload\.order_id/,
+    "a card result is never trusted from the create call alone",
+  );
+  const checkout = await readFile("src/routes/checkout.tsx", "utf8");
+  const declined = checkout.slice(
+    checkout.indexOf('order.payment.state === "FAILED"'),
+    checkout.indexOf("// Only clear the cart after the order genuinely exists."),
+  );
+  assert.match(declined, /CHECKOUT_CARD_DECLINED/);
+  assert.doesNotMatch(declined, /clear\(\);/, "a declined card must not empty the cart");
+  // The amount the Brick shows is display only; the server never reads one.
+  assert.doesNotMatch(
+    source.slice(source.indexOf("card: z")),
+    /data\.card\.amount|transaction_amount/,
+  );
+});
+
+test("the Public Key is published only for the matching environment", async () => {
+  const config = await import("../../src/lib/mx-checkout-config.server.ts");
+  assert.equal(config.mercadoPagoPublicKey({}), null);
+  assert.equal(config.mercadoPagoPublicKey({ MERCADO_PAGO_PUBLIC_KEY: "TEST-pk" }), "TEST-pk");
+  // A production key in a sandbox deployment, or a test key in production, is refused.
+  assert.equal(config.mercadoPagoPublicKey({ MERCADO_PAGO_PUBLIC_KEY: "APP_USR-pk" }), null);
+  assert.equal(
+    config.mercadoPagoPublicKey({
+      MERCADO_PAGO_PUBLIC_KEY: "TEST-pk",
+      MERCADO_PAGO_ENVIRONMENT: "production",
+    }),
+    null,
+  );
+  assert.equal(
+    config.mercadoPagoPublicKey({
+      MERCADO_PAGO_PUBLIC_KEY: "APP_USR-pk",
+      MERCADO_PAGO_ENVIRONMENT: "production",
+    }),
+    "APP_USR-pk",
+  );
+  // Without Mercado Pago enabled the checkout is told nothing.
+  assert.equal(
+    config.getPublicMxCheckoutConfig({ MERCADO_PAGO_PUBLIC_KEY: "TEST-pk" }).mercadoPagoPublicKey,
+    null,
+  );
+});
