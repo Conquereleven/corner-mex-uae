@@ -12,10 +12,14 @@ The Central de Abastos is where CornerMex buys. It is not assumed to be the
 warehouse. The ship-from address is `CORNERMEX_MX_ORIGIN_JSON`:
 
 ```json
-{ "name": "…", "company": "CornerMex", "phone": "10 digits", "email": "…",
-  "street": "street and number", "colonia": "…", "municipality": "Tecámac",
-  "state": "MEX", "postal_code": "5 digits", "reference": "…" }
+{ "name": "contact name (max 30)", "company": "CornerMex", "phone": "10 digits",
+  "email": "…", "street": "street name", "exterior_number": "…",
+  "interior_number": "optional", "colonia": "…", "municipality": "Tecámac",
+  "state": "MEX", "postal_code": "5 digits", "reference": "optional (max 30)" }
 ```
+
+Only the address itself is missing. Everything else — parsing, validation,
+carrier formatting, the quote request — is in place.
 
 It is validated field by field. A carrier provider cannot quote until it is
 present; the checkout reports exactly which field is missing.

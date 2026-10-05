@@ -83,12 +83,19 @@ read 2026-10-05. The legacy Payments / Preferences APIs are not used.
 - **Test vs production:** a `TEST-` token is required in sandbox and refused in
   production, and vice versa.
 
-**Payment methods.** The Orders API takes card payments only with a token minted
-in the browser by Mercado Pago's own SDK (Card Payment Brick), so card data never
-reaches CornerMex. The adapter accepts such a token. **The storefront Brick is
-not built yet**, so today the checkout offers Mercado Pago's cash method (OXXO),
-which needs no card data. Cards through Mercado Pago are the next UI step and
-need the Public Key.
+**Payment methods.** Two are offered through Mercado Pago:
+
+- **Cards**, through the Card Payment Brick
+  (`src/components/site/MercadoPagoCardBrick.tsx`). The form is Mercado Pago's
+  own SDK component, loaded from Mercado Pago: card number, expiry and security
+  code are typed into Mercado Pago's fields and CornerMex receives only a
+  single-use token. The order function accepts that token and nothing else about
+  the card. A card result is applied like any other payment — re-read from the
+  provider and checked against the order. A declined card cancels the order,
+  returns its stock and keeps the cart. Offered only when
+  `MERCADO_PAGO_PUBLIC_KEY` is set and matches the environment (`TEST-` in
+  sandbox). Built to `SCAFFOLDED`; not yet run with a real key.
+- **Cash at OXXO**, which needs no card data.
 
 **To verify against a real test account** (not assumed): the refund and cancel
 paths and bodies; the full list of order `status` / `status_detail` values
@@ -162,6 +169,7 @@ automatically**, so no label is purchased anywhere.
 | `MERCADO_PAGO_ENABLED` | `true` to offer it |
 | `MERCADO_PAGO_ACCESS_TOKEN` | Server-side only. `TEST-…` in sandbox |
 | `MERCADO_PAGO_WEBHOOK_SECRET` | The application's webhook secret |
+| `MERCADO_PAGO_PUBLIC_KEY` | Public by design; enables the card form |
 | `MERCADO_PAGO_ENVIRONMENT` | `sandbox` (default) or `production` |
 | `CLIP_ENABLED` | `true` to offer it |
 | `CLIP_API_KEY`, `CLIP_API_SECRET` | Server-side only |

@@ -5,8 +5,11 @@ project**. The UAE database is not re-priced in place; it stays historical and
 read-only.
 
 **Status:** plan, schema and guards are built and tested locally. The project
-itself is **not created** — creating it is a billable action on the Founder's
-Supabase organisation and needs the Founder (see "Founder action").
+itself is **not created**. Creation was attempted on 2026-10-05 and refused by
+Supabase: the organisation is on the free plan, which allows two active
+projects per owner, and both slots are in use (`cornerops-ai` and
+`corner-mex-uae`). A new project there costs $0/month; the limit is the only
+obstacle. See "Founder action".
 
 ## Principle
 
@@ -147,10 +150,26 @@ the guards above the app now refuses to start against it. That is intended.
 
 ## Founder action
 
-Create the Supabase project. It could not be done from here: project creation is
-a paid action that requires confirming the cost on the Founder's organisation.
+One decision frees a project slot. Everything after it is automated.
 
-1. Supabase dashboard → New project → name `cornermex-mx`, a region near Mexico,
-   a strong database password stored in the password manager.
-2. Send back **only** the project ref (the subdomain of the project URL). The
-   keys go straight into the deployment's secret store, not into chat.
+Choose **one**:
+
+- **A. Pause `cornerops-ai`** (Supabase dashboard → project `cornerops-ai` →
+  Settings → General → *Pause project*). Free. The project's data is kept and it
+  can be restored later. Only do this if nothing depends on it today.
+- **B. Upgrade the organisation to Pro** (Organization → Billing → *Upgrade*).
+  Removes the two-project limit. This is a paid plan; Supabase shows the price
+  before you confirm.
+
+Do **not** pause `corner-mex-uae`: it is the historical UAE database and the UAE
+storefront still reads its catalogue.
+
+Then say "slot is free". From there, without further input: the project
+`cornermex-mx` is created in `us-east-1`, the canonical and Mexico migrations
+are applied, the MX/MXN identity and RLS are verified, categories are seeded,
+types are regenerated, and the keys are written directly into the Mexico Railway
+service.
+
+Note: the organisation is named after the UAE entity (RodMor TradeCo LLC). The
+Mexico project can live there for now; moving it to an organisation owned by the
+Mexican entity is a transfer Supabase supports later.

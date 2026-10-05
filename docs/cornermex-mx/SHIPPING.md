@@ -85,6 +85,8 @@ state. `READY_FOR_PICKUP` is reserved for scheduled carrier pickups (MX-3).
 
 ## Label purchase
 
+0. **A kill switch.** `CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED` must be `true`
+   for any label to be bought or reconciled. It is off everywhere.
 1. **No label before payment.** `purchaseLabelOnce` refuses without a payment
    assertion (`PAID`, or a named rule that permits shipping first).
 2. **One label per order.** A reservation is written before the provider is
