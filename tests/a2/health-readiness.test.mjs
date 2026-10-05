@@ -59,6 +59,7 @@ test("readiness reports ready for a bounded successful target check", async () =
     externalEmailEnabled: false,
     externalMessagesEnabled: false,
     realPaymentExecutionEnabled: false,
+    realShippingPurchaseEnabled: false,
     automaticImportEnabled: false,
     automaticInventorySyncEnabled: false,
     openClawEnabled: false,

@@ -20,7 +20,7 @@ const ORIGIN = JSON.stringify({
   company: "CornerMex",
   phone: "5512345678",
   email: ["envios", "example.test"].join("@"),
-  street: "Calle Ejemplo 10",
+  street: "Calle Ejemplo", exterior_number: "10",
   colonia: "Centro",
   municipality: "Tecámac",
   state: "MEX",

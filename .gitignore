@@ -49,3 +49,6 @@ auth-manifests/
 *.sln
 *.sw?
 .artifacts/
+
+# CornerMex MX: launch assortment previews are generated, not committed.
+docs/cornermex-mx/catalog/*.preview.json

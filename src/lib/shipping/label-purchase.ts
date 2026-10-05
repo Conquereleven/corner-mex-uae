@@ -61,13 +61,26 @@ export type PaymentAssertion =
   /** e.g. an approved cash-on-delivery order. Names the rule for the audit log. */
   | { kind: "SHIP_BEFORE_PAYMENT_PERMITTED"; rule: string };
 
+/** True only when buying real carrier labels has been switched on by name. */
+export function isRealShippingPurchaseEnabled(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return environment.CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED === "true";
+}
+
 export async function purchaseLabelOnce(input: {
   provider: ShippingProvider;
   ledger: LabelLedger;
   request: CreateShipmentRequest;
   payment: PaymentAssertion | null;
+  /**
+   * The deployment's kill switch (isRealShippingPurchaseEnabled). There is no
+   * default: a caller must state it, and `false` buys nothing.
+   */
+  purchaseEnabled: boolean;
 }): Promise<LabelPurchaseResult> {
   const { provider, ledger, request, payment } = input;
+  if (input.purchaseEnabled !== true) throw new Error("LABEL_PURCHASE_DISABLED");
   if (!payment) throw new Error("LABEL_PURCHASE_REQUIRES_CONFIRMED_PAYMENT");
 
   const existing = await ledger.find(request.orderReference);
@@ -130,8 +143,11 @@ export async function reconcileAmbiguousLabel(input: {
   provider: ShippingProvider;
   ledger: LabelLedger;
   request: CreateShipmentRequest;
+  purchaseEnabled: boolean;
 }): Promise<LabelPurchaseResult> {
   const { provider, ledger, request } = input;
+  // Reconciling can replay a purchase request, so it obeys the same switch.
+  if (input.purchaseEnabled !== true) throw new Error("LABEL_PURCHASE_DISABLED");
   const reservation = await ledger.find(request.orderReference);
   if (!reservation) throw new Error("LABEL_RESERVATION_NOT_FOUND");
   if (reservation.state === "PURCHASED" && reservation.providerShipmentId) {

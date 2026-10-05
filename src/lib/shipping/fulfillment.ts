@@ -77,8 +77,8 @@ export function parseFulfillmentOrigin(raw: string | undefined): {
     company: field("company", 2, 60),
     phone,
     email: field("email", 5, 254),
-    street: field("street", 2, 100),
-    reference: str(parsed.reference, 0, 30) ?? "",
+    street: composeStreet(field("street", 2, 80), parsed, problems),
+    reference: str(parsed.reference, 0, 30) ?? str(parsed.references, 0, 30) ?? "",
   };
   if (problems.length > 0) return { location: null, problems: [...new Set(problems)] };
 
@@ -91,6 +91,17 @@ export function parseFulfillmentOrigin(raw: string | undefined): {
     },
     problems: [],
   };
+}
+
+/**
+ * Carriers take street and number as one line. The configuration keeps them
+ * apart — the same fields the checkout uses — and they are joined here.
+ */
+function composeStreet(street: string, parsed: Json, problems: string[]): string {
+  const exterior = str(parsed.exterior_number, 1, 20);
+  if (exterior === null) problems.push("origin.exterior_number");
+  const interior = str(parsed.interior_number, 1, 20);
+  return [street, exterior ?? "", interior ? `Int. ${interior}` : ""].filter(Boolean).join(" ");
 }
 
 export function quoteAddressOf(address: ShipmentAddress): QuoteAddress {

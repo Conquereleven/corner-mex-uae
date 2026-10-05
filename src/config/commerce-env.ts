@@ -26,6 +26,8 @@ const environmentSchema = z.object({
   CORNERMEX_EXTERNAL_EMAIL_ENABLED: falseByDefault,
   CORNERMEX_EXTERNAL_MESSAGES_ENABLED: falseByDefault,
   CORNERMEX_REAL_PAYMENT_EXECUTION_ENABLED: falseByDefault,
+  // Buying a carrier label spends money. Off unless switched on by name.
+  CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED: falseByDefault,
   CORNERMEX_AUTOMATIC_IMPORT_ENABLED: falseByDefault,
   CORNERMEX_AUTOMATIC_INVENTORY_SYNC_ENABLED: falseByDefault,
   CORNERMEX_OPENCLAW_ENABLED: falseByDefault,
@@ -80,6 +82,7 @@ export function getCommerceSafetyStatus(source: Record<string, string | undefine
     externalEmailEnabled: parsed.CORNERMEX_EXTERNAL_EMAIL_ENABLED,
     externalMessagesEnabled: parsed.CORNERMEX_EXTERNAL_MESSAGES_ENABLED,
     realPaymentExecutionEnabled: parsed.CORNERMEX_REAL_PAYMENT_EXECUTION_ENABLED,
+    realShippingPurchaseEnabled: parsed.CORNERMEX_REAL_SHIPPING_PURCHASE_ENABLED,
     automaticImportEnabled: parsed.CORNERMEX_AUTOMATIC_IMPORT_ENABLED,
     automaticInventorySyncEnabled: parsed.CORNERMEX_AUTOMATIC_INVENTORY_SYNC_ENABLED,
     openClawEnabled: parsed.CORNERMEX_OPENCLAW_ENABLED,
